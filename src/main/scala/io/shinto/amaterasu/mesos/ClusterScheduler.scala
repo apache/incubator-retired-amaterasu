@@ -3,6 +3,7 @@ package io.shinto.amaterasu.mesos
 import java.util
 
 import io.shinto.amaterasu
+import io.shinto.amaterasu.utilities.FsUtil
 import io.shinto.amaterasu.{ Kami, Logging, Config }
 import io.shinto.amaterasu.mesos.executors.JobExecutor
 import org.apache.mesos.Protos.CommandInfo.URI
@@ -10,6 +11,7 @@ import org.apache.mesos.Protos.CommandInfo.URI
 import org.apache.mesos.Protos._
 import org.apache.mesos.{ Scheduler, Protos, SchedulerDriver }
 import scala.collection.JavaConverters._
+import scala.reflect.io.File
 
 class ClusterScheduler extends Scheduler with Logging {
 
@@ -29,6 +31,7 @@ class ClusterScheduler extends Scheduler with Logging {
   def frameworkMessage(driver: SchedulerDriver, executorId: ExecutorID, slaveId: SlaveID, data: Array[Byte]) {}
 
   def statusUpdate(driver: SchedulerDriver, status: TaskStatus) {
+
     println(s"received status update $status")
 
   }
@@ -52,9 +55,18 @@ class ClusterScheduler extends Scheduler with Logging {
   }
 
   def buildCommandInfo(jobSrc: String): CommandInfo = {
-    CommandInfo.newBuilder.setUris(0, URI.newBuilder().setValue(config.distLocation))
-      .setUris(1, URI.newBuilder().setValue(jobSrc))
-      .setValue("")
+
+    val fsUtil = FsUtil(config)
+
+    println("##############################################")
+    println(fsUtil.getJarUrl())
+    println(jobSrc)
+    println("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$")
+    println(s"java -cp ${config.JobSchedulerJar} io.shinto.amaterasu.mesos.executors.JobExecutor")
+
+    CommandInfo.newBuilder.addUris(URI.newBuilder().setValue(fsUtil.getJarUrl()))
+      .addUris(URI.newBuilder().setValue(jobSrc))
+      .setValue(s"java -cp ${config.JobSchedulerJar} io.shinto.amaterasu.mesos.executors.JobExecutor")
       .build()
   }
 
@@ -84,6 +96,7 @@ class ClusterScheduler extends Scheduler with Logging {
           .addResources(createScalarResource("cpus", config.Jobs.cpus))
           .addResources(createScalarResource("mem", config.Jobs.mem))
           .addResources(createScalarResource("disk", config.Jobs.repoSize))
+          .setSlaveId(offer.getSlaveId)
           .setTaskId(taskId).build()
 
         driver.launchTasks(List(offer.getId).asJavaCollection, List(task).asJavaCollection)

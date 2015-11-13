@@ -24,8 +24,8 @@ object Build extends Build {
 
   lazy val commonSettings =
     basicSettings ++
-    formatSettings ++
-    net.virtualvoid.sbt.graph.Plugin.graphSettings
+      formatSettings ++
+      net.virtualvoid.sbt.graph.Plugin.graphSettings
 
   lazy val basicSettings = Seq(
     version := PROJECT_VERSION,
@@ -40,9 +40,11 @@ object Build extends Build {
       "org.scalatest" %% "scalatest" % "2.2.2" % "test",
       "com.github.nscala-time" %% "nscala-time" % "2.2.0",
       "com.fasterxml.jackson.module" % "jackson-module-scala_2.11" % "2.6.1",
-
+      "com.amazonaws" % "aws-java-sdk-s3" % "1.10.27",
+      "commons-io" % "commons-io" % "2.4",
+    
       "org.scalatest" % "scalatest_2.11" % "2.2.2" % "test"
-  ),
+    ),
 
     scalacOptions in Compile ++= Seq(
       "-unchecked",

@@ -1,17 +1,17 @@
 package io.shinto.amaterasu
 
-import java.util.concurrent.{ConcurrentHashMap, BlockingQueue, LinkedBlockingQueue}
+import java.util.concurrent.{ ConcurrentHashMap, BlockingQueue, LinkedBlockingQueue }
 import com.github.nscala_time.time.Imports._
 import io.shinto.amaterasu.dataObjects.Job
 
 import scala.collection.JavaConversions
 
 /**
- * This class is the cluster manager for Amaterasu (a goddess object), managing the state of the cluster:
- * - The jobsQueue containing all waiting jobs
- * - completedJobs
- * - failedJobs
- */
+  * This class is the cluster manager for Amaterasu (a goddess object), managing the state of the cluster:
+  * - The jobsQueue containing all waiting jobs
+  * - completedJobs
+  * - failedJobs
+  */
 class Kami {
 
   private[amaterasu] var frameworkId: String = null
@@ -26,10 +26,10 @@ class Kami {
   }
 
   /**
-   * Queues a job for execution
-   * @param jobUrl the url of the git repo containing the job definition
-   * @return the id of the newly created job
-   */
+    * Queues a job for execution
+    * @param jobUrl the url of the git repo containing the job definition
+    * @return the id of the newly created job
+    */
   def addJob(jobUrl: String): String = {
 
     val id = s"job_${System.currentTimeMillis()}"
@@ -62,10 +62,10 @@ class Kami {
 object Kami {
 
   /**
-   *
-   * @param jobs
-   * @return
-   */
+    *
+    * @param jobs
+    * @return
+    */
   def apply(jobs: Seq[String]): Kami = {
 
     val goddess = new Kami()
@@ -87,6 +87,8 @@ object Kami {
   }
 
   def apply(): Kami = {
+
     apply(null)
+
   }
 }
