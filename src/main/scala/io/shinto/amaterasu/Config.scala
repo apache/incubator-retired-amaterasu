@@ -1,6 +1,8 @@
 package io.shinto.amaterasu
 
 import java.io.{ InputStream, FileInputStream, File }
+import java.nio.file.Paths
+
 //import java.net.URL
 import java.util.Properties
 
@@ -16,6 +18,7 @@ class Config extends Logging {
   var distLocation: String = "local"
   var workingFolder: String = ""
   var JobSchedulerJar: String = null
+  var JobSchedulerJarName: String = null
 
   //this should be a filesystem path that is reachable by all executors (HDFS, S3, local)
 
@@ -86,6 +89,7 @@ class Config extends Logging {
 
     // TODO: rethink this
     JobSchedulerJar = this.getClass.getProtectionDomain.getCodeSource.getLocation.toURI.getPath
+    JobSchedulerJarName = Paths.get(this.getClass.getProtectionDomain.getCodeSource.getLocation.getPath).getFileName.toString
 
     Jobs.load(props)
 

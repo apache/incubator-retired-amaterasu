@@ -5,13 +5,11 @@ import java.util
 import io.shinto.amaterasu
 import io.shinto.amaterasu.utilities.FsUtil
 import io.shinto.amaterasu.{ Kami, Logging, Config }
-import io.shinto.amaterasu.mesos.executors.JobExecutor
 import org.apache.mesos.Protos.CommandInfo.URI
 
 import org.apache.mesos.Protos._
 import org.apache.mesos.{ Scheduler, Protos, SchedulerDriver }
 import scala.collection.JavaConverters._
-import scala.reflect.io.File
 
 class ClusterScheduler extends Scheduler with Logging {
 
@@ -58,22 +56,19 @@ class ClusterScheduler extends Scheduler with Logging {
 
     val fsUtil = FsUtil(config)
 
-    println("##############################################")
-    println(fsUtil.getJarUrl())
-    println(jobSrc)
-    println("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$")
-    println(s"java -cp ${config.JobSchedulerJar} io.shinto.amaterasu.mesos.executors.JobExecutor")
+    println(s"java -cp ${config.JobSchedulerJarName} io.shinto.amaterasu.mesos.executors.JobExecutor")
 
     CommandInfo.newBuilder.addUris(URI.newBuilder().setValue(fsUtil.getJarUrl()))
       .addUris(URI.newBuilder().setValue(jobSrc))
-      .setValue(s"java -cp ${config.JobSchedulerJar} io.shinto.amaterasu.mesos.executors.JobExecutor")
+      //.setValue(s"java -cp ${config.JobSchedulerJar} io.shinto.amaterasu.mesos.executors.JobExecutor")
+      .setValue("echo \"-----------------------> executing <--------------------------\"")
       .build()
   }
 
   def resourceOffers(driver: SchedulerDriver, offers: util.List[Offer]): Unit = {
 
     for (offer <- offers.asScala) {
-      log.debug(s"offer $offer")
+      //log.debug(s"offer $offer")
 
       val id = "task" + System.currentTimeMillis()
 
@@ -82,22 +77,16 @@ class ClusterScheduler extends Scheduler with Logging {
         // getting the next job to be executed
         val job = kami.getNextJob()
 
-        val taskId: TaskID = Protos.TaskID.newBuilder().setValue(job.id).build();
+        val taskId: TaskID = Protos.TaskID.newBuilder().setValue(job.id).build()
         log.debug(s"Preparing to launch job $taskId on slave ${offer.getSlaveId}")
 
-        val executor = ExecutorInfo.newBuilder
-          .setExecutorId(Protos.ExecutorID.newBuilder.setValue(s"scheduler_$taskId"))
-          .setCommand(buildCommandInfo(job.src))
-          .setName("Job Scheduler Executor")
-
         val task = TaskInfo.newBuilder
-          .setExecutor(executor)
           .setName(s"Amaterasu-job-${taskId.getValue}")
           .addResources(createScalarResource("cpus", config.Jobs.cpus))
           .addResources(createScalarResource("mem", config.Jobs.mem))
           .addResources(createScalarResource("disk", config.Jobs.repoSize))
           .setSlaveId(offer.getSlaveId)
-          .setTaskId(taskId).build()
+          .setTaskId(taskId).setCommand(buildCommandInfo(job.src)).build()
 
         driver.launchTasks(List(offer.getId).asJavaCollection, List(task).asJavaCollection)
 

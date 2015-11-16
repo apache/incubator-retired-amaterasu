@@ -61,7 +61,7 @@ class FsUtil extends Logging {
 
   private def getLocalJar(): String = {
 
-    new File(s"${config.local.distFolder}/${config.JobSchedulerJar}").toURI.toURL.toString
+    new File(config.JobSchedulerJar).toURI.toURL.toString.replace("file:/", "file:///")
 
   }
 

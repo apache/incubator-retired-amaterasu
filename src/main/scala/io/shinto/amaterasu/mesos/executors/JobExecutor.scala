@@ -34,7 +34,7 @@ object JobExecutor extends Executor with Logging {
 
   def main(args: Array[String]) {
 
-    println("executing")
+    println("-----------------------> executing <--------------------------")
 
   }
 }
