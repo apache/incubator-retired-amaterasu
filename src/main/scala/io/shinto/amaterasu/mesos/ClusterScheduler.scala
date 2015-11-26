@@ -58,40 +58,51 @@ class ClusterScheduler extends Scheduler with Logging {
 
     println(s"java -cp ${config.JobSchedulerJarName} io.shinto.amaterasu.mesos.executors.JobExecutor")
 
-    CommandInfo.newBuilder.addUris(URI.newBuilder().setValue(fsUtil.getJarUrl()))
+    CommandInfo.newBuilder
+      .addUris(URI.newBuilder().setValue(fsUtil.getJarUrl()))
       .addUris(URI.newBuilder().setValue(jobSrc))
       //.setValue(s"java -cp ${config.JobSchedulerJar} io.shinto.amaterasu.mesos.executors.JobExecutor")
-      .setValue("echo \"-----------------------> executing <--------------------------\"")
+      .setValue("sleep 400")
       .build()
   }
 
   def resourceOffers(driver: SchedulerDriver, offers: util.List[Offer]): Unit = {
 
     for (offer <- offers.asScala) {
-      //log.debug(s"offer $offer")
-
-      val id = "task" + System.currentTimeMillis()
+      log.debug(s"offer received by Amaterasu Cluster Scheduler: $offer")
 
       if (validateOffer(offer)) {
 
+        log.info(s"Accepting offer, id=${offer.getId}")
         // getting the next job to be executed
         val job = kami.getNextJob()
 
-        val taskId: TaskID = Protos.TaskID.newBuilder().setValue(job.id).build()
+        val taskId = Protos.TaskID.newBuilder().setValue(job.id).build()
         log.debug(s"Preparing to launch job $taskId on slave ${offer.getSlaveId}")
 
         val task = TaskInfo.newBuilder
           .setName(s"Amaterasu-job-${taskId.getValue}")
+          .setTaskId(taskId)
           .addResources(createScalarResource("cpus", config.Jobs.cpus))
           .addResources(createScalarResource("mem", config.Jobs.mem))
           .addResources(createScalarResource("disk", config.Jobs.repoSize))
           .setSlaveId(offer.getSlaveId)
           .setTaskId(taskId).setCommand(buildCommandInfo(job.src)).build()
 
+        log.debug(s"Starting task Amaterasu-job-${taskId.getValue}")
+        log.debug(s"With resources cpus=${config.Jobs.cpus}, mem=${config.Jobs.mem}, disk=${config.Jobs.repoSize}")
+
         driver.launchTasks(List(offer.getId).asJavaCollection, List(task).asJavaCollection)
 
       }
+      else {
+
+        log.info("Declining offer")
+        driver.declineOffer(offer.getId)
+
+      }
     }
+
   }
 
   def registered(driver: SchedulerDriver, frameworkId: FrameworkID, masterInfo: MasterInfo): Unit = {
@@ -114,6 +125,7 @@ object ClusterScheduler {
     scheduler.kami = kami
     scheduler.config = config
     scheduler
+
   }
 
 }

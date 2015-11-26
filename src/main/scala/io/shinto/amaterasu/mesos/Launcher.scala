@@ -2,9 +2,9 @@ package io.shinto.amaterasu.mesos
 
 import io.shinto.amaterasu.utilities.FsUtil
 import org.apache.mesos.{ Protos, MesosSchedulerDriver }
-import io.shinto.amaterasu.{ Kami, Config }
+import io.shinto.amaterasu.{ Logging, Kami, Config }
 
-object Launcher extends App {
+object Launcher extends App with Logging {
 
   println(
     """
@@ -33,8 +33,12 @@ object Launcher extends App {
     .setFailoverTimeout(config.timeout)
     .setUser(config.user).build()
 
+  log.debug(s"The framework user is ${config.user}")
+  val masterAddress = s"${config.master}:${config.masterPort}"
   val scheduler = ClusterScheduler(kami, config)
-  val driver = new MesosSchedulerDriver(scheduler, framework, s"${config.master}:5050")
+  val driver = new MesosSchedulerDriver(scheduler, framework, masterAddress)
+
+  log.debug(s"Connecting to master on: $masterAddress")
   driver.run()
 
 }
