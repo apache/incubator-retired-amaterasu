@@ -1,14 +1,14 @@
-package io.shinto.amaterasu.mesos
+package io.shinto.amaterasu.mesos.schedulers
 
 import java.util
 
 import io.shinto.amaterasu
 import io.shinto.amaterasu.utilities.FsUtil
-import io.shinto.amaterasu.{ Kami, Logging, Config }
+import io.shinto.amaterasu.{Config, Kami, Logging}
 import org.apache.mesos.Protos.CommandInfo.URI
-
 import org.apache.mesos.Protos._
-import org.apache.mesos.{ Scheduler, Protos, SchedulerDriver }
+import org.apache.mesos.{Protos, Scheduler, SchedulerDriver}
+
 import scala.collection.JavaConverters._
 
 class ClusterScheduler extends Scheduler with Logging {
@@ -56,13 +56,12 @@ class ClusterScheduler extends Scheduler with Logging {
 
     val fsUtil = FsUtil(config)
 
-    println(s"java -cp ${config.JobSchedulerJarName} io.shinto.amaterasu.mesos.executors.JobExecutor")
+    println(s"Starting amaterasu job: java -cp ${config.JobSchedulerJarName} io.shinto.amaterasu.mesos.executors.JobExecutor $jobSrc")
 
     CommandInfo.newBuilder
       .addUris(URI.newBuilder().setValue(fsUtil.getJarUrl()))
-      .addUris(URI.newBuilder().setValue(jobSrc))
-      //.setValue(s"java -cp ${config.JobSchedulerJar} io.shinto.amaterasu.mesos.executors.JobExecutor")
-      .setValue("sleep 400")
+      //.addUris(URI.newBuilder().setValue(jobSrc))
+      .setValue(s"java -cp ${config.JobSchedulerJar} io.shinto.amaterasu.mesos.executors.JobExecutor $jobSrc")
       .build()
   }
 
