@@ -4,13 +4,7 @@ import io.shinto.amaterasu.Logging
 import org.apache.mesos.Protos._
 import org.apache.mesos.{ ExecutorDriver, Executor }
 
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.module.scala.DefaultScalaModule
-
 object JobExecutor extends Executor with Logging {
-
-  private val mapper = new ObjectMapper()
-  mapper.registerModule(DefaultScalaModule)
 
   override def shutdown(driver: ExecutorDriver): Unit = {}
 
@@ -34,7 +28,7 @@ object JobExecutor extends Executor with Logging {
 
   def main(args: Array[String]) {
 
-    println("-----------------------> executing <--------------------------")
+    val repo = args(0)
 
   }
 }

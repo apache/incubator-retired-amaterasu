@@ -1,5 +1,6 @@
 package io.shinto.amaterasu.mesos
 
+import io.shinto.amaterasu.mesos.schedulers.ClusterScheduler
 import io.shinto.amaterasu.{ Config, Kami }
 import org.scalatest._
 

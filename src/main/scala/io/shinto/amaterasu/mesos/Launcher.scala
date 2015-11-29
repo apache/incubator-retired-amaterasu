@@ -1,5 +1,6 @@
 package io.shinto.amaterasu.mesos
 
+import io.shinto.amaterasu.mesos.schedulers.ClusterScheduler
 import io.shinto.amaterasu.utilities.FsUtil
 import org.apache.mesos.{ Protos, MesosSchedulerDriver }
 import io.shinto.amaterasu.{ Logging, Kami, Config }
