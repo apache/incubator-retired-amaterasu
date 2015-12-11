@@ -35,6 +35,16 @@ class Config extends Logging {
       if (props.containsKey("jobs.mem")) mem = props.getProperty("jobs.mem").asInstanceOf[Long]
       if (props.containsKey("jobs.repoSize")) repoSize = props.getProperty("jobs.repoSize").asInstanceOf[Long]
 
+      Tasks.load(props)
+    }
+
+    object Tasks {
+
+      var attempts: Int = 3
+
+      def load(props: Properties): Unit = {
+        if (props.containsKey("jobs.tasks.attempts")) attempts = props.getProperty("jobs.tasks.attempts").asInstanceOf[Int]
+      }
     }
 
   }
