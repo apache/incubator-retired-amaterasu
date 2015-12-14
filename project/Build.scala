@@ -42,9 +42,11 @@ object Build extends Build {
       "com.fasterxml.jackson.module" % "jackson-module-scala_2.11" % "2.6.1",
       "com.amazonaws" % "aws-java-sdk-s3" % "1.10.27",
       "commons-io" % "commons-io" % "2.4",
+      "org.apache.curator" % "curator-framework" % "2.9.1",
       "org.eclipse.jgit" % "org.eclipse.jgit" % "4.1.1.201511131810-r",
     
-      "org.scalatest" % "scalatest_2.11" % "2.2.2" % "test"
+      "org.scalatest" % "scalatest_2.11" % "2.2.2" % "test",
+      "org.apache.curator" % "curator-test" % "2.9.1" % "test"
     ),
 
     scalacOptions in Compile ++= Seq(
