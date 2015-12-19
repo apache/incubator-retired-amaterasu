@@ -1,12 +1,10 @@
 package io.shinto.amaterasu.execution
 
 import java.util.concurrent.LinkedBlockingQueue
-
 import io.shinto.amaterasu.Config
 import io.shinto.amaterasu.dataObjects.ActionData
-import io.shinto.amaterasu.enums.ActionStatus
-import io.shinto.amaterasu.execution.actions.{ SequentialAction }
-import org.apache.curator.framework.{ CuratorFramework, CuratorFrameworkFactory }
+import io.shinto.amaterasu.execution.actions.SequentialAction
+import org.apache.curator.framework.CuratorFrameworkFactory
 import org.apache.curator.test.TestingServer
 import org.apache.curator.retry.ExponentialBackoffRetry
 import org.apache.zookeeper.CreateMode
@@ -41,9 +39,11 @@ class ActionTests extends FlatSpec with Matchers {
     val client = CuratorFrameworkFactory.newClient(server.getConnectString, retryPolicy)
     client.start()
 
-    val actionExists = client.getData.forPath(s"/${data.jobId}/task-0000000000")
+    val taskStatus = client.getData.forPath(s"/${data.jobId}/task-0000000000")
 
-    assert(actionExists != null)
-    new String(actionExists) should be("queued")
+    taskStatus should not be (null)
+    new String(taskStatus) should be("queued")
+
   }
+
 }

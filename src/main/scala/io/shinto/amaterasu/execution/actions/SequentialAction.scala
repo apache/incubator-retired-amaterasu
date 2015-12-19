@@ -66,11 +66,19 @@ class SequentialAction extends Action with Logging {
     log.error(e.toString)
     log.debug(s"Part ${data.name} of type ${data.executingClass} failed on attempt $attemptNo")
     attempt = attemptNo
-    if (attempt <= config.Jobs.Tasks.attempts)
+    if (attempt <= config.Jobs.Tasks.attempts){
+
       //TODO: add retry policy
       execute()
-    else
+
+    } else {
+
       announceFailure()
+
+      if(error != null)
+        error.execute()
+
+    }
 
   }
 
@@ -78,13 +86,15 @@ class SequentialAction extends Action with Logging {
 
 object SequentialAction {
 
-  def apply(data: ActionData, config: Config, queue: BlockingQueue[ActionData], client: CuratorFramework): SequentialAction = {
+  def apply(data: ActionData, config: Config, queue: BlockingQueue[ActionData], client: CuratorFramework, next: Action, error: Action): SequentialAction = {
 
     val action = new SequentialAction()
     action.data = data
     action.config = config
     action.jobsQueue = queue
     action.client = client
+    action.next = next
+    action.error = error
 
     action
   }
