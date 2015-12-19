@@ -59,7 +59,8 @@ class ClusterScheduler extends Scheduler with Logging {
     println(s"Starting amaterasu job: java -cp ${config.JobSchedulerJarName} io.shinto.amaterasu.mesos.executors.JobExecutor $jobSrc")
 
     CommandInfo.newBuilder
-      .addUris(URI.newBuilder().setValue(fsUtil.getJarUrl()).setExecutable(true))
+      .addUris(URI.newBuilder.setValue(fsUtil.getJarUrl()).setExecutable(true))
+      //.addUris(URI.newBuilder.setValue(jobSrc)
       .setValue(s"java -cp ${config.JobSchedulerJar} io.shinto.amaterasu.mesos.executors.JobExecutor $jobSrc")
       .build()
   }

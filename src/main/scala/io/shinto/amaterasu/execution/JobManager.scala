@@ -1,6 +1,6 @@
 package io.shinto.amaterasu.execution
 
-import java.util.concurrent.{ConcurrentHashMap, LinkedBlockingQueue, BlockingQueue}
+import java.util.concurrent.{ ConcurrentHashMap, LinkedBlockingQueue, BlockingQueue }
 
 import scala.collection.convert.decorateAsScala._
 import scala.collection._
@@ -26,7 +26,7 @@ class JobManager {
 
     val nextAction: ActionData = jobsQueue.poll()
 
-    if(nextAction != null){
+    if (nextAction != null) {
       executingJobs.put(nextAction.id, nextAction)
     }
 
