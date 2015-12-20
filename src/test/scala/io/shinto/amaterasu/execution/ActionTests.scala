@@ -16,7 +16,7 @@ class ActionTests extends FlatSpec with Matchers {
   val retryPolicy = new ExponentialBackoffRetry(1000, 3)
   val server = new TestingServer(2181, true)
   val jobId = s"job_${System.currentTimeMillis}"
-  val data = ActionData("test_action", "http://github.com", "master", "", "1", jobId)
+  val data = ActionData("test_action", "http://github.com", "spark-scala", null)
 
   "an Action" should "queue it's ActionData int the job queue when executed" in {
 
@@ -26,8 +26,8 @@ class ActionTests extends FlatSpec with Matchers {
     val client = CuratorFrameworkFactory.newClient(server.getConnectString, retryPolicy)
     client.start()
 
-    client.create().withMode(CreateMode.PERSISTENT).forPath(s"/${data.jobId}")
-    val action = SequentialAction(data, config, queue, client, null, null)
+    client.create().withMode(CreateMode.PERSISTENT).forPath(s"/${jobId}")
+    val action = SequentialAction(data, jobId, config, queue, client, null, null)
 
     action.execute()
     queue.peek() should be(data)
@@ -39,7 +39,7 @@ class ActionTests extends FlatSpec with Matchers {
     val client = CuratorFrameworkFactory.newClient(server.getConnectString, retryPolicy)
     client.start()
 
-    val taskStatus = client.getData.forPath(s"/${data.jobId}/task-0000000000")
+    val taskStatus = client.getData.forPath(s"/${jobId}/task-0000000000")
 
     taskStatus should not be (null)
     new String(taskStatus) should be("queued")

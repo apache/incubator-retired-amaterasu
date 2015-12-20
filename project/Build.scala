@@ -39,12 +39,15 @@ object Build extends Build {
       "ch.qos.logback" % "logback-classic" % "1.1.2" % "runtime",
       "org.scalatest" %% "scalatest" % "2.2.2" % "test",
       "com.github.nscala-time" %% "nscala-time" % "2.2.0",
-      "com.fasterxml.jackson.module" % "jackson-module-scala_2.11" % "2.6.1",
-      "com.amazonaws" % "aws-java-sdk-s3" % "1.10.27",
       "commons-io" % "commons-io" % "2.4",
       "org.apache.curator" % "curator-framework" % "2.9.1",
       "org.eclipse.jgit" % "org.eclipse.jgit" % "4.1.1.201511131810-r",
-      "org.yaml" % "snakeyaml" % "1.16",
+      "com.amazonaws" % "aws-java-sdk-s3" % "1.10.27",
+      "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.6.3",
+      "com.fasterxml.jackson.core" % "jackson-core" % "2.6.4",
+      "com.fasterxml.jackson.core" % "jackson-annotations" % "2.6.4",
+      "com.fasterxml.jackson.core" % "jackson-databind" % "2.6.4",
+      "com.fasterxml.jackson.dataformat" % "jackson-dataformat-yaml" % "2.6.4",
 
       "org.scalatest" % "scalatest_2.11" % "2.2.2" % "test",
       "org.apache.curator" % "curator-test" % "2.9.1" % "test"

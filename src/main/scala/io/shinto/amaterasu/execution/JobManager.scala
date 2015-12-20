@@ -1,10 +1,13 @@
 package io.shinto.amaterasu.execution
 
 import java.util.concurrent.{ ConcurrentHashMap, LinkedBlockingQueue, BlockingQueue }
+import java.util.{ List => List }
 
 import scala.collection.convert.decorateAsScala._
 import scala.collection._
+import com.fasterxml.jackson.annotation.JsonProperty
 
+import io.shinto.amaterasu.execution.actions.SequentialAction
 import io.shinto.amaterasu.dataObjects.{ JobData, ActionData }
 
 /**
@@ -12,7 +15,13 @@ import io.shinto.amaterasu.dataObjects.{ JobData, ActionData }
   * tracks the state of actions and is in charge of communication with the underlying
   * cluster management framework (mesos)
   */
-class JobManager {
+class JobManager(
+    @JsonProperty("job-name") jobName: String,
+    @JsonProperty("flow") jobFlow: List[SequentialAction]
+) {
+
+  val flow: List[SequentialAction] = jobFlow
+  val name: String = jobName
 
   private var jobsQueue: BlockingQueue[ActionData] = null
   private var executingJobs: concurrent.Map[String, ActionData] = null
@@ -34,15 +43,15 @@ class JobManager {
   }
 }
 
-object JobManager {
-
-  def apply(data: JobData): JobManager = {
-
-    val manager = new JobManager()
-    manager.jobsQueue = new LinkedBlockingQueue[ActionData]()
-    manager.executingJobs = new ConcurrentHashMap[String, ActionData].asScala
-
-    manager
-  }
-
-}
+//object JobManager {
+//
+//  def apply(data: JobData, name: String): JobManager = {
+//
+//    val manager = new JobManager()
+//    manager.jobsQueue = new LinkedBlockingQueue[ActionData]()
+//    manager.executingJobs = new ConcurrentHashMap[String, ActionData].asScala
+//
+//    manager
+//  }
+//
+//}

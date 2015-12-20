@@ -17,7 +17,7 @@ import org.apache.mesos.{ Protos, SchedulerDriver, Scheduler }
 class JobScheduler extends Scheduler with Logging {
 
   //val actionsQueue: BlockingQueue[ActionData] = new LinkedBlockingQueue[ActionData]()
-  val manager: JobManager = JobManager(null)
+  //val manager: JobManager = JobManager(null)
 
   def error(driver: SchedulerDriver, message: String) {}
 

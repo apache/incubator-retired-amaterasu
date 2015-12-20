@@ -2,6 +2,7 @@ package io.shinto.amaterasu.execution.actions
 
 import java.util.concurrent.BlockingQueue
 
+import com.fasterxml.jackson.annotation.JsonProperty
 import io.shinto.amaterasu.enums.ActionStatus
 import io.shinto.amaterasu.{ Config, Logging }
 import io.shinto.amaterasu.dataObjects.ActionData
@@ -9,9 +10,15 @@ import io.shinto.amaterasu.dataObjects.ActionData
 import org.apache.curator.framework.CuratorFramework
 import org.apache.zookeeper.CreateMode
 
-class SequentialAction extends Action with Logging {
+class SequentialAction(
+    @JsonProperty("name") actionName: String,
+    @JsonProperty("type") actionType: String,
+    @JsonProperty("file") actionFile: String
+) extends Action with Logging {
 
-  private var data: ActionData = null
+  val data: ActionData = ActionData(name = actionName, src = actionFile, actionType = actionType, null)
+
+  var jobId: String = null
   private var jobsQueue: BlockingQueue[ActionData] = null
   private var config: Config = null
 
@@ -42,21 +49,21 @@ class SequentialAction extends Action with Logging {
     */
   def announceStart(): Unit = {
 
-    log.debug(s"Starting action ${data.name} of type ${data.executingClass}")
-    client.create().withMode(CreateMode.PERSISTENT_SEQUENTIAL).forPath(s"/${data.jobId}/task-")
+    log.debug(s"Starting action ${data.name} of type ${data.actionType}")
+    client.create().withMode(CreateMode.PERSISTENT_SEQUENTIAL).forPath(s"/${jobId}/task-")
 
   }
 
   def announceQueued(): Unit = {
 
-    log.debug(s"Action ${data.name} of type ${data.executingClass} is queued for execution")
-    client.create().withMode(CreateMode.PERSISTENT_SEQUENTIAL).forPath(s"/${data.jobId}/task-", ActionStatus.queued.toString.getBytes())
+    log.debug(s"Action ${data.name} of type ${data.actionType} is queued for execution")
+    client.create().withMode(CreateMode.PERSISTENT_SEQUENTIAL).forPath(s"/${jobId}/task-", ActionStatus.queued.toString.getBytes())
 
   }
 
   def announceComplete(): Unit = {
 
-    log.debug(s"Action ${data.name} of type ${data.executingClass} completed")
+    log.debug(s"Action ${data.name} of type ${data.actionType} completed")
     next.execute()
 
   }
@@ -64,7 +71,7 @@ class SequentialAction extends Action with Logging {
   override def handleFailure(attemptNo: Int, e: Exception): Unit = {
 
     log.error(e.toString)
-    log.debug(s"Part ${data.name} of type ${data.executingClass} failed on attempt $attemptNo")
+    log.debug(s"Part ${data.name} of type ${data.actionType} failed on attempt $attemptNo")
     attempt = attemptNo
     if (attempt <= config.Jobs.Tasks.attempts) {
 
@@ -87,10 +94,11 @@ class SequentialAction extends Action with Logging {
 
 object SequentialAction {
 
-  def apply(data: ActionData, config: Config, queue: BlockingQueue[ActionData], client: CuratorFramework, next: Action, error: Action): SequentialAction = {
+  def apply(data: ActionData, jobId: String, config: Config, queue: BlockingQueue[ActionData], client: CuratorFramework, next: Action, error: Action): SequentialAction = {
 
-    val action = new SequentialAction()
-    action.data = data
+    val action = new SequentialAction(actionName = data.name, actionFile = data.src, actionType = data.actionType)
+
+    action.jobId = jobId
     action.config = config
     action.jobsQueue = queue
     action.client = client

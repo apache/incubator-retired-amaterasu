@@ -1,20 +1,26 @@
 package io.shinto.amaterasu.dsl
 
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
 import io.shinto.amaterasu.execution.JobManager
-import org.yaml.snakeyaml.Yaml
+import scala.io.Source
 
 /**
   * The JobParser class is in charge of parsing the maki.yaml file which
   * describes the workflow of an amaterasu job
   */
-class JobParser {
+object JobParser {
+
+  def loadMakiFile(): String = {
+
+    Source.fromFile("repo/maki.yaml").mkString
+
+  }
 
   def parse(maki: String): JobManager = {
 
-    val yaml = new Yaml()
-    yaml.load(maki)
-
-    null
+    val mapper = new ObjectMapper(new YAMLFactory())
+    mapper.readValue(maki, classOf[JobManager])
   }
 
 }
