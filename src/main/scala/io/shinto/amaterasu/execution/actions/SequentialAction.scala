@@ -20,13 +20,21 @@ class SequentialAction(
 
   var jobId: String = null
   private var jobsQueue: BlockingQueue[ActionData] = null
-  private var config: Config = null
-
-  private var next: Action = null
-  private var error: Action = null
 
   private var client: CuratorFramework = null
   private var attempt: Int = 0
+
+  def init(id: String, zkClient: CuratorFramework, queue: BlockingQueue[ActionData]): Unit = {
+
+    jobsQueue = queue
+    jobId = id
+
+    // creating a znode for the action
+    client = zkClient
+    actionPath = client.create().withMode(CreateMode.PERSISTENT_SEQUENTIAL).forPath(s"/${jobId}/task-", ActionStatus.pending.toString.getBytes())
+    actionId = actionPath.substring(actionPath.indexOf('-'))
+
+  }
 
   def execute() = {
 
@@ -50,21 +58,22 @@ class SequentialAction(
   def announceStart(): Unit = {
 
     log.debug(s"Starting action ${data.name} of type ${data.actionType}")
-    client.create().withMode(CreateMode.PERSISTENT_SEQUENTIAL).forPath(s"/${jobId}/task-")
+    client.setData().forPath(actionPath, ActionStatus.started.toString.getBytes)
 
   }
 
   def announceQueued(): Unit = {
 
     log.debug(s"Action ${data.name} of type ${data.actionType} is queued for execution")
-    client.create().withMode(CreateMode.PERSISTENT_SEQUENTIAL).forPath(s"/${jobId}/task-", ActionStatus.queued.toString.getBytes())
+    client.setData().forPath(actionPath, ActionStatus.queued.toString.getBytes)
 
   }
 
   def announceComplete(): Unit = {
 
     log.debug(s"Action ${data.name} of type ${data.actionType} completed")
-    next.execute()
+    client.setData().forPath(actionPath, ActionStatus.complete.toString.getBytes)
+    //next.execute()
 
   }
 
@@ -73,7 +82,7 @@ class SequentialAction(
     log.error(e.toString)
     log.debug(s"Part ${data.name} of type ${data.actionType} failed on attempt $attemptNo")
     attempt = attemptNo
-    if (attempt <= config.Jobs.Tasks.attempts) {
+    if (attempt <= 3) {
 
       //TODO: add retry policy
       execute()
@@ -83,8 +92,8 @@ class SequentialAction(
 
       announceFailure()
 
-      if (error != null)
-        error.execute()
+      //      if (error != null)
+      //        error.execute()
 
     }
 
@@ -92,20 +101,20 @@ class SequentialAction(
 
 }
 
-object SequentialAction {
-
-  def apply(data: ActionData, jobId: String, config: Config, queue: BlockingQueue[ActionData], client: CuratorFramework, next: Action, error: Action): SequentialAction = {
-
-    val action = new SequentialAction(actionName = data.name, actionFile = data.src, actionType = data.actionType)
-
-    action.jobId = jobId
-    action.config = config
-    action.jobsQueue = queue
-    action.client = client
-    action.next = next
-    action.error = error
-
-    action
-  }
-
-}
+//object SequentialAction {
+//
+//  def apply(data: ActionData, jobId: String, config: Config, queue: BlockingQueue[ActionData], client: CuratorFramework, next: Action, error: Action): SequentialAction = {
+//
+//    val action = new SequentialAction(actionName = data.name, actionFile = data.src, actionType = data.actionType)
+//
+//    action.jobId = jobId
+//    action.config = config
+//    action.jobsQueue = queue
+//    action.client = client
+//    action.next = next
+//    action.error = error
+//
+//    action
+//  }
+//
+//}

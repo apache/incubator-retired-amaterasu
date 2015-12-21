@@ -5,7 +5,7 @@ import java.io.File
 import org.eclipse.jgit.api.Git
 
 /**
-  * The
+  * The GitUtil class handles getting the job git repository
   */
 object GitUtil {
 

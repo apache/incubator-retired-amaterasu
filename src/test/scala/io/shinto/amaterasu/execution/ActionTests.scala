@@ -27,14 +27,16 @@ class ActionTests extends FlatSpec with Matchers {
     client.start()
 
     client.create().withMode(CreateMode.PERSISTENT).forPath(s"/${jobId}")
-    val action = SequentialAction(data, jobId, config, queue, client, null, null)
+    val action = new SequentialAction(data.name, data.actionType, data.src)
+    action.init(jobId, client, queue)
 
     action.execute()
-    queue.peek() should be(data)
+    queue.peek().name should be(data.name)
+    queue.peek().src should be(data.src)
 
   }
 
-  it should "also create a sequential note for the task with the value of queued" in {
+  it should "also create a sequential znode for the task with the value of queued" in {
 
     val client = CuratorFrameworkFactory.newClient(server.getConnectString, retryPolicy)
     client.start()

@@ -21,6 +21,7 @@ object JobParser {
 
     val mapper = new ObjectMapper(new YAMLFactory())
     mapper.readValue(maki, classOf[JobManager])
+
   }
 
 }
