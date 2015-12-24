@@ -1,5 +1,7 @@
 package io.shinto.amaterasu.execution.actions
 
+import io.shinto.amaterasu.dataObjects.ActionData
+
 trait Action {
 
   var nextActionId: Int = _
@@ -8,6 +10,8 @@ trait Action {
   // this is the znode path for the action
   var actionPath: String = _
   var actionId: String = _
+
+  var data: ActionData = null
 
   def execute(): Unit
 

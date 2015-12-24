@@ -3,8 +3,8 @@ job-name:    amaterasu-test
 flow:
     - name: start
       type: spark-scala
-      file: file.scala
+      src: file.scala
     - name: step2
       type: spark-scala
-      file: file2.scala
+      src: file2.scala
 ...

@@ -1,14 +1,27 @@
 package io.shinto.amaterasu.execution
 
+import java.util.concurrent.LinkedBlockingQueue
+
+import io.shinto.amaterasu.dataObjects.ActionData
 import io.shinto.amaterasu.dsl.JobParser
+import org.apache.curator.framework.CuratorFrameworkFactory
+import org.apache.curator.retry.ExponentialBackoffRetry
+import org.apache.curator.test.TestingServer
 import org.scalatest.{ Matchers, FlatSpec }
 
 import scala.io.Source
 
 class JobParserTests extends FlatSpec with Matchers {
 
+  val retryPolicy = new ExponentialBackoffRetry(1000, 3)
+  val server = new TestingServer(2182, true)
+  val client = CuratorFrameworkFactory.newClient(server.getConnectString, retryPolicy)
+  client.start()
+
+  val jobId = s"job_${System.currentTimeMillis}"
   val yaml = Source.fromURL(getClass.getResource("/simple-maki.yaml")).mkString
-  val job = JobParser.parse(yaml)
+  val queue = new LinkedBlockingQueue[ActionData]()
+  val job = JobParser.parse(jobId, yaml, queue, client)
 
   "JobParser" should "parse the simple-maki.yaml" in {
 
@@ -16,12 +29,13 @@ class JobParserTests extends FlatSpec with Matchers {
 
   }
 
-  //TODO: I suspect this test is not indicative, need to verify this
+  //TODO: I suspect this test is not indicative, and that order is assured need to verify this
   it should "also have two actions in the right order" in {
 
-    job.flow.size() should be (2)
-    job.flow.get(0).data.name should be("start")
-    job.flow.get(1).data.name should be("step2")
+    job.registeredActions.size should be(2)
+    
+    job.registeredActions.get("0000000000").get.data.name should be("start")
+    job.registeredActions.get("0000000001").get.data.name should be("step2")
 
   }
 }

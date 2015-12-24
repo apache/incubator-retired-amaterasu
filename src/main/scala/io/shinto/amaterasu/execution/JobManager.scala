@@ -1,15 +1,12 @@
 package io.shinto.amaterasu.execution
 
 import java.util.concurrent.{ ConcurrentHashMap, BlockingQueue }
-import java.util.{ List => List }
 
-import org.apache.curator.framework.{ CuratorFramework, CuratorFrameworkFactory }
-import org.apache.curator.retry.ExponentialBackoffRetry
+import org.apache.curator.framework.CuratorFramework
+import org.apache.zookeeper.CreateMode
 
 import scala.collection._
-import com.fasterxml.jackson.annotation.JsonProperty
-
-import io.shinto.amaterasu.execution.actions.{ Action, SequentialAction }
+import io.shinto.amaterasu.execution.actions.Action
 import io.shinto.amaterasu.dataObjects.ActionData
 
 import scala.collection.concurrent.TrieMap
@@ -20,50 +17,24 @@ import scala.collection.convert.decorateAsScala._
   * tracks the state of actions and is in charge of communication with the underlying
   * cluster management framework (mesos)
   */
-class JobManager(
-    @JsonProperty("job-name") jobName: String,
-    @JsonProperty("flow") jobFlow: List[SequentialAction]
-) {
+class JobManager {
 
-  val flow: List[SequentialAction] = jobFlow
-  val name: String = jobName
+  var name: String = null
+  var jobId: String = null
+  var client: CuratorFramework = null
 
-  private val registeredFlow = new TrieMap[Int, Action]
-  private var jobsQueue: BlockingQueue[ActionData] = null
+  // TODO: this is not private due to tests, fix this!!!
+  val registeredActions = new TrieMap[String, Action]
+  private var executionQueue: BlockingQueue[ActionData] = null
   private val executingJobs: concurrent.Map[String, ActionData] = new ConcurrentHashMap[String, ActionData].asScala
 
   /**
-    * The init method starts the job execution once the job is created from the maki.yaml file
-    * it is in charge of creating the internal flow map, setting up ZooKeeper and executing
-    * the first action
-    * If the job execution is resumed (a job that was stooped) the init method will restore the
-    * state of the job from ZooKepper
-    * @param jobId the Id of the job
-    * @param zkConnection the connection string to ZooKeeper
+    * The start method initiates the job execution by executing the first action.
+    * start mast be called once and by the JobManager only
     */
-  def init(jobId: String, zkConnection: String, queue: BlockingQueue[ActionData]): Unit = {
+  def start(): Unit = {
 
-    jobsQueue = queue
-    val retryPolicy = new ExponentialBackoffRetry(1000, 3)
-    val client = CuratorFrameworkFactory.newClient(zkConnection, retryPolicy)
-    client.start
-
-    if (client.checkExists.forPath(s"/$jobId") != null) {
-      loadExistingJob(jobId, client)
-    }
-    else {
-      loadNewJob(jobId, client)
-    }
-
-  }
-
-  def loadExistingJob(jobId: String, client: CuratorFramework): Unit = {}
-
-  def loadNewJob(jobId: String, client: CuratorFramework): Unit = {
-
-    for (i <- 0 to flow.size - 1) {
-
-    }
+    registeredActions.head._2.execute()
 
   }
 
@@ -74,7 +45,7 @@ class JobManager(
     */
   def getNextActionData(): ActionData = {
 
-    val nextAction: ActionData = jobsQueue.poll()
+    val nextAction: ActionData = executionQueue.poll()
 
     if (nextAction != null) {
       executingJobs.put(nextAction.id, nextAction)
@@ -82,17 +53,50 @@ class JobManager(
 
     nextAction
   }
+
+  def reQueueAction(actionId: String): Unit = {
+
+    val action = executingJobs.get(actionId)
+    executionQueue.put(action.get)
+
+  }
+
+  /**
+    * Registers an action with the job
+    * @param action
+    */
+  def registerAction(action: Action): Unit = {
+
+    registeredActions.put(action.actionId, action)
+
+  }
 }
 
-//object JobManager {
-//
-//  def apply(data: JobData, name: String): JobManager = {
-//
-//    val manager = new JobManager()
-//    manager.jobsQueue = new LinkedBlockingQueue[ActionData]()
-//    manager.executingJobs = ConcurrentHashMap[String, ActionData].asScala
-//
-//    manager
-//  }
-//
-//}
+object JobManager {
+
+  /**
+    * The apply method starts the job execution once the job is created from the maki.yaml file
+    * it is in charge of creating the internal flow map, setting up ZooKeeper and executing
+    * the first action
+    * If the job execution is resumed (a job that was stooped) the init method will restore the
+    * state of the job from ZooKepper
+    * @param jobId
+    * @param name
+    * @param jobsQueue
+    * @param client
+    * @return
+    */
+  def apply(jobId: String, name: String, jobsQueue: BlockingQueue[ActionData], client: CuratorFramework): JobManager = {
+
+    val manager = new JobManager()
+    manager.name = name
+    manager.executionQueue = jobsQueue
+
+    manager.client = client
+    client.create().withMode(CreateMode.PERSISTENT).forPath(s"/${jobId}")
+
+    manager
+
+  }
+
+}

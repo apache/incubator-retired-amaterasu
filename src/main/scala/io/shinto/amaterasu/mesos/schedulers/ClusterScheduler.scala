@@ -5,6 +5,7 @@ import java.util
 import io.shinto.amaterasu
 import io.shinto.amaterasu.utilities.FsUtil
 import io.shinto.amaterasu.{ Config, Kami, Logging }
+
 import org.apache.mesos.Protos.CommandInfo.URI
 import org.apache.mesos.Protos._
 import org.apache.mesos.{ Protos, Scheduler, SchedulerDriver }

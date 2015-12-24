@@ -27,8 +27,7 @@ class ActionTests extends FlatSpec with Matchers {
     client.start()
 
     client.create().withMode(CreateMode.PERSISTENT).forPath(s"/${jobId}")
-    val action = new SequentialAction(data.name, data.actionType, data.src)
-    action.init(jobId, client, queue)
+    val action = SequentialAction(data.name, data.src, data.actionType, jobId, queue, client)
 
     action.execute()
     queue.peek().name should be(data.name)

@@ -94,4 +94,6 @@ object Build extends Build {
       uri("git://github.com/sbt/sbt-assembly.git#0.14.0")
   }
 
+  parallelExecution in Test := false
+
 }

@@ -2,7 +2,6 @@ package io.shinto.amaterasu.execution.actions
 
 import java.util.concurrent.BlockingQueue
 
-import com.fasterxml.jackson.annotation.JsonProperty
 import io.shinto.amaterasu.enums.ActionStatus
 import io.shinto.amaterasu.{ Config, Logging }
 import io.shinto.amaterasu.dataObjects.ActionData
@@ -10,31 +9,13 @@ import io.shinto.amaterasu.dataObjects.ActionData
 import org.apache.curator.framework.CuratorFramework
 import org.apache.zookeeper.CreateMode
 
-class SequentialAction(
-    @JsonProperty("name") actionName: String,
-    @JsonProperty("type") actionType: String,
-    @JsonProperty("file") actionFile: String
-) extends Action with Logging {
-
-  val data: ActionData = ActionData(name = actionName, src = actionFile, actionType = actionType, null)
+class SequentialAction extends Action with Logging {
 
   var jobId: String = null
-  private var jobsQueue: BlockingQueue[ActionData] = null
+  var jobsQueue: BlockingQueue[ActionData] = null
 
-  private var client: CuratorFramework = null
-  private var attempt: Int = 0
-
-  def init(id: String, zkClient: CuratorFramework, queue: BlockingQueue[ActionData]): Unit = {
-
-    jobsQueue = queue
-    jobId = id
-
-    // creating a znode for the action
-    client = zkClient
-    actionPath = client.create().withMode(CreateMode.PERSISTENT_SEQUENTIAL).forPath(s"/${jobId}/task-", ActionStatus.pending.toString.getBytes())
-    actionId = actionPath.substring(actionPath.indexOf('-'))
-
-  }
+  var client: CuratorFramework = null
+  var attempt: Int = 0
 
   def execute() = {
 
@@ -101,20 +82,25 @@ class SequentialAction(
 
 }
 
-//object SequentialAction {
-//
-//  def apply(data: ActionData, jobId: String, config: Config, queue: BlockingQueue[ActionData], client: CuratorFramework, next: Action, error: Action): SequentialAction = {
-//
-//    val action = new SequentialAction(actionName = data.name, actionFile = data.src, actionType = data.actionType)
-//
-//    action.jobId = jobId
-//    action.config = config
-//    action.jobsQueue = queue
-//    action.client = client
-//    action.next = next
-//    action.error = error
-//
-//    action
-//  }
-//
-//}
+object SequentialAction {
+
+  def apply(name: String, src: String, jobType: String, jobId: String, queue: BlockingQueue[ActionData], zkClient: CuratorFramework): SequentialAction = {
+
+    val action = new SequentialAction()
+
+    action.jobsQueue = queue
+
+    // creating a znode for the action
+    action.client = zkClient
+    action.actionPath = action.client.create().withMode(CreateMode.PERSISTENT_SEQUENTIAL).forPath(s"/${jobId}/task-", ActionStatus.pending.toString.getBytes())
+    action.actionId = action.actionPath.substring(action.actionPath.indexOf('-') + 1)
+
+    action.jobId = jobId
+    action.data = new ActionData(name, src, jobType, action.actionId)
+    action.jobsQueue = queue
+    action.client = zkClient
+
+    action
+  }
+
+}

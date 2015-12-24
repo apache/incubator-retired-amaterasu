@@ -41,9 +41,15 @@ class Config extends Logging {
     object Tasks {
 
       var attempts: Int = 3
+      var cpus: Int = 1
+      var mem: Int = 256
 
       def load(props: Properties): Unit = {
+
         if (props.containsKey("jobs.tasks.attempts")) attempts = props.getProperty("jobs.tasks.attempts").asInstanceOf[Int]
+        if (props.containsKey("jobs.tasks.cpus")) attempts = props.getProperty("jobs.tasks.cpus").asInstanceOf[Int]
+        if (props.containsKey("jobs.tasks.mem")) attempts = props.getProperty("jobs.tasks.mem").asInstanceOf[Int]
+
       }
     }
 
