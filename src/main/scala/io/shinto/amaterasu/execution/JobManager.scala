@@ -1,16 +1,14 @@
 package io.shinto.amaterasu.execution
 
-import java.util.concurrent.{ ConcurrentHashMap, BlockingQueue }
+import java.util.concurrent.BlockingQueue
 
 import org.apache.curator.framework.CuratorFramework
 import org.apache.zookeeper.CreateMode
 
-import scala.collection._
 import io.shinto.amaterasu.execution.actions.Action
 import io.shinto.amaterasu.dataObjects.ActionData
 
 import scala.collection.concurrent.TrieMap
-import scala.collection.convert.decorateAsScala._
 
 /**
   * The JobManager manages the lifecycle of a job. It queues new actions for execution,
@@ -26,7 +24,6 @@ class JobManager {
   // TODO: this is not private due to tests, fix this!!!
   val registeredActions = new TrieMap[String, Action]
   private var executionQueue: BlockingQueue[ActionData] = null
-  private val executingJobs: concurrent.Map[String, ActionData] = new ConcurrentHashMap[String, ActionData].asScala
 
   /**
     * The start method initiates the job execution by executing the first action.
@@ -48,7 +45,6 @@ class JobManager {
     val nextAction: ActionData = executionQueue.poll()
 
     if (nextAction != null) {
-      executingJobs.put(nextAction.id, nextAction)
       registeredActions.get(nextAction.id).get.announceStart
     }
 
@@ -57,8 +53,8 @@ class JobManager {
 
   def reQueueAction(actionId: String): Unit = {
 
-    val action = executingJobs.get(actionId).get
-    executionQueue.put(action)
+    val action = registeredActions.get(actionId).get
+    executionQueue.put(action.data)
     registeredActions.get(actionId).get.announceQueued()
 
   }
@@ -71,6 +67,18 @@ class JobManager {
 
     registeredActions.put(action.actionId, action)
 
+  }
+
+  /**
+    * announce the completion of an action and executes the next actions
+    * @param actionId
+    */
+  def actionComplete(actionId: String): Unit = {
+
+    val action = registeredActions.get(actionId).get
+    action.announceComplete()
+    action.data.nextActionIds.foreach(id =>
+      registeredActions.get(id).get.execute())
   }
 }
 

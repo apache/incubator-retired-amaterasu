@@ -47,10 +47,22 @@ class JobExecutionTests extends FlatSpec with Matchers {
 
   }
 
-  it should "be marked as complete when the finish method is called" in {
+  it should "be marked as complete when the actionComplete method is called" in {
 
-    //
+    job.actionComplete("0000000000")
 
+    // making sure that the status is reflected in zk
+    val taskStatus = client.getData.forPath(s"/${jobId}/task-0000000000")
+    new String(taskStatus) should be("complete")
   }
 
+  "the next step2 job" should "be queued as a result of the compleation" in {
+
+    queue.peek.name should be ("step2")
+
+    // making sure that the status is reflected in zk
+    val taskStatus = client.getData.forPath(s"/${jobId}/task-0000000001")
+    new String(taskStatus) should be("queued")
+
+  }
 }

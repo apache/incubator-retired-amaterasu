@@ -71,11 +71,34 @@ object SequentialAction {
     action.actionId = action.actionPath.substring(action.actionPath.indexOf('-') + 1)
 
     action.jobId = jobId
-    action.data = new ActionData(name, src, jobType, action.actionId, new ListBuffer[String], null)
+    action.data = new ActionData(name, src, jobType, action.actionId, new ListBuffer[String])
     action.jobsQueue = queue
     action.client = zkClient
 
     action
   }
 
+}
+
+object ErrorAction {
+
+  def apply(name: String, src: String, parent: String, jobType: String, jobId: String, queue: BlockingQueue[ActionData], zkClient: CuratorFramework): SequentialAction = {
+
+    val action = new SequentialAction()
+
+    action.jobsQueue = queue
+
+    // creating a znode for the action
+    action.client = zkClient
+    action.actionPath = action.client.create().withMode(CreateMode.PERSISTENT_SEQUENTIAL).forPath(s"/${jobId}/task-$parent/error", ActionStatus.pending.toString.getBytes())
+    action.actionId = action.actionPath.substring(action.actionPath.indexOf('-') + 1)
+
+    action.jobId = jobId
+    action.data = new ActionData(name, src, jobType, action.actionId, new ListBuffer[String])
+    action.jobsQueue = queue
+    action.client = zkClient
+
+    action
+
+  }
 }
