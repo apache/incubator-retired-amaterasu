@@ -49,6 +49,7 @@ class JobManager {
 
     if (nextAction != null) {
       executingJobs.put(nextAction.id, nextAction)
+      registeredActions.get(nextAction.id).get.announceStart
     }
 
     nextAction
@@ -56,8 +57,9 @@ class JobManager {
 
   def reQueueAction(actionId: String): Unit = {
 
-    val action = executingJobs.get(actionId)
-    executionQueue.put(action.get)
+    val action = executingJobs.get(actionId).get
+    executionQueue.put(action)
+    registeredActions.get(actionId).get.announceQueued()
 
   }
 
@@ -91,7 +93,7 @@ object JobManager {
     val manager = new JobManager()
     manager.name = name
     manager.executionQueue = jobsQueue
-
+    manager.jobId = jobId
     manager.client = client
     client.create().withMode(CreateMode.PERSISTENT).forPath(s"/${jobId}")
 

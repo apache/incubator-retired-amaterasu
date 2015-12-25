@@ -3,18 +3,18 @@ package io.shinto.amaterasu.execution.actions
 import java.util.concurrent.BlockingQueue
 
 import io.shinto.amaterasu.enums.ActionStatus
-import io.shinto.amaterasu.{ Config, Logging }
 import io.shinto.amaterasu.dataObjects.ActionData
 
 import org.apache.curator.framework.CuratorFramework
 import org.apache.zookeeper.CreateMode
 
-class SequentialAction extends Action with Logging {
+import scala.collection.mutable.ListBuffer
+
+class SequentialAction extends Action {
 
   var jobId: String = null
   var jobsQueue: BlockingQueue[ActionData] = null
 
-  var client: CuratorFramework = null
   var attempt: Int = 0
 
   def execute() = {
@@ -30,31 +30,6 @@ class SequentialAction extends Action with Logging {
       case e: Exception => handleFailure(attempt + 1, e)
 
     }
-
-  }
-
-  /**
-    * The announceStart register the beginning of the of the task with ZooKeper
-    */
-  def announceStart(): Unit = {
-
-    log.debug(s"Starting action ${data.name} of type ${data.actionType}")
-    client.setData().forPath(actionPath, ActionStatus.started.toString.getBytes)
-
-  }
-
-  def announceQueued(): Unit = {
-
-    log.debug(s"Action ${data.name} of type ${data.actionType} is queued for execution")
-    client.setData().forPath(actionPath, ActionStatus.queued.toString.getBytes)
-
-  }
-
-  def announceComplete(): Unit = {
-
-    log.debug(s"Action ${data.name} of type ${data.actionType} completed")
-    client.setData().forPath(actionPath, ActionStatus.complete.toString.getBytes)
-    //next.execute()
 
   }
 
@@ -96,7 +71,7 @@ object SequentialAction {
     action.actionId = action.actionPath.substring(action.actionPath.indexOf('-') + 1)
 
     action.jobId = jobId
-    action.data = new ActionData(name, src, jobType, action.actionId)
+    action.data = new ActionData(name, src, jobType, action.actionId, new ListBuffer[String], null)
     action.jobsQueue = queue
     action.client = zkClient
 

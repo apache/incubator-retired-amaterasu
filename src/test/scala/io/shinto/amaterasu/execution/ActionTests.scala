@@ -16,7 +16,7 @@ class ActionTests extends FlatSpec with Matchers {
   val retryPolicy = new ExponentialBackoffRetry(1000, 3)
   val server = new TestingServer(2181, true)
   val jobId = s"job_${System.currentTimeMillis}"
-  val data = ActionData("test_action", "http://github.com", "spark-scala", null)
+  val data = ActionData("test_action", "http://github.com", "spark-scala", null, null, null)
 
   "an Action" should "queue it's ActionData int the job queue when executed" in {
 

@@ -33,9 +33,10 @@ class JobParserTests extends FlatSpec with Matchers {
   it should "also have two actions in the right order" in {
 
     job.registeredActions.size should be(2)
-    
+
     job.registeredActions.get("0000000000").get.data.name should be("start")
     job.registeredActions.get("0000000001").get.data.name should be("step2")
 
   }
+
 }
