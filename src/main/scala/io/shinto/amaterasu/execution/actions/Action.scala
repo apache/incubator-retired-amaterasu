@@ -16,7 +16,7 @@ trait Action extends Logging {
 
   def execute(): Unit
 
-  def handleFailure(attemptNo: Int, e: Exception)
+  def handleFailure(message: String): String
 
   /**
     * The announceStart register the beginning of the of the task with ZooKeper

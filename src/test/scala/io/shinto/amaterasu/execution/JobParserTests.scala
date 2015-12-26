@@ -21,7 +21,7 @@ class JobParserTests extends FlatSpec with Matchers {
   val jobId = s"job_${System.currentTimeMillis}"
   val yaml = Source.fromURL(getClass.getResource("/simple-maki.yaml")).mkString
   val queue = new LinkedBlockingQueue[ActionData]()
-  val job = JobParser.parse(jobId, yaml, queue, client)
+  val job = JobParser.parse(jobId, yaml, queue, client, 1)
 
   "JobParser" should "parse the simple-maki.yaml" in {
 

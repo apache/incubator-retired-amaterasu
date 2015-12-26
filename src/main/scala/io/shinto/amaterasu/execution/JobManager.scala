@@ -80,6 +80,20 @@ class JobManager {
     action.data.nextActionIds.foreach(id =>
       registeredActions.get(id).get.execute())
   }
+
+  /**
+    * gets the next action id which can be either the same action or an error action
+    * and if it exist (we have an error action or a retry)
+    * @param actionId
+    */
+  def actionFailed(actionId: String, message: String): Unit = {
+
+    val action = registeredActions.get(actionId).get
+    val id = action.handleFailure(message)
+    if (id != null)
+      registeredActions.get(id).get.execute()
+
+  }
 }
 
 object JobManager {
@@ -96,7 +110,10 @@ object JobManager {
     * @param client
     * @return
     */
-  def apply(jobId: String, name: String, jobsQueue: BlockingQueue[ActionData], client: CuratorFramework): JobManager = {
+  def apply(jobId: String,
+            name: String,
+            jobsQueue: BlockingQueue[ActionData],
+            client: CuratorFramework): JobManager = {
 
     val manager = new JobManager()
     manager.name = name

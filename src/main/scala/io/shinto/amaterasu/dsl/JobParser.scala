@@ -3,13 +3,13 @@ package io.shinto.amaterasu.dsl
 import java.util.concurrent.BlockingQueue
 import scala.collection.JavaConverters._
 
-import com.fasterxml.jackson.databind.{ JsonNode, ObjectMapper }
+import com.fasterxml.jackson.databind.{JsonNode, ObjectMapper}
 import com.fasterxml.jackson.databind.node.ArrayNode
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
 
 import io.shinto.amaterasu.dataObjects.ActionData
 import io.shinto.amaterasu.execution.JobManager
-import io.shinto.amaterasu.execution.actions.{ ErrorAction, Action, SequentialAction }
+import io.shinto.amaterasu.execution.actions.{ErrorAction, Action, SequentialAction}
 
 import org.apache.curator.framework.CuratorFramework
 
@@ -35,12 +35,11 @@ object JobParser {
     * @param client
     * @return
     */
-  def parse(
-    jobId: String,
-    maki: String,
-    actionsQueue: BlockingQueue[ActionData],
-    client: CuratorFramework
-  ): JobManager = {
+  def parse(jobId: String,
+            maki: String,
+            actionsQueue: BlockingQueue[ActionData],
+            client: CuratorFramework,
+            attempts: Int): JobManager = {
 
     val mapper = new ObjectMapper(new YAMLFactory())
 
@@ -52,7 +51,7 @@ object JobParser {
     // iterating the flow list and constructing the job's flow
     val actions = job.path("flow").asInstanceOf[ArrayNode].asScala.toSeq
 
-    parseActions(actions, manager, actionsQueue, null)
+    parseActions(actions, manager, actionsQueue, attempts, null)
 
     manager
   }
@@ -67,12 +66,11 @@ object JobParser {
     * @param previous the previous action, this is used in order to add the current action
     *                 to the nextActionIds
     */
-  def parseActions(
-    actions: Seq[JsonNode],
-    manager: JobManager,
-    actionsQueue: BlockingQueue[ActionData],
-    previous: Action
-  ): Unit = {
+  def parseActions(actions: Seq[JsonNode],
+                   manager: JobManager,
+                   actionsQueue: BlockingQueue[ActionData],
+                   attempts: Int,
+                   previous: Action): Unit = {
 
     if (actions.isEmpty)
       return
@@ -83,7 +81,8 @@ object JobParser {
       actionData,
       manager.jobId,
       actionsQueue,
-      manager.client
+      manager.client,
+      attempts
     )
 
     if (previous != null)
@@ -107,16 +106,15 @@ object JobParser {
       manager.registerAction(errorAction)
     }
 
-    parseActions(actions.tail, manager, actionsQueue, action)
+    parseActions(actions.tail, manager, actionsQueue, attempts, action)
 
   }
 
-  def parseSequentialAction(
-    action: JsonNode,
-    jobId: String,
-    actionsQueue: BlockingQueue[ActionData],
-    client: CuratorFramework
-  ): SequentialAction = {
+  def parseSequentialAction(action: JsonNode,
+                            jobId: String,
+                            actionsQueue: BlockingQueue[ActionData],
+                            client: CuratorFramework,
+                            attempts: Int): SequentialAction = {
 
     SequentialAction(
       action.path("name").asText,
@@ -124,18 +122,17 @@ object JobParser {
       action.path("type").asText,
       jobId,
       actionsQueue,
-      client
+      client,
+      attempts
     )
 
   }
 
-  def parseErrorAction(
-    action: JsonNode,
-    jobId: String,
-    parent: String,
-    actionsQueue: BlockingQueue[ActionData],
-    client: CuratorFramework
-  ): SequentialAction = {
+  def parseErrorAction(action: JsonNode,
+                       jobId: String,
+                       parent: String,
+                       actionsQueue: BlockingQueue[ActionData],
+                       client: CuratorFramework): SequentialAction = {
 
     ErrorAction(
       action.path("name").asText,

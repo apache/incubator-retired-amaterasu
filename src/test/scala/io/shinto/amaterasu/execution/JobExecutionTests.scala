@@ -23,7 +23,7 @@ class JobExecutionTests extends FlatSpec with Matchers {
   val jobId = s"job_${System.currentTimeMillis}"
   val yaml = Source.fromURL(getClass.getResource("/simple-maki.yaml")).mkString
   val queue = new LinkedBlockingQueue[ActionData]()
-  val job = JobParser.parse(jobId, yaml, queue, client)
+  val job = JobParser.parse(jobId, yaml, queue, client, 1)
 
   "a job" should "queue the first action when the JobManager.start method is called " in {
 
@@ -54,9 +54,10 @@ class JobExecutionTests extends FlatSpec with Matchers {
     // making sure that the status is reflected in zk
     val taskStatus = client.getData.forPath(s"/${jobId}/task-0000000000")
     new String(taskStatus) should be("complete")
+
   }
 
-  "the next step2 job" should "be queued as a result of the compleation" in {
+  "the next step2 job" should "be queued as a result of the completion" in {
 
     queue.peek.name should be ("step2")
 
@@ -65,4 +66,5 @@ class JobExecutionTests extends FlatSpec with Matchers {
     new String(taskStatus) should be("queued")
 
   }
+
 }

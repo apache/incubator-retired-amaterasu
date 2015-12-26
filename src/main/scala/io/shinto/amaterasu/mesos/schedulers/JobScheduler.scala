@@ -51,13 +51,12 @@ class JobScheduler extends Scheduler with Logging {
 
   def statusUpdate(driver: SchedulerDriver, status: TaskStatus) = {
 
-    //status.getState match {
-    //case TaskState.TASK_FINISHED => JobManager.actionCompleate(status.getTaskId)
-
-    //}
-
-    //  status.get
-    //  TaskState.
+    status.getState match {
+      case TaskState.TASK_FINISHED => jobManager.actionComplete(status.getTaskId.toString)
+      case TaskState.TASK_FAILED |
+        TaskState.TASK_ERROR => jobManager.actionFailed(status.getTaskId.toString, status.getMessage) //TODO: revisit this
+      case _ => log.warn("WTF? just got unexpected task state: " + status.getState)
+    }
 
   }
 
@@ -124,7 +123,8 @@ class JobScheduler extends Scheduler with Logging {
       frameworkId.getValue,
       maki,
       new LinkedBlockingQueue[ActionData],
-      client
+      client,
+      config.Jobs.Tasks.attempts
     )
 
   }

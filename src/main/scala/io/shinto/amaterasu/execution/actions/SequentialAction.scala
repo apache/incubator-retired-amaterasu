@@ -14,8 +14,8 @@ class SequentialAction extends Action {
 
   var jobId: String = null
   var jobsQueue: BlockingQueue[ActionData] = null
-
-  var attempt: Int = 0
+  var attempts: Int = 3
+  var attempt: Int = 1
 
   def execute() = {
 
@@ -27,30 +27,26 @@ class SequentialAction extends Action {
     }
     catch {
 
-      case e: Exception => handleFailure(attempt + 1, e)
+      //TODO: this will not invoke the error action
+      case e: Exception => handleFailure(e.getMessage)
 
     }
 
   }
 
-  override def handleFailure(attemptNo: Int, e: Exception): Unit = {
+  override def handleFailure(message: String): String = {
 
-    log.error(e.toString)
-    log.debug(s"Part ${data.name} of type ${data.actionType} failed on attempt $attemptNo")
-    attempt = attemptNo
-    if (attempt <= 3) {
+    log.error(message)
 
-      //TODO: add retry policy
-      execute()
+    log.debug(s"Part ${data.name} of type ${data.actionType} failed on attempt $attempt")
+    attempt += 1
 
+    if (attempt <= attempts) {
+      data.id
     }
     else {
-
       announceFailure()
-
-      //      if (error != null)
-      //        error.execute()
-
+      data.errorActionId
     }
 
   }
@@ -59,7 +55,15 @@ class SequentialAction extends Action {
 
 object SequentialAction {
 
-  def apply(name: String, src: String, jobType: String, jobId: String, queue: BlockingQueue[ActionData], zkClient: CuratorFramework): SequentialAction = {
+  def apply(
+             name: String,
+             src: String,
+             jobType: String,
+             jobId: String,
+             queue: BlockingQueue[ActionData],
+             zkClient: CuratorFramework,
+             attempts: Int
+           ): SequentialAction = {
 
     val action = new SequentialAction()
 
@@ -70,6 +74,7 @@ object SequentialAction {
     action.actionPath = action.client.create().withMode(CreateMode.PERSISTENT_SEQUENTIAL).forPath(s"/${jobId}/task-", ActionStatus.pending.toString.getBytes())
     action.actionId = action.actionPath.substring(action.actionPath.indexOf('-') + 1)
 
+    action.attempts = attempts
     action.jobId = jobId
     action.data = new ActionData(name, src, jobType, action.actionId, new ListBuffer[String])
     action.jobsQueue = queue
@@ -82,7 +87,13 @@ object SequentialAction {
 
 object ErrorAction {
 
-  def apply(name: String, src: String, parent: String, jobType: String, jobId: String, queue: BlockingQueue[ActionData], zkClient: CuratorFramework): SequentialAction = {
+  def apply(name: String,
+            src: String,
+            parent: String,
+            jobType: String,
+            jobId: String,
+            queue: BlockingQueue[ActionData],
+            zkClient: CuratorFramework): SequentialAction = {
 
     val action = new SequentialAction()
 
