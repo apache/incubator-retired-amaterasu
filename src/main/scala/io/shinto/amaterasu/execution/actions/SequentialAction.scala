@@ -56,14 +56,14 @@ class SequentialAction extends Action {
 object SequentialAction {
 
   def apply(
-             name: String,
-             src: String,
-             jobType: String,
-             jobId: String,
-             queue: BlockingQueue[ActionData],
-             zkClient: CuratorFramework,
-             attempts: Int
-           ): SequentialAction = {
+    name: String,
+    src: String,
+    jobType: String,
+    jobId: String,
+    queue: BlockingQueue[ActionData],
+    zkClient: CuratorFramework,
+    attempts: Int
+  ): SequentialAction = {
 
     val action = new SequentialAction()
 
@@ -87,13 +87,15 @@ object SequentialAction {
 
 object ErrorAction {
 
-  def apply(name: String,
-            src: String,
-            parent: String,
-            jobType: String,
-            jobId: String,
-            queue: BlockingQueue[ActionData],
-            zkClient: CuratorFramework): SequentialAction = {
+  def apply(
+    name: String,
+    src: String,
+    parent: String,
+    jobType: String,
+    jobId: String,
+    queue: BlockingQueue[ActionData],
+    zkClient: CuratorFramework
+  ): SequentialAction = {
 
     val action = new SequentialAction()
 
@@ -101,7 +103,7 @@ object ErrorAction {
 
     // creating a znode for the action
     action.client = zkClient
-    action.actionPath = action.client.create().withMode(CreateMode.PERSISTENT_SEQUENTIAL).forPath(s"/${jobId}/task-$parent/error", ActionStatus.pending.toString.getBytes())
+    action.actionPath = action.client.create().withMode(CreateMode.PERSISTENT).forPath(s"/${jobId}/task-$parent/error", ActionStatus.pending.toString.getBytes())
     action.actionId = action.actionPath.substring(action.actionPath.indexOf('-') + 1)
 
     action.jobId = jobId

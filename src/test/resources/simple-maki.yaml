@@ -8,7 +8,7 @@ flow:
       type: spark-scala
       src: file2.scala
       error:
-        name: start-error
+        name: error-action
         type: spark-scala
         src: error.scala
 ...

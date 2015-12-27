@@ -110,10 +110,12 @@ object JobManager {
     * @param client
     * @return
     */
-  def apply(jobId: String,
-            name: String,
-            jobsQueue: BlockingQueue[ActionData],
-            client: CuratorFramework): JobManager = {
+  def apply(
+    jobId: String,
+    name: String,
+    jobsQueue: BlockingQueue[ActionData],
+    client: CuratorFramework
+  ): JobManager = {
 
     val manager = new JobManager()
     manager.name = name
