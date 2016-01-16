@@ -21,21 +21,21 @@ trait Action extends Logging {
   /**
     * The announceStart register the beginning of the of the task with ZooKeper
     */
-  def announceStart(): Unit = {
+  def announceStart: Unit = {
 
     log.debug(s"Starting action ${data.name} of type ${data.actionType}")
     client.setData().forPath(actionPath, ActionStatus.started.toString.getBytes)
 
   }
 
-  def announceQueued(): Unit = {
+  def announceQueued: Unit = {
 
     log.debug(s"Action ${data.name} of type ${data.actionType} is queued for execution")
     client.setData().forPath(actionPath, ActionStatus.queued.toString.getBytes)
 
   }
 
-  def announceComplete(): Unit = {
+  def announceComplete: Unit = {
 
     log.debug(s"Action ${data.name} of type ${data.actionType} completed")
     client.setData().forPath(actionPath, ActionStatus.complete.toString.getBytes)

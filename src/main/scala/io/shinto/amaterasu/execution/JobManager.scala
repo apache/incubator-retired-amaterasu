@@ -40,7 +40,7 @@ class JobManager {
     * exists
     * @return the ActionData of the next action, returns null if no such action exists
     */
-  def getNextActionData(): ActionData = {
+  def getNextActionData: ActionData = {
 
     val nextAction: ActionData = executionQueue.poll()
 
@@ -55,7 +55,7 @@ class JobManager {
 
     val action = registeredActions.get(actionId).get
     executionQueue.put(action.data)
-    registeredActions.get(actionId).get.announceQueued()
+    registeredActions.get(actionId).get.announceQueued
 
   }
 
@@ -76,7 +76,7 @@ class JobManager {
   def actionComplete(actionId: String): Unit = {
 
     val action = registeredActions.get(actionId).get
-    action.announceComplete()
+    action.announceComplete
     action.data.nextActionIds.foreach(id =>
       registeredActions.get(id).get.execute())
   }
@@ -122,7 +122,7 @@ object JobManager {
     manager.executionQueue = jobsQueue
     manager.jobId = jobId
     manager.client = client
-    client.create().withMode(CreateMode.PERSISTENT).forPath(s"/${jobId}")
+    client.create().withMode(CreateMode.PERSISTENT).forPath(s"/$jobId")
 
     manager
 
