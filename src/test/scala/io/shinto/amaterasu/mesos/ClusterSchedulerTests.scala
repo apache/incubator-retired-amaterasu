@@ -1,7 +1,8 @@
 package io.shinto.amaterasu.mesos
 
+import io.shinto.amaterasu.configuration.ClusterConfig
 import io.shinto.amaterasu.mesos.schedulers.ClusterScheduler
-import io.shinto.amaterasu.{ Config, Kami }
+import io.shinto.amaterasu.Kami
 import org.scalatest._
 
 class ClusterSchedulerTests extends FlatSpec with Matchers {
@@ -9,7 +10,7 @@ class ClusterSchedulerTests extends FlatSpec with Matchers {
   "an offer" should "be accepted if has enough resources" in {
 
     val kami = Kami()
-    val config = Config()
+    val config = ClusterConfig()
     config.Jobs.cpus = 1
     config.Jobs.mem = 1024
     config.Jobs.repoSize = 1024
@@ -25,7 +26,7 @@ class ClusterSchedulerTests extends FlatSpec with Matchers {
   it should "not be accepted if has missing resources" in {
 
     val kami = Kami()
-    val config = Config()
+    val config = ClusterConfig()
     config.Jobs.cpus = 1
     config.Jobs.mem = 1024
     config.Jobs.repoSize = 1024
