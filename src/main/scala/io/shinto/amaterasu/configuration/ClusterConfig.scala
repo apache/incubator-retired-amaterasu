@@ -1,12 +1,12 @@
-package io.shinto.amaterasu
+package io.shinto.amaterasu.configuration
 
-import java.io.{ InputStream, FileInputStream, File }
+import java.io.{File, InputStream}
 import java.nio.file.Paths
-
-//import java.net.URL
 import java.util.Properties
 
-class Config extends Logging {
+import io.shinto.amaterasu.Logging
+
+class ClusterConfig extends Logging {
 
   val DEFAULT_FILE = getClass().getResourceAsStream("/amaterasu.properties")
 
@@ -123,11 +123,11 @@ class Config extends Logging {
 
 }
 
-object Config {
+object ClusterConfig {
 
-  def apply(): Config = {
+  def apply(): ClusterConfig = {
 
-    val config = new Config()
+    val config = new ClusterConfig()
     config.load()
 
     config

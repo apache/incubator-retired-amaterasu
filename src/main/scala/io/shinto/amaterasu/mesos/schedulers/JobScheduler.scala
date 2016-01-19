@@ -1,20 +1,20 @@
 package io.shinto.amaterasu.mesos.schedulers
 
 import java.util
-import java.util.concurrent.{ ConcurrentHashMap, LinkedBlockingQueue, BlockingQueue }
+import java.util.concurrent.{ConcurrentHashMap, LinkedBlockingQueue, BlockingQueue}
 
+import io.shinto.amaterasu.configuration.ClusterConfig
 import io.shinto.amaterasu.enums.ActionStatus
 import io.shinto.amaterasu.enums.ActionStatus.ActionStatus
-import io.shinto.amaterasu.{ Config, Logging }
 import io.shinto.amaterasu.dataObjects.ActionData
-import io.shinto.amaterasu.dsl.{ JobParser, GitUtil }
+import io.shinto.amaterasu.dsl.{JobParser, GitUtil}
 import io.shinto.amaterasu.execution.JobManager
 
-import org.apache.curator.framework.{ CuratorFrameworkFactory, CuratorFramework }
+import org.apache.curator.framework.{CuratorFrameworkFactory, CuratorFramework}
 import org.apache.curator.retry.ExponentialBackoffRetry
 
 import org.apache.mesos.Protos._
-import org.apache.mesos.{ Protos, SchedulerDriver, Scheduler }
+import org.apache.mesos.{Protos, SchedulerDriver}
 
 import scala.collection.JavaConverters._
 import scala.collection.concurrent
@@ -23,11 +23,11 @@ import scala.collection.concurrent
   * The JobScheduler is a mesos implementation. It is in charge of scheduling the execution of
   * Amaterasu actions for a specific job
   */
-class JobScheduler extends Scheduler with Logging {
+class JobScheduler extends AmaterasuScheduler {
 
   private var jobManager: JobManager = null
   private var client: CuratorFramework = null
-  private var config: Config = null
+  private var config: ClusterConfig = null
   private var src: String = null
   private var branch: String = null
 
@@ -54,7 +54,7 @@ class JobScheduler extends Scheduler with Logging {
     status.getState match {
       case TaskState.TASK_FINISHED => jobManager.actionComplete(status.getTaskId.toString)
       case TaskState.TASK_FAILED |
-        TaskState.TASK_ERROR => jobManager.actionFailed(status.getTaskId.toString, status.getMessage) //TODO: revisit this
+           TaskState.TASK_ERROR => jobManager.actionFailed(status.getTaskId.toString, status.getMessage) //TODO: revisit this
       case _ => log.warn("WTF? just got unexpected task state: " + status.getState)
     }
 
@@ -66,13 +66,6 @@ class JobScheduler extends Scheduler with Logging {
 
     resources.count(r => r.getName == "cpus" && r.getScalar.getValue >= config.Jobs.Tasks.cpus) > 0 &&
       resources.count(r => r.getName == "mem" && r.getScalar.getValue >= config.Jobs.Tasks.mem) > 0
-  }
-
-  def createScalarResource(name: String, value: Double): Resource = {
-    Resource.newBuilder
-      .setName(name)
-      .setType(Value.Type.SCALAR)
-      .setScalar(Value.Scalar.newBuilder().setValue(value)).build()
   }
 
   def offerRescinded(driver: SchedulerDriver, offerId: OfferID) = {
@@ -102,6 +95,16 @@ class JobScheduler extends Scheduler with Logging {
 
         val slaveActions = executionMap.get(offer.getSlaveId.toString).get
         slaveActions.put(taskId.getValue, ActionStatus.started)
+
+        // building the task to execute the action
+        val actionTask = TaskInfo
+          .newBuilder
+          .setName(taskId.getValue)
+          .setTaskId(taskId)
+          .setSlaveId(offer.getSlaveId)
+          .addResources(createScalarResource("cpus", config.Jobs.Tasks.cpus))
+          .addResources(createScalarResource("mem", config.Jobs.Tasks.mem))
+//.setData()
 
         // TODO: implement all that masos executors jazz
 
@@ -135,7 +138,7 @@ class JobScheduler extends Scheduler with Logging {
 
 object JobScheduler {
 
-  def apply(src: String, branch: String, config: Config): JobScheduler = {
+  def apply(src: String, branch: String, config: ClusterConfig): JobScheduler = {
 
     val scheduler = new JobScheduler()
     scheduler.src = src

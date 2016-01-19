@@ -11,7 +11,8 @@ object Build extends Build {
   val ORGANIZATION = "io.shinto"
   val PROJECT_NAME = "amaterasu"
   val PROJECT_VERSION = "0.1.0"
-  val SCALA_VERSION = "2.11.7"
+  //val SCALA_VERSION = "2.11.7"
+  val SCALA_VERSION = "2.10.4"
 
   // Mesos native library path
   val pathToMesosLibs = "/usr/local/lib"
@@ -49,7 +50,18 @@ object Build extends Build {
       "com.fasterxml.jackson.core" % "jackson-databind" % "2.6.4",
       "com.fasterxml.jackson.dataformat" % "jackson-dataformat-yaml" % "2.6.4",
 
-      "org.scalatest" % "scalatest_2.11" % "2.2.2" % "test",
+      // execution engines dependencies
+      "org.apache.spark" %% "spark-repl" % "1.6.0",
+
+      "org.eclipse.jetty" % "jetty-server" % "9.3.6.v20151106",
+      "org.eclipse.jetty" % "jetty-util" % "9.3.6.v20151106",
+      "org.eclipse.jetty" % "jetty-http" % "9.3.6.v20151106",
+
+      "org.scala-lang" % "scala-compiler" % SCALA_VERSION,
+      "org.scala-lang" % "scala-reflect" % SCALA_VERSION,
+      "org.scala-lang" % "scala-library" % SCALA_VERSION,
+
+      "org.scalatest" %% "scalatest" % "2.2.2" % "test",
       "org.apache.curator" % "curator-test" % "2.9.1" % "test"
     ),
 

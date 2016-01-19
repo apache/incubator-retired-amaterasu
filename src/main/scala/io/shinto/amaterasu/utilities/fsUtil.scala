@@ -5,7 +5,8 @@ import java.io.{ FileNotFoundException, File }
 import com.amazonaws.auth.BasicAWSCredentials
 import com.amazonaws.services.s3.AmazonS3Client
 import com.amazonaws.services.s3.model.PutObjectRequest
-import io.shinto.amaterasu.{ Logging, Config }
+import io.shinto.amaterasu.Logging
+import io.shinto.amaterasu.configuration.{ClusterConfig}
 import org.apache.commons.io.FileUtils
 
 /**
@@ -14,7 +15,7 @@ import org.apache.commons.io.FileUtils
   */
 class FsUtil extends Logging {
 
-  var config: Config = null
+  var config: ClusterConfig = null
 
   private def distToS3(): Unit = {
 
@@ -79,7 +80,7 @@ class FsUtil extends Logging {
 
 object FsUtil {
 
-  def apply(config: Config): FsUtil = {
+  def apply(config: ClusterConfig): FsUtil = {
 
     val result = new FsUtil
     result.config = config

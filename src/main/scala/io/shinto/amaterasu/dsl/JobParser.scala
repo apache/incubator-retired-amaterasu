@@ -1,7 +1,6 @@
 package io.shinto.amaterasu.dsl
 
 import java.util.concurrent.BlockingQueue
-import scala.collection.JavaConverters._
 
 import com.fasterxml.jackson.databind.{ JsonNode, ObjectMapper }
 import com.fasterxml.jackson.databind.node.ArrayNode
@@ -13,6 +12,7 @@ import io.shinto.amaterasu.execution.actions.{ ErrorAction, Action, SequentialAc
 
 import org.apache.curator.framework.CuratorFramework
 
+import scala.collection.JavaConverters._
 import scala.io.Source
 
 /**

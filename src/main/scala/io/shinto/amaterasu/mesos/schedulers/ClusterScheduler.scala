@@ -2,20 +2,21 @@ package io.shinto.amaterasu.mesos.schedulers
 
 import java.util
 
-import io.shinto.amaterasu
+
+import io.shinto.amaterasu.configuration.ClusterConfig
 import io.shinto.amaterasu.utilities.FsUtil
-import io.shinto.amaterasu.{ Config, Kami, Logging }
+import io.shinto.amaterasu.Kami
 
 import org.apache.mesos.Protos.CommandInfo.URI
 import org.apache.mesos.Protos._
-import org.apache.mesos.{ Protos, Scheduler, SchedulerDriver }
+import org.apache.mesos.{ Protos, SchedulerDriver }
 
 import scala.collection.JavaConverters._
 
-class ClusterScheduler extends Scheduler with Logging {
+class ClusterScheduler extends AmaterasuScheduler {
 
   private var kami: Kami = null
-  private var config: Config = null
+  private var config: ClusterConfig = null
 
   private var driver: SchedulerDriver = null
 
@@ -44,13 +45,6 @@ class ClusterScheduler extends Scheduler with Logging {
     resources.count(r => r.getName == "cpus" && r.getScalar.getValue >= config.Jobs.cpus) > 0 &&
       resources.count(r => r.getName == "mem" && r.getScalar.getValue >= config.Jobs.mem) > 0 &&
       resources.count(r => r.getName == "disk" && r.getScalar.getValue >= config.Jobs.repoSize) > 0
-  }
-
-  def createScalarResource(name: String, value: Double): Resource = {
-    Resource.newBuilder
-      .setName(name)
-      .setType(Value.Type.SCALAR)
-      .setScalar(Value.Scalar.newBuilder().setValue(value)).build()
   }
 
   def buildCommandInfo(jobSrc: String): CommandInfo = {
@@ -119,7 +113,7 @@ class ClusterScheduler extends Scheduler with Logging {
 
 object ClusterScheduler {
 
-  def apply(kami: Kami, config: amaterasu.Config): ClusterScheduler = {
+  def apply(kami: Kami, config: ClusterConfig): ClusterScheduler = {
 
     val scheduler = new ClusterScheduler()
     scheduler.kami = kami

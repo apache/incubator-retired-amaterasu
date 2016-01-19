@@ -1,9 +1,11 @@
 package io.shinto.amaterasu.mesos
 
+import io.shinto.amaterasu.configuration.{ClusterConfig, ClusterConfig$}
 import io.shinto.amaterasu.mesos.schedulers.ClusterScheduler
 import io.shinto.amaterasu.utilities.FsUtil
+import io.shinto.amaterasu.{ Logging, Kami }
+
 import org.apache.mesos.{ Protos, MesosSchedulerDriver }
-import io.shinto.amaterasu.{ Logging, Kami, Config }
 
 object Launcher extends App with Logging {
 
@@ -17,12 +19,12 @@ object Launcher extends App with Logging {
           / _ \  | '   \()/ _` ||  _|/ -_) | '_|/ _` |(_-<| || |
          /_/ \_\ |_|_|_|  \__,_| \__|\___| |_|  \__,_|/__/ \_,_|
 
-         Durable Workflow Cluster
+         Durable Dataflow Cluster
          Version 0.1.0
     """
   )
 
-  val config = Config()
+  val config = ClusterConfig()
   val kami = Kami(Seq("https://github.com/roadan/amaterasu-job-sample.git"))
 
   FsUtil(config).distributeJar()

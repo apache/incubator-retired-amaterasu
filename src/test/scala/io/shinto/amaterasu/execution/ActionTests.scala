@@ -1,13 +1,15 @@
 package io.shinto.amaterasu.execution
 
 import java.util.concurrent.LinkedBlockingQueue
-import io.shinto.amaterasu.Config
+import io.shinto.amaterasu.configuration.ClusterConfig
 import io.shinto.amaterasu.dataObjects.ActionData
 import io.shinto.amaterasu.execution.actions.SequentialAction
+
 import org.apache.curator.framework.CuratorFrameworkFactory
 import org.apache.curator.test.TestingServer
 import org.apache.curator.retry.ExponentialBackoffRetry
 import org.apache.zookeeper.CreateMode
+
 import org.scalatest.{ Matchers, FlatSpec }
 
 class ActionTests extends FlatSpec with Matchers {
@@ -21,7 +23,7 @@ class ActionTests extends FlatSpec with Matchers {
   "an Action" should "queue it's ActionData int the job queue when executed" in {
 
     val queue = new LinkedBlockingQueue[ActionData]()
-    val config = Config()
+    val config = ClusterConfig()
 
     val client = CuratorFrameworkFactory.newClient(server.getConnectString, retryPolicy)
     client.start()
