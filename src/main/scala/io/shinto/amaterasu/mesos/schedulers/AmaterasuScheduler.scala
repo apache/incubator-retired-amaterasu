@@ -1,9 +1,8 @@
 package io.shinto.amaterasu.mesos.schedulers
 
 import io.shinto.amaterasu.Logging
-import org.apache.mesos.Protos.{Value, Resource}
+import org.apache.mesos.Protos.{ Value, Resource }
 import org.apache.mesos.Scheduler
-
 
 trait AmaterasuScheduler extends Scheduler with Logging {
 

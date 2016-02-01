@@ -6,7 +6,7 @@ import com.amazonaws.auth.BasicAWSCredentials
 import com.amazonaws.services.s3.AmazonS3Client
 import com.amazonaws.services.s3.model.PutObjectRequest
 import io.shinto.amaterasu.Logging
-import io.shinto.amaterasu.configuration.{ClusterConfig}
+import io.shinto.amaterasu.configuration.{ ClusterConfig }
 import org.apache.commons.io.FileUtils
 
 /**

@@ -1,10 +1,10 @@
 package io.shinto.amaterasu.execution.actions.runners.spark
 
-import java.io.{ByteArrayOutputStream, File, BufferedReader, PrintWriter}
+import java.io.{ ByteArrayOutputStream, File, BufferedReader, PrintWriter }
 
 import io.shinto.amaterasu.configuration.SparkConfig
-import org.apache.spark.{SparkConf, SparkContext}
-import org.apache.spark.repl.{SparkIMain, SparkILoop, Main}
+import org.apache.spark.{ SparkConf, SparkContext }
+import org.apache.spark.repl.{ SparkILoop, Main }
 
 import scala.io.Source
 import scala.tools.nsc.Settings
@@ -18,57 +18,59 @@ class SparkScalaRunner {
   val settings = new Settings()
   var interpreter: SparkILoop = null
 
-  def execute(file: String,
-              sc: SparkContext,
-              actionName: String): Unit = {
+  def execute(
+    file: String,
+    sc: SparkContext,
+    actionName: String
+  ): Unit = {
 
-//    SparkIMain.classServer.start()
-//    interpreter.initializeSpark()
-//    val repl = interpreter.intp
-//
-//    repl.setContextClassLoader()
-//    repl.initializeSynchronous()
+    //    SparkIMain.classServer.start()
+    //    interpreter.initializeSpark()
+    //    val repl = interpreter.intp
+    //
+    //    repl.setContextClassLoader()
+    //    repl.initializeSynchronous()
 
     // setting up some context :)
     //val x = repl.interpret("@transient var _contextStore: Map[String, AnyRef] = Map[String, AnyRef]()")
-//    val x = repl.interpret("@transient var _binder = new java.util.HashMap[String, Object]()")
-//    val contextStore = repl.valueOfTerm("_binder")
-//
-//    contextStore + ("sc" -> createSparkContext())
+    //    val x = repl.interpret("@transient var _binder = new java.util.HashMap[String, Object]()")
+    //    val contextStore = repl.valueOfTerm("_binder")
+    //
+    //    contextStore + ("sc" -> createSparkContext())
 
-//    println("::::::::::::::::::::::::::::::::::::")
-//    println(contextStore)
-//    println(x)
-//
-//    for (line <- Source.fromFile(file).getLines()) {
-//
-//      if (!line.isEmpty) {
-//
-//        println(line)
-//
-//        val result = repl.interpret(line)
-//
-//        println("-----------------------------")
-//        println(result)
-//
-//      }
-//    }
-//
-//    Main.classServer.stop()
+    //    println("::::::::::::::::::::::::::::::::::::")
+    //    println(contextStore)
+    //    println(x)
+    //
+    //    for (line <- Source.fromFile(file).getLines()) {
+    //
+    //      if (!line.isEmpty) {
+    //
+    //        println(line)
+    //
+    //        val result = repl.interpret(line)
+    //
+    //        println("-----------------------------")
+    //        println(result)
+    //
+    //      }
+    //    }
+    //
+    //    Main.classServer.stop()
 
     //    repl.close()
   }
-//
-//  def createSparkContext(): SparkContext = {
-//
-//    val conf = new SparkConf()
-//      .setMaster(config.master)
-//      .setAppName(s"${jobId}_$actionName")
-//      .set("spark.repl.class.uri", Main.classServer.uri) //TODO: :\ check this
-//
-//    new SparkContext(conf)
-//
-//  }
+  //
+  //  def createSparkContext(): SparkContext = {
+  //
+  //    val conf = new SparkConf()
+  //      .setMaster(config.master)
+  //      .setAppName(s"${jobId}_$actionName")
+  //      .set("spark.repl.class.uri", Main.classServer.uri) //TODO: :\ check this
+  //
+  //    new SparkContext(conf)
+  //
+  //  }
 
 }
 
