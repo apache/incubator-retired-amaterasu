@@ -21,7 +21,7 @@ class SequentialAction extends Action {
 
     try {
 
-      announceQueued()
+      announceQueued
       jobsQueue.add(data)
 
     }
