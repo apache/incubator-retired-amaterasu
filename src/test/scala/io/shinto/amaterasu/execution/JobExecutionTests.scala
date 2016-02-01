@@ -69,7 +69,7 @@ class JobExecutionTests extends FlatSpec with Matchers {
 
   it should "be marked as started when JobManager.getNextActionData is called" in {
 
-    val data = job.getNextActionData()
+    val data = job.getNextActionData
 
     data.name should be ("step2")
 
@@ -88,7 +88,7 @@ class JobExecutionTests extends FlatSpec with Matchers {
     new String(actionStatus) should be("queued")
 
     // and returned by getNextActionData
-    val data = job.getNextActionData()
+    val data = job.getNextActionData
 
   }
 }

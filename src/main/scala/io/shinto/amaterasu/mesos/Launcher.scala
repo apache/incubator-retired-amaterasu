@@ -1,6 +1,6 @@
 package io.shinto.amaterasu.mesos
 
-import io.shinto.amaterasu.configuration.{ClusterConfig, ClusterConfig$}
+import io.shinto.amaterasu.configuration.{ ClusterConfig, ClusterConfig$ }
 import io.shinto.amaterasu.mesos.schedulers.ClusterScheduler
 import io.shinto.amaterasu.utilities.FsUtil
 import io.shinto.amaterasu.{ Logging, Kami }

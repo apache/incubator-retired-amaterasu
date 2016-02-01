@@ -2,7 +2,7 @@ package io.shinto.amaterasu.mesos.executors
 
 import io.shinto.amaterasu.Logging
 import org.apache.mesos.Protos._
-import org.apache.mesos.{MesosExecutorDriver, ExecutorDriver, Executor}
+import org.apache.mesos.{ MesosExecutorDriver, ExecutorDriver, Executor }
 
 /**
   * Created by roadan on 1/1/16.
@@ -32,7 +32,6 @@ class ActionsExecutor extends Executor with Logging {
     driver.sendStatusUpdate(status)
 
     val fileName = task.getData.toString
-
 
   }
 
