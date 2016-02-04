@@ -10,8 +10,8 @@ class SparkScalaRunnerTests extends FlatSpec with Matchers {
 
   "SparkScalaRunner" should "execute the simple-spark.scala" in {
 
-//    val runner = SparkScalaRunner(new SparkConfig(),"start","job_1")
-//    runner.execute(script, null, "test")
+    val runner = SparkScalaRunner(new SparkConfig(),"start","job_1")
+    runner.execute(script, null, "test")
 
   }
 

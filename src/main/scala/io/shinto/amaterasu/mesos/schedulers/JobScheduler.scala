@@ -84,7 +84,7 @@ class JobScheduler extends AmaterasuScheduler {
       if (validateOffer(offer)) {
 
         log.info(s"Accepting offer, id=${offer.getId}")
-        val actionData = jobManager.getNextActionData()
+        val actionData = jobManager.getNextActionData
         val taskId = Protos.TaskID.newBuilder().setValue(actionData.id).build()
 
         offersToTaskIds.put(offer.getId.getValue, taskId.getValue)

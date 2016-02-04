@@ -12,7 +12,7 @@ Amateraso is an open-source, distributed dataflow framework, that allows develop
 
 ##Architecture
 
-Amaterasu is an Apache Mesos framework with two levels of schdualers:
+Amaterasu is an Apache Mesos framework with two levels of schedulers:
 
 * The ClusterScheduler manages the execution of all the jobs
 * The JobScheduler manages the flow of a job
