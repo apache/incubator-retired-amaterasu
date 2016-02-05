@@ -2,7 +2,6 @@ package io.shinto.amaterasu.mesos.schedulers
 
 import java.util
 
-
 import io.shinto.amaterasu.configuration.ClusterConfig
 import io.shinto.amaterasu.utilities.FsUtil
 import io.shinto.amaterasu.Kami

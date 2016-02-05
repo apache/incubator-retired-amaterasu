@@ -1,6 +1,6 @@
 package io.shinto.amaterasu.configuration
 
-import java.io.{File, InputStream}
+import java.io.{ File, InputStream }
 import java.nio.file.Paths
 import java.util.Properties
 

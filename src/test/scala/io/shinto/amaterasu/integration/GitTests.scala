@@ -8,7 +8,6 @@ class GitTests extends FlatSpec with Matchers {
 
   "GitUtil.cloneRepo" should "clone the sample job git repo" in {
 
-    // just some setup, probably should be in a setup method
     val path = Path("repo")
     path.deleteRecursively()
 

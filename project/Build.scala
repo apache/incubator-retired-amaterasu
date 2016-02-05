@@ -11,8 +11,8 @@ object Build extends Build {
   val ORGANIZATION = "io.shinto"
   val PROJECT_NAME = "amaterasu"
   val PROJECT_VERSION = "0.1.0"
-  //val SCALA_VERSION = "2.11.7"
-  val SCALA_VERSION = "2.10.4"
+  val SCALA_VERSION = "2.11.7"
+  //val SCALA_VERSION = "2.10.4"
 
   // Mesos native library path
   val pathToMesosLibs = "/usr/local/lib"
@@ -42,24 +42,25 @@ object Build extends Build {
       "com.github.nscala-time" %% "nscala-time" % "2.2.0",
       "commons-io" % "commons-io" % "2.4",
       "org.apache.curator" % "curator-framework" % "2.9.1",
-      "org.eclipse.jgit" % "org.eclipse.jgit" % "4.1.1.201511131810-r",
+      "org.eclipse.jgit" % "org.eclipse.jgit" % "4.2.0.201601211800-r",
       "com.amazonaws" % "aws-java-sdk-s3" % "1.10.27",
       "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.6.3",
       "com.fasterxml.jackson.core" % "jackson-core" % "2.6.4",
       "com.fasterxml.jackson.core" % "jackson-annotations" % "2.6.4",
       "com.fasterxml.jackson.core" % "jackson-databind" % "2.6.4",
       "com.fasterxml.jackson.dataformat" % "jackson-dataformat-yaml" % "2.6.4",
+      "com.github.scopt" %% "scopt" % "3.3.0",
 
       // execution engines dependencies
-      "org.apache.spark" %% "spark-repl" % "1.6.0",
+      "org.apache.spark" %% "spark-repl" % "1.6.0" % "provided",
 
       "org.eclipse.jetty" % "jetty-server" % "9.3.6.v20151106",
       "org.eclipse.jetty" % "jetty-util" % "9.3.6.v20151106",
       "org.eclipse.jetty" % "jetty-http" % "9.3.6.v20151106",
 
-      "org.scala-lang" % "scala-compiler" % SCALA_VERSION,
-      "org.scala-lang" % "scala-reflect" % SCALA_VERSION,
-      "org.scala-lang" % "scala-library" % SCALA_VERSION,
+//      "org.scala-lang" % "scala-compiler" % SCALA_VERSION,
+//      "org.scala-lang" % "scala-reflect" % SCALA_VERSION,
+//      "org.scala-lang" % "scala-library" % SCALA_VERSION,
 
       "org.scalatest" %% "scalatest" % "2.2.2" % "test",
       "org.apache.curator" % "curator-test" % "2.9.1" % "test"

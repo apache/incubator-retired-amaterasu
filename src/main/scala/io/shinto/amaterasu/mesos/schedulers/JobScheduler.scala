@@ -1,20 +1,20 @@
 package io.shinto.amaterasu.mesos.schedulers
 
 import java.util
-import java.util.concurrent.{ConcurrentHashMap, LinkedBlockingQueue, BlockingQueue}
+import java.util.concurrent.{ ConcurrentHashMap, LinkedBlockingQueue, BlockingQueue }
 
 import io.shinto.amaterasu.configuration.ClusterConfig
 import io.shinto.amaterasu.enums.ActionStatus
 import io.shinto.amaterasu.enums.ActionStatus.ActionStatus
 import io.shinto.amaterasu.dataObjects.ActionData
-import io.shinto.amaterasu.dsl.{JobParser, GitUtil}
+import io.shinto.amaterasu.dsl.{ JobParser, GitUtil }
 import io.shinto.amaterasu.execution.JobManager
 
-import org.apache.curator.framework.{CuratorFrameworkFactory, CuratorFramework}
+import org.apache.curator.framework.{ CuratorFrameworkFactory, CuratorFramework }
 import org.apache.curator.retry.ExponentialBackoffRetry
 
 import org.apache.mesos.Protos._
-import org.apache.mesos.{Protos, SchedulerDriver}
+import org.apache.mesos.{ Protos, SchedulerDriver }
 
 import scala.collection.JavaConverters._
 import scala.collection.concurrent
@@ -54,7 +54,7 @@ class JobScheduler extends AmaterasuScheduler {
     status.getState match {
       case TaskState.TASK_FINISHED => jobManager.actionComplete(status.getTaskId.toString)
       case TaskState.TASK_FAILED |
-           TaskState.TASK_ERROR => jobManager.actionFailed(status.getTaskId.toString, status.getMessage) //TODO: revisit this
+        TaskState.TASK_ERROR => jobManager.actionFailed(status.getTaskId.toString, status.getMessage) //TODO: revisit this
       case _ => log.warn("WTF? just got unexpected task state: " + status.getState)
     }
 
@@ -104,7 +104,7 @@ class JobScheduler extends AmaterasuScheduler {
           .setSlaveId(offer.getSlaveId)
           .addResources(createScalarResource("cpus", config.Jobs.Tasks.cpus))
           .addResources(createScalarResource("mem", config.Jobs.Tasks.mem))
-//.setData()
+        //.setData()
 
         // TODO: implement all that masos executors jazz
 
@@ -117,7 +117,7 @@ class JobScheduler extends AmaterasuScheduler {
   def registered(driver: SchedulerDriver, frameworkId: FrameworkID, masterInfo: MasterInfo): Unit = {
 
     // cloning the git repo
-    GitUtil.cloneRepo(src, branch)
+    GitUtil.cloneRepo(src, branch) //maybe parameterize this?
 
     // parsing the maki.yaml and creating a JobManager to
     // coordinate the workflow based on the file
