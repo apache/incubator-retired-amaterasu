@@ -1,7 +1,8 @@
 package io.shinto.amaterasu.mesos.schedulers
 
 import java.util
-import java.util.concurrent.{ ConcurrentHashMap, LinkedBlockingQueue, BlockingQueue }
+import java.util.Collections
+import java.util.concurrent.{ ConcurrentHashMap, LinkedBlockingQueue }
 
 import io.shinto.amaterasu.configuration.ClusterConfig
 import io.shinto.amaterasu.enums.ActionStatus
@@ -9,9 +10,11 @@ import io.shinto.amaterasu.enums.ActionStatus.ActionStatus
 import io.shinto.amaterasu.dataObjects.ActionData
 import io.shinto.amaterasu.dsl.{ JobParser, GitUtil }
 import io.shinto.amaterasu.execution.JobManager
+import io.shinto.amaterasu.utilities.FsUtil
 
 import org.apache.curator.framework.{ CuratorFrameworkFactory, CuratorFramework }
 import org.apache.curator.retry.ExponentialBackoffRetry
+import org.apache.mesos.Protos.CommandInfo.URI
 
 import org.apache.mesos.Protos._
 import org.apache.mesos.{ Protos, SchedulerDriver }
@@ -25,6 +28,7 @@ import scala.collection.concurrent
   */
 class JobScheduler extends AmaterasuScheduler {
 
+  private val ACTION_COMMAND = "java -cp ${config.Jar} io.shinto.amaterasu.mesos.executors.ActionExecutor"
   private var jobManager: JobManager = null
   private var client: CuratorFramework = null
   private var config: ClusterConfig = null
@@ -52,9 +56,9 @@ class JobScheduler extends AmaterasuScheduler {
   def statusUpdate(driver: SchedulerDriver, status: TaskStatus) = {
 
     status.getState match {
-      case TaskState.TASK_FINISHED => jobManager.actionComplete(status.getTaskId.toString)
+      case TaskState.TASK_FINISHED => jobManager.actionComplete(status.getTaskId.getValue)
       case TaskState.TASK_FAILED |
-        TaskState.TASK_ERROR => jobManager.actionFailed(status.getTaskId.toString, status.getMessage) //TODO: revisit this
+        TaskState.TASK_ERROR => jobManager.actionFailed(status.getTaskId.getValue, status.getMessage) //TODO: revisit this
       case _ => log.warn("WTF? just got unexpected task state: " + status.getState)
     }
 
@@ -85,43 +89,68 @@ class JobScheduler extends AmaterasuScheduler {
 
         log.info(s"Accepting offer, id=${offer.getId}")
         val actionData = jobManager.getNextActionData
-        val taskId = Protos.TaskID.newBuilder().setValue(actionData.id).build()
 
-        offersToTaskIds.put(offer.getId.getValue, taskId.getValue)
+        if (actionData != null) {
 
-        // atomically adding a record for the slave, I'm storing all the actions
-        // on a slave level to efficiently handle slave loses
-        executionMap.putIfAbsent(offer.getSlaveId.toString, new ConcurrentHashMap[String, ActionStatus].asScala)
+          val taskId = Protos.TaskID.newBuilder().setValue(actionData.id).build()
 
-        val slaveActions = executionMap.get(offer.getSlaveId.toString).get
-        slaveActions.put(taskId.getValue, ActionStatus.started)
+          offersToTaskIds.put(offer.getId.getValue, taskId.getValue)
 
-        // building the task to execute the action
-        val actionTask = TaskInfo
-          .newBuilder
-          .setName(taskId.getValue)
-          .setTaskId(taskId)
-          .setSlaveId(offer.getSlaveId)
-          .addResources(createScalarResource("cpus", config.Jobs.Tasks.cpus))
-          .addResources(createScalarResource("mem", config.Jobs.Tasks.mem))
-        //.setData()
+          // atomically adding a record for the slave, I'm storing all the actions
+          // on a slave level to efficiently handle slave loses
+          executionMap.putIfAbsent(offer.getSlaveId.toString, new ConcurrentHashMap[String, ActionStatus].asScala)
 
-        // TODO: implement all that masos executors jazz
+          val slaveActions = executionMap.get(offer.getSlaveId.toString).get
+          slaveActions.put(taskId.getValue, ActionStatus.started)
 
+          val fsUtil = FsUtil(config)
+
+          val command = CommandInfo
+            .newBuilder
+            .setValue(s"$ACTION_COMMAND -Djava.library.path=/usr/lib --action-type ${actionData.actionType} --src ${actionData.src}")
+            .addUris(URI.newBuilder.setValue(fsUtil.getJarUrl()).setExecutable(true))
+
+          val executor = ExecutorInfo
+            .newBuilder
+            .setName(taskId.getValue)
+            .setExecutorId(ExecutorID.newBuilder().setValue("1234"))
+            .setCommand(command)
+            .addResources(createScalarResource("cpus", config.Jobs.Tasks.cpus))
+            .addResources(createScalarResource("mem", config.Jobs.Tasks.mem))
+
+          // building the task to execute the action
+          val actionTask = TaskInfo
+            .newBuilder
+            .setName(taskId.getValue)
+            .setTaskId(taskId)
+            .setSlaveId(offer.getSlaveId)
+            .setExecutor(executor)
+            //.setData()
+            .build()
+
+          driver.launchTasks(Collections.singleton(offer.getId), Collections.singleton(actionTask))
+        }
+        else {
+          log.info("Declining offer, no action ready for execution")
+          driver.declineOffer(offer.getId)
+        }
       }
-
+      else {
+        log.info("Declining offer, no sufficient resources")
+        driver.declineOffer(offer.getId)
+      }
     }
-
   }
 
   def registered(driver: SchedulerDriver, frameworkId: FrameworkID, masterInfo: MasterInfo): Unit = {
 
     // cloning the git repo
-    GitUtil.cloneRepo(src, branch) //maybe parameterize this?
+    GitUtil.cloneRepo(src, branch)
 
     // parsing the maki.yaml and creating a JobManager to
     // coordinate the workflow based on the file
     val maki = JobParser.loadMakiFile()
+
     jobManager = JobParser.parse(
       frameworkId.getValue,
       maki,
@@ -129,6 +158,8 @@ class JobScheduler extends AmaterasuScheduler {
       client,
       config.Jobs.Tasks.attempts
     )
+
+    jobManager.start()
 
   }
 

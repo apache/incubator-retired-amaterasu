@@ -22,7 +22,7 @@ class FsUtil extends Logging {
     val awsCreds = new BasicAWSCredentials(config.AWS.accessKeyId, config.AWS.secretAccessKey)
     val s3Client = new AmazonS3Client(awsCreds)
 
-    val file = new File(config.JobSchedulerJar)
+    val file = new File(config.Jar)
 
     s3Client.putObject(new PutObjectRequest(
       config.AWS.distBucket, config.AWS.distFolder, file
@@ -33,8 +33,8 @@ class FsUtil extends Logging {
   private def distToLocal(): Unit = {
 
     FileUtils.copyFile(
-      new File(config.JobSchedulerJar),
-      new File(s"${config.local.distFolder}/${config.JobSchedulerJar}")
+      new File(config.Jar),
+      new File(s"${config.local.distFolder}/${config.Jar}")
     )
 
   }
@@ -62,7 +62,7 @@ class FsUtil extends Logging {
 
   private def getLocalJar(): String = {
 
-    new File(config.JobSchedulerJar).toURI.toURL.toString.replace("file:/", "file:///")
+    new File(config.Jar).toURI.toURL.toString.replace("file:/", "file:///")
 
   }
 

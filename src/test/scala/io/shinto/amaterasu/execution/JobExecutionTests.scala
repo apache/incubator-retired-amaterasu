@@ -84,7 +84,7 @@ class JobExecutionTests extends FlatSpec with Matchers {
     queue.peek.name should be ("error-action")
 
     // making sure that the status is reflected in zk
-    val actionStatus = client.getData.forPath(s"/${jobId}/task-0000000001/error")
+    val actionStatus = client.getData.forPath(s"/${jobId}/task-0000000001-error")
     new String(actionStatus) should be("queued")
 
     // and returned by getNextActionData

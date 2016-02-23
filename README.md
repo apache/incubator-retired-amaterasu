@@ -50,7 +50,7 @@ The main clases in Amateraso are listed bellow:
                                  |                    | Manages the jobs workflow |
                                  |                    | independently of mesos    |
                       +------------------------+      +---------------------------+
-                      | JobExecutor            |
+                      | ActionExecutor         |
                       |                        |
                       | Executes ActionRunners |
                       | and manages state for  |

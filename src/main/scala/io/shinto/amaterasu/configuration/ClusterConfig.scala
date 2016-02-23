@@ -18,8 +18,8 @@ class ClusterConfig extends Logging {
   var taskMem: Int = 128
   var distLocation: String = "local"
   var workingFolder: String = ""
-  var JobSchedulerJar: String = null
-  var JobSchedulerJarName: String = null
+  var Jar: String = null
+  var JarName: String = null
 
   //this should be a filesystem path that is reachable by all executors (HDFS, S3, local)
 
@@ -106,8 +106,8 @@ class ClusterConfig extends Logging {
     }
 
     // TODO: rethink this
-    JobSchedulerJar = this.getClass.getProtectionDomain.getCodeSource.getLocation.toURI.getPath
-    JobSchedulerJarName = Paths.get(this.getClass.getProtectionDomain.getCodeSource.getLocation.getPath).getFileName.toString
+    Jar = this.getClass.getProtectionDomain.getCodeSource.getLocation.toURI.getPath
+    JarName = Paths.get(this.getClass.getProtectionDomain.getCodeSource.getLocation.getPath).getFileName.toString
 
     Jobs.load(props)
 

@@ -12,7 +12,6 @@ object Build extends Build {
   val PROJECT_NAME = "amaterasu"
   val PROJECT_VERSION = "0.1.0"
   val SCALA_VERSION = "2.11.7"
-  //val SCALA_VERSION = "2.10.4"
 
   // Mesos native library path
   val pathToMesosLibs = "/usr/local/lib"

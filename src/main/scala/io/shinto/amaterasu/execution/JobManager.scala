@@ -7,6 +7,7 @@ import org.apache.zookeeper.CreateMode
 
 import io.shinto.amaterasu.execution.actions.Action
 import io.shinto.amaterasu.dataObjects.ActionData
+import io.shinto.amaterasu.Logging
 
 import scala.collection.concurrent.TrieMap
 
@@ -15,7 +16,7 @@ import scala.collection.concurrent.TrieMap
   * tracks the state of actions and is in charge of communication with the underlying
   * cluster management framework (mesos)
   */
-class JobManager {
+class JobManager extends Logging {
 
   var name: String = null
   var jobId: String = null
@@ -88,6 +89,7 @@ class JobManager {
     */
   def actionFailed(actionId: String, message: String): Unit = {
 
+    log.warn(message)
     val action = registeredActions.get(actionId).get
     val id = action.handleFailure(message)
     if (id != null)
