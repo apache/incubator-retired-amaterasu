@@ -36,7 +36,10 @@ class ActionsExecutor extends Executor with Logging {
   }
 
   def main(args: Array[Nothing]) {
+
+    log.debug("Starting executor ------->")
     val driver = new MesosExecutorDriver(new ActionsExecutor)
     System.exit(if (driver.run eq Status.DRIVER_STOPPED) 0 else 1)
+
   }
 }

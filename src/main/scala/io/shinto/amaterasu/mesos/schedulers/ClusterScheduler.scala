@@ -50,12 +50,12 @@ class ClusterScheduler extends AmaterasuScheduler {
 
     val fsUtil = FsUtil(config)
 
-    println(s"Starting amaterasu job: java -cp ${config.JobSchedulerJarName} io.shinto.amaterasu.mesos.executors.JobExecutor $jobSrc")
+    println(s"Starting amaterasu job: java -cp ${config.JarName} io.shinto.amaterasu.mesos.executors.JobExecutor $jobSrc")
 
     CommandInfo.newBuilder
       .addUris(URI.newBuilder.setValue(fsUtil.getJarUrl()).setExecutable(true))
       //.addUris(URI.newBuilder.setValue(jobSrc)
-      .setValue(s"java -cp ${config.JobSchedulerJar} io.shinto.amaterasu.mesos.executors.JobExecutor $jobSrc")
+      .setValue(s"java -cp ${config.Jar} io.shinto.amaterasu.mesos.executors.JobExecutor $jobSrc")
       .build()
   }
 
