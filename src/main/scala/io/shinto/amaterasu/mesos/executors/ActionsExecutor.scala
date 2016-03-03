@@ -21,7 +21,9 @@ class ActionsExecutor extends Executor with Logging {
 
   override def frameworkMessage(driver: ExecutorDriver, data: Array[Byte]): Unit = ???
 
-  override def registered(driver: ExecutorDriver, executorInfo: ExecutorInfo, frameworkInfo: FrameworkInfo, slaveInfo: SlaveInfo): Unit = ???
+  override def registered(driver: ExecutorDriver, executorInfo: ExecutorInfo, frameworkInfo: FrameworkInfo, slaveInfo: SlaveInfo): Unit = {
+
+  }
 
   override def launchTask(driver: ExecutorDriver, task: TaskInfo): Unit = {
 
@@ -30,16 +32,21 @@ class ActionsExecutor extends Executor with Logging {
       .setState(TaskState.TASK_RUNNING).build()
 
     driver.sendStatusUpdate(status)
-
     val fileName = task.getData.toString
 
   }
 
-  def main(args: Array[Nothing]) {
+}
+
+object ActionsExecutorLauncher extends Logging {
+
+  def main(args: Array[String]) {
 
     log.debug("Starting executor ------->")
     val driver = new MesosExecutorDriver(new ActionsExecutor)
-    System.exit(if (driver.run eq Status.DRIVER_STOPPED) 0 else 1)
+    driver.run()
+    //System.exit(if (driver.run eq Status.DRIVER_STOPPED) 0 else 1)
 
   }
+
 }

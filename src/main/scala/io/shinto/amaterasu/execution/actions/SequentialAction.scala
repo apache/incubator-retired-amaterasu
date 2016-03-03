@@ -37,7 +37,6 @@ class SequentialAction extends Action {
   override def handleFailure(message: String): String = {
 
     log.error(message)
-
     log.debug(s"Part ${data.name} of type ${data.actionType} failed on attempt $attempt")
     attempt += 1
 
@@ -74,9 +73,6 @@ object SequentialAction {
     action.actionPath = action.client.create().withMode(CreateMode.PERSISTENT_SEQUENTIAL).forPath(s"/${jobId}/task-", ActionStatus.pending.toString.getBytes())
     action.actionId = action.actionPath.substring(action.actionPath.indexOf("task-") + 5)
 
-    println("******************************")
-    println(action.actionId)
-    println("******************************")
     action.attempts = attempts
     action.jobId = jobId
     action.data = new ActionData(name, src, jobType, action.actionId, new ListBuffer[String])
