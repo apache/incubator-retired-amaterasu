@@ -27,7 +27,7 @@ class ClusterConfig extends Logging {
 
     var cpus: Double = 1
     var mem: Long = 512
-    var repoSize: Long = 512
+    var repoSize: Long = 1024
 
     def load(props: Properties): Unit = {
 
