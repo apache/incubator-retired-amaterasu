@@ -28,7 +28,7 @@ import scala.collection.concurrent
   */
 class JobScheduler extends AmaterasuScheduler {
 
-  private val ACTION_COMMAND = "java -cp ${config.Jar} io.shinto.amaterasu.mesos.executors.ActionExecutor"
+  private var ACTION_COMMAND = ""
   private var jobManager: JobManager = null
   private var client: CuratorFramework = null
   private var config: ClusterConfig = null
@@ -115,17 +115,16 @@ class JobScheduler extends AmaterasuScheduler {
             .setName(taskId.getValue)
             .setExecutorId(ExecutorID.newBuilder().setValue("1234"))
             .setCommand(command)
-            .addResources(createScalarResource("cpus", config.Jobs.Tasks.cpus))
-            .addResources(createScalarResource("mem", config.Jobs.Tasks.mem))
 
-          // building the task to execute the action
           val actionTask = TaskInfo
             .newBuilder
             .setName(taskId.getValue)
             .setTaskId(taskId)
             .setSlaveId(offer.getSlaveId)
             .setExecutor(executor)
-            //.setData()
+            .addResources(createScalarResource("cpus", config.Jobs.Tasks.cpus))
+            .addResources(createScalarResource("mem", config.Jobs.Tasks.mem))
+            .addResources(createScalarResource("disk", config.Jobs.repoSize / 4))
             .build()
 
           driver.launchTasks(Collections.singleton(offer.getId), Collections.singleton(actionTask))
@@ -181,6 +180,7 @@ object JobScheduler {
 
     scheduler.config = config
 
+    scheduler.ACTION_COMMAND = s"java -cp ${config.JarName} io.shinto.amaterasu.mesos.executors.ActionsExecutorLauncher"
     scheduler
   }
 

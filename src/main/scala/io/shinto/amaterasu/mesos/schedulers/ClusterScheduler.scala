@@ -53,7 +53,7 @@ class ClusterScheduler extends AmaterasuScheduler {
     println(s"Starting amaterasu job: java -cp ${config.JarName} io.shinto.amaterasu.mesos.executors.JobExecutor $jobSrc")
 
     CommandInfo.newBuilder
-      .addUris(URI.newBuilder.setValue(fsUtil.getJarUrl()).setExecutable(true))
+      .addUris(URI.newBuilder.setValue(fsUtil.getJarUrl()).setExecutable(false))
       //.addUris(URI.newBuilder.setValue(jobSrc)
       .setValue(s"java -cp ${config.Jar} io.shinto.amaterasu.mesos.executors.JobExecutor $jobSrc")
       .build()
