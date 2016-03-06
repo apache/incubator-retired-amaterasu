@@ -96,6 +96,16 @@ class JobManager extends Logging {
       registeredActions.get(id).get.execute()
 
   }
+
+  /**
+    * announce the start of execution of the action
+    * */
+  def actionStarted(actionId: String): Unit = {
+
+    val action = registeredActions.get(actionId).get
+    action.announceStart
+
+  }
 }
 
 object JobManager {
