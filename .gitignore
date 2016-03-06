@@ -1,6 +1,7 @@
 ### Scala ###
 *.class
 *.log
+$*/
 
 # sbt specific
 .cache/

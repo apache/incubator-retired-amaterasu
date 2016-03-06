@@ -95,7 +95,7 @@ class JobManager extends Logging {
     if (id != null)
       registeredActions.get(id).get.execute()
 
-  }
+  }git
 }
 
 object JobManager {
