@@ -29,6 +29,7 @@ object JobParser {
 
   /**
     * Parses the maki.yaml string and creates a job manager
+    *
     * @param jobId
     * @param maki a string containing the YAML definition of the job
     * @param actionsQueue
@@ -62,8 +63,9 @@ object JobParser {
     * parseActions is a recursive function, for building the workflow of
     * the job
     * God, I miss Clojure
-    * @param actions a seq containing the definitions of all the actions
-    * @param manager the job manager for the job
+    *
+    * @param actions  a seq containing the definitions of all the actions
+    * @param manager  the job manager for the job
     * @param actionsQueue
     * @param previous the previous action, this is used in order to add the current action
     *                 to the nextActionIds
