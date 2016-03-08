@@ -24,7 +24,7 @@ class JobParserTests extends FlatSpec with Matchers {
   val yaml = Source.fromURL(getClass.getResource("/simple-maki.yaml")).mkString
   val queue = new LinkedBlockingQueue[ActionData]()
 
-  // this will be performed by the job bootstraper
+  // this will be performed by the job bootstrapper
   client.create().withMode(CreateMode.PERSISTENT).forPath(s"/$jobId")
 
   val job = JobParser.parse(jobId, yaml, queue, client, 1)

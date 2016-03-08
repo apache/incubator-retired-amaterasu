@@ -7,9 +7,7 @@ import java.util.concurrent.{ ConcurrentHashMap, LinkedBlockingQueue }
 import io.shinto.amaterasu.configuration.ClusterConfig
 import io.shinto.amaterasu.enums.ActionStatus
 import io.shinto.amaterasu.enums.ActionStatus.ActionStatus
-import io.shinto.amaterasu.dataObjects.ActionData
-import io.shinto.amaterasu.dsl.{ JobParser, GitUtil }
-import io.shinto.amaterasu.execution.{ JobBootstraper, JobManager }
+import io.shinto.amaterasu.execution.{ JobBootstrapper, JobManager }
 import io.shinto.amaterasu.utilities.FsUtil
 
 import org.apache.curator.framework.{ CuratorFrameworkFactory, CuratorFramework }
@@ -83,7 +81,7 @@ class JobScheduler extends AmaterasuScheduler {
   }
 
   def resourceOffers(driver: SchedulerDriver, offers: util.List[Offer]): Unit = {
-
+    
     for (offer <- offers.asScala) {
 
       log.debug(s"offer received by Amaterasu JobScheduler ${jobManager.jobId} : $offer")
@@ -146,7 +144,7 @@ class JobScheduler extends AmaterasuScheduler {
 
   def registered(driver: SchedulerDriver, frameworkId: FrameworkID, masterInfo: MasterInfo): Unit = {
 
-    JobBootstraper.bootstrapJob(
+    jobManager = JobBootstrapper.bootstrapJob(
       src,
       branch,
       frameworkId.getValue,

@@ -10,9 +10,15 @@ import org.apache.zookeeper.CreateMode
 /**
   * Created by roadan on 3/7/16.
   */
-object JobBootstraper {
+object JobBootstrapper {
 
   def bootstrapJob(src: String, branch: String, jobId: String, client: CuratorFramework, attempts: Int): JobManager = {
+
+    // creating the jobs znode and storing the source repo and branch
+    client.create().withMode(CreateMode.PERSISTENT).forPath(s"/$jobId")
+    client.create().withMode(CreateMode.PERSISTENT).forPath(s"/$jobId/src", src.getBytes)
+    client.create().withMode(CreateMode.PERSISTENT).forPath(s"/$jobId/branch", branch.getBytes)
+
     // cloning the git repo
     GitUtil.cloneRepo(src, branch)
 
@@ -27,11 +33,6 @@ object JobBootstraper {
       client,
       attempts
     )
-
-    // creating the jobs znode and storing the source repo and branch
-    client.create().withMode(CreateMode.PERSISTENT).forPath(s"/$jobId")
-    client.setData().forPath(s"/$jobId/src", src.getBytes)
-    client.setData().forPath(s"/$jobId/branch", branch.getBytes)
 
     jobManager.start()
     jobManager

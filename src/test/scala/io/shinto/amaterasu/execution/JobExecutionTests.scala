@@ -25,7 +25,7 @@ class JobExecutionTests extends FlatSpec with Matchers {
   val yaml = Source.fromURL(getClass.getResource("/simple-maki.yaml")).mkString
   val queue = new LinkedBlockingQueue[ActionData]()
 
-  // this will be performed by the job bootstraper
+  // this will be performed by the job bootstrapper
   client.create().withMode(CreateMode.PERSISTENT).forPath(s"/$jobId")
   //  client.setData().forPath(s"/$jobId/src",src.getBytes)
   //  client.setData().forPath(s"/$jobId/branch", branch.getBytes)
