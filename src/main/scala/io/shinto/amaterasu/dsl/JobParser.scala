@@ -23,12 +23,12 @@ object JobParser {
 
   def loadMakiFile(): String = {
 
-    Source.fromFile("repo/maki.yaml").mkString
+    Source.fromFile("repo/maki.yml").mkString
 
   }
 
   /**
-    * Parses the maki.yaml string and creates a job manager
+    * Parses the maki.yml string and creates a job manager
     *
     * @param jobId
     * @param maki a string containing the YAML definition of the job
