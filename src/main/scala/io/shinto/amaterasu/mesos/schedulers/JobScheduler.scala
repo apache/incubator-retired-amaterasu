@@ -13,8 +13,8 @@ import io.shinto.amaterasu.utilities.FsUtil
 
 import org.apache.curator.framework.{ CuratorFrameworkFactory, CuratorFramework }
 import org.apache.curator.retry.ExponentialBackoffRetry
-import org.apache.mesos.Protos.CommandInfo.URI
 
+import org.apache.mesos.Protos.CommandInfo.URI
 import org.apache.mesos.Protos._
 import org.apache.mesos.{ Protos, SchedulerDriver }
 
@@ -33,6 +33,7 @@ class JobScheduler extends AmaterasuScheduler {
   private var config: ClusterConfig = null
   private var src: String = null
   private var branch: String = null
+  private var resume: Boolean = false
 
   // this map holds the following structure:
   // slaveId
@@ -145,32 +146,29 @@ class JobScheduler extends AmaterasuScheduler {
 
   def registered(driver: SchedulerDriver, frameworkId: FrameworkID, masterInfo: MasterInfo): Unit = {
 
-    jobManager = JobLoader.loadJob(
-      src,
-      branch,
-      frameworkId.getValue,
-      client,
-      config.Jobs.Tasks.attempts,
-      new LinkedBlockingQueue[ActionData]()
-    )
-    //    // cloning the git repo
-    //    GitUtil.cloneRepo(src, branch)
-    //
-    //    // parsing the maki.yaml and creating a JobManager to
-    //    // coordinate the workflow based on the file
-    //    val maki = JobParser.loadMakiFile()
-    //
-    //    jobManager = JobParser.parse(
-    //      frameworkId.getValue,
-    //      src,
-    //      branch,
-    //      maki,
-    //      new LinkedBlockingQueue[ActionData],
-    //      client,
-    //      config.Jobs.Tasks.attempts
-    //    )
-    //
-    //    jobManager.start()
+    if (!resume) {
+
+      jobManager = JobLoader.loadJob(
+        src,
+        branch,
+        frameworkId.getValue,
+        client,
+        config.Jobs.Tasks.attempts,
+        new LinkedBlockingQueue[ActionData]()
+      )
+
+    }
+    else {
+
+      JobLoader.reloadJob(
+        frameworkId.getValue,
+        client,
+        config.Jobs.Tasks.attempts,
+        new LinkedBlockingQueue[ActionData]()
+      )
+
+    }
+    jobManager.start()
 
   }
 
@@ -180,7 +178,7 @@ class JobScheduler extends AmaterasuScheduler {
 
 object JobScheduler {
 
-  def apply(src: String, branch: String, config: ClusterConfig): JobScheduler = {
+  def apply(src: String, branch: String, resume: Boolean, config: ClusterConfig): JobScheduler = {
 
     val scheduler = new JobScheduler()
     scheduler.src = src

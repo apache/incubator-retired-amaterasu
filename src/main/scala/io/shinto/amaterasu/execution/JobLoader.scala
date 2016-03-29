@@ -63,6 +63,7 @@ object JobLoader {
     val maki: String = loadMaki(src, branch)
 
     val jobManager: JobManager = createJobManager(maki, jobId, client, attempts, actionsQueue)
+    restoreJobState(jobManager, jobId, client)
 
     jobManager.start()
     jobManager
