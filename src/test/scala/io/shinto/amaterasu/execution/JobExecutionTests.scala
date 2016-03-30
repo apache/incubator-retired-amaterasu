@@ -8,6 +8,7 @@ import io.shinto.amaterasu.dsl.JobParser
 import org.apache.curator.framework.CuratorFrameworkFactory
 import org.apache.curator.retry.ExponentialBackoffRetry
 import org.apache.curator.test.TestingServer
+import org.apache.zookeeper.CreateMode
 
 import org.scalatest.{ Matchers, FlatSpec }
 
@@ -23,6 +24,12 @@ class JobExecutionTests extends FlatSpec with Matchers {
   val jobId = s"job_${System.currentTimeMillis}"
   val yaml = Source.fromURL(getClass.getResource("/simple-maki.yaml")).mkString
   val queue = new LinkedBlockingQueue[ActionData]()
+
+  // this will be performed by the job bootstraper
+  client.create().withMode(CreateMode.PERSISTENT).forPath(s"/$jobId")
+  //  client.setData().forPath(s"/$jobId/src",src.getBytes)
+  //  client.setData().forPath(s"/$jobId/branch", branch.getBytes)
+
   val job = JobParser.parse(jobId, yaml, queue, client, 1)
 
   "a job" should "queue the first action when the JobManager.start method is called " in {

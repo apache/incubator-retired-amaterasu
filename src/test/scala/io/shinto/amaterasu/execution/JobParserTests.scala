@@ -8,6 +8,7 @@ import io.shinto.amaterasu.dsl.JobParser
 import org.apache.curator.framework.CuratorFrameworkFactory
 import org.apache.curator.retry.ExponentialBackoffRetry
 import org.apache.curator.test.TestingServer
+import org.apache.zookeeper.CreateMode
 import org.scalatest.{ Matchers, FlatSpec }
 
 import scala.io.Source
@@ -22,6 +23,10 @@ class JobParserTests extends FlatSpec with Matchers {
   val jobId = s"job_${System.currentTimeMillis}"
   val yaml = Source.fromURL(getClass.getResource("/simple-maki.yaml")).mkString
   val queue = new LinkedBlockingQueue[ActionData]()
+
+  // this will be performed by the job bootstrapper
+  client.create().withMode(CreateMode.PERSISTENT).forPath(s"/$jobId")
+
   val job = JobParser.parse(jobId, yaml, queue, client, 1)
 
   "JobParser" should "parse the simple-maki.yaml" in {

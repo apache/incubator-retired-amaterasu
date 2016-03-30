@@ -5,17 +5,16 @@ import java.util.Collections
 import java.util.concurrent.{ ConcurrentHashMap, LinkedBlockingQueue }
 
 import io.shinto.amaterasu.configuration.ClusterConfig
+import io.shinto.amaterasu.dataObjects.ActionData
 import io.shinto.amaterasu.enums.ActionStatus
 import io.shinto.amaterasu.enums.ActionStatus.ActionStatus
-import io.shinto.amaterasu.dataObjects.ActionData
-import io.shinto.amaterasu.dsl.{ JobParser, GitUtil }
-import io.shinto.amaterasu.execution.JobManager
+import io.shinto.amaterasu.execution.{ JobLoader, JobManager }
 import io.shinto.amaterasu.utilities.FsUtil
 
 import org.apache.curator.framework.{ CuratorFrameworkFactory, CuratorFramework }
 import org.apache.curator.retry.ExponentialBackoffRetry
-import org.apache.mesos.Protos.CommandInfo.URI
 
+import org.apache.mesos.Protos.CommandInfo.URI
 import org.apache.mesos.Protos._
 import org.apache.mesos.{ Protos, SchedulerDriver }
 
@@ -34,6 +33,7 @@ class JobScheduler extends AmaterasuScheduler {
   private var config: ClusterConfig = null
   private var src: String = null
   private var branch: String = null
+  private var resume: Boolean = false
 
   // this map holds the following structure:
   // slaveId
@@ -56,9 +56,12 @@ class JobScheduler extends AmaterasuScheduler {
   def statusUpdate(driver: SchedulerDriver, status: TaskStatus) = {
 
     status.getState match {
+      case TaskState.TASK_RUNNING  => jobManager.actionStarted(status.getTaskId.getValue)
       case TaskState.TASK_FINISHED => jobManager.actionComplete(status.getTaskId.getValue)
       case TaskState.TASK_FAILED |
-        TaskState.TASK_ERROR => jobManager.actionFailed(status.getTaskId.getValue, status.getMessage) //TODO: revisit this
+        TaskState.TASK_KILLED |
+        TaskState.TASK_ERROR |
+        TaskState.TASK_LOST => jobManager.actionFailed(status.getTaskId.getValue, status.getMessage) //TODO: revisit this
       case _ => log.warn("WTF? just got unexpected task state: " + status.getState)
     }
 
@@ -108,7 +111,7 @@ class JobScheduler extends AmaterasuScheduler {
           val command = CommandInfo
             .newBuilder
             .setValue(s"$ACTION_COMMAND -Djava.library.path=/usr/lib --action-type ${actionData.actionType} --src ${actionData.src}")
-            .addUris(URI.newBuilder.setValue(fsUtil.getJarUrl()).setExecutable(true))
+            .addUris(URI.newBuilder.setValue(fsUtil.getJarUrl()).setExecutable(false))
 
           val executor = ExecutorInfo
             .newBuilder
@@ -143,21 +146,28 @@ class JobScheduler extends AmaterasuScheduler {
 
   def registered(driver: SchedulerDriver, frameworkId: FrameworkID, masterInfo: MasterInfo): Unit = {
 
-    // cloning the git repo
-    GitUtil.cloneRepo(src, branch)
+    if (!resume) {
 
-    // parsing the maki.yaml and creating a JobManager to
-    // coordinate the workflow based on the file
-    val maki = JobParser.loadMakiFile()
+      jobManager = JobLoader.loadJob(
+        src,
+        branch,
+        frameworkId.getValue,
+        client,
+        config.Jobs.Tasks.attempts,
+        new LinkedBlockingQueue[ActionData]()
+      )
 
-    jobManager = JobParser.parse(
-      frameworkId.getValue,
-      maki,
-      new LinkedBlockingQueue[ActionData],
-      client,
-      config.Jobs.Tasks.attempts
-    )
+    }
+    else {
 
+      JobLoader.reloadJob(
+        frameworkId.getValue,
+        client,
+        config.Jobs.Tasks.attempts,
+        new LinkedBlockingQueue[ActionData]()
+      )
+
+    }
     jobManager.start()
 
   }
@@ -168,7 +178,7 @@ class JobScheduler extends AmaterasuScheduler {
 
 object JobScheduler {
 
-  def apply(src: String, branch: String, config: ClusterConfig): JobScheduler = {
+  def apply(src: String, branch: String, resume: Boolean, config: ClusterConfig): JobScheduler = {
 
     val scheduler = new JobScheduler()
     scheduler.src = src
@@ -182,6 +192,7 @@ object JobScheduler {
 
     scheduler.ACTION_COMMAND = s"java -cp ${config.JarName} io.shinto.amaterasu.mesos.executors.ActionsExecutorLauncher"
     scheduler
+
   }
 
 }

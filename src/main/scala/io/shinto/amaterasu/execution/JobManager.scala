@@ -39,6 +39,7 @@ class JobManager extends Logging {
   /**
     * getNextActionData returns the data of the next action to be executed if such action
     * exists
+    *
     * @return the ActionData of the next action, returns null if no such action exists
     */
   def getNextActionData: ActionData = {
@@ -62,6 +63,7 @@ class JobManager extends Logging {
 
   /**
     * Registers an action with the job
+    *
     * @param action
     */
   def registerAction(action: Action): Unit = {
@@ -72,6 +74,7 @@ class JobManager extends Logging {
 
   /**
     * announce the completion of an action and executes the next actions
+    *
     * @param actionId
     */
   def actionComplete(actionId: String): Unit = {
@@ -85,6 +88,7 @@ class JobManager extends Logging {
   /**
     * gets the next action id which can be either the same action or an error action
     * and if it exist (we have an error action or a retry)
+    *
     * @param actionId
     */
   def actionFailed(actionId: String, message: String): Unit = {
@@ -94,6 +98,16 @@ class JobManager extends Logging {
     val id = action.handleFailure(message)
     if (id != null)
       registeredActions.get(id).get.execute()
+
+  }
+
+  /**
+    * announce the start of execution of the action
+    */
+  def actionStarted(actionId: String): Unit = {
+
+    val action = registeredActions.get(actionId).get
+    action.announceStart
 
   }
 }
@@ -106,6 +120,7 @@ object JobManager {
     * the first action
     * If the job execution is resumed (a job that was stooped) the init method will restore the
     * state of the job from ZooKepper
+    *
     * @param jobId
     * @param name
     * @param jobsQueue
@@ -124,7 +139,6 @@ object JobManager {
     manager.executionQueue = jobsQueue
     manager.jobId = jobId
     manager.client = client
-    client.create().withMode(CreateMode.PERSISTENT).forPath(s"/$jobId")
 
     manager
 
