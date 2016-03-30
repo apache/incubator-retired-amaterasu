@@ -111,7 +111,7 @@ class JobScheduler extends AmaterasuScheduler {
           val command = CommandInfo
             .newBuilder
             .setValue(s"$ACTION_COMMAND -Djava.library.path=/usr/lib --action-type ${actionData.actionType} --src ${actionData.src}")
-            .addUris(URI.newBuilder.setValue(fsUtil.getJarUrl()).setExecutable(true))
+            .addUris(URI.newBuilder.setValue(fsUtil.getJarUrl()).setExecutable(false))
 
           val executor = ExecutorInfo
             .newBuilder
@@ -192,6 +192,7 @@ object JobScheduler {
 
     scheduler.ACTION_COMMAND = s"java -cp ${config.JarName} io.shinto.amaterasu.mesos.executors.ActionsExecutorLauncher"
     scheduler
+
   }
 
 }
