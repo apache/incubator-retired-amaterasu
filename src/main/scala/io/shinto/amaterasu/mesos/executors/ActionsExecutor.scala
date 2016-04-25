@@ -1,6 +1,8 @@
 package io.shinto.amaterasu.mesos.executors
 
 import io.shinto.amaterasu.Logging
+import io.shinto.amaterasu.configuration.SparkConfig
+import io.shinto.amaterasu.execution.actions.runners.spark.SparkScalaRunner
 import org.apache.mesos.Protos._
 import org.apache.mesos.{ MesosExecutorDriver, ExecutorDriver, Executor }
 
@@ -26,14 +28,19 @@ class ActionsExecutor extends Executor with Logging {
   }
 
   override def launchTask(driver: ExecutorDriver, task: TaskInfo): Unit = {
-
     val status = TaskStatus.newBuilder
       .setTaskId(task.getTaskId)
       .setState(TaskState.TASK_RUNNING).build()
 
     driver.sendStatusUpdate(status)
-    val fileName = task.getData.toString
+    val actionType = System.getProperty("action.type")
+    val actionSource = System.getProperty("action.source")
 
+    val jobId = "job-" + task.getTaskId.getValue
+    val actionName = "action-" + task.getTaskId.getValue
+    val sparkScalaRunner = SparkScalaRunner(new SparkConfig(), actionType, jobId)
+    val sparkContext = null
+    sparkScalaRunner.execute(actionSource, sparkContext, actionName)
   }
 
 }

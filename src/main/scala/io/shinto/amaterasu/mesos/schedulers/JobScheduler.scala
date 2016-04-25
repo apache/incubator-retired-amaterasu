@@ -110,7 +110,7 @@ class JobScheduler extends AmaterasuScheduler {
 
           val command = CommandInfo
             .newBuilder
-            .setValue(s"$ACTION_COMMAND -Djava.library.path=/usr/lib --action-type ${actionData.actionType} --src ${actionData.src}")
+            .setValue(s"$ACTION_COMMAND -Djava.library.path=/usr/lib -Daction.type=${actionData.actionType} -Daction.source=${actionData.src}")
             .addUris(URI.newBuilder.setValue(fsUtil.getJarUrl()).setExecutable(false))
 
           val executor = ExecutorInfo
