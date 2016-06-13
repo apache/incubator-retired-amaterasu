@@ -1,8 +1,22 @@
 package io.shinto.amaterasu.configuration.environments
 
+import java.io.FileInputStream
+
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.scala.DefaultScalaModule
+
 /**
   * Created by roadan on 5/23/16.
   */
-class GitEnvironmentLoader {
+object GitEnvironmentLoader {
+
+  def getEnv(name: String) = {
+
+    val mapper = new ObjectMapper()
+    mapper.registerModule(DefaultScalaModule)
+
+    mapper.readValue(new FileInputStream(s"repo/env/$name.json"), Environment.getClass)
+
+  }
 
 }

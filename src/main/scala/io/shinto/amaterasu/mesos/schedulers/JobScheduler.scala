@@ -178,7 +178,7 @@ class JobScheduler extends AmaterasuScheduler {
 
 object JobScheduler {
 
-  def apply(src: String, branch: String, resume: Boolean, config: ClusterConfig): JobScheduler = {
+  def apply(src: String, branch: String, env: String, resume: Boolean, config: ClusterConfig): JobScheduler = {
 
     val scheduler = new JobScheduler()
     scheduler.src = src

@@ -51,7 +51,7 @@ object Build extends Build {
       "com.github.scopt" %% "scopt" % "3.3.0",
 
       // execution engines dependencies
-      "org.apache.spark" %% "spark-repl" % "1.6.0" % "provided",
+      "org.apache.spark" %% "spark-repl" % "1.6.1" % "provided",
 
       //      "org.eclipse.jetty" % "jetty-server" % "9.3.6.v20151106",
       //      "org.eclipse.jetty" % "jetty-util" % "9.3.6.v20151106",
