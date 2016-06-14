@@ -1,7 +1,8 @@
 package io.shinto.amaterasu.execution
 
 import io.shinto.amaterasu.configuration.environments.Environment
-import org.apache.spark.sql.{ DataFrame, SQLContext }
+import org.apache.spark.rdd.RDD
+import org.apache.spark.sql.{ SaveMode, DataFrame, SQLContext }
 import org.apache.spark.SparkContext
 
 object AmaContext {
@@ -11,10 +12,12 @@ object AmaContext {
   var sqlContext: SQLContext = null
   var env: Environment = null
 
-  def init(sc: SparkContext,
-           sqlContext: SQLContext,
-           jobId: String,
-           env: Environment) = {
+  def init(
+    sc: SparkContext,
+    sqlContext: SQLContext,
+    jobId: String,
+    env: Environment
+  ) = {
 
     AmaContext.sc = sc
     AmaContext.sqlContext = sqlContext
@@ -23,18 +26,28 @@ object AmaContext {
 
   }
 
-  def persistDataFrame(df: DataFrame,
-                       actionName: String,
-                       dfName: String) = {
+  def saveDataFrame(df: DataFrame, actionName: String, dfName: String) = {
 
-    df.write.parquet(s"${env.workingDir}/$jobId/$actionName/$dfName")
+    println(s"${env.workingDir}/$jobId/$actionName/$dfName")
+    df.write.mode(SaveMode.Overwrite).parquet(s"${env.workingDir}/$jobId/$actionName/$dfName")
 
   }
 
-  def getDataFrame(actionName: String,
-                   dfName: String): DataFrame = {
+  def saveRDD(rdd: RDD[_], actionName: String, rddName: String) = {
+
+    rdd.saveAsObjectFile(s"${env.workingDir}/$jobId/$actionName/$rddName")
+
+  }
+
+  def getDataFrame(actionName: String, dfName: String): DataFrame = {
 
     AmaContext.sqlContext.read.parquet(s"${env.workingDir}/$jobId/$actionName/$dfName")
+
+  }
+
+  def getRDD(actionName: String, rddName: String): RDD[_] = {
+
+    AmaContext.sc.objectFile(s"${env.workingDir}/$jobId/$actionName/$rddName")
 
   }
 
