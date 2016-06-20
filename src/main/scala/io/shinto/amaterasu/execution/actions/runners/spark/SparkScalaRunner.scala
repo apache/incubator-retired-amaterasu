@@ -5,8 +5,8 @@ import java.io.{ ByteArrayOutputStream, File, BufferedReader, PrintWriter }
 import io.shinto.amaterasu.configuration.environments.Environment
 import io.shinto.amaterasu.configuration.ClusterConfig
 import io.shinto.amaterasu.execution.AmaContext
-import org.apache.spark.rdd.RDD
 
+import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SQLContext
 import org.apache.spark.sql.DataFrame
 import org.apache.spark.{ SparkContext, SparkConf }
@@ -14,8 +14,9 @@ import org.apache.spark.repl.Main
 
 import scala.collection.mutable
 import scala.io.Source
+import scala.reflect.internal.util.ScalaClassLoader.URLClassLoader
 import scala.tools.nsc.Settings
-import scala.tools.nsc.interpreter.{ Results, IMain }
+import scala.tools.nsc.interpreter.{ SparkIMain, Results, IMain }
 
 class SparkScalaRunner {
 
@@ -24,7 +25,7 @@ class SparkScalaRunner {
   var actionName: String = null
   var jobId: String = null
   val settings = new Settings()
-  var interpreter: IMain = null
+  var interpreter: SparkIMain = null
   var out: PrintWriter = null
   var outStream: ByteArrayOutputStream = null
 
@@ -141,11 +142,9 @@ object SparkScalaRunner {
     result.actionName = actionName
     result.jobId = jobId
 
-    val interpreter = new IMain()
+    val interpreter = new SparkIMain()
 
-    //    val command =
-    //      new SparkCommandLine(scala.collection.JavaConversions.asScalaBuffer(argList).toList())
-    //    result.settings = command.settings()
+    println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
     //TODO: revisit this, not sure it should be in an apply method
     result.settings.processArguments(List(
       "-Yrepl-class-based",
@@ -158,7 +157,7 @@ object SparkScalaRunner {
     val in: Option[BufferedReader] = null
     result.outStream = new ByteArrayOutputStream()
     val out = new PrintWriter(result.outStream)
-    result.interpreter = new IMain(result.settings, out)
+    result.interpreter = new SparkIMain(result.settings, out)
     result
   }
 }

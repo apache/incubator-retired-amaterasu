@@ -54,7 +54,7 @@ object Build extends Build {
       "org.apache.spark" %% "spark-repl" % "1.4.1" % "provided",
       "org.apache.spark" %% "spark-core" % "1.4.1" ,
       "org.apache.spark" %% "spark-sql" % "1.4.1" ,
-      "org.apache.hadoop" % "hadoop-client" % "2.3.0",
+//      "org.apache.hadoop" % "hadoop-client" % "2.3.0",
       //  "org.eclipse.jetty" % "jetty-server" % "9.3.6.v20151106",
       //  "org.eclipse.jetty" % "jetty-util" % "9.3.6.v20151106",
       //  "org.eclipse.jetty" % "jetty-http" % "9.3.6.v20151106",
@@ -64,8 +64,8 @@ object Build extends Build {
       //  "org.scala-lang" % "scala-library" % SCALA_VERSION,
 
       "org.scalatest" %% "scalatest" % "2.2.2" % "test",
-      "org.apache.curator" % "curator-test" % "2.9.1" % "test",
-      "com.github.scala-incubator.io" %% "scala-io-file" % "0.4.3" % "test"
+      "org.apache.curator" % "curator-test" % "2.9.1" % "test"
+      //"com.github.scala-incubator.io" %% "scala-io-file" % "0.4.3" % "test"
     ),
 
     scalacOptions in Compile ++= Seq(

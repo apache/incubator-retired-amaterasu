@@ -29,7 +29,7 @@ object AmaContext {
   def saveDataFrame(df: DataFrame, actionName: String, dfName: String) = {
 
     println(s"${env.workingDir}/$jobId/$actionName/$dfName")
-    df.write.mode(SaveMode.Overwrite).parquet(s"${env.workingDir}/$jobId/$actionName/$dfName")
+    df.write.format("parquet").mode(SaveMode.Overwrite).save(s"${env.workingDir}/$jobId/$actionName/$dfName")
 
   }
 
