@@ -20,6 +20,9 @@ class ClusterConfig extends Logging {
   var workingFolder: String = ""
   var Jar: String = null
   var JarName: String = null
+  // the additionalClassPath is currently for testing purposes, when amaterasu is
+  // not packaged, there is a need to load the spark-assembly jar
+  var additionalClassPath: String = ""
 
   //this should be a filesystem path that is reachable by all executors (HDFS, S3, local)
 

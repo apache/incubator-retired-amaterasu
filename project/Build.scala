@@ -51,10 +51,13 @@ object Build extends Build {
       "com.github.scopt" %% "scopt" % "3.3.0",
 
       // execution engines dependencies
-      "org.apache.spark" %% "spark-repl" % "1.4.1" % "provided",
-      "org.apache.spark" %% "spark-core" % "1.4.1" ,
-      "org.apache.spark" %% "spark-sql" % "1.4.1" ,
-//      "org.apache.hadoop" % "hadoop-client" % "2.3.0",
+      "org.apache.spark" %% "spark-repl" % "1.6.1",
+//      "org.apache.spark" %% "spark-core" % "1.6.1",
+//      "org.apache.spark" %% "spark-sql" % "1.6  .1",
+//      "org.apache.hadoop" % "hadoop-client" % "2.2.0",
+////      "com.databricks" %% "spark-csv" % "1.4.0",
+//      "com.twitter" % "parquet-hadoop-bundle" % "1.6.0",
+
       //  "org.eclipse.jetty" % "jetty-server" % "9.3.6.v20151106",
       //  "org.eclipse.jetty" % "jetty-util" % "9.3.6.v20151106",
       //  "org.eclipse.jetty" % "jetty-http" % "9.3.6.v20151106",

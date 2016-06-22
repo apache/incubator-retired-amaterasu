@@ -1,6 +1,6 @@
 package io.shinto.amaterasu.execution.actions.runners.spark
 
-import java.io.{ ByteArrayOutputStream, File, BufferedReader, PrintWriter }
+import java.io.{ File, ByteArrayOutputStream, BufferedReader, PrintWriter }
 
 import io.shinto.amaterasu.configuration.environments.Environment
 import io.shinto.amaterasu.configuration.ClusterConfig
@@ -14,9 +14,8 @@ import org.apache.spark.repl.Main
 
 import scala.collection.mutable
 import scala.io.Source
-import scala.reflect.internal.util.ScalaClassLoader.URLClassLoader
 import scala.tools.nsc.Settings
-import scala.tools.nsc.interpreter.{ SparkIMain, Results, IMain }
+import scala.tools.nsc.interpreter.{ Results, IMain }
 
 class SparkScalaRunner {
 
@@ -25,11 +24,11 @@ class SparkScalaRunner {
   var actionName: String = null
   var jobId: String = null
   val settings = new Settings()
-  var interpreter: SparkIMain = null
+  var interpreter: IMain = null
   var out: PrintWriter = null
   var outStream: ByteArrayOutputStream = null
 
-  def execute(file: String, sc: SparkContext, actionName: String, env: Environment): Unit = {
+  def execute(file: String, actionName: String, env: Environment): Unit = {
 
     // setting up some context :)
     val sc = createSparkContext()
@@ -45,20 +44,23 @@ class SparkScalaRunner {
     // in th REPL and getting a reference to it
     interpreter.interpret("var _contextStore = scala.collection.mutable.Map[String, AnyRef]()")
     val contextStore = interpreter.prevRequestList.last.lineRep.call("$result").asInstanceOf[mutable.Map[String, AnyRef]]
+    AmaContext.init(sc, sqlContext, jobId, env)
 
     // populating the contextStore
     contextStore.put("sc", sc)
     contextStore.put("sqlContext", sqlContext)
     contextStore.put("env", env)
+    contextStore.put("ac", AmaContext)
 
     interpreter.interpret("val sc = _contextStore(\"sc\").asInstanceOf[SparkContext]")
     interpreter.interpret("val sqlContext = _contextStore(\"sqlContext\").asInstanceOf[SQLContext]")
     interpreter.interpret("val env = _contextStore(\"env\").asInstanceOf[Environment]")
+    interpreter.interpret("val AmaContext = _contextStore(\"ac\").asInstanceOf[AmaContext]")
 
     // initializing the AmaContext
     println(s"""AmaContext.init(sc, sqlContext ,"$jobId")""")
 
-    interpreter.interpret(s"""AmaContext.init(sc, sqlContext ,"$jobId", env)""")
+    //interpreter.interpret(s"""AmaContext.init(sc, sqlContext ,"$jobId", env)""")
     println(interpreter.prevRequestList.last.value)
 
     for (line <- Source.fromFile(file).getLines()) {
@@ -89,11 +91,11 @@ class SparkScalaRunner {
               if (result != null) {
                 result match {
                   case df: DataFrame => {
-                    AmaContext.saveDataFrame(df, actionName, resultName)
+                    interpreter.interpret(s"""AmaContext.saveDataFrame($resultName, "$actionName", "$resultName")""")
                     println(s"persisted DataFrame: $resultName")
                   }
                   case rdd: RDD[_] => {
-                    AmaContext.saveRDD(rdd, actionName, resultName)
+                    interpreter.interpret(s"""AmaContext.saveRDD($resultName, "$actionName", "$resultName")""")
                     println(s"persisted RDD: $resultName")
                   }
                   case _ => println(result)
@@ -123,7 +125,7 @@ class SparkScalaRunner {
       .setMaster(s"local[*]")
       //.setMaster(s"mesos://${config.master}:${config.masterPort}")
       .setAppName(s"${jobId}_$actionName")
-      .set("spark.repl.class.uri", Main.getClass().getName) //TODO: :\ check this
+    // .set("spark.repl.class.uri", Main.getClass().getName) //TODO: :\ check this
     //.set("spark.executor.uri", "<path to spark-1.6.1.tar.gz uploaded above>")
     new SparkContext(conf)
   }
@@ -142,9 +144,8 @@ object SparkScalaRunner {
     result.actionName = actionName
     result.jobId = jobId
 
-    val interpreter = new SparkIMain()
+    val interpreter = new IMain()
 
-    println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
     //TODO: revisit this, not sure it should be in an apply method
     result.settings.processArguments(List(
       "-Yrepl-class-based",
@@ -152,12 +153,14 @@ object SparkScalaRunner {
       "-classpath", interpreter.classLoader.getPackages().mkString(File.pathSeparator)
     ), true)
 
+    println(result.settings.classpath)
+    //println(System.getProperty("java.class.path"))
     result.settings.usejavacp.value = true
 
     val in: Option[BufferedReader] = null
     result.outStream = new ByteArrayOutputStream()
     val out = new PrintWriter(result.outStream)
-    result.interpreter = new SparkIMain(result.settings, out)
+    result.interpreter = new IMain(result.settings, out)
     result
   }
 }
