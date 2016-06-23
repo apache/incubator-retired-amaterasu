@@ -37,7 +37,6 @@ object Build extends Build {
       "com.typesafe" % "config" % "1.2.1",
       "org.slf4j" % "slf4j-api" % "1.7.9",
       "ch.qos.logback" % "logback-classic" % "1.1.2" % "runtime",
-      "org.scalatest" %% "scalatest" % "2.2.2" % "test",
       "com.github.nscala-time" %% "nscala-time" % "2.2.0",
       "commons-io" % "commons-io" % "2.4",
       "org.apache.curator" % "curator-framework" % "2.9.1",
@@ -52,23 +51,9 @@ object Build extends Build {
 
       // execution engines dependencies
       "org.apache.spark" %% "spark-repl" % "1.6.1" % "provided",
-//      "org.apache.spark" %% "spark-core" % "1.6.1",
-//      "org.apache.spark" %% "spark-sql" % "1.6  .1",
-//      "org.apache.hadoop" % "hadoop-client" % "2.2.0",
-////      "com.databricks" %% "spark-csv" % "1.4.0",
-//      "com.twitter" % "parquet-hadoop-bundle" % "1.6.0",
-
-      //  "org.eclipse.jetty" % "jetty-server" % "9.3.6.v20151106",
-      //  "org.eclipse.jetty" % "jetty-util" % "9.3.6.v20151106",
-      //  "org.eclipse.jetty" % "jetty-http" % "9.3.6.v20151106",
-
-      //  "org.scala-lang" % "scala-compiler" % SCALA_VERSION,
-      //  "org.scala-lang" % "scala-reflect" % SCALA_VERSION,
-      //  "org.scala-lang" % "scala-library" % SCALA_VERSION,
 
       "org.scalatest" %% "scalatest" % "2.2.2" % "test",
       "org.apache.curator" % "curator-test" % "2.9.1" % "test"
-      //"com.github.scala-incubator.io" %% "scala-io-file" % "0.4.3" % "test"
     ),
 
     scalacOptions in Compile ++= Seq(

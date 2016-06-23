@@ -5,6 +5,8 @@ import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{ SaveMode, DataFrame, SQLContext }
 import org.apache.spark.SparkContext
 
+import scala.reflect.ClassTag
+
 object AmaContext {
 
   var sc: SparkContext = null
@@ -45,9 +47,9 @@ object AmaContext {
 
   }
 
-  def getRDD(actionName: String, rddName: String): RDD[_] = {
+  def getRDD[T: ClassTag](actionName: String, rddName: String): RDD[T] = {
 
-    AmaContext.sc.objectFile(s"${env.workingDir}/$jobId/$actionName/$rddName")
+    AmaContext.sc.objectFile[T](s"${env.workingDir}/$jobId/$actionName/$rddName")
 
   }
 

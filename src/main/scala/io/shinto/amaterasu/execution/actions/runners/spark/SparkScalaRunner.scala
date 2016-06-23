@@ -21,17 +21,17 @@ class SparkScalaRunner {
 
   // This is the amaterasu spark configuration need to rethink the name
   var config: ClusterConfig = null
-  var actionName: String = null
   var jobId: String = null
   val settings = new Settings()
   var interpreter: IMain = null
   var out: PrintWriter = null
   var outStream: ByteArrayOutputStream = null
+  var sc: SparkContext = null
 
   def execute(file: String, actionName: String, env: Environment): Unit = {
 
     // setting up some context :)
-    val sc = createSparkContext()
+    val sc = this.sc
     val sqlContext = new SQLContext(sc)
 
     interpreter.interpret("import scala.util.control.Exception._")
@@ -124,7 +124,7 @@ class SparkScalaRunner {
     val conf = new SparkConf(true)
       .setMaster(s"local[*]")
       //.setMaster(s"mesos://${config.master}:${config.masterPort}")
-      .setAppName(s"${jobId}_$actionName")
+      .setAppName(s"$jobId")
     // .set("spark.repl.class.uri", Main.getClass().getName) //TODO: :\ check this
     //.set("spark.executor.uri", "<path to spark-1.6.1.tar.gz uploaded above>")
     new SparkContext(conf)
@@ -133,15 +133,10 @@ class SparkScalaRunner {
 
 object SparkScalaRunner {
 
-  def apply(
-    config: ClusterConfig,
-    actionName: String,
-    jobId: String
-  ): SparkScalaRunner = {
+  def apply(config: ClusterConfig, jobId: String): SparkScalaRunner = {
 
     val result = new SparkScalaRunner()
     result.config = config
-    result.actionName = actionName
     result.jobId = jobId
 
     val interpreter = new IMain()
@@ -161,6 +156,7 @@ object SparkScalaRunner {
     result.outStream = new ByteArrayOutputStream()
     val out = new PrintWriter(result.outStream)
     result.interpreter = new IMain(result.settings, out)
+    result.sc = result.createSparkContext()
     result
   }
 }
