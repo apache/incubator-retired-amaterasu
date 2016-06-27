@@ -1,18 +1,39 @@
 package io.shinto.amaterasu.spark
 
-import io.shinto.amaterasu.configuration.SparkConfig
+import java.io.File
+
+import io.shinto.amaterasu.configuration.environments.Environment
+import io.shinto.amaterasu.configuration.ClusterConfig
 import io.shinto.amaterasu.execution.actions.runners.spark.SparkScalaRunner
+
+import org.apache.commons.io.FileUtils
+
 import org.scalatest.{ Matchers, FlatSpec }
 
 class SparkScalaRunnerTests extends FlatSpec with Matchers {
 
-  val script = getClass.getResource("/simple-spark.scala").getPath
+  FileUtils.deleteQuietly(new File("/tmp/job_5/"))
+
+  val config = new ClusterConfig()
+  config.load()
+
+  val runner = SparkScalaRunner(config, "job_5")
+  val env = new Environment()
+  env.workingDir = "file:///tmp"
 
   "SparkScalaRunner" should "execute the simple-spark.scala" in {
 
-    val runner = SparkScalaRunner(new SparkConfig(), "start", "job_1")
-    runner.execute(script, null, "test")
+    val script = getClass.getResource("/simple-spark.scala").getPath
+
+    runner.execute(script, "start", env)
 
   }
 
+  "SparkScalaRunner" should "execute step-2.scala and access data from simple-spark.scala" in {
+
+    val script = getClass.getResource("/step-2.scala").getPath
+
+    runner.execute(script, "cont", env)
+
+  }
 }

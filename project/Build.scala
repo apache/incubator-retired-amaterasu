@@ -37,7 +37,6 @@ object Build extends Build {
       "com.typesafe" % "config" % "1.2.1",
       "org.slf4j" % "slf4j-api" % "1.7.9",
       "ch.qos.logback" % "logback-classic" % "1.1.2" % "runtime",
-      "org.scalatest" %% "scalatest" % "2.2.2" % "test",
       "com.github.nscala-time" %% "nscala-time" % "2.2.0",
       "commons-io" % "commons-io" % "2.4",
       "org.apache.curator" % "curator-framework" % "2.9.1",
@@ -51,15 +50,7 @@ object Build extends Build {
       "com.github.scopt" %% "scopt" % "3.3.0",
 
       // execution engines dependencies
-      "org.apache.spark" %% "spark-repl" % "1.6.0" % "provided",
-
-      //      "org.eclipse.jetty" % "jetty-server" % "9.3.6.v20151106",
-      //      "org.eclipse.jetty" % "jetty-util" % "9.3.6.v20151106",
-      //      "org.eclipse.jetty" % "jetty-http" % "9.3.6.v20151106",
-
-      //      "org.scala-lang" % "scala-compiler" % SCALA_VERSION,
-      //      "org.scala-lang" % "scala-reflect" % SCALA_VERSION,
-      //      "org.scala-lang" % "scala-library" % SCALA_VERSION,
+      "org.apache.spark" %% "spark-repl" % "1.6.1" % "provided",
 
       "org.scalatest" %% "scalatest" % "2.2.2" % "test",
       "org.apache.curator" % "curator-test" % "2.9.1" % "test"

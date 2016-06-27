@@ -5,7 +5,7 @@ import java.util.Properties
 
 class SparkConfig {
 
-  var master: String = "local[*]"
+  var sparkExecutorUri: String = "http://www.apache.org/dyn/closer.lua/spark/spark-1.6.1/spark-1.6.1-bin-hadoop2.6.tgz"
 
   def load(file: InputStream): Unit = {
     val props: Properties = new Properties()
@@ -13,7 +13,7 @@ class SparkConfig {
     props.load(file)
     file.close()
 
-    if (props.containsKey("aws.accessKeyId")) master = props.getProperty("aws.accessKeyId")
+    if (props.containsKey("sparkExecutorUri")) sparkExecutorUri = props.getProperty("sparkExecutorUri")
   }
 
 }

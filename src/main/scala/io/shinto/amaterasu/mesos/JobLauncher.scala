@@ -11,6 +11,7 @@ import org.apache.mesos.{ MesosSchedulerDriver, Protos }
 case class Args(
   repo: String = "",
   branch: String = "master",
+  env: String = "default",
   name: String = "amaterasu-job",
   jobId: String = null
 )
@@ -30,6 +31,9 @@ object JobLauncher extends App with Logging {
     opt[String]('b', "branch") action { (x, c) =>
       c.copy(branch = x)
     } text "The branch to be executed (default is master)"
+    opt[String]('e', "env") action { (x, c) =>
+      c.copy(env = x)
+    } text "The environment to be executed (test, prod, etc. values from the default env are taken if np env specified)"
     opt[String]('n', "name") action { (x, c) =>
       c.copy(name = x)
     } text "The name of the job"
@@ -60,7 +64,14 @@ object JobLauncher extends App with Logging {
 
       log.debug(s"The framework user is ${config.user}")
       val masterAddress = s"${config.master}:${config.masterPort}"
-      val scheduler = JobScheduler(arguments.repo, arguments.branch, resume, config)
+      val scheduler = JobScheduler(
+        arguments.repo,
+        arguments.branch,
+        arguments.env,
+        resume,
+        config
+      )
+
       val driver = new MesosSchedulerDriver(scheduler, framework, masterAddress)
 
       log.debug(s"Connecting to master on: $masterAddress")
