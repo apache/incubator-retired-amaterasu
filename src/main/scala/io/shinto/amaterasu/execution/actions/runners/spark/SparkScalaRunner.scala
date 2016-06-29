@@ -13,7 +13,7 @@ import org.apache.spark.{ SparkContext, SparkConf }
 import org.apache.spark.repl.Main
 
 import scala.collection.mutable
-import scala.io.Source
+import scala.io.{ BufferedSource, Source }
 import scala.tools.nsc.Settings
 import scala.tools.nsc.interpreter.{ Results, IMain }
 
@@ -29,41 +29,21 @@ class SparkScalaRunner {
   var sc: SparkContext = null
 
   def execute(file: String, actionName: String, env: Environment): Unit = {
+    initializeAmaContext(env)
+    val source = Source.fromFile(file)
+    interpretSources(source, actionName)
+    interpreter.close()
+  }
 
-    // setting up some context :)
-    val sc = this.sc
-    val sqlContext = new SQLContext(sc)
+  def executeSource(actionSource: String, actionName: String, env: Environment): Unit = {
+    initializeAmaContext(env)
+    val source = Source.fromString(actionSource)
+    interpretSources(source, actionName)
+    interpreter.close()
+  }
 
-    interpreter.interpret("import scala.util.control.Exception._")
-    interpreter.interpret("import org.apache.spark.{ SparkContext, SparkConf }")
-    interpreter.interpret("import org.apache.spark.sql.SQLContext")
-    interpreter.interpret("import io.shinto.amaterasu.execution.AmaContext")
-    interpreter.interpret("import io.shinto.amaterasu.configuration.environments.Environment")
-
-    // creating a map (_contextStore) to hold the different spark contexts
-    // in th REPL and getting a reference to it
-    interpreter.interpret("var _contextStore = scala.collection.mutable.Map[String, AnyRef]()")
-    val contextStore = interpreter.prevRequestList.last.lineRep.call("$result").asInstanceOf[mutable.Map[String, AnyRef]]
-    AmaContext.init(sc, sqlContext, jobId, env)
-
-    // populating the contextStore
-    contextStore.put("sc", sc)
-    contextStore.put("sqlContext", sqlContext)
-    contextStore.put("env", env)
-    contextStore.put("ac", AmaContext)
-
-    interpreter.interpret("val sc = _contextStore(\"sc\").asInstanceOf[SparkContext]")
-    interpreter.interpret("val sqlContext = _contextStore(\"sqlContext\").asInstanceOf[SQLContext]")
-    interpreter.interpret("val env = _contextStore(\"env\").asInstanceOf[Environment]")
-    interpreter.interpret("val AmaContext = _contextStore(\"ac\").asInstanceOf[AmaContext]")
-
-    // initializing the AmaContext
-    println(s"""AmaContext.init(sc, sqlContext ,"$jobId")""")
-
-    //interpreter.interpret(s"""AmaContext.init(sc, sqlContext ,"$jobId", env)""")
-    println(interpreter.prevRequestList.last.value)
-
-    for (line <- Source.fromFile(file).getLines()) {
+  def interpretSources(source: Source, actionName: String): Unit = {
+    for (line <- source.getLines()) {
 
       if (!line.isEmpty) {
 
@@ -115,18 +95,51 @@ class SparkScalaRunner {
 
       }
     }
+  }
 
-    interpreter.close()
+  def initializeAmaContext(env: Environment): Unit = {
+    // setting up some context :)
+    val sc = this.sc
+    val sqlContext = new SQLContext(sc)
+
+    interpreter.interpret("import scala.util.control.Exception._")
+    interpreter.interpret("import org.apache.spark.{ SparkContext, SparkConf }")
+    interpreter.interpret("import org.apache.spark.sql.SQLContext")
+    interpreter.interpret("import io.shinto.amaterasu.execution.AmaContext")
+    interpreter.interpret("import io.shinto.amaterasu.configuration.environments.Environment")
+
+    // creating a map (_contextStore) to hold the different spark contexts
+    // in th REPL and getting a reference to it
+    interpreter.interpret("var _contextStore = scala.collection.mutable.Map[String, AnyRef]()")
+    val contextStore = interpreter.prevRequestList.last.lineRep.call("$result").asInstanceOf[mutable.Map[String, AnyRef]]
+    AmaContext.init(sc, sqlContext, jobId, env)
+
+    // populating the contextStore
+    contextStore.put("sc", sc)
+    contextStore.put("sqlContext", sqlContext)
+    contextStore.put("env", env)
+    contextStore.put("ac", AmaContext)
+
+    interpreter.interpret("val sc = _contextStore(\"sc\").asInstanceOf[SparkContext]")
+    interpreter.interpret("val sqlContext = _contextStore(\"sqlContext\").asInstanceOf[SQLContext]")
+    interpreter.interpret("val env = _contextStore(\"env\").asInstanceOf[Environment]")
+    interpreter.interpret("val AmaContext = _contextStore(\"ac\").asInstanceOf[AmaContext]")
+
+    // initializing the AmaContext
+    println(s"""AmaContext.init(sc, sqlContext ,"$jobId")""")
+
+    //interpreter.interpret(s"""AmaContext.init(sc, sqlContext ,"$jobId", env)""")
+    println(interpreter.prevRequestList.last.value)
   }
 
   def createSparkContext(): SparkContext = {
 
     val conf = new SparkConf(true)
       .setMaster(s"local[*]")
-      //.setMaster(s"mesos://${config.master}:${config.masterPort}")
+      .setMaster(s"mesos://${config.master}:${config.masterPort}")
       .setAppName(s"$jobId")
-    // .set("spark.repl.class.uri", Main.getClass().getName) //TODO: :\ check this
-    //.set("spark.executor.uri", "<path to spark-1.6.1.tar.gz uploaded above>")
+      // .set("spark.repl.class.uri", Main.getClass().getName) //TODO: :\ check this
+      .set("spark.executor.uri", "http://127.0.0.1:8000/spark-assembly-1.6.0-hadoop2.6.0.jar")
     new SparkContext(conf)
   }
 }

@@ -9,6 +9,7 @@ import io.shinto.amaterasu.dataObjects.ActionData
 import io.shinto.amaterasu.enums.ActionStatus
 import io.shinto.amaterasu.enums.ActionStatus.ActionStatus
 import io.shinto.amaterasu.execution.{ JobLoader, JobManager }
+import io.shinto.amaterasu.mesos.executors.{ TaskData, ActionsExecutorLauncher }
 import io.shinto.amaterasu.utilities.FsUtil
 
 import org.apache.curator.framework.{ CuratorFrameworkFactory, CuratorFramework }
@@ -20,6 +21,7 @@ import org.apache.mesos.{ Protos, SchedulerDriver }
 
 import scala.collection.JavaConverters._
 import scala.collection.concurrent
+import scala.List
 
 /**
   * The JobScheduler is a mesos implementation. It is in charge of scheduling the execution of
@@ -110,8 +112,13 @@ class JobScheduler extends AmaterasuScheduler {
 
           val command = CommandInfo
             .newBuilder
-            .setValue(s"$ACTION_COMMAND -Djava.library.path=/usr/lib -Daction.type=${actionData.actionType} -Daction.source=${actionData.src}")
-            .addUris(URI.newBuilder.setValue(fsUtil.getJarUrl()).setExecutable(false))
+            .setValue("java -jar amaterasu-assembly-0.1.0.jar")
+            .addUris(CommandInfo.URI.newBuilder()
+              .setValue("http://127.0.0.1:8000/amaterasu-assembly-0.1.0.jar")
+              .build())
+            .addUris(CommandInfo.URI.newBuilder()
+              .setValue("http://127.0.0.1:8000/spark-assembly-1.6.0-hadoop2.6.0.jar")
+              .build())
 
           val executor = ExecutorInfo
             .newBuilder
@@ -125,6 +132,7 @@ class JobScheduler extends AmaterasuScheduler {
             .setTaskId(taskId)
             .setSlaveId(offer.getSlaveId)
             .setExecutor(executor)
+            .setData(new TaskData(actionData).toTaskData())
             .addResources(createScalarResource("cpus", config.Jobs.Tasks.cpus))
             .addResources(createScalarResource("mem", config.Jobs.Tasks.mem))
             .addResources(createScalarResource("disk", config.Jobs.repoSize / 4))
@@ -189,8 +197,6 @@ object JobScheduler {
     scheduler.client.start()
 
     scheduler.config = config
-
-    scheduler.ACTION_COMMAND = s"java -cp ${config.JarName} io.shinto.amaterasu.mesos.executors.ActionsExecutorLauncher"
     scheduler
 
   }

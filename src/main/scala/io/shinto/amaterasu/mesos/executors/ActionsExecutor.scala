@@ -1,7 +1,8 @@
 package io.shinto.amaterasu.mesos.executors
 
 import io.shinto.amaterasu.Logging
-import io.shinto.amaterasu.configuration.SparkConfig
+import io.shinto.amaterasu.configuration.environments.Environment
+import io.shinto.amaterasu.configuration.{ ClusterConfig, SparkConfig }
 import io.shinto.amaterasu.execution.actions.runners.spark.SparkScalaRunner
 import org.apache.mesos.Protos._
 import org.apache.mesos.{ MesosExecutorDriver, ExecutorDriver, Executor }
@@ -11,36 +12,48 @@ import org.apache.mesos.{ MesosExecutorDriver, ExecutorDriver, Executor }
   */
 class ActionsExecutor extends Executor with Logging {
 
+  var executorDriver: ExecutorDriver = null
+
   override def shutdown(driver: ExecutorDriver): Unit = ???
 
   override def disconnected(driver: ExecutorDriver): Unit = ???
 
   override def killTask(driver: ExecutorDriver, taskId: TaskID): Unit = ???
 
-  override def reregistered(driver: ExecutorDriver, slaveInfo: SlaveInfo): Unit = ???
+  override def reregistered(driver: ExecutorDriver, slaveInfo: SlaveInfo): Unit = {
+    this.executorDriver = driver
+  }
 
   override def error(driver: ExecutorDriver, message: String): Unit = ???
 
   override def frameworkMessage(driver: ExecutorDriver, data: Array[Byte]): Unit = ???
 
   override def registered(driver: ExecutorDriver, executorInfo: ExecutorInfo, frameworkInfo: FrameworkInfo, slaveInfo: SlaveInfo): Unit = {
-
+    this.executorDriver = driver
   }
 
-  override def launchTask(driver: ExecutorDriver, task: TaskInfo): Unit = {
+  override def launchTask(driver: ExecutorDriver, taskInfo: TaskInfo): Unit = {
     val status = TaskStatus.newBuilder
-      .setTaskId(task.getTaskId)
+      .setTaskId(taskInfo.getTaskId)
       .setState(TaskState.TASK_RUNNING).build()
 
     driver.sendStatusUpdate(status)
-    val actionType = System.getProperty("action.type")
-    val actionSource = System.getProperty("action.source")
+    val actionSource = taskInfo.getData().toStringUtf8();
 
-    val jobId = "job-" + task.getTaskId.getValue
-    val actionName = "action-" + task.getTaskId.getValue
-    val sparkScalaRunner = SparkScalaRunner(new SparkConfig(), actionType, jobId)
-    val sparkContext = null
-    sparkScalaRunner.execute(actionSource, sparkContext, actionName)
+    val jobId = "job-" + taskInfo.getTaskId.getValue
+    val actionName = "action-" + taskInfo.getTaskId.getValue
+    val sparkScalaRunner = SparkScalaRunner(new ClusterConfig(), jobId)
+    try {
+      sparkScalaRunner.executeSource(actionSource, actionName, Environment())
+      driver.sendStatusUpdate(TaskStatus.newBuilder()
+        .setTaskId(taskInfo.getTaskId)
+        .setState(TaskState.TASK_FINISHED).build())
+    }
+    catch {
+      case e: Exception => {
+        System.exit(1)
+      }
+    }
   }
 
 }
@@ -48,12 +61,10 @@ class ActionsExecutor extends Executor with Logging {
 object ActionsExecutorLauncher extends Logging {
 
   def main(args: Array[String]) {
-
+    System.loadLibrary("mesos")
     log.debug("Starting executor ------->")
     val driver = new MesosExecutorDriver(new ActionsExecutor)
     driver.run()
-    //System.exit(if (driver.run eq Status.DRIVER_STOPPED) 0 else 1)
-
   }
 
 }
