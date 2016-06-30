@@ -10,10 +10,9 @@ import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SQLContext
 import org.apache.spark.sql.DataFrame
 import org.apache.spark.{ SparkContext, SparkConf }
-import org.apache.spark.repl.Main
 
 import scala.collection.mutable
-import scala.io.{ BufferedSource, Source }
+import scala.io.Source
 import scala.tools.nsc.Settings
 import scala.tools.nsc.interpreter.{ Results, IMain }
 
