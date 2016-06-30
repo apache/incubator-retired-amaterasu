@@ -136,7 +136,6 @@ class SparkScalaRunner {
 
     val conf = new SparkConf(true)
       .setMaster(s"local[*]")
-      .setMaster(s"mesos://${config.master}:${config.masterPort}")
       .setAppName(s"$jobId")
       // .set("spark.repl.class.uri", Main.getClass().getName) //TODO: :\ check this
       .set("spark.executor.uri", "http://127.0.0.1:8000/spark-assembly-1.6.0-hadoop2.6.0.jar")
