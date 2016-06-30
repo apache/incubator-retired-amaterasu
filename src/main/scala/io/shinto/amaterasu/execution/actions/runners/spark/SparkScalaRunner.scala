@@ -2,6 +2,7 @@ package io.shinto.amaterasu.execution.actions.runners.spark
 
 import java.io.{ File, ByteArrayOutputStream, BufferedReader, PrintWriter }
 
+import io.shinto.amaterasu.Logging
 import io.shinto.amaterasu.configuration.environments.Environment
 import io.shinto.amaterasu.configuration.ClusterConfig
 import io.shinto.amaterasu.execution.AmaContext
@@ -16,7 +17,7 @@ import scala.io.Source
 import scala.tools.nsc.Settings
 import scala.tools.nsc.interpreter.{ Results, IMain }
 
-class SparkScalaRunner {
+class SparkScalaRunner extends Logging{
 
   // This is the amaterasu spark configuration need to rethink the name
   var config: ClusterConfig = null
@@ -47,8 +48,7 @@ class SparkScalaRunner {
       if (!line.isEmpty) {
 
         outStream.reset()
-        println("-----------------------------")
-        println(line)
+        log.debug(line)
 
         val intresult = interpreter.interpret(line)
 
@@ -63,7 +63,7 @@ class SparkScalaRunner {
           // outStream.toString gives you the error message
           intresult match {
             case Results.Success => {
-              println("Results.Success")
+              log.debug("Results.Success")
 
               val resultName = interpreter.prevRequestList.last.value.name.toString
               println(interpreter.prevRequestList.last.value)
@@ -71,23 +71,23 @@ class SparkScalaRunner {
                 result match {
                   case df: DataFrame => {
                     interpreter.interpret(s"""AmaContext.saveDataFrame($resultName, "$actionName", "$resultName")""")
-                    println(s"persisted DataFrame: $resultName")
+                    log.debug(s"persisted DataFrame: $resultName")
                   }
                   case rdd: RDD[_] => {
                     interpreter.interpret(s"""AmaContext.saveRDD($resultName, "$actionName", "$resultName")""")
-                    println(s"persisted RDD: $resultName")
+                    log.debug(s"persisted RDD: $resultName")
                   }
                   case _ => println(result)
                 }
               }
             }
             case Results.Error => {
-              println("Results.Error")
+              log.debug("Results.Error")
               println(outStream.toString)
             }
             case Results.Incomplete => {
-              println("Results.Incomplete")
-              println("|")
+              log.debug("Results.Incomplete")
+              log.debug("|")
             }
           }
         }
@@ -128,7 +128,7 @@ class SparkScalaRunner {
     println(s"""AmaContext.init(sc, sqlContext ,"$jobId")""")
 
     //interpreter.interpret(s"""AmaContext.init(sc, sqlContext ,"$jobId", env)""")
-    println(interpreter.prevRequestList.last.value)
+    //log.debug(interpreter.prevRequestList.last.value)
   }
 
   def createSparkContext(): SparkContext = {
