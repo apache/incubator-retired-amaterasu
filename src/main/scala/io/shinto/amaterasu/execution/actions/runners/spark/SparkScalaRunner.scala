@@ -11,13 +11,14 @@ import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SQLContext
 import org.apache.spark.sql.DataFrame
 import org.apache.spark.{ SparkContext, SparkConf }
+import org.apache.spark.repl.Main
 
 import scala.collection.mutable
 import scala.io.Source
 import scala.tools.nsc.Settings
 import scala.tools.nsc.interpreter.{ Results, IMain }
 
-class SparkScalaRunner extends Logging{
+class SparkScalaRunner extends Logging {
 
   // This is the amaterasu spark configuration need to rethink the name
   var config: ClusterConfig = null
@@ -126,9 +127,7 @@ class SparkScalaRunner extends Logging{
 
     // initializing the AmaContext
     println(s"""AmaContext.init(sc, sqlContext ,"$jobId")""")
-
-    //interpreter.interpret(s"""AmaContext.init(sc, sqlContext ,"$jobId", env)""")
-    //log.debug(interpreter.prevRequestList.last.value)
+    
   }
 
   def createSparkContext(): SparkContext = {
@@ -136,8 +135,8 @@ class SparkScalaRunner extends Logging{
     val conf = new SparkConf(true)
       .setMaster(s"local[*]")
       .setAppName(s"$jobId")
-      // .set("spark.repl.class.uri", Main.getClass().getName) //TODO: :\ check this
-      .set("spark.executor.uri", "http://127.0.0.1:8000/spark-assembly-1.6.0-hadoop2.6.0.jar")
+      .set("spark.repl.class.uri", Main.getClass().getName) //TODO: :\ check this
+    //.set("spark.executor.uri", "http://127.0.0.1:8000/spark-assembly-1.6.0-hadoop2.6.0.jar")
     new SparkContext(conf)
   }
 }
