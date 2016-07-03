@@ -31,6 +31,7 @@ object Build extends Build {
     version := PROJECT_VERSION,
     organization := ORGANIZATION,
     scalaVersion := SCALA_VERSION,
+    mainClass := Some("io.shinto.amaterasu.mesos.executors.ActionsExecutorLauncher"),
 
     libraryDependencies ++= Seq(
       "org.apache.mesos" % "mesos" % "0.24.0",

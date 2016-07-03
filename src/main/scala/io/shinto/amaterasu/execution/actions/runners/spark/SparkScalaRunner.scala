@@ -6,6 +6,7 @@ import io.shinto.amaterasu.Logging
 import io.shinto.amaterasu.configuration.environments.Environment
 import io.shinto.amaterasu.configuration.ClusterConfig
 import io.shinto.amaterasu.execution.AmaContext
+import io.shinto.amaterasu.mesos.executors.ActionsExecutor
 
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SQLContext
@@ -127,7 +128,7 @@ class SparkScalaRunner extends Logging {
 
     // initializing the AmaContext
     println(s"""AmaContext.init(sc, sqlContext ,"$jobId")""")
-    
+
   }
 
   def createSparkContext(): SparkContext = {
