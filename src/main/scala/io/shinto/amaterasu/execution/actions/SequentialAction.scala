@@ -36,6 +36,7 @@ class SequentialAction extends Action {
 
   override def handleFailure(message: String): String = {
 
+    log.debug("action error:")
     log.error(message)
     log.debug(s"Part ${data.name} of type ${data.actionType} failed on attempt $attempt")
     attempt += 1

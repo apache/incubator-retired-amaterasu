@@ -93,7 +93,6 @@ class SparkScalaRunner extends Logging {
             }
           }
         }
-
       }
     }
   }

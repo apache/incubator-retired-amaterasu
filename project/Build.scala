@@ -51,7 +51,7 @@ object Build extends Build {
       "com.github.scopt" %% "scopt" % "3.3.0",
 
       // execution engines dependencies
-      "org.apache.spark" %% "spark-repl" % "1.6.1" % "provided",
+      "org.apache.spark" %% "spark-repl" % "1.6.1",
 
       "org.scalatest" %% "scalatest" % "2.2.2" % "test",
       "org.apache.curator" % "curator-test" % "2.9.1" % "test"

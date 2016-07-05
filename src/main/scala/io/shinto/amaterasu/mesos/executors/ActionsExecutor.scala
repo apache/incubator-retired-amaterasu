@@ -44,7 +44,9 @@ class ActionsExecutor extends Executor with Logging {
     val actionName = "action-" + taskInfo.getTaskId.getValue
     val sparkScalaRunner = SparkScalaRunner(new ClusterConfig(), jobId)
     try {
-      sparkScalaRunner.executeSource(actionSource, actionName, Environment())
+      val env = Environment()
+      env.workingDir = "file:///tmp/"
+      sparkScalaRunner.executeSource(actionSource, actionName, env)
       driver.sendStatusUpdate(TaskStatus.newBuilder()
         .setTaskId(taskInfo.getTaskId)
         .setState(TaskState.TASK_FINISHED).build())

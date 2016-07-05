@@ -113,17 +113,12 @@ class JobScheduler extends AmaterasuScheduler {
           val command = CommandInfo
             .newBuilder
             .setValue("java -jar amaterasu-assembly-0.1.0.jar")
-            .addUris(CommandInfo.URI.newBuilder()
-              .setValue("http://127.0.0.1:8000/amaterasu-assembly-0.1.0.jar")
-              .build())
-            .addUris(CommandInfo.URI.newBuilder()
-              .setValue("http://127.0.0.1:8000/spark-assembly-1.6.0-hadoop2.6.0.jar")
-              .build())
+            .addUris(URI.newBuilder.setValue(fsUtil.getJarUrl()).setExecutable(false))
 
           val executor = ExecutorInfo
             .newBuilder
             .setName(taskId.getValue)
-            .setExecutorId(ExecutorID.newBuilder().setValue("1234"))
+            .setExecutorId(ExecutorID.newBuilder().setValue("1234")) //TODO: fix this
             .setCommand(command)
 
           val actionTask = TaskInfo
