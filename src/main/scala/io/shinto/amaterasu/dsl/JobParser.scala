@@ -91,6 +91,9 @@ object JobParser {
       attempts
     )
 
+    if (manager.head == null)
+      manager.head = action
+
     if (previous != null)
       previous.data.nextActionIds.append(action.actionId)
 

@@ -135,7 +135,13 @@ class JobScheduler extends AmaterasuScheduler {
 
           driver.launchTasks(Collections.singleton(offer.getId), Collections.singleton(actionTask))
         }
+        else if (jobManager.outOfActions) {
+          log.info(s"framework ${jobManager.jobId} execution finished")
+          driver.stop()
+        }
         else {
+          println("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$")
+          println(jobManager.registeredActions.values.map(v => v.data))
           log.info("Declining offer, no action ready for execution")
           driver.declineOffer(offer.getId)
         }

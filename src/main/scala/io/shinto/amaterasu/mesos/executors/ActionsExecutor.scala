@@ -33,6 +33,8 @@ class ActionsExecutor extends Executor with Logging {
   }
 
   override def launchTask(driver: ExecutorDriver, taskInfo: TaskInfo): Unit = {
+
+    log.debug(s"launching task: $taskInfo")
     val status = TaskStatus.newBuilder
       .setTaskId(taskInfo.getTaskId)
       .setState(TaskState.TASK_RUNNING).build()
@@ -53,6 +55,8 @@ class ActionsExecutor extends Executor with Logging {
     }
     catch {
       case e: Exception => {
+        log.debug(s"launching task failed: ${e.getMessage}")
+
         System.exit(1)
       }
     }

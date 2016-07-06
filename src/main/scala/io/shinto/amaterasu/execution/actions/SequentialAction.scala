@@ -36,9 +36,7 @@ class SequentialAction extends Action {
 
   override def handleFailure(message: String): String = {
 
-    log.debug("action error:")
-    log.error(message)
-    log.debug(s"Part ${data.name} of type ${data.actionType} failed on attempt $attempt")
+    log.debug(s"Part ${data.name} of type ${data.actionType} failed on attempt $attempt with message: $message")
     attempt += 1
 
     if (attempt <= attempts) {
@@ -46,6 +44,7 @@ class SequentialAction extends Action {
     }
     else {
       announceFailure()
+      data.status = ActionStatus.failed
       data.errorActionId
     }
 
@@ -76,7 +75,7 @@ object SequentialAction {
 
     action.attempts = attempts
     action.jobId = jobId
-    action.data = new ActionData(name, src, jobType, action.actionId, new ListBuffer[String])
+    action.data = new ActionData(ActionStatus.pending, name, src, jobType, action.actionId, new ListBuffer[String])
     action.jobsQueue = queue
     action.client = zkClient
 
@@ -107,7 +106,7 @@ object ErrorAction {
     action.actionId = action.actionPath.substring(action.actionPath.indexOf('-') + 1)
 
     action.jobId = jobId
-    action.data = new ActionData(name, src, jobType, action.actionId, new ListBuffer[String])
+    action.data = new ActionData(ActionStatus.pending, name, src, jobType, action.actionId, new ListBuffer[String])
     action.jobsQueue = queue
     action.client = zkClient
 

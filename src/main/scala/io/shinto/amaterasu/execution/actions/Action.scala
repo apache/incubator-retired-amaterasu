@@ -25,21 +25,21 @@ trait Action extends Logging {
 
     log.debug(s"Starting action ${data.name} of type ${data.actionType}")
     client.setData().forPath(actionPath, ActionStatus.started.toString.getBytes)
-
+    data.status = ActionStatus.started
   }
 
   def announceQueued: Unit = {
 
     log.debug(s"Action ${data.name} of type ${data.actionType} is queued for execution")
     client.setData().forPath(actionPath, ActionStatus.queued.toString.getBytes)
-
+    data.status = ActionStatus.queued
   }
 
   def announceComplete: Unit = {
 
     log.debug(s"Action ${data.name} of type ${data.actionType} completed")
     client.setData().forPath(actionPath, ActionStatus.complete.toString.getBytes)
-
+    data.status = ActionStatus.complete
   }
 
   protected def announceFailure(): Unit = {}

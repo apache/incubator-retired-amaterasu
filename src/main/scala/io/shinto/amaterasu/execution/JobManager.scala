@@ -2,6 +2,7 @@ package io.shinto.amaterasu.execution
 
 import java.util.concurrent.BlockingQueue
 
+import io.shinto.amaterasu.enums.ActionStatus
 import org.apache.curator.framework.CuratorFramework
 import org.apache.zookeeper.CreateMode
 
@@ -21,6 +22,7 @@ class JobManager extends Logging {
   var name: String = null
   var jobId: String = null
   var client: CuratorFramework = null
+  var head: Action = null
 
   // TODO: this is not private due to tests, fix this!!!
   val registeredActions = new TrieMap[String, Action]
@@ -32,10 +34,14 @@ class JobManager extends Logging {
     */
   def start(): Unit = {
 
-    registeredActions.head._2.execute()
+    head.execute()
 
   }
 
+  def outOfActions(): Boolean = {
+    registeredActions.values.filter(a => a.data.status != ActionStatus.complete ||
+      a.data.status != ActionStatus.failed).isEmpty
+  }
   /**
     * getNextActionData returns the data of the next action to be executed if such action
     * exists
