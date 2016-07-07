@@ -105,6 +105,17 @@ class JobManager extends Logging {
     if (id != null)
       registeredActions.get(id).get.execute()
 
+    //delete all future actions
+    cancelFutureActions(action)
+  }
+
+  def cancelFutureActions(action: Action): Unit = {
+
+    if (action.data.status != ActionStatus.failed)
+      action.announceCanceled
+
+    action.data.nextActionIds.foreach(id =>
+      cancelFutureActions(registeredActions.get(id).get))
   }
 
   /**

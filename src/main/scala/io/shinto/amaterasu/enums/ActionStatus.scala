@@ -7,4 +7,5 @@ object ActionStatus extends Enumeration {
   val started = Value("started")
   val complete = Value("complete")
   val failed = Value("failed")
+  val canceled = Value("canceled")
 }

@@ -42,6 +42,12 @@ trait Action extends Logging {
     data.status = ActionStatus.complete
   }
 
+  def announceCanceled: Unit = {
+
+    log.debug(s"Action ${data.name} of type ${data.actionType} was canceled")
+    client.setData().forPath(actionPath, ActionStatus.canceled.toString.getBytes)
+    data.status = ActionStatus.canceled
+  }
   protected def announceFailure(): Unit = {}
 
 }
