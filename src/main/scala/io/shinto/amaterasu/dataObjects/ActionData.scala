@@ -5,7 +5,7 @@ import io.shinto.amaterasu.enums.ActionStatus.ActionStatus
 import scala.collection.mutable.ListBuffer
 
 case class ActionData(
-  var status: ActionStatus,
+    var status: ActionStatus,
     name: String,
     src: String,
     actionType: String,

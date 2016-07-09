@@ -52,7 +52,9 @@ object Build extends Build {
 
       // execution engines dependencies
       "org.apache.spark" %% "spark-repl" % "1.6.1",
+      "org.apache.hadoop" % "hadoop-client" % "2.3.0",
 
+      //test dependencies
       "org.scalatest" %% "scalatest" % "2.2.2" % "test",
       "org.apache.curator" % "curator-test" % "2.9.1" % "test"
     ),

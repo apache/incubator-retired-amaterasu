@@ -88,7 +88,7 @@ class JobScheduler extends AmaterasuScheduler {
 
     for (offer <- offers.asScala) {
 
-      log.debug(s"offer received by Amaterasu JobScheduler ${jobManager.jobId} : $offer")
+      log.debug(s"yumsudo service mesos-master start JobScheduler ${jobManager.jobId} : $offer")
 
       if (validateOffer(offer)) {
 
@@ -112,7 +112,7 @@ class JobScheduler extends AmaterasuScheduler {
 
           val command = CommandInfo
             .newBuilder
-            .setValue("java -jar amaterasu-assembly-0.1.0.jar")
+            .setValue("java -jar amaterasu-assembly-0.1.0.jar io.shinto.amaterasu.mesos.executors.ActionsExecutorLauncher")
             .addUris(URI.newBuilder.setValue(fsUtil.getJarUrl()).setExecutable(false))
 
           val executor = ExecutorInfo
@@ -134,6 +134,7 @@ class JobScheduler extends AmaterasuScheduler {
             .build()
 
           driver.launchTasks(Collections.singleton(offer.getId), Collections.singleton(actionTask))
+          log.info("started task@@")
         }
         else if (jobManager.outOfActions) {
           log.info(s"framework ${jobManager.jobId} execution finished")

@@ -7,6 +7,7 @@ import io.shinto.amaterasu.configuration.environments.Environment
 import io.shinto.amaterasu.configuration.ClusterConfig
 import io.shinto.amaterasu.execution.AmaContext
 import io.shinto.amaterasu.mesos.executors.ActionsExecutor
+import org.apache.spark
 
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SQLContext
@@ -114,11 +115,19 @@ class SparkScalaRunner extends Logging {
     val contextStore = interpreter.prevRequestList.last.lineRep.call("$result").asInstanceOf[mutable.Map[String, AnyRef]]
     AmaContext.init(sc, sqlContext, jobId, env)
 
+    interpreter.interpret("println(\"!*!*!*!*!*!*!*!*!*!*!*!*!\")")
+    interpreter.interpret("val cl = ClassLoader.getSystemClassLoader")
+    interpreter.interpret("cl.asInstanceOf[java.net.URLClassLoader].getURLs.foreach(println)")
     // populating the contextStore
     contextStore.put("sc", sc)
     contextStore.put("sqlContext", sqlContext)
     contextStore.put("env", env)
     contextStore.put("ac", AmaContext)
+
+    // fix for a merges issue (http://stackoverflow.com/questions/17265002/hadoop-no-filesystem-for-scheme-file)
+    interpreter.interpret("val hadoopConfig = sc.hadoopConfiguration")
+    interpreter.interpret("hadoopConfig.set(\"fs.hdfs.impl\", classOf[org.apache.hadoop.hdfs.DistributedFileSystem].getName)")
+    interpreter.interpret("hadoopConfig.set(\"fs.file.impl\", classOf[org.apache.hadoop.fs.LocalFileSystem].getName)")
 
     interpreter.interpret("val sc = _contextStore(\"sc\").asInstanceOf[SparkContext]")
     interpreter.interpret("val sqlContext = _contextStore(\"sqlContext\").asInstanceOf[SQLContext]")

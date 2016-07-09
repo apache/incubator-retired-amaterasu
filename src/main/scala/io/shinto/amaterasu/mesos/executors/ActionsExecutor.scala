@@ -1,5 +1,6 @@
 package io.shinto.amaterasu.mesos.executors
 
+import com.google.protobuf.ByteString
 import io.shinto.amaterasu.Logging
 import io.shinto.amaterasu.configuration.environments.Environment
 import io.shinto.amaterasu.configuration.{ ClusterConfig, SparkConfig }
@@ -24,7 +25,15 @@ class ActionsExecutor extends Executor with Logging {
     this.executorDriver = driver
   }
 
-  override def error(driver: ExecutorDriver, message: String): Unit = ???
+  override def error(driver: ExecutorDriver, message: String): Unit = {
+
+    val status = TaskStatus.newBuilder
+      .setData(ByteString.copyFromUtf8(message))
+      .setState(TaskState.TASK_ERROR).build()
+
+    driver.sendStatusUpdate(status)
+
+  }
 
   override def frameworkMessage(driver: ExecutorDriver, data: Array[Byte]): Unit = ???
 
@@ -34,9 +43,11 @@ class ActionsExecutor extends Executor with Logging {
 
   override def launchTask(driver: ExecutorDriver, taskInfo: TaskInfo): Unit = {
 
+    println("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%")
     log.debug(s"launching task: $taskInfo")
     val status = TaskStatus.newBuilder
       .setTaskId(taskInfo.getTaskId)
+      .setData(ByteString.copyFromUtf8("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"))
       .setState(TaskState.TASK_RUNNING).build()
 
     driver.sendStatusUpdate(status)

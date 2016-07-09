@@ -38,10 +38,9 @@ class JobManager extends Logging {
 
   }
 
-  def outOfActions(): Boolean = {
-    registeredActions.values.filter(a => a.data.status != ActionStatus.complete ||
-      a.data.status != ActionStatus.failed).isEmpty
-  }
+  def outOfActions(): Boolean = registeredActions.values.exists(a => a.data.status == ActionStatus.pending ||
+    a.data.status == ActionStatus.queued ||
+    a.data.status == ActionStatus.started)
   /**
     * getNextActionData returns the data of the next action to be executed if such action
     * exists
