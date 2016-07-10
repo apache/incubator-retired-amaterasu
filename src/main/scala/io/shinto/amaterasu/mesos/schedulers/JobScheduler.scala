@@ -9,7 +9,7 @@ import io.shinto.amaterasu.dataObjects.ActionData
 import io.shinto.amaterasu.enums.ActionStatus
 import io.shinto.amaterasu.enums.ActionStatus.ActionStatus
 import io.shinto.amaterasu.execution.{ JobLoader, JobManager }
-import io.shinto.amaterasu.mesos.executors.{ TaskData, ActionsExecutorLauncher }
+import io.shinto.amaterasu.mesos.executors.TaskData
 import io.shinto.amaterasu.utilities.FsUtil
 
 import org.apache.curator.framework.{ CuratorFrameworkFactory, CuratorFramework }
@@ -21,7 +21,8 @@ import org.apache.mesos.{ Protos, SchedulerDriver }
 
 import scala.collection.JavaConverters._
 import scala.collection.concurrent
-import scala.List
+
+//import org.apache.mesos.protobuf.{ ByteString, GeneratedMessage }
 
 /**
   * The JobScheduler is a mesos implementation. It is in charge of scheduling the execution of
@@ -112,8 +113,10 @@ class JobScheduler extends AmaterasuScheduler {
 
           val command = CommandInfo
             .newBuilder
-            .setValue("java -jar amaterasu-assembly-0.1.0.jar io.shinto.amaterasu.mesos.executors.ActionsExecutorLauncher")
+            .setValue("java -jar amaterasu-assembly-0.1.0.jar -Djava.library.path=/usr/lib io.shinto.amaterasu.mesos.executors.ActionsExecutorLauncher")
             .addUris(URI.newBuilder.setValue(fsUtil.getJarUrl()).setExecutable(false))
+
+          //.addUris(URI.newBuilder.setValue("https://downloads.mesosphere.com/spark/assets/spark-1.6.1-1.tgz").setExecutable(false).setExtract(true))
 
           val executor = ExecutorInfo
             .newBuilder
@@ -130,11 +133,10 @@ class JobScheduler extends AmaterasuScheduler {
             .setData(new TaskData(actionData).toTaskData())
             .addResources(createScalarResource("cpus", config.Jobs.Tasks.cpus))
             .addResources(createScalarResource("mem", config.Jobs.Tasks.mem))
-            .addResources(createScalarResource("disk", config.Jobs.repoSize / 4))
+            .addResources(createScalarResource("disk", config.Jobs.repoSize))
             .build()
 
           driver.launchTasks(Collections.singleton(offer.getId), Collections.singleton(actionTask))
-          log.info("started task@@")
         }
         else if (jobManager.outOfActions) {
           log.info(s"framework ${jobManager.jobId} execution finished")

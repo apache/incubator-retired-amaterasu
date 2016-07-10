@@ -7,6 +7,8 @@ import scalariform.formatter.preferences._
 
 object Build extends Build {
 
+
+
   // Project information
   val ORGANIZATION = "io.shinto"
   val PROJECT_NAME = "amaterasu"
@@ -34,7 +36,7 @@ object Build extends Build {
     mainClass := Some("io.shinto.amaterasu.mesos.executors.ActionsExecutorLauncher"),
 
     libraryDependencies ++= Seq(
-      "org.apache.mesos" % "mesos" % "0.24.0",
+      "org.apache.mesos" % "mesos" % "0.28.0",
       "com.typesafe" % "config" % "1.2.1",
       "org.slf4j" % "slf4j-api" % "1.7.9",
       "ch.qos.logback" % "logback-classic" % "1.1.2" % "runtime",
@@ -51,13 +53,19 @@ object Build extends Build {
       "com.github.scopt" %% "scopt" % "3.3.0",
 
       // execution engines dependencies
-      "org.apache.spark" %% "spark-repl" % "1.6.1",
-      "org.apache.hadoop" % "hadoop-client" % "2.3.0",
+      "org.apache.spark" %% "spark-repl" % "1.6.2",
+     // "org.apache.spark" %% "spark-core" % "1.6.2",
+      "org.apache.hadoop" % "hadoop-client" % "2.4.0",
+      "org.spark-project.protobuf" % "protobuf-java" % "2.5.0-spark",
 
       //test dependencies
       "org.scalatest" %% "scalatest" % "2.2.2" % "test",
       "org.apache.curator" % "curator-test" % "2.9.1" % "test"
+
+      //"org.apache.mesos" % "mesos" % "0.21.1" classifier "shaded-protobuf" exclude("com.google.protobuf", "protobuf-java")
     ),
+
+
 
     scalacOptions in Compile ++= Seq(
       "-unchecked",

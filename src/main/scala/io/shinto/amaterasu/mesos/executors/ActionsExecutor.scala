@@ -43,23 +43,23 @@ class ActionsExecutor extends Executor with Logging {
 
   override def launchTask(driver: ExecutorDriver, taskInfo: TaskInfo): Unit = {
 
-    println("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%")
     log.debug(s"launching task: $taskInfo")
     val status = TaskStatus.newBuilder
       .setTaskId(taskInfo.getTaskId)
-      .setData(ByteString.copyFromUtf8("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"))
       .setState(TaskState.TASK_RUNNING).build()
 
     driver.sendStatusUpdate(status)
-    val actionSource = taskInfo.getData().toStringUtf8();
+    val actionSource = taskInfo.getData().toStringUtf8()
 
     val jobId = "job-" + taskInfo.getTaskId.getValue
     val actionName = "action-" + taskInfo.getTaskId.getValue
-    val sparkScalaRunner = SparkScalaRunner(new ClusterConfig(), jobId)
     try {
       val env = Environment()
       env.workingDir = "file:///tmp/"
-      sparkScalaRunner.executeSource(actionSource, actionName, env)
+      env.master = "mesos://192.168.33.10:5050"
+
+      val sparkScalaRunner = SparkScalaRunner(env, jobId)
+      sparkScalaRunner.executeSource(actionSource, actionName)
       driver.sendStatusUpdate(TaskStatus.newBuilder()
         .setTaskId(taskInfo.getTaskId)
         .setState(TaskState.TASK_FINISHED).build())

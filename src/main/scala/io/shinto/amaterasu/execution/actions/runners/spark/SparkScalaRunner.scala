@@ -4,10 +4,7 @@ import java.io.{ File, ByteArrayOutputStream, BufferedReader, PrintWriter }
 
 import io.shinto.amaterasu.Logging
 import io.shinto.amaterasu.configuration.environments.Environment
-import io.shinto.amaterasu.configuration.ClusterConfig
 import io.shinto.amaterasu.execution.AmaContext
-import io.shinto.amaterasu.mesos.executors.ActionsExecutor
-import org.apache.spark
 
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SQLContext
@@ -23,7 +20,7 @@ import scala.tools.nsc.interpreter.{ Results, IMain }
 class SparkScalaRunner extends Logging {
 
   // This is the amaterasu spark configuration need to rethink the name
-  var config: ClusterConfig = null
+  var env: Environment = null
   var jobId: String = null
   val settings = new Settings()
   var interpreter: IMain = null
@@ -31,14 +28,14 @@ class SparkScalaRunner extends Logging {
   var outStream: ByteArrayOutputStream = null
   var sc: SparkContext = null
 
-  def execute(file: String, actionName: String, env: Environment): Unit = {
+  def execute(file: String, actionName: String): Unit = {
     initializeAmaContext(env)
     val source = Source.fromFile(file)
     interpretSources(source, actionName)
     interpreter.close()
   }
 
-  def executeSource(actionSource: String, actionName: String, env: Environment): Unit = {
+  def executeSource(actionSource: String, actionName: String): Unit = {
     initializeAmaContext(env)
     val source = Source.fromString(actionSource)
     interpretSources(source, actionName)
@@ -142,20 +139,20 @@ class SparkScalaRunner extends Logging {
   def createSparkContext(): SparkContext = {
 
     val conf = new SparkConf(true)
-      .setMaster(s"local[*]")
+      .setMaster(env.master)
       .setAppName(s"$jobId")
       .set("spark.repl.class.uri", Main.getClass().getName) //TODO: :\ check this
-    //.set("spark.executor.uri", "http://127.0.0.1:8000/spark-assembly-1.6.0-hadoop2.6.0.jar")
+      .set("spark.executor.uri", "https://downloads.mesosphere.com/spark/assets/spark-1.6.1-1.tgz")
     new SparkContext(conf)
   }
 }
 
 object SparkScalaRunner {
 
-  def apply(config: ClusterConfig, jobId: String): SparkScalaRunner = {
+  def apply(env: Environment, jobId: String): SparkScalaRunner = {
 
     val result = new SparkScalaRunner()
-    result.config = config
+    result.env = env
     result.jobId = jobId
 
     val interpreter = new IMain()
@@ -164,9 +161,10 @@ object SparkScalaRunner {
     result.settings.processArguments(List(
       "-Yrepl-class-based",
       "-Yrepl-outdir", s"./",
-      "-classpath", interpreter.classLoader.getPackages().mkString(File.pathSeparator)
+      "-classpath", System.getProperty("java.class.path") //+ File.pathSeparator + "spark-1.6.1-1/lib/spark-assembly-1.6.1-hadoop2.4.0.jar" // interpreter.classLoader.getPackages().mkString(File.pathSeparator)
     ), true)
 
+    println("{{{{{}}}}}")
     println(result.settings.classpath)
     //println(System.getProperty("java.class.path"))
     result.settings.usejavacp.value = true

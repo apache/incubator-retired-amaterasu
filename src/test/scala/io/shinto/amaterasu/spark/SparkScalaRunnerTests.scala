@@ -17,15 +17,17 @@ class SparkScalaRunnerTests extends FlatSpec with Matchers {
   val config = new ClusterConfig()
   config.load()
 
-  val runner = SparkScalaRunner(config, "job_5")
   val env = new Environment()
   env.workingDir = "file:///tmp"
+  env.master = "local[*]"
+
+  val runner = SparkScalaRunner(env, "job_5")
 
   "SparkScalaRunner" should "execute the simple-spark.scala" in {
 
     val script = getClass.getResource("/simple-spark.scala").getPath
 
-    runner.execute(script, "start", env)
+    runner.execute(script, "start")
 
   }
 
@@ -33,7 +35,7 @@ class SparkScalaRunnerTests extends FlatSpec with Matchers {
 
     val script = getClass.getResource("/step-2.scala").getPath
 
-    runner.execute(script, "cont", env)
+    runner.execute(script, "cont")
 
   }
 }
