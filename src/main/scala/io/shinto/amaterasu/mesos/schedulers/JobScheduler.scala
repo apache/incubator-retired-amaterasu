@@ -113,9 +113,15 @@ class JobScheduler extends AmaterasuScheduler {
 
           val command = CommandInfo
             .newBuilder
-            .setValue("java -jar amaterasu-assembly-0.1.0.jar -Djava.library.path=/usr/lib io.shinto.amaterasu.mesos.executors.ActionsExecutorLauncher")
+            .setValue(
+              //"""MESOS_NATIVE_JAVA_LIBRARY=/usr/lib/libmesos.so SPARK_EXECUTOR_URI=https://downloads.mesosphere.com/spark/assets/spark-1.6.1-1.tgz java -jar amaterasu-assembly-0.1.0.jar -classpath \"spark-assembly-1.6.1-hadoop2.4.0.jar\" -Djava.library.path=/usr/lib io.shinto.amaterasu.mesos.executors.ActionsExecutorLauncher""".stripMargin
+              """MESOS_NATIVE_JAVA_LIBRARY=/usr/lib/libmesos.so SPARK_EXECUTOR_URI=https://downloads.mesosphere.com/spark/assets/spark-1.6.1-1.tgz java -cp amaterasu-assembly-0.1.0.jar:spark-assembly-1.6.1-hadoop2.4.0.jar -Djava.library.path=/usr/lib io.shinto.amaterasu.mesos.executors.ActionsExecutorLauncher""".stripMargin
+            )
             .addUris(URI.newBuilder.setValue(fsUtil.getJarUrl()).setExecutable(false))
-
+            .addUris(CommandInfo.URI.newBuilder()
+              .setValue("http://127.0.0.1:8000/spark-assembly-1.6.1-hadoop2.4.0.jar")
+              .setExecutable(false)
+              .build())
           //.addUris(URI.newBuilder.setValue("https://downloads.mesosphere.com/spark/assets/spark-1.6.1-1.tgz").setExecutable(false).setExtract(true))
 
           val executor = ExecutorInfo

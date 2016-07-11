@@ -161,7 +161,7 @@ object SparkScalaRunner {
     result.settings.processArguments(List(
       "-Yrepl-class-based",
       "-Yrepl-outdir", s"./",
-      "-classpath", System.getProperty("java.class.path") //+ File.pathSeparator + "spark-1.6.1-1/lib/spark-assembly-1.6.1-hadoop2.4.0.jar" // interpreter.classLoader.getPackages().mkString(File.pathSeparator)
+      "-classpath", System.getProperty("java.class.path") + File.pathSeparator + "spark-assembly-1.6.1-hadoop2.4.0.jar" //+ "spark-1.6.1-1/lib/spark-assembly-1.6.1-hadoop2.4.0.jar" // interpreter.classLoader.getPackages().mkString(File.pathSeparator)
     ), true)
 
     println("{{{{{}}}}}")

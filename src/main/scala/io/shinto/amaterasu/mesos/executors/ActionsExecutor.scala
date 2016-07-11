@@ -56,7 +56,7 @@ class ActionsExecutor extends Executor with Logging {
     try {
       val env = Environment()
       env.workingDir = "file:///tmp/"
-      env.master = "mesos://192.168.33.10:5050"
+      env.master = "mesos://192.168.33.11:5050"
 
       val sparkScalaRunner = SparkScalaRunner(env, jobId)
       sparkScalaRunner.executeSource(actionSource, actionName)
