@@ -20,6 +20,8 @@ assemblyMergeStrategy in assembly := {
     oldStrategy(x)
 }
 
+
+
 //assemblyShadeRules in assembly := Seq(
 //  ShadeRule.rename("com.google.protobuf.*" -> "shadedproto.@1").inProject
 //    .inLibrary("com.google.protobuf" % "protobuf-java" % protobufVersion)
