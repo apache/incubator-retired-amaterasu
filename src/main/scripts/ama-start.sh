@@ -3,9 +3,9 @@
 BASEDIR=$(dirname "$0")
 
 pushd $BASEDIR >/dev/null
-nohup python -m SimpleHTTPServer 8000 &
+cd /mesos-dependencies && nohup python -m SimpleHTTPServer 8000 &
 SERVER_PID=$!
-echo "serving amaterasu from $BASEDIR on port 8000"
+echo "serving amaterasu from /mesos-dependencies on port 8000"
 popd >/dev/null
 
 echo ""
