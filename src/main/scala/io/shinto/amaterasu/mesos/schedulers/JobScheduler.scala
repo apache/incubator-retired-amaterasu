@@ -120,7 +120,6 @@ class JobScheduler extends AmaterasuScheduler {
             val command = CommandInfo
               .newBuilder
               .setValue(
-                //"""MESOS_NATIVE_JAVA_LIBRARY=/usr/lib/libmesos.so SPARK_EXECUTOR_URI=https://downloads.mesosphere.com/spark/assets/spark-1.6.1-1.tgz java -jar amaterasu-assembly-0.1.0.jar -classpath \"spark-assembly-1.6.1-hadoop2.4.0.jar\" -Djava.library.path=/usr/lib io.shinto.amaterasu.mesos.executors.ActionsExecutorLauncher""".stripMargin
                 s"""env MESOS_NATIVE_JAVA_LIBRARY=/usr/lib/libmesos.so env SPARK_EXECUTOR_URI=http://192.168.33.11:8000/spark-assembly-1.6.2-hadoop2.4.0.tgz env SPARK_HOME="/home/vagrant/park-1.6.2-bin-hadoop2.4" java -cp amaterasu-assembly-0.1.0.jar:spark-assembly-1.6.2-hadoop2.4.0.jar:snappy-java-1.1.2.6.jar:hadoop-client-2.4.0.jar:hadoop-common-2.4.0.jar:conf/ -Dscala.usejavacp=true -Djava.library.path=/usr/lib io.shinto.amaterasu.mesos.executors.ActionsExecutorLauncher ${jobManager.jobId}""".stripMargin
               )
               .addUris(URI.newBuilder.setValue(fsUtil.getJarUrl()).setExecutable(false))
@@ -129,26 +128,6 @@ class JobScheduler extends AmaterasuScheduler {
                 .setExecutable(false)
                 .setExtract(false)
                 .build())
-            //              .addUris(CommandInfo.URI.newBuilder()
-            //                .setValue("http://127.0.0.1:8000/snappy-java-1.1.2.6.jar")
-            //                .setExecutable(false)
-            //                .setExtract(false)
-            //                .build())
-            //              .addUris(CommandInfo.URI.newBuilder()
-            //                .setValue("http://127.0.0.1:8000/hadoop-common-2.4.0.jar")
-            //                .setExecutable(false)
-            //                .setExtract(false)
-            //                .build())
-            //              .addUris(CommandInfo.URI.newBuilder()
-            //                .setValue("http://127.0.0.1:8000/hadoop-client-2.4.0.jar")
-            //                .setExecutable(false)
-            //                .setExtract(false)
-            //                .build())
-            //              .addUris(CommandInfo.URI.newBuilder()
-            //                .setValue("http://127.0.0.1:8000/conf.tar.gz")
-            //                .setExecutable(false)
-            //                .setExtract(true)
-            //                .build())
 
             val executor = ExecutorInfo
               .newBuilder
