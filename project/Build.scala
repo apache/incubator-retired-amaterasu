@@ -1,3 +1,5 @@
+import java.nio.file.Files
+
 import sbt._
 import Keys._
 
@@ -29,11 +31,19 @@ object Build extends Build {
       formatSettings ++
       net.virtualvoid.sbt.graph.Plugin.graphSettings
 
+  lazy val copyRes = TaskKey[Unit]("copyRes")
+
   lazy val basicSettings = Seq(
     version := PROJECT_VERSION,
     organization := ORGANIZATION,
     scalaVersion := SCALA_VERSION,
     mainClass := Some("io.shinto.amaterasu.mesos.executors.ActionsExecutorLauncher"),
+
+    copyRes <<= (baseDirectory, target) map {
+      (base, target) =>
+        val file = new File(base, "ama-start")
+        Files.copy(file.toPath, new File(target, file.name).toPath)
+    },
 
     libraryDependencies ++= Seq(
       "org.apache.mesos" % "mesos" % "0.28.0",
