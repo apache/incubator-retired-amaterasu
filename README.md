@@ -61,6 +61,8 @@ The main clases in Amateraso are listed bellow:
 
 To run an amaterasu job, run the following command:
 
+/ama/ama-start.sh
+
 ```
 java -cp /ama/amaterasu-assembly-0.1.0.jar -Djava.library.path=/usr/lib io.shinto.amaterasu.mesos.JobLauncher --repo "https://github.com/roadan/amaterasu-job-sample.git" --branch master
 ```

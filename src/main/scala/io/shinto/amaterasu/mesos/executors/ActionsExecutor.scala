@@ -7,6 +7,8 @@ import io.shinto.amaterasu.configuration.{ ClusterConfig, SparkConfig }
 import io.shinto.amaterasu.execution.actions.runners.spark.SparkScalaRunner
 import org.apache.mesos.Protos._
 import org.apache.mesos.{ MesosExecutorDriver, ExecutorDriver, Executor }
+import org.apache.spark.repl.Main
+import org.apache.spark.{ SparkConf, SparkContext }
 
 /**
   * Created by roadan on 1/1/16.
@@ -14,6 +16,8 @@ import org.apache.mesos.{ MesosExecutorDriver, ExecutorDriver, Executor }
 class ActionsExecutor extends Executor with Logging {
 
   var executorDriver: ExecutorDriver = null
+  var sc: SparkContext = null
+  var jobId: String = null
 
   override def shutdown(driver: ExecutorDriver): Unit = ???
 
@@ -51,14 +55,19 @@ class ActionsExecutor extends Executor with Logging {
     driver.sendStatusUpdate(status)
     val actionSource = taskInfo.getData().toStringUtf8()
 
-    val jobId = "job-" + taskInfo.getTaskId.getValue
     val actionName = "action-" + taskInfo.getTaskId.getValue
+    val sparkAppName = s"job_${jobId}_executor_${taskInfo.getExecutor.getExecutorId.getValue}"
+
     try {
       val env = Environment()
-      env.workingDir = "file:///tmp/"
+      env.workingDir = "s3://AKIAI7ZNKZUD5CEBISGA:yv7Mm6dZhPbAEvdYkJx9I9D3XD5PSHjWGPtn94RZ@amaterasu/work/"
       env.master = "mesos://192.168.33.11:5050"
 
-      val sparkScalaRunner = SparkScalaRunner(env, jobId)
+      if (sc == null)
+        sc = createSparkContext(env, sparkAppName)
+
+      sc.getConf.getAll
+      val sparkScalaRunner = SparkScalaRunner(env, jobId, sc)
       sparkScalaRunner.executeSource(actionSource, actionName)
       driver.sendStatusUpdate(TaskStatus.newBuilder()
         .setTaskId(taskInfo.getTaskId)
@@ -66,11 +75,26 @@ class ActionsExecutor extends Executor with Logging {
     }
     catch {
       case e: Exception => {
-        log.debug(s"launching task failed: ${e.getMessage}")
+        println(s"launching task failed: ${e.getMessage}")
 
         System.exit(1)
       }
     }
+  }
+
+  def createSparkContext(env: Environment, jobId: String): SparkContext = {
+
+    System.setProperty("hadoop.home.dir", "/home/hadoop/hadoop")
+    val conf = new SparkConf(true)
+      .setMaster(env.master)
+      .setAppName(jobId)
+      .set("spark.executor.uri", "http://192.168.33.11:8000/spark-1.6.2-bin-hadoop2.4.tgz")
+      .set("spark.io.compression.codec", "lzf")
+    // .set("hadoop.home.dir", "/home/hadoop/hadoop")
+    //      .set("spark.repl.class.uri", Main.getClass().getName) //TODO: :\ check this
+    //      .set("spark.submit.deployMode", "client")
+    new SparkContext(conf)
+
   }
 
 }
@@ -79,8 +103,12 @@ object ActionsExecutorLauncher extends Logging {
 
   def main(args: Array[String]) {
     System.loadLibrary("mesos")
-    log.debug("Starting executor ------->")
-    val driver = new MesosExecutorDriver(new ActionsExecutor)
+    log.debug("Starting a new ActionExecutor")
+
+    val executor = new ActionsExecutor
+    executor.jobId = args(0)
+
+    val driver = new MesosExecutorDriver(executor)
     driver.run()
   }
 

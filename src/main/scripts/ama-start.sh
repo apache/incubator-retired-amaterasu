@@ -3,23 +3,28 @@
 BASEDIR=$(dirname "$0")
 
 pushd $BASEDIR >/dev/null
-nohup python -m SimpleHTTPServer 8000 &
+cd /mesos-dependencies && nohup python -m SimpleHTTPServer 8000 &
 SERVER_PID=$!
+<<<<<<< HEAD:ama-start
+
 echo "serving amaterasu from $BASEDIR on port 8000"
+=======
+echo "serving amaterasu from /mesos-dependencies on port 8000"
+>>>>>>> e2b2736ed02e12eaf11c63fd84c29a546310218c:src/main/scripts/ama-start.sh
 popd >/dev/null
 
 echo ""
 echo ""
-echo "           (                      )"
-echo "           )\        )      )   ( /(   (   (       )        ("
-echo "          ((_)(     (     ( /(  )\()  ))\  )(   ( /(  (    ))\\"
-echo "         )\ _ )\    )\  ' )(_))(_))/ /((_)(()\  )(_)) )\  /((_)"
-echo "         (_)_\(_) _((_)) ((_) _ | |_ (_))   ((_)((_)_ ((_)(_))( "
-echo "          / _ \  | '   \()/ _\` ||  _|/ -_) | '_|/ _\` |(_-<| || |"
-echo "         /_/ \_\ |_|_|_|  \__,_| \__|\___| |_|  \__,_|/__/ \_,_|"
+echo "      (                      )"
+echo "      )\        )      )   ( /(   (   (       )        ("
+echo "     ((_)(     (     ( /(  )\()  ))\  )(   ( /(  (    ))\\"
+echo "    )\ _ )\    )\  ' )(_))(_))/ /((_)(()\  )(_)) )\  /((_)"
+echo "    (_)_\(_) _((_)) ((_) _ | |_ (_))   ((_)((_)_ ((_)(_))( "
+echo "     / _ \  | '   \()/ _\` ||  _|/ -_) | '_|/ _\` |(_-<| || |"
+echo "    /_/ \_\ |_|_|_|  \__,_| \__|\___| |_|  \__,_|/__/ \_,_|"
 echo ""
-echo "         Continuously deployed data pipelines"
-echo "         Version 0.1.0"
+echo "    Continuously deployed data pipelines"
+echo "    Version 0.1.0"
 echo ""
 echo ""
 
@@ -60,19 +65,19 @@ echo "repo: ${REPO} "
 CMD="java -cp ${BASEDIR}/amaterasu-assembly-0.1.0.jar -Djava.library.path=/usr/lib io.shinto.amaterasu.mesos.JobLauncher" #--repo "https://github.com/roadan/amaterasu-job-sample.git" --branch master
 
 if [ -n "$REPO" ]; then
-    CMD+="--repo ${REPO}"
+    CMD+=" --repo ${REPO}"
 fi
 
 if [ -n "$BRANCH" ]; then
-    CMD+="--branch ${BRANCH}"
+    CMD+=" --branch ${BRANCH}"
 fi
 
 if [ -n "$ENV" ]; then
-    CMD+="--env ${ENV}"
+    CMD+=" --env ${ENV}"
 fi
 
 if [ -n "$NAME" ]; then
-    CMD+="--name ${NAME}"
+    CMD+=" --name ${NAME}"
 fi
 
 if [ -n "$JOBID" ]; then
@@ -81,7 +86,7 @@ fi
 
 echo $CMD
 
-#eval $CMD
+eval $CMD | grep amaterasu
 kill $SERVER_PID
 
 echo ""

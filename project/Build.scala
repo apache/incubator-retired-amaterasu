@@ -1,3 +1,5 @@
+import java.nio.file.Files
+
 import sbt._
 import Keys._
 
@@ -13,7 +15,7 @@ object Build extends Build {
   val ORGANIZATION = "io.shinto"
   val PROJECT_NAME = "amaterasu"
   val PROJECT_VERSION = "0.1.0"
-  val SCALA_VERSION = "2.11.7"
+  val SCALA_VERSION = "2.10.5"
 
   // Mesos native library path
   val pathToMesosLibs = "/usr/local/lib"
@@ -29,11 +31,20 @@ object Build extends Build {
       formatSettings ++
       net.virtualvoid.sbt.graph.Plugin.graphSettings
 
+  lazy val copyRes = TaskKey[Unit]("copyRes")
+
   lazy val basicSettings = Seq(
     version := PROJECT_VERSION,
     organization := ORGANIZATION,
     scalaVersion := SCALA_VERSION,
     mainClass := Some("io.shinto.amaterasu.mesos.executors.ActionsExecutorLauncher"),
+
+    copyRes <<= (baseDirectory, target) map {
+      (base, target) =>
+        val file = new File(base, "src/main/scripts").listFiles().foreach(
+          file => Files.copy(file.toPath, new File(target, file.name).toPath)
+        )
+    },
 
     libraryDependencies ++= Seq(
       "org.apache.mesos" % "mesos" % "0.28.0",
@@ -53,10 +64,10 @@ object Build extends Build {
       "com.github.scopt" %% "scopt" % "3.3.0",
 
       // execution engines dependencies
-      "org.apache.spark" %% "spark-repl" % "1.6.1",
+      "org.apache.spark" %% "spark-repl" % "1.6.2" % "provided",
       //"org.scala-lang" % "scala-compiler" % SCALA_VERSION,
       // "org.apache.spark" %% "spark-core" % "1.6.2",
-      "org.apache.hadoop" % "hadoop-client" % "2.4.0",
+      "org.apache.hadoop" % "hadoop-client" % "2.4.0" % "provided",
       "org.spark-project.protobuf" % "protobuf-java" % "2.5.0-spark",
 
       //test dependencies
@@ -74,7 +85,7 @@ object Build extends Build {
       "-feature"
     ),
 
-    javaOptions += "-Djava.library.path=%s:%s".format(
+    javaOptions in(test) += "-Djava.library.path=%s:%s".format(
       sys.props("java.library.path"),
       pathToMesosLibs
     ),

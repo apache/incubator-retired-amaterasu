@@ -27,7 +27,7 @@ object JobLoader {
 
     val jobManager: JobManager = createJobManager(maki, jobId, client, attempts, actionsQueue)
 
-    jobManager.start()
+    //jobManager.start()
     jobManager
 
   }

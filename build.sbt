@@ -19,15 +19,3 @@ assemblyMergeStrategy in assembly := {
     val oldStrategy = (assemblyMergeStrategy in assembly).value
     oldStrategy(x)
 }
-
-
-
-//assemblyShadeRules in assembly := Seq(
-//  ShadeRule.rename("com.google.protobuf.*" -> "shadedproto.@1").inProject
-//    .inLibrary("com.google.protobuf" % "protobuf-java" % protobufVersion)
-//)
-//assemblyShadeRules in assembly := Seq(
-//  ShadeRule.rename("org.apache.mesos.**" -> "spark_mesos.@1")
-//    .inLibrary("org.apache.spark" %% "spark-repl" % "1.6.2")
-//    .inProject
-//)

@@ -2,6 +2,7 @@ package io.shinto.amaterasu.mesos.schedulers
 
 import java.util
 import java.util.Collections
+import java.util.concurrent.locks.ReentrantLock
 import java.util.concurrent.{ ConcurrentHashMap, LinkedBlockingQueue }
 
 import io.shinto.amaterasu.configuration.ClusterConfig
@@ -30,7 +31,6 @@ import scala.collection.concurrent
   */
 class JobScheduler extends AmaterasuScheduler {
 
-  private var ACTION_COMMAND = ""
   private var jobManager: JobManager = null
   private var client: CuratorFramework = null
   private var config: ClusterConfig = null
@@ -41,9 +41,9 @@ class JobScheduler extends AmaterasuScheduler {
   // this map holds the following structure:
   // slaveId
   //  |
-  //  |-> taskId, actionStatus)
+  //  +-> taskId, actionStatus)
   private val executionMap: concurrent.Map[String, concurrent.Map[String, ActionStatus]] = new ConcurrentHashMap[String, concurrent.Map[String, ActionStatus]].asScala
-
+  private val lock = new ReentrantLock()
   private val offersToTaskIds: concurrent.Map[String, String] = new ConcurrentHashMap[String, String].asScala
 
   def error(driver: SchedulerDriver, message: String) {}
@@ -94,72 +94,105 @@ class JobScheduler extends AmaterasuScheduler {
       if (validateOffer(offer)) {
 
         log.info(s"Accepting offer, id=${offer.getId}")
-        val actionData = jobManager.getNextActionData
 
-        if (actionData != null) {
+        // this is done to avoid the processing the same action
+        // multiple times
+        lock.lock()
 
-          val taskId = Protos.TaskID.newBuilder().setValue(actionData.id).build()
+        try {
+          val actionData = jobManager.getNextActionData
 
-          offersToTaskIds.put(offer.getId.getValue, taskId.getValue)
+          if (actionData != null) {
 
-          // atomically adding a record for the slave, I'm storing all the actions
-          // on a slave level to efficiently handle slave loses
-          executionMap.putIfAbsent(offer.getSlaveId.toString, new ConcurrentHashMap[String, ActionStatus].asScala)
+            val taskId = Protos.TaskID.newBuilder().setValue(actionData.id).build()
 
-          val slaveActions = executionMap.get(offer.getSlaveId.toString).get
-          slaveActions.put(taskId.getValue, ActionStatus.started)
+            offersToTaskIds.put(offer.getId.getValue, taskId.getValue)
 
-          val fsUtil = FsUtil(config)
+            // atomically adding a record for the slave, I'm storing all the actions
+            // on a slave level to efficiently handle slave loses
+            executionMap.putIfAbsent(offer.getSlaveId.toString, new ConcurrentHashMap[String, ActionStatus].asScala)
 
-          val command = CommandInfo
-            .newBuilder
-            .setValue(
-              //"""MESOS_NATIVE_JAVA_LIBRARY=/usr/lib/libmesos.so SPARK_EXECUTOR_URI=https://downloads.mesosphere.com/spark/assets/spark-1.6.1-1.tgz java -jar amaterasu-assembly-0.1.0.jar -classpath \"spark-assembly-1.6.1-hadoop2.4.0.jar\" -Djava.library.path=/usr/lib io.shinto.amaterasu.mesos.executors.ActionsExecutorLauncher""".stripMargin
-              """MESOS_NATIVE_JAVA_LIBRARY=/usr/lib/libmesos.so SPARK_EXECUTOR_URI=https://downloads.mesosphere.com/spark/assets/spark-1.6.1-1.tgz java -cp amaterasu-assembly-0.1.0.jar:spark-assembly-1.6.1-hadoop2.4.0.jar -Djava.library.path=/usr/lib io.shinto.amaterasu.mesos.executors.ActionsExecutorLauncher""".stripMargin
-            )
-            .addUris(URI.newBuilder.setValue(fsUtil.getJarUrl()).setExecutable(false))
-            .addUris(CommandInfo.URI.newBuilder()
-              .setValue("http://127.0.0.1:8000/spark-assembly-1.6.1-hadoop2.4.0.jar")
-              .setExecutable(false)
-              .build())
-          //.addUris(URI.newBuilder.setValue("https://downloads.mesosphere.com/spark/assets/spark-1.6.1-1.tgz").setExecutable(false).setExtract(true))
+            val slaveActions = executionMap.get(offer.getSlaveId.toString).get
+            slaveActions.put(taskId.getValue, ActionStatus.started)
 
-          val executor = ExecutorInfo
-            .newBuilder
-            .setName(taskId.getValue)
-            .setExecutorId(ExecutorID.newBuilder().setValue("1234")) //TODO: fix this
-            .setCommand(command)
+            val fsUtil = FsUtil(config)
 
-          val actionTask = TaskInfo
-            .newBuilder
-            .setName(taskId.getValue)
-            .setTaskId(taskId)
-            .setSlaveId(offer.getSlaveId)
-            .setExecutor(executor)
-            .setData(new TaskData(actionData).toTaskData())
-            .addResources(createScalarResource("cpus", config.Jobs.Tasks.cpus))
-            .addResources(createScalarResource("mem", config.Jobs.Tasks.mem))
-            .addResources(createScalarResource("disk", config.Jobs.repoSize))
-            .build()
+            val command = CommandInfo
+              .newBuilder
+              .setValue(
+                //"""MESOS_NATIVE_JAVA_LIBRARY=/usr/lib/libmesos.so SPARK_EXECUTOR_URI=https://downloads.mesosphere.com/spark/assets/spark-1.6.1-1.tgz java -jar amaterasu-assembly-0.1.0.jar -classpath \"spark-assembly-1.6.1-hadoop2.4.0.jar\" -Djava.library.path=/usr/lib io.shinto.amaterasu.mesos.executors.ActionsExecutorLauncher""".stripMargin
+                s"""env MESOS_NATIVE_JAVA_LIBRARY=/usr/lib/libmesos.so env SPARK_EXECUTOR_URI=http://192.168.33.11:8000/spark-assembly-1.6.2-hadoop2.4.0.tgz env SPARK_HOME="/home/vagrant/park-1.6.2-bin-hadoop2.4" java -cp amaterasu-assembly-0.1.0.jar:spark-assembly-1.6.2-hadoop2.4.0.jar:snappy-java-1.1.2.6.jar:hadoop-client-2.4.0.jar:hadoop-common-2.4.0.jar:conf/ -Dscala.usejavacp=true -Djava.library.path=/usr/lib io.shinto.amaterasu.mesos.executors.ActionsExecutorLauncher ${jobManager.jobId}""".stripMargin
+              )
+              .addUris(URI.newBuilder.setValue(fsUtil.getJarUrl()).setExecutable(false))
+              .addUris(CommandInfo.URI.newBuilder()
+                .setValue("http://127.0.0.1:8000/spark-assembly-1.6.2-hadoop2.4.0.jar")
+                .setExecutable(false)
+                .setExtract(false)
+                .build())
+            //              .addUris(CommandInfo.URI.newBuilder()
+            //                .setValue("http://127.0.0.1:8000/snappy-java-1.1.2.6.jar")
+            //                .setExecutable(false)
+            //                .setExtract(false)
+            //                .build())
+            //              .addUris(CommandInfo.URI.newBuilder()
+            //                .setValue("http://127.0.0.1:8000/hadoop-common-2.4.0.jar")
+            //                .setExecutable(false)
+            //                .setExtract(false)
+            //                .build())
+            //              .addUris(CommandInfo.URI.newBuilder()
+            //                .setValue("http://127.0.0.1:8000/hadoop-client-2.4.0.jar")
+            //                .setExecutable(false)
+            //                .setExtract(false)
+            //                .build())
+            //              .addUris(CommandInfo.URI.newBuilder()
+            //                .setValue("http://127.0.0.1:8000/conf.tar.gz")
+            //                .setExecutable(false)
+            //                .setExtract(true)
+            //                .build())
 
-          driver.launchTasks(Collections.singleton(offer.getId), Collections.singleton(actionTask))
+            val executor = ExecutorInfo
+              .newBuilder
+              .setName(taskId.getValue)
+              .setExecutorId(ExecutorID.newBuilder().setValue("1234")) //TODO: fix this
+              .setCommand(command)
+
+            val actionTask = TaskInfo
+              .newBuilder
+              .setName(taskId.getValue)
+              .setTaskId(taskId)
+              .setSlaveId(offer.getSlaveId)
+              .setExecutor(executor)
+              .setData(new TaskData(actionData).toTaskData())
+              .addResources(createScalarResource("cpus", config.Jobs.Tasks.cpus))
+              .addResources(createScalarResource("mem", config.Jobs.Tasks.mem))
+              .addResources(createScalarResource("disk", config.Jobs.repoSize))
+              .build()
+
+            driver.launchTasks(Collections.singleton(offer.getId), Collections.singleton(actionTask))
+          }
+          else if (jobManager.outOfActions) {
+            log.info(s"framework ${jobManager.jobId} execution finished")
+
+            log.info(jobManager.jobReport.result)
+            driver.declineOffer(offer.getId)
+            driver.stop()
+          }
+          else {
+            log.info("Declining offer, no action ready for execution")
+            driver.declineOffer(offer.getId)
+          }
         }
-        else if (jobManager.outOfActions) {
-          log.info(s"framework ${jobManager.jobId} execution finished")
-          driver.stop()
-        }
-        else {
-          println("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$")
-          println(jobManager.registeredActions.values.map(v => v.data))
-          log.info("Declining offer, no action ready for execution")
-          driver.declineOffer(offer.getId)
+        finally {
+          lock.unlock()
         }
       }
       else {
         log.info("Declining offer, no sufficient resources")
         driver.declineOffer(offer.getId)
       }
+
     }
+
   }
 
   def registered(driver: SchedulerDriver, frameworkId: FrameworkID, masterInfo: MasterInfo): Unit = {
@@ -174,7 +207,6 @@ class JobScheduler extends AmaterasuScheduler {
         config.Jobs.Tasks.attempts,
         new LinkedBlockingQueue[ActionData]()
       )
-
     }
     else {
 
@@ -199,6 +231,7 @@ object JobScheduler {
   def apply(src: String, branch: String, env: String, resume: Boolean, config: ClusterConfig): JobScheduler = {
 
     val scheduler = new JobScheduler()
+    scheduler.resume = resume
     scheduler.src = src
     scheduler.branch = branch
 
