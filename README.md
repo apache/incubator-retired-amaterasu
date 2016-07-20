@@ -56,7 +56,12 @@ The main clases in Amateraso are listed bellow:
                       | and manages state for  |
                       | the executor           |
                       +------------------------+
+
                       
+## Building
+sbt assembly copyScripts
+
+
 ## Running a Job
 
 To run an amaterasu job, run the following command:

@@ -1,4 +1,4 @@
-import java.nio.file.Files
+import java.nio.file.{StandardCopyOption, Files}
 
 import sbt._
 import Keys._
@@ -31,7 +31,7 @@ object Build extends Build {
       formatSettings ++
       net.virtualvoid.sbt.graph.Plugin.graphSettings
 
-  lazy val copyRes = TaskKey[Unit]("copyRes")
+  lazy val copyScripts = TaskKey[Unit]("copyScripts")
 
   lazy val basicSettings = Seq(
     version := PROJECT_VERSION,
@@ -39,10 +39,13 @@ object Build extends Build {
     scalaVersion := SCALA_VERSION,
     mainClass := Some("io.shinto.amaterasu.mesos.executors.ActionsExecutorLauncher"),
 
-    copyRes <<= (baseDirectory, target) map {
+    copyScripts <<= (baseDirectory, target) map {
       (base, target) =>
         val file = new File(base, "src/main/scripts").listFiles().foreach(
-          file => Files.copy(file.toPath, new File(target, file.name).toPath)
+          file => Files.copy(
+            file.toPath,
+            new File(target, file.name).toPath,
+            StandardCopyOption.REPLACE_EXISTING)
         )
     },
 
