@@ -41,8 +41,9 @@ object Build extends Build {
 
     copyRes <<= (baseDirectory, target) map {
       (base, target) =>
-        val file = new File(base, "ama-start")
-        Files.copy(file.toPath, new File(target, file.name).toPath)
+        val file = new File(base, "src/main/scripts").listFiles().foreach(
+          file => Files.copy(file.toPath, new File(target, file.name).toPath)
+        )
     },
 
     libraryDependencies ++= Seq(
