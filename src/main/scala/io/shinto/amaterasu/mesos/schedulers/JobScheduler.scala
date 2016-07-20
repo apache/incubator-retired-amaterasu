@@ -1,7 +1,7 @@
 package io.shinto.amaterasu.mesos.schedulers
 
 import java.util
-import java.util.Collections
+import java.util.{UUID, Collections}
 import java.util.concurrent.locks.ReentrantLock
 import java.util.concurrent.{ ConcurrentHashMap, LinkedBlockingQueue }
 
@@ -132,7 +132,7 @@ class JobScheduler extends AmaterasuScheduler {
             val executor = ExecutorInfo
               .newBuilder
               .setName(taskId.getValue)
-              .setExecutorId(ExecutorID.newBuilder().setValue("1234")) //TODO: fix this
+              .setExecutorId(ExecutorID.newBuilder().setValue(taskId + "-" + UUID.randomUUID()))
               .setCommand(command)
 
             val actionTask = TaskInfo
