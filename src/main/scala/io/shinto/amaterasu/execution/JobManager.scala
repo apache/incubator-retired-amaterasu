@@ -2,6 +2,7 @@ package io.shinto.amaterasu.execution
 
 import java.util.concurrent.BlockingQueue
 
+import io.shinto.amaterasu.enums.ActionStatus
 import org.apache.curator.framework.CuratorFramework
 import org.apache.zookeeper.CreateMode
 
@@ -21,6 +22,9 @@ class JobManager extends Logging {
   var name: String = null
   var jobId: String = null
   var client: CuratorFramework = null
+  var head: Action = null
+
+  val jobReport = new StringBuilder
 
   // TODO: this is not private due to tests, fix this!!!
   val registeredActions = new TrieMap[String, Action]
@@ -32,10 +36,22 @@ class JobManager extends Logging {
     */
   def start(): Unit = {
 
-    registeredActions.head._2.execute()
+    jobReport.append(
+      s"""
+         | ******************************************************************
+         | * started job with id: $jobId *
+         | ******************************************************************
+         | *                                                                *
+       """.stripMargin
+    )
+    //jobReport.append("\n")
+    head.execute()
 
   }
 
+  def outOfActions(): Boolean = !registeredActions.values.exists(a => a.data.status == ActionStatus.pending ||
+    a.data.status == ActionStatus.queued ||
+    a.data.status == ActionStatus.started)
   /**
     * getNextActionData returns the data of the next action to be executed if such action
     * exists
@@ -55,6 +71,7 @@ class JobManager extends Logging {
 
   def reQueueAction(actionId: String): Unit = {
 
+    jobReport.append(s" *+-> action: $actionId re-queued for execution                          *\n")
     val action = registeredActions.get(actionId).get
     executionQueue.put(action.data)
     registeredActions.get(actionId).get.announceQueued
@@ -79,6 +96,7 @@ class JobManager extends Logging {
     */
   def actionComplete(actionId: String): Unit = {
 
+    jobReport.append(s" *+-> action: $actionId completed                       *\n")
     val action = registeredActions.get(actionId).get
     action.announceComplete
     action.data.nextActionIds.foreach(id =>
@@ -94,11 +112,29 @@ class JobManager extends Logging {
   def actionFailed(actionId: String, message: String): Unit = {
 
     log.warn(message)
+    jobReport.append(
+      s""" *+-> action: $actionId failed with message:                      *
+           |  $message
+       """.stripMargin
+    )
+    jobReport.append("\n")
+
     val action = registeredActions.get(actionId).get
     val id = action.handleFailure(message)
     if (id != null)
       registeredActions.get(id).get.execute()
 
+    //delete all future actions
+    cancelFutureActions(action)
+  }
+
+  def cancelFutureActions(action: Action): Unit = {
+
+    if (action.data.status != ActionStatus.failed)
+      action.announceCanceled
+
+    action.data.nextActionIds.foreach(id =>
+      cancelFutureActions(registeredActions.get(id).get))
   }
 
   /**
@@ -106,6 +142,7 @@ class JobManager extends Logging {
     */
   def actionStarted(actionId: String): Unit = {
 
+    jobReport.append(s" *+-> action: $actionId started             *\n")
     val action = registeredActions.get(actionId).get
     action.announceStart
 

@@ -3,6 +3,7 @@ package io.shinto.amaterasu.execution
 import java.util.concurrent.LinkedBlockingQueue
 import io.shinto.amaterasu.configuration.ClusterConfig
 import io.shinto.amaterasu.dataObjects.ActionData
+import io.shinto.amaterasu.enums.ActionStatus
 import io.shinto.amaterasu.execution.actions.SequentialAction
 
 import org.apache.curator.framework.CuratorFrameworkFactory
@@ -18,7 +19,7 @@ class ActionTests extends FlatSpec with Matchers {
   val retryPolicy = new ExponentialBackoffRetry(1000, 3)
   val server = new TestingServer(2181, true)
   val jobId = s"job_${System.currentTimeMillis}"
-  val data = ActionData("test_action", "start.scala", "spark-scala", null, null)
+  val data = ActionData(ActionStatus.pending, "test_action", "start.scala", "spark-scala", null, null)
 
   "an Action" should "queue it's ActionData int the job queue when executed" in {
 

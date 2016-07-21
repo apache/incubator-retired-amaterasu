@@ -1,5 +1,6 @@
 package io.shinto.amaterasu.execution
 
+import io.shinto.amaterasu.Logging
 import io.shinto.amaterasu.configuration.environments.Environment
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{ SaveMode, DataFrame, SQLContext }
@@ -7,7 +8,7 @@ import org.apache.spark.SparkContext
 
 import scala.reflect.ClassTag
 
-object AmaContext {
+object AmaContext extends Logging {
 
   var sc: SparkContext = null
   var jobId: String = null
@@ -30,14 +31,34 @@ object AmaContext {
 
   def saveDataFrame(df: DataFrame, actionName: String, dfName: String) = {
 
-    println(s"${env.workingDir}/$jobId/$actionName/$dfName")
-    df.write.mode(SaveMode.Overwrite).parquet(s"${env.workingDir}/$jobId/$actionName/$dfName")
+    try {
 
+      log.debug(s"${env.workingDir}/$jobId/$actionName/$dfName")
+      df.write.mode(SaveMode.Overwrite).parquet(s"${env.workingDir}/$jobId/$actionName/$dfName")
+
+    }
+    catch {
+      case e: Exception => {
+        log.error(s"failed storing DataFrame: ${e.getMessage}")
+      }
+
+    }
   }
 
   def saveRDD(rdd: RDD[_], actionName: String, rddName: String) = {
 
-    rdd.saveAsObjectFile(s"${env.workingDir}/$jobId/$actionName/$rddName")
+    try {
+
+      log.debug(s"${env.workingDir}/$jobId/$actionName/$rddName")
+      rdd.saveAsObjectFile(s"${env.workingDir}/$jobId/$actionName/$rddName")
+
+    }
+    catch {
+      case e: Exception => {
+        log.error(s"failed storing RDD: ${e.getMessage}")
+      }
+
+    }
 
   }
 

@@ -91,6 +91,9 @@ object JobParser {
       attempts
     )
 
+    if (manager.head == null)
+      manager.head = action
+
     if (previous != null)
       previous.data.nextActionIds.append(action.actionId)
 
@@ -126,7 +129,7 @@ object JobParser {
 
     SequentialAction(
       action.path("name").asText,
-      action.path("src").asText,
+      action.path("file").asText,
       action.path("type").asText,
       jobId,
       actionsQueue,
@@ -146,7 +149,7 @@ object JobParser {
 
     ErrorAction(
       action.path("name").asText,
-      action.path("src").asText,
+      action.path("file").asText,
       parent,
       action.path("type").asText,
       jobId,
