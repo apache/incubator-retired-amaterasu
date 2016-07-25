@@ -60,7 +60,7 @@ class ActionsExecutor extends Executor with Logging {
 
     try {
       val env = Environment()
-      env.workingDir = "s3://AKIAI7ZNKZUD5CEBISGA:yv7Mm6dZhPbAEvdYkJx9I9D3XD5PSHjWGPtn94RZ@amaterasu/work/"
+      env.workingDir = "file:///tmp/amaterasu/work/"
       env.master = "mesos://192.168.33.11:5050"
 
       if (sc == null)
@@ -88,8 +88,12 @@ class ActionsExecutor extends Executor with Logging {
     val conf = new SparkConf(true)
       .setMaster(env.master)
       .setAppName(jobId)
-      .set("spark.executor.uri", "http://192.168.33.11:8000/spark-1.6.2-bin-hadoop2.4.tgz")
+      .set("spark.executor.uri", "http://192.168.33.11:8000/spark-1.6.1-1.tgz")
       .set("spark.io.compression.codec", "lzf")
+      .set("spark.submit.deployMode", "client")
+      .set("spark.mesos.coarse", "false")
+      .set("spark.mesos.mesosExecutor.cores", "1")
+      .set("spark.hadoop.validateOutputSpecs", "false")
     // .set("hadoop.home.dir", "/home/hadoop/hadoop")
     //      .set("spark.repl.class.uri", Main.getClass().getName) //TODO: :\ check this
     //      .set("spark.submit.deployMode", "client")

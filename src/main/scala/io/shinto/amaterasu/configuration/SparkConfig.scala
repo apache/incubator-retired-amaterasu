@@ -5,7 +5,7 @@ import java.util.Properties
 
 class SparkConfig {
 
-  var sparkExecutorUri: String = "http://www.apache.org/dyn/closer.lua/spark/spark-1.6.1/spark-1.6.1-bin-hadoop2.6.tgz"
+  var sparkExecutorUri: String = "http://127.0.0.1:8000/spark-1.6.1-1.tgz"
 
   def load(file: InputStream): Unit = {
     val props: Properties = new Properties()

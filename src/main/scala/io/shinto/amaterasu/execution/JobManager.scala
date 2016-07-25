@@ -142,7 +142,7 @@ class JobManager extends Logging {
     */
   def actionStarted(actionId: String): Unit = {
 
-    jobReport.append(s" *+-> action: $actionId started             *\n")
+    jobReport.append(s" *+-> action: $actionId started                                 *\n")
     val action = registeredActions.get(actionId).get
     action.announceStart
 

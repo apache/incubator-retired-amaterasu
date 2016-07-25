@@ -1,7 +1,7 @@
 package io.shinto.amaterasu.mesos.schedulers
 
 import java.util
-import java.util.{UUID, Collections}
+import java.util.{ UUID, Collections }
 import java.util.concurrent.locks.ReentrantLock
 import java.util.concurrent.{ ConcurrentHashMap, LinkedBlockingQueue }
 
@@ -120,11 +120,11 @@ class JobScheduler extends AmaterasuScheduler {
             val command = CommandInfo
               .newBuilder
               .setValue(
-                s"""env MESOS_NATIVE_JAVA_LIBRARY=/usr/lib/libmesos.so env SPARK_EXECUTOR_URI=http://192.168.33.11:8000/spark-assembly-1.6.2-hadoop2.4.0.tgz env SPARK_HOME="/home/vagrant/park-1.6.2-bin-hadoop2.4" java -cp amaterasu-assembly-0.1.0.jar:spark-assembly-1.6.2-hadoop2.4.0.jar:snappy-java-1.1.2.6.jar:hadoop-client-2.4.0.jar:hadoop-common-2.4.0.jar:conf/ -Dscala.usejavacp=true -Djava.library.path=/usr/lib io.shinto.amaterasu.mesos.executors.ActionsExecutorLauncher ${jobManager.jobId}""".stripMargin
+                s"""env MESOS_NATIVE_JAVA_LIBRARY=/usr/lib/libmesos.so env SPARK_EXECUTOR_URI=http://192.168.33.11:8000/spark-1.6.1-1.tgz env SPARK_HOME="/home/vagrant/park-1.6.1-bin-hadoop2.4" java -cp amaterasu-assembly-0.1.0.jar:spark-assembly-1.6.1-hadoop2.4.0.jar:/home/hadoop/hadoop/etc/hadoop -Dscala.usejavacp=true -Djava.library.path=/usr/lib io.shinto.amaterasu.mesos.executors.ActionsExecutorLauncher ${jobManager.jobId}""".stripMargin
               )
               .addUris(URI.newBuilder.setValue(fsUtil.getJarUrl()).setExecutable(false))
               .addUris(CommandInfo.URI.newBuilder()
-                .setValue("http://127.0.0.1:8000/spark-assembly-1.6.2-hadoop2.4.0.jar")
+                .setValue("http://127.0.0.1:8000/spark-assembly-1.6.1-hadoop2.4.0.jar")
                 .setExecutable(false)
                 .setExtract(false)
                 .build())
@@ -132,7 +132,7 @@ class JobScheduler extends AmaterasuScheduler {
             val executor = ExecutorInfo
               .newBuilder
               .setName(taskId.getValue)
-              .setExecutorId(ExecutorID.newBuilder().setValue(taskId + "-" + UUID.randomUUID()))
+              .setExecutorId(ExecutorID.newBuilder().setValue(taskId.getValue + "-" + UUID.randomUUID()))
               .setCommand(command)
 
             val actionTask = TaskInfo

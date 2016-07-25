@@ -33,6 +33,7 @@ class SparkScalaRunner extends Logging {
   val holder = new ResHolder(null)
 
   def execute(file: String, actionName: String): Unit = {
+    println("@@@ execute")
     initializeAmaContext(env)
     val source = Source.fromFile(file)
     interpretSources(source, actionName)
@@ -40,6 +41,7 @@ class SparkScalaRunner extends Logging {
   }
 
   def executeSource(actionSource: String, actionName: String): Unit = {
+    println("@@@ executeSource")
     initializeAmaContext(env)
     val source = Source.fromString(actionSource)
     interpretSources(source, actionName)
@@ -126,8 +128,12 @@ class SparkScalaRunner extends Logging {
     val contextStore = interpreter.prevRequestList.last.lineRep.call("$result").asInstanceOf[mutable.Map[String, AnyRef]]
     AmaContext.init(sc, sqlContext, jobId, env)
 
+    println("*-----------------------------*")
     interpreter.interpret("val cl = ClassLoader.getSystemClassLoader")
     interpreter.interpret("cl.asInstanceOf[java.net.URLClassLoader].getURLs.foreach(println)")
+    //   val cp = interpreter.prevRequestList.last.lineRep.call("$result").asInstanceOf[Array[String]]
+    //   cp.foreach(println)
+    println("*-----------------------------*")
     // populating the contextStore
     contextStore.put("sc", sc)
     contextStore.put("sqlContext", sqlContext)
@@ -170,13 +176,17 @@ object SparkScalaRunner {
     result.settings.processArguments(List(
       "-Yrepl-class-based",
       "-Yrepl-outdir", s"./",
-      "-classpath", System.getProperty("java.class.path") + ":" +
-        "spark-assembly-1.6.2-hadoop2.4.0.jar"
+      "-classpath", //System.getProperty("java.class.path") + File.pathSeparator +
+      // "spark-assembly-1.6.1-hadoop2.4.0.jar" + File.pathSeparator +
+      "/home/hadoop/hadoop/etc/hadoop"
+    //"spark-core_2.10-1.6.1.jar"
     ), true)
 
-    result.settings.classpath.append(System.getProperty("java.class.path") + ":" +
-      "spark-assembly-1.6.2-hadoop2.4.0.jar" //+ ":" +
-      )
+    result.settings.classpath.append( //System.getProperty("java.class.path") + File.pathSeparator +
+      //"spark-assembly-1.6.1-hadoop2.4.0.jar" + File.pathSeparator +
+      "/home/hadoop/hadoop/etc/hadoop"
+    ) //+ File.pathSeparator +
+    //      "spark-core_2.10-1.6.1.jar"
     println("{{{{{}}}}}")
     println(result.settings.classpath)
     //println(System.getProperty("java.class.path"))
