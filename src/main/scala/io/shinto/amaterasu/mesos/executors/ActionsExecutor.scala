@@ -1,6 +1,6 @@
 package io.shinto.amaterasu.mesos.executors
 
-import com.google.protobuf.ByteString
+import org.apache.mesos.protobuf.ByteString
 import io.shinto.amaterasu.Logging
 import io.shinto.amaterasu.configuration.environments.Environment
 import io.shinto.amaterasu.configuration.{ ClusterConfig, SparkConfig }
@@ -19,7 +19,9 @@ class ActionsExecutor extends Executor with Logging {
   var sc: SparkContext = null
   var jobId: String = null
 
-  override def shutdown(driver: ExecutorDriver): Unit = ???
+  override def shutdown(driver: ExecutorDriver): Unit = {
+
+  }
 
   override def disconnected(driver: ExecutorDriver): Unit = ???
 
@@ -60,7 +62,7 @@ class ActionsExecutor extends Executor with Logging {
 
     try {
       val env = Environment()
-      env.workingDir = "file:///tmp/amaterasu/work/"
+      env.workingDir = "file:///tmp/amaterasu/work1/"
       env.master = "mesos://192.168.33.11:5050"
 
       if (sc == null)
@@ -84,20 +86,23 @@ class ActionsExecutor extends Executor with Logging {
 
   def createSparkContext(env: Environment, jobId: String): SparkContext = {
 
-    System.setProperty("hadoop.home.dir", "/home/hadoop/hadoop")
+    //System.setProperty("hadoop.home.dir", "/home/hadoop/hadoop")
     val conf = new SparkConf(true)
       .setMaster(env.master)
       .setAppName(jobId)
-      .set("spark.executor.uri", "http://192.168.33.11:8000/spark-1.6.1-1.tgz")
+      .set("spark.executor.uri", "http://192.168.33.11:8000/spark-1.6.1-2.tgz")
       .set("spark.io.compression.codec", "lzf")
-      .set("spark.submit.deployMode", "client")
-      .set("spark.mesos.coarse", "false")
+      .set("spark.submit.deployMode", "cluster")
+      .set("spark.mesos.coarse", "true")
+      .set("spark.executor.instances", "2")
+      .set("spark.cores.max", "5")
       .set("spark.mesos.mesosExecutor.cores", "1")
       .set("spark.hadoop.validateOutputSpecs", "false")
     // .set("hadoop.home.dir", "/home/hadoop/hadoop")
     //      .set("spark.repl.class.uri", Main.getClass().getName) //TODO: :\ check this
     //      .set("spark.submit.deployMode", "client")
     new SparkContext(conf)
+  //sc.getConf.getAll.foreach(println)
 
   }
 

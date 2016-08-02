@@ -50,7 +50,7 @@ object Build extends Build {
     },
 
     libraryDependencies ++= Seq(
-      "org.apache.mesos" % "mesos" % "0.28.2",
+      //"org.apache.mesos" % "mesos" % "0.28.2",
       "com.typesafe" % "config" % "1.2.1",
       "org.slf4j" % "slf4j-api" % "1.7.9",
       "ch.qos.logback" % "logback-classic" % "1.1.2" % "runtime",
@@ -73,11 +73,11 @@ object Build extends Build {
       //"org.apache.hadoop" % "hadoop-client" % "2.4.0" % "provided",
       //"org.spark-project.protobuf" % "protobuf-java" % "2.5.0-spark",
 
-      //test dependencies
+      //test dependencies//
       "org.scalatest" %% "scalatest" % "2.2.2" % "test",
-      "org.apache.curator" % "curator-test" % "2.9.1" % "test"
+      "org.apache.curator" % "curator-test" % "2.9.1" % "test",
 
-      //"org.apache.mesos" % "mesos" % "0.21.1" classifier "shaded-protobuf" exclude("com.google.protobuf", "protobuf-java")
+      "org.apache.mesos" % "mesos" % "0.21.1" classifier "shaded-protobuf" exclude("com.google.protobuf", "protobuf-java")
     ),
 
 
