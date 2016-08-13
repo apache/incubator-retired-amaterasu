@@ -62,8 +62,8 @@ object JobLauncher extends App with Logging {
 
       val framework = frameworkBuilder.build()
 
-      log.debug(s"The framework user is ${config.user}")
       val masterAddress = s"${config.master}:${config.masterPort}"
+
       val scheduler = JobScheduler(
         arguments.repo,
         arguments.branch,

@@ -2,8 +2,9 @@
 
 BASEDIR=$(dirname "$0")
 
+export AMA_NODE="$(hostname)"
 pushd $BASEDIR >/dev/null
-cd /mesos-dependencies && nohup python -m SimpleHTTPServer 8000 &
+cd /mesos-dependencies/ && nohup python -m SimpleHTTPServer 8000 &
 SERVER_PID=$!
 
 

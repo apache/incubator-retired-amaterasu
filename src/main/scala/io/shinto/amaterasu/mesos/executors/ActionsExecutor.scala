@@ -15,6 +15,7 @@ import org.apache.spark.{ SparkConf, SparkContext }
   */
 class ActionsExecutor extends Executor with Logging {
 
+  var master: String = _
   var executorDriver: ExecutorDriver = null
   var sc: SparkContext = null
   var jobId: String = null
@@ -62,8 +63,10 @@ class ActionsExecutor extends Executor with Logging {
 
     try {
       val env = Environment()
-      env.workingDir = "file:///tmp/amaterasu/work1/"
-      env.master = "mesos://192.168.33.11:5050"
+      env.workingDir = "s3n://amaterasu/worky/worky"
+      env.master = s"local[*]"
+      //      env.master = s"mesos://$master:5050"
+      log.debug(s"spark env: $env")
 
       if (sc == null)
         sc = createSparkContext(env, sparkAppName)
@@ -86,23 +89,34 @@ class ActionsExecutor extends Executor with Logging {
 
   def createSparkContext(env: Environment, jobId: String): SparkContext = {
 
-    //System.setProperty("hadoop.home.dir", "/home/hadoop/hadoop")
+    log.debug(s"creating SparkContext with master ${env.master}")
+
     val conf = new SparkConf(true)
       .setMaster(env.master)
       .setAppName(jobId)
-      .set("spark.executor.uri", "http://192.168.33.11:8000/spark-1.6.1-2.tgz")
+      .set("spark.executor.uri", s"http://${sys.env("AMA_NODE")}:8000/spark-1.6.1-2.tgz")
       .set("spark.io.compression.codec", "lzf")
-      .set("spark.submit.deployMode", "cluster")
+      .set("spark.driver.memory", "512m")
+      //.set("spark.submit.deployMode", "cluster")
       .set("spark.mesos.coarse", "true")
       .set("spark.executor.instances", "2")
       .set("spark.cores.max", "5")
-      .set("spark.mesos.mesosExecutor.cores", "1")
+      //.set("spark.mesos.mesosExecutor.cores", "1")
       .set("spark.hadoop.validateOutputSpecs", "false")
     // .set("hadoop.home.dir", "/home/hadoop/hadoop")
     //      .set("spark.repl.class.uri", Main.getClass().getName) //TODO: :\ check this
     //      .set("spark.submit.deployMode", "client")
-    new SparkContext(conf)
-  //sc.getConf.getAll.foreach(println)
+    val sc = new SparkContext(conf)
+    val hc = sc.hadoopConfiguration
+
+    if (!sys.env("AWS_ACCESS_KEY_ID").isEmpty &&
+        !sys.env("AWS_SECRET_ACCESS_KEY").isEmpty) {
+
+      hc.set("fs.s3n.impl", "org.apache.hadoop.fs.s3native.NativeS3FileSystem")
+      hc.set("fs.s3n.awsAccessKeyId", sys.env("AWS_ACCESS_KEY_ID"))
+      hc.set("fs.s3n.awsSecretAccessKey", sys.env("AWS_SECRET_ACCESS_KEY"))
+    }
+    sc
 
   }
 
@@ -116,7 +130,7 @@ object ActionsExecutorLauncher extends Logging {
 
     val executor = new ActionsExecutor
     executor.jobId = args(0)
-
+    executor.master = args(1)
     val driver = new MesosExecutorDriver(executor)
     driver.run()
   }
