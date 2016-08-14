@@ -117,6 +117,7 @@ class SparkScalaRunner extends Logging {
     interpreter.interpret("import scala.util.control.Exception._")
     interpreter.interpret("import org.apache.spark.{ SparkContext, SparkConf }")
     interpreter.interpret("import org.apache.spark.sql.SQLContext")
+    interpreter.interpret("import org.apache.spark.sql.SaveMode")
     interpreter.interpret("import io.shinto.amaterasu.execution.AmaContext")
     interpreter.interpret("import io.shinto.amaterasu.configuration.environments.Environment")
 
@@ -136,6 +137,7 @@ class SparkScalaRunner extends Logging {
     interpreter.interpret("val sqlContext = _contextStore(\"sqlContext\").asInstanceOf[SQLContext]")
     interpreter.interpret("val env = _contextStore(\"env\").asInstanceOf[Environment]")
     interpreter.interpret("val AmaContext = _contextStore(\"ac\").asInstanceOf[AmaContext]")
+    interpreter.interpret("import sqlContext.implicits._")
 
     // initializing the AmaContext
     println(s"""AmaContext.init(sc, sqlContext ,"$jobId")""")
