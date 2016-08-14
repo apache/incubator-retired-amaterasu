@@ -1,21 +1,22 @@
-package io.shinto.amaterasu.execution.actions.runners.spark
+package org.apache.spark.repl.amaterasu.runners.spark
 
-import java.io.{ File, ByteArrayOutputStream, BufferedReader, PrintWriter }
+import java.io.{ ByteArrayOutputStream, PrintWriter }
 
 import io.shinto.amaterasu.Logging
 import io.shinto.amaterasu.configuration.environments.Environment
 import io.shinto.amaterasu.execution.AmaContext
 
 import org.apache.spark.rdd.RDD
+import org.apache.spark.repl.amaterasu.ReplUtils
 import org.apache.spark.sql.SQLContext
 import org.apache.spark.sql.DataFrame
-import org.apache.spark.{ SparkContext, SparkConf }
+import org.apache.spark.{ SparkConf, SparkContext }
 import org.apache.spark.repl.SparkIMain
 
 import scala.collection.mutable
 import scala.io.Source
 import scala.tools.nsc.Settings
-import scala.tools.nsc.interpreter.{ Results, IMain }
+import scala.tools.nsc.interpreter.Results
 
 class ResHolder(var value: Any)
 
@@ -24,7 +25,7 @@ class SparkScalaRunner extends Logging {
   // This is the amaterasu spark configuration need to rethink the name
   var env: Environment = null
   var jobId: String = null
-  var interpreter: IMain = null
+  var interpreter: SparkIMain = null
   var out: PrintWriter = null
   var outStream: ByteArrayOutputStream = null
   var sc: SparkContext = null
@@ -33,7 +34,6 @@ class SparkScalaRunner extends Logging {
   val holder = new ResHolder(null)
 
   def execute(file: String, actionName: String): Unit = {
-    println("@@@ execute")
     initializeAmaContext(env)
     val source = Source.fromFile(file)
     interpretSources(source, actionName)
@@ -41,7 +41,6 @@ class SparkScalaRunner extends Logging {
   }
 
   def executeSource(actionSource: String, actionName: String): Unit = {
-    println("@@@ executeSource")
     initializeAmaContext(env)
     val source = Source.fromString(actionSource)
     interpretSources(source, actionName)
@@ -78,18 +77,16 @@ class SparkScalaRunner extends Logging {
               result match {
                 case df: DataFrame => {
                   log.debug(s"persisting DataFrame: $resultName")
-                  val x = interpreter.interpret(s"""$resultName.write.mode(SaveMode.Overwrite).parquet("${env.workingDir}/ama-$jobId/$actionName/$resultName")""")
+                  val x = interpreter.interpret(s"""$resultName.write.mode(SaveMode.Overwrite).parquet("${env.workingDir}/$jobId/$actionName/$resultName")""")
                   log.debug(s"DF=> $x")
                   log.debug(outStream.toString)
-                  //interpreter.interpret(s"""AmaContext.saveDataFrame($resultName, "$actionName", "$resultName")""")
                   log.debug(s"persisted DataFrame: $resultName")
                 }
                 case rdd: RDD[_] => {
                   log.debug(s"persisting RDD: $resultName")
-                  val x = interpreter.interpret(s"""$resultName.saveAsObjectFile("${env.workingDir}/ama-$jobId/$actionName/$resultName")""")
+                  val x = interpreter.interpret(s"""$resultName.saveAsObjectFile("${env.workingDir}/$jobId/$actionName/$resultName")""")
                   log.debug(s"RDD=> $x")
                   log.debug(outStream.toString)
-                  //interpreter.interpret(s"""AmaContext.saveRDD($resultName, "$actionName", "$resultName")""")
                   log.debug(s"persisted RDD: $resultName")
                 }
                 case _ => println(result)
@@ -116,6 +113,7 @@ class SparkScalaRunner extends Logging {
     val sqlContext = new SQLContext(sc)
     //sqlContext.setConf("spark.sql.parquet.compression.codec", "snappy")
 
+    sc.getConf.getAll.foreach(println)
     interpreter.interpret("import scala.util.control.Exception._")
     interpreter.interpret("import org.apache.spark.{ SparkContext, SparkConf }")
     interpreter.interpret("import org.apache.spark.sql.SQLContext")
@@ -128,25 +126,11 @@ class SparkScalaRunner extends Logging {
     val contextStore = interpreter.prevRequestList.last.lineRep.call("$result").asInstanceOf[mutable.Map[String, AnyRef]]
     AmaContext.init(sc, sqlContext, jobId, env)
 
-    println("*-----------------------------*")
-    interpreter.interpret("val cl = ClassLoader.getSystemClassLoader")
-    interpreter.interpret("cl.asInstanceOf[java.net.URLClassLoader].getURLs.foreach(println)")
-    //   val cp = interpreter.prevRequestList.last.lineRep.call("$result").asInstanceOf[Array[String]]
-    //   cp.foreach(println)
-    println("*-----------------------------*")
     // populating the contextStore
     contextStore.put("sc", sc)
     contextStore.put("sqlContext", sqlContext)
     contextStore.put("env", env)
     contextStore.put("ac", AmaContext)
-
-    // fix for a merges issue (http://stackoverflow.com/questions/17265002/hadoop-no-filesystem-for-scheme-file)
-    interpreter.interpret("val hadoopConfig = sc.hadoopConfiguration")
-    interpreter.interpret("hadoopConfig.set(\"fs.hdfs.impl\", classOf[org.apache.hadoop.hdfs.DistributedFileSystem].getName)")
-    interpreter.interpret("hadoopConfig.set(\"fs.file.impl\", classOf[org.apache.hadoop.fs.LocalFileSystem].getName)")
-    interpreter.interpret("hadoopConf.set(\"fs.s3.impl\", \"org.apache.hadoop.fs.s3native.NativeS3FileSystem\")")
-    //    hadoopConf.set("fs.s3.awsAccessKeyId", myAccessKey)
-    //    hadoopConf.set("fs.s3.awsSecretAccessKey", mySecretKey)
 
     interpreter.interpret("val sc = _contextStore(\"sc\").asInstanceOf[SparkContext]")
     interpreter.interpret("val sqlContext = _contextStore(\"sqlContext\").asInstanceOf[SQLContext]")
@@ -160,44 +144,53 @@ class SparkScalaRunner extends Logging {
 
 }
 
-object SparkScalaRunner {
+object SparkScalaRunner extends Logging {
 
-  def apply(env: Environment, jobId: String, sc: SparkContext): SparkScalaRunner = {
+  def apply(env: Environment, jobId: String, sparkAppName: String): SparkScalaRunner = {
 
     val result = new SparkScalaRunner()
     result.env = env
     result.jobId = jobId
-
-    val interpreter = new IMain()
-
-    interpreter.bind("$result", result.holder.getClass.getName, result.holder)
-
-    //TODO: revisit this, not sure it should be in an apply method
-    result.settings.processArguments(List(
-      "-Yrepl-class-based",
-      "-Yrepl-outdir", s"./",
-      "-classpath", //System.getProperty("java.class.path") + File.pathSeparator +
-      // "spark-assembly-1.6.1-hadoop2.4.0.jar" + File.pathSeparator +
-      "/home/hadoop/hadoop/etc/hadoop"
-    //"spark-core_2.10-1.6.1.jar"
-    ), true)
-
-    result.settings.classpath.append( //System.getProperty("java.class.path") + File.pathSeparator +
-      //"spark-assembly-1.6.1-hadoop2.4.0.jar" + File.pathSeparator +
-      "/home/hadoop/hadoop/etc/hadoop"
-    ) //+ File.pathSeparator +
-    //      "spark-core_2.10-1.6.1.jar"
-    println("{{{{{}}}}}")
-    println(result.settings.classpath)
-    //println(System.getProperty("java.class.path"))
-
-    result.settings.usejavacp.value = true
-
-    val in: Option[BufferedReader] = null
     result.outStream = new ByteArrayOutputStream()
-    val out = new PrintWriter(result.outStream)
-    result.interpreter = new IMain(result.settings, out)
-    result.sc = sc
+    val intp = ReplUtils.creteInterprater(env, jobId, result.outStream)
+    result.interpreter = intp._1
+    //result.classServerUri = intp._2
+    result.sc = createSparkContext(env, sparkAppName, intp._2)
+
     result
   }
+
+  def createSparkContext(env: Environment, sparkAppName: String, classServerUri: String): SparkContext = {
+
+    log.debug(s"creating SparkContext with master ${env.master}")
+
+    val conf = new SparkConf(true)
+      .setMaster(env.master)
+      .setAppName(sparkAppName)
+      .set("spark.executor.uri", s"http://${sys.env("AMA_NODE")}:8000/spark-1.6.1-2.tgz")
+      .set("spark.io.compression.codec", "lzf")
+      .set("spark.driver.memory", "512m")
+      .set("spark.repl.class.uri", classServerUri)
+      //.set("spark.submit.deployMode", "cluster")
+      .set("spark.mesos.coarse", "true")
+      .set("spark.executor.instances", "2")
+      .set("spark.cores.max", "5")
+      //.set("spark.mesos.mesosExecutor.cores", "1")
+      .set("spark.hadoop.validateOutputSpecs", "false")
+    // .set("hadoop.home.dir", "/home/hadoop/hadoop")
+    //      .set("spark.submit.deployMode", "client")
+    val sc = new SparkContext(conf)
+    val hc = sc.hadoopConfiguration
+
+    if (!sys.env("AWS_ACCESS_KEY_ID").isEmpty &&
+      !sys.env("AWS_SECRET_ACCESS_KEY").isEmpty) {
+
+      hc.set("fs.s3n.impl", "org.apache.hadoop.fs.s3native.NativeS3FileSystem")
+      hc.set("fs.s3n.awsAccessKeyId", sys.env("AWS_ACCESS_KEY_ID"))
+      hc.set("fs.s3n.awsSecretAccessKey", sys.env("AWS_SECRET_ACCESS_KEY"))
+    }
+    sc
+
+  }
+
 }

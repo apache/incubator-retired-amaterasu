@@ -118,10 +118,11 @@ class JobScheduler extends AmaterasuScheduler {
 
             val fsUtil = FsUtil(config)
 
+            println(s"%%%%%%%%%% ${actionData.name}")
             val command = CommandInfo
               .newBuilder
               .setValue(
-                s"""$awsEnv env AMA_NODE=${sys.env("AMA_NODE")} env MESOS_NATIVE_JAVA_LIBRARY=/usr/lib/libmesos.so env SPARK_EXECUTOR_URI=http://${sys.env("AMA_NODE")}:8000/spark-1.6.1-2.tgz env SPARK_HOME="~/spark-1.6.1-bin-hadoop2.4" java -cp amaterasu-assembly-0.1.0.jar:spark-assembly-1.6.1-hadoop2.4.0.jar -Dscala.usejavacp=true -Djava.library.path=/usr/lib io.shinto.amaterasu.mesos.executors.ActionsExecutorLauncher ${jobManager.jobId} ${config.master}""".stripMargin
+                s"""$awsEnv env AMA_NODE=${sys.env("AMA_NODE")} env MESOS_NATIVE_JAVA_LIBRARY=/usr/lib/libmesos.so env SPARK_EXECUTOR_URI=http://${sys.env("AMA_NODE")}:8000/spark-1.6.1-2.tgz env SPARK_HOME="~/spark-1.6.1-bin-hadoop2.4" java -cp amaterasu-assembly-0.1.0.jar:spark-assembly-1.6.1-hadoop2.4.0.jar -Dscala.usejavacp=true -Djava.library.path=/usr/lib io.shinto.amaterasu.mesos.executors.ActionsExecutorLauncher ${jobManager.jobId} ${config.master} ${actionData.name}""".stripMargin
               )
               .addUris(URI.newBuilder
                 .setValue(s"http://${sys.env("AMA_NODE")}:8000/amaterasu-assembly-0.1.0.jar")

@@ -19,9 +19,3 @@ assemblyMergeStrategy in assembly := {
     val oldStrategy = (assemblyMergeStrategy in assembly).value
     oldStrategy(x)
 }
-
-//assemblyShadeRules in assembly := Seq(
-//  ShadeRule.rename("org.apache.mesos.**" -> "ama_mesos.@1")
-//    .inLibrary("org.apache.mesos" % "mesos" % "0.28.2")
-//    .inProject
-//)
