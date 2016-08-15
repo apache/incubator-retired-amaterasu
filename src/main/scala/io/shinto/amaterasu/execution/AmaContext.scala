@@ -64,19 +64,19 @@ object AmaContext extends Logging {
 
   def getDataFrame(actionName: String, dfName: String): DataFrame = {
 
-    AmaContext.sqlContext.read.parquet(s"${env.workingDir}/$jobId/$actionName/$dfName")
+    sqlContext.read.parquet(s"${env.workingDir}/$jobId/$actionName/$dfName")
 
   }
 
   def getRDD[T: ClassTag](actionName: String, rddName: String): RDD[T] = {
 
-    AmaContext.sc.objectFile[T](s"${env.workingDir}/$jobId/$actionName/$rddName")
+    sc.objectFile[T](s"${env.workingDir}/$jobId/$actionName/$rddName")
 
   }
 
   def getActionResult(actionName: String): DataFrame = {
 
-    AmaContext.sqlContext.sql(s"select * from ${AmaContext.jobId}.$actionName")
+    sqlContext.sql(s"select * from ${AmaContext.jobId}.$actionName")
 
   }
 

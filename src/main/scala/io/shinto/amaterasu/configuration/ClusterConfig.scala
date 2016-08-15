@@ -45,7 +45,7 @@ class ClusterConfig extends Logging {
 
       var attempts: Int = 3
       var cpus: Int = 1
-      var mem: Int = 512
+      var mem: Int = 1024
 
       def load(props: Properties): Unit = {
 

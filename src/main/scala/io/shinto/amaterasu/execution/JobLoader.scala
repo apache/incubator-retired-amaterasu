@@ -2,6 +2,7 @@ package io.shinto.amaterasu.execution
 
 import java.util.concurrent.{ BlockingQueue, LinkedBlockingQueue }
 
+import io.shinto.amaterasu.Logging
 import io.shinto.amaterasu.dataObjects.ActionData
 import io.shinto.amaterasu.dsl.{ JobParser, GitUtil }
 import io.shinto.amaterasu.enums.ActionStatus
@@ -14,7 +15,7 @@ import scala.collection.JavaConverters._
 /**
   * Created by roadan on 3/7/16.
   */
-object JobLoader {
+object JobLoader extends Logging {
 
   def loadJob(src: String, branch: String, jobId: String, client: CuratorFramework, attempts: Int, actionsQueue: BlockingQueue[ActionData]): JobManager = {
 
@@ -45,7 +46,9 @@ object JobLoader {
   }
 
   def loadMaki(src: String, branch: String): String = {
+
     // cloning the git repo
+    log.debug(s"getting repo: $src, for branch $branch")
     GitUtil.cloneRepo(src, branch)
 
     // parsing the maki.yaml and creating a JobManager to

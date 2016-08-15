@@ -1,6 +1,6 @@
 package io.shinto.amaterasu.mesos.executors
 
-import com.google.protobuf.ByteString
+import org.apache.mesos.protobuf.ByteString
 import io.shinto.amaterasu.dataObjects.ActionData
 
 import scala.io.Source

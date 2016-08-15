@@ -1,10 +1,11 @@
 package io.shinto.amaterasu.mesos.schedulers
 
 import java.util
-import java.util.{UUID, Collections}
+import java.util.{ UUID, Collections }
 import java.util.concurrent.locks.ReentrantLock
 import java.util.concurrent.{ ConcurrentHashMap, LinkedBlockingQueue }
 
+import io.shinto.amaterasu.Logging
 import io.shinto.amaterasu.configuration.ClusterConfig
 import io.shinto.amaterasu.dataObjects.ActionData
 import io.shinto.amaterasu.enums.ActionStatus
@@ -23,8 +24,6 @@ import org.apache.mesos.{ Protos, SchedulerDriver }
 import scala.collection.JavaConverters._
 import scala.collection.concurrent
 
-//import org.apache.mesos.protobuf.{ ByteString, GeneratedMessage }
-
 /**
   * The JobScheduler is a mesos implementation. It is in charge of scheduling the execution of
   * Amaterasu actions for a specific job
@@ -37,6 +36,8 @@ class JobScheduler extends AmaterasuScheduler {
   private var src: String = null
   private var branch: String = null
   private var resume: Boolean = false
+
+  private var awsEnv: String = ""
 
   // this map holds the following structure:
   // slaveId
@@ -89,7 +90,7 @@ class JobScheduler extends AmaterasuScheduler {
 
     for (offer <- offers.asScala) {
 
-      log.debug(s"yumsudo service mesos-master start JobScheduler ${jobManager.jobId} : $offer")
+      log.debug(s"start JobScheduler ${jobManager.jobId} : $offer")
 
       if (validateOffer(offer)) {
 
@@ -117,14 +118,19 @@ class JobScheduler extends AmaterasuScheduler {
 
             val fsUtil = FsUtil(config)
 
+            println(s"%%%%%%%%%% ${actionData.name}")
             val command = CommandInfo
               .newBuilder
               .setValue(
-                s"""env MESOS_NATIVE_JAVA_LIBRARY=/usr/lib/libmesos.so env SPARK_EXECUTOR_URI=http://192.168.33.11:8000/spark-assembly-1.6.2-hadoop2.4.0.tgz env SPARK_HOME="/home/vagrant/park-1.6.2-bin-hadoop2.4" java -cp amaterasu-assembly-0.1.0.jar:spark-assembly-1.6.2-hadoop2.4.0.jar:snappy-java-1.1.2.6.jar:hadoop-client-2.4.0.jar:hadoop-common-2.4.0.jar:conf/ -Dscala.usejavacp=true -Djava.library.path=/usr/lib io.shinto.amaterasu.mesos.executors.ActionsExecutorLauncher ${jobManager.jobId}""".stripMargin
+                s"""$awsEnv env AMA_NODE=${sys.env("AMA_NODE")} env MESOS_NATIVE_JAVA_LIBRARY=/usr/lib/libmesos.so env SPARK_EXECUTOR_URI=http://${sys.env("AMA_NODE")}:8000/spark-1.6.1-2.tgz env SPARK_HOME="~/spark-1.6.1-bin-hadoop2.4" java -cp amaterasu-assembly-0.1.0.jar:spark-assembly-1.6.1-hadoop2.4.0.jar -Dscala.usejavacp=true -Djava.library.path=/usr/lib io.shinto.amaterasu.mesos.executors.ActionsExecutorLauncher ${jobManager.jobId} ${config.master} ${actionData.name}""".stripMargin
               )
-              .addUris(URI.newBuilder.setValue(fsUtil.getJarUrl()).setExecutable(false))
-              .addUris(CommandInfo.URI.newBuilder()
-                .setValue("http://127.0.0.1:8000/spark-assembly-1.6.2-hadoop2.4.0.jar")
+              .addUris(URI.newBuilder
+                .setValue(s"http://${sys.env("AMA_NODE")}:8000/amaterasu-assembly-0.1.0.jar")
+                .setExecutable(false)
+                .setExtract(false)
+                .build())
+              .addUris(URI.newBuilder()
+                .setValue(s"http://${sys.env("AMA_NODE")}:8000/spark-assembly-1.6.1-hadoop2.4.0.jar")
                 .setExecutable(false)
                 .setExtract(false)
                 .build())
@@ -132,7 +138,7 @@ class JobScheduler extends AmaterasuScheduler {
             val executor = ExecutorInfo
               .newBuilder
               .setName(taskId.getValue)
-              .setExecutorId(ExecutorID.newBuilder().setValue(taskId + "-" + UUID.randomUUID()))
+              .setExecutorId(ExecutorID.newBuilder().setValue(taskId.getValue + "-" + UUID.randomUUID()))
               .setCommand(command)
 
             val actionTask = TaskInfo
@@ -210,8 +216,14 @@ object JobScheduler {
   def apply(src: String, branch: String, env: String, resume: Boolean, config: ClusterConfig): JobScheduler = {
 
     val scheduler = new JobScheduler()
+    if (!sys.env("AWS_ACCESS_KEY_ID").isEmpty &&
+      !sys.env("AWS_SECRET_ACCESS_KEY").isEmpty) {
+      scheduler.awsEnv = s"env AWS_ACCESS_KEY_ID=${sys.env("AWS_ACCESS_KEY_ID")} env AWS_SECRET_ACCESS_KEY=${sys.env("AWS_SECRET_ACCESS_KEY")}"
+    }
+
     scheduler.resume = resume
     scheduler.src = src
+    println(s"loading $src")
     scheduler.branch = branch
 
     val retryPolicy = new ExponentialBackoffRetry(1000, 3)
