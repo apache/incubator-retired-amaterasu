@@ -108,12 +108,11 @@ class SparkScalaRunner extends Logging {
   }
 
   def initializeAmaContext(env: Environment): Unit = {
+
     // setting up some context :)
     val sc = this.sc
     val sqlContext = new SQLContext(sc)
-    //sqlContext.setConf("spark.sql.parquet.compression.codec", "snappy")
 
-    sc.getConf.getAll.foreach(println)
     interpreter.interpret("import scala.util.control.Exception._")
     interpreter.interpret("import org.apache.spark.{ SparkContext, SparkConf }")
     interpreter.interpret("import org.apache.spark.sql.SQLContext")
@@ -170,7 +169,7 @@ object SparkScalaRunner extends Logging {
       .setMaster(env.master)
       .setAppName(sparkAppName)
       .set("spark.executor.uri", s"http://${sys.env("AMA_NODE")}:8000/spark-1.6.1-2.tgz")
-      .set("spark.io.compression.codec", "lzf")
+      //.set("spark.io.compression.codec", "lzf")
       .set("spark.driver.memory", "512m")
       .set("spark.repl.class.uri", classServerUri)
       //.set("spark.submit.deployMode", "cluster")

@@ -44,7 +44,7 @@ class JobManager extends Logging {
          | *                                                                *
        """.stripMargin
     )
-    //jobReport.append("\n")
+    jobReport.append("\n")
     head.execute()
 
   }
@@ -96,7 +96,7 @@ class JobManager extends Logging {
     */
   def actionComplete(actionId: String): Unit = {
 
-    jobReport.append(s" *+-> action: $actionId completed                       *\n")
+    jobReport.append(s" *+-> action: $actionId completed                                *\n")
     val action = registeredActions.get(actionId).get
     action.announceComplete
     action.data.nextActionIds.foreach(id =>
@@ -142,7 +142,7 @@ class JobManager extends Logging {
     */
   def actionStarted(actionId: String): Unit = {
 
-    jobReport.append(s" *+-> action: $actionId started                                 *\n")
+    jobReport.append(s" *+-> action: $actionId started                                  *\n")
     val action = registeredActions.get(actionId).get
     action.announceStart
 

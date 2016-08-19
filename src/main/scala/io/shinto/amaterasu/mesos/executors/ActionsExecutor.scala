@@ -1,9 +1,13 @@
 package io.shinto.amaterasu.mesos.executors
 
+import java.io.{ ByteArrayInputStream, FileInputStream }
+
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.scala.DefaultScalaModule
+
 import org.apache.mesos.protobuf.ByteString
 
 import io.shinto.amaterasu.Logging
-import io.shinto.amaterasu.configuration.environments.Environment
 
 import org.apache.mesos.Protos._
 import org.apache.mesos.{ MesosExecutorDriver, ExecutorDriver, Executor }
@@ -57,16 +61,18 @@ class ActionsExecutor extends Executor with Logging {
       .setState(TaskState.TASK_RUNNING).build()
 
     driver.sendStatusUpdate(status)
-    val actionSource = taskInfo.getData().toStringUtf8()
 
     val sparkAppName = s"job_${jobId}_executor_${taskInfo.getExecutor.getExecutorId.getValue}"
 
     try {
-      val env = Environment()
-      env.workingDir = "s3n://amaterasu/worky/worky"
-      env.outputRootPath = "s3n://amaterasu/output"
-      env.master = s"local[*]"
-      log.debug(s"spark env: $env")
+
+      val mapper = new ObjectMapper()
+      mapper.registerModule(DefaultScalaModule)
+
+      val taskData = mapper.readValue(new ByteArrayInputStream(taskInfo.getData().toByteArray), classOf[TaskData])
+
+      val actionSource = taskData.src
+      val env = taskData.env
 
       val sparkScalaRunner = SparkScalaRunner(env, jobId, sparkAppName)
 
