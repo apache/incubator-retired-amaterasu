@@ -11,7 +11,7 @@ import io.shinto.amaterasu.dataObjects.ActionData
 import io.shinto.amaterasu.enums.ActionStatus
 import io.shinto.amaterasu.enums.ActionStatus.ActionStatus
 import io.shinto.amaterasu.execution.{ JobLoader, JobManager }
-import io.shinto.amaterasu.mesos.executors.TaskData
+import io.shinto.amaterasu.mesos.executors.{ TaskDataLoader, TaskData }
 import io.shinto.amaterasu.utilities.FsUtil
 
 import org.apache.curator.framework.{ CuratorFrameworkFactory, CuratorFramework }
@@ -34,6 +34,7 @@ class JobScheduler extends AmaterasuScheduler {
   private var client: CuratorFramework = null
   private var config: ClusterConfig = null
   private var src: String = null
+  private var env: String = null
   private var branch: String = null
   private var resume: Boolean = false
 
@@ -88,6 +89,7 @@ class JobScheduler extends AmaterasuScheduler {
 
   def resourceOffers(driver: SchedulerDriver, offers: util.List[Offer]): Unit = {
 
+    println("***************************")
     for (offer <- offers.asScala) {
 
       log.debug(s"start JobScheduler ${jobManager.jobId} : $offer")
@@ -116,9 +118,6 @@ class JobScheduler extends AmaterasuScheduler {
             val slaveActions = executionMap.get(offer.getSlaveId.toString).get
             slaveActions.put(taskId.getValue, ActionStatus.started)
 
-            val fsUtil = FsUtil(config)
-
-            println(s"%%%%%%%%%% ${actionData.name}")
             val command = CommandInfo
               .newBuilder
               .setValue(
@@ -147,7 +146,7 @@ class JobScheduler extends AmaterasuScheduler {
               .setTaskId(taskId)
               .setSlaveId(offer.getSlaveId)
               .setExecutor(executor)
-              .setData(new TaskData(actionData).toTaskData())
+              .setData(new TaskDataLoader(actionData, env).toTaskData())
               .addResources(createScalarResource("cpus", config.Jobs.Tasks.cpus))
               .addResources(createScalarResource("mem", config.Jobs.Tasks.mem))
               .addResources(createScalarResource("disk", config.Jobs.repoSize))
@@ -223,8 +222,11 @@ object JobScheduler {
 
     scheduler.resume = resume
     scheduler.src = src
-    println(s"loading $src")
     scheduler.branch = branch
+    scheduler.env = env
+
+    println("@@@@@@@@@@@@@@@@@@@@@@@")
+    println(scheduler.env)
 
     val retryPolicy = new ExponentialBackoffRetry(1000, 3)
     scheduler.client = CuratorFrameworkFactory.newClient(config.zk, retryPolicy)

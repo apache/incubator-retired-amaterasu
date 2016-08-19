@@ -44,6 +44,7 @@ object JobLauncher extends App with Logging {
   }
 
   parser.parse(args, Args()) match {
+
     case Some(arguments) =>
 
       val config = ClusterConfig()
