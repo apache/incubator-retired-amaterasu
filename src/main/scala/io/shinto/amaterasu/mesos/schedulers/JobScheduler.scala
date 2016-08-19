@@ -157,6 +157,7 @@ class JobScheduler extends AmaterasuScheduler {
           else if (jobManager.outOfActions) {
             log.info(s"framework ${jobManager.jobId} execution finished")
 
+            jobManager.jobReport.append("******************************************************************")
             log.info(jobManager.jobReport.result)
             driver.declineOffer(offer.getId)
             driver.stop()

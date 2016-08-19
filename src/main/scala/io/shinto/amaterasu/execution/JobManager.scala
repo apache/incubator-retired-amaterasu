@@ -96,7 +96,7 @@ class JobManager extends Logging {
     */
   def actionComplete(actionId: String): Unit = {
 
-    jobReport.append(s" *+-> action: $actionId completed                               *\n")
+    jobReport.append(s" *+-> action: $actionId completed                                *\n")
     val action = registeredActions.get(actionId).get
     action.announceComplete
     action.data.nextActionIds.foreach(id =>
