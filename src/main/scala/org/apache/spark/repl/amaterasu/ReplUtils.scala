@@ -53,7 +53,6 @@ object ReplUtils {
         .getContextClassLoader)
       intp.setContextClassLoader
       intp.initializeSynchronous
-      //intp.bind("$result", result.holder.getClass.getName, result.holder)
 
       result = intp
     }

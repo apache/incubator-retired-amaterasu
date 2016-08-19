@@ -89,7 +89,6 @@ class JobScheduler extends AmaterasuScheduler {
 
   def resourceOffers(driver: SchedulerDriver, offers: util.List[Offer]): Unit = {
 
-    println("***************************")
     for (offer <- offers.asScala) {
 
       log.debug(s"start JobScheduler ${jobManager.jobId} : $offer")
@@ -225,9 +224,6 @@ object JobScheduler {
     scheduler.src = src
     scheduler.branch = branch
     scheduler.env = env
-
-    println("@@@@@@@@@@@@@@@@@@@@@@@")
-    println(scheduler.env)
 
     val retryPolicy = new ExponentialBackoffRetry(1000, 3)
     scheduler.client = CuratorFrameworkFactory.newClient(config.zk, retryPolicy)
