@@ -13,7 +13,8 @@ case class Args(
   branch: String = "master",
   env: String = "default",
   name: String = "amaterasu-job",
-  jobId: String = null
+  jobId: String = null,
+  report: String = "code"
 )
 
 /**
@@ -40,6 +41,9 @@ object JobLauncher extends App with Logging {
     opt[String]('i', "job-id") action { (x, c) =>
       c.copy(jobId = x)
     } text "The jobId - should be passed only when resuming a job"
+    opt[String]('r', "report") action { (x, c) =>
+      c.copy(report = x)
+    } text "The level of reporting"
 
   }
 
@@ -70,7 +74,8 @@ object JobLauncher extends App with Logging {
         arguments.branch,
         arguments.env,
         resume,
-        config
+        config,
+        arguments.report
       )
 
       val driver = new MesosSchedulerDriver(scheduler, framework, masterAddress)

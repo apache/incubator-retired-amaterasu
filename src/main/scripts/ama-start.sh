@@ -71,6 +71,10 @@ case $i in
     JOBID="${i#*=}"
     shift # past argument=value
     ;;
+    -i=*|--report=*)
+    REPORT="${i#*=}"
+    shift # past argument=value
+    ;;
     --default)
     DEFAULT=YES
     shift # past argument with no value
@@ -104,9 +108,13 @@ if [ -n "$JOBID" ]; then
     CMD+="--job-id ${JOBID}"
 fi
 
+if [ -n "$REPORT" ]; then
+    CMD+="--report ${REPORT}"
+fi
+
 echo $CMD
 
-eval $CMD | grep amaterasu
+eval $CMD | grep "===>"
 kill $SERVER_PID
 
 echo ""
