@@ -2,8 +2,7 @@ package org.apache.spark.repl.amaterasu
 
 import java.io.{ PrintWriter, File, ByteArrayOutputStream }
 import java.lang.reflect.Method
-
-import io.shinto.amaterasu.configuration.environments.Environment
+import io.shinto.amaterasu.runtime.Environment
 import org.apache.spark.repl.{ SparkCommandLine, SparkIMain }
 
 /**

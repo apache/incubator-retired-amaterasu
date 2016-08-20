@@ -3,8 +3,8 @@ package org.apache.spark.repl.amaterasu.runners.spark
 import java.io.{ ByteArrayOutputStream, PrintWriter }
 
 import io.shinto.amaterasu.Logging
-import io.shinto.amaterasu.configuration.environments.Environment
-import io.shinto.amaterasu.execution.AmaContext
+import io.shinto.amaterasu.execution.actions.Notifier
+import io.shinto.amaterasu.runtime.{ AmaContext, Environment }
 
 import org.apache.spark.rdd.RDD
 import org.apache.spark.repl.amaterasu.ReplUtils
@@ -29,6 +29,7 @@ class SparkScalaRunner extends Logging {
   var out: PrintWriter = null
   var outStream: ByteArrayOutputStream = null
   var sc: SparkContext = null
+  var notifier: Notifier = null
 
   val settings = new Settings()
   val holder = new ResHolder(null)
@@ -67,40 +68,41 @@ class SparkScalaRunner extends Logging {
         // result: the actual result (RDD, df, etc.) for caching
         // outStream.toString gives you the error message
         intresult match {
-          case Results.Success => {
+          case Results.Success =>
             log.debug("Results.Success")
+
+            notifier.success(line)
 
             //val resultName = interpreter.prevRequestList.last.value.name.toString
             val resultName = interpreter.prevRequestList.last.termNames.last
-            //println(interpreter.prevRequestList.last.value)
+
             if (result != null) {
               result match {
-                case df: DataFrame => {
+                case df: DataFrame =>
                   log.debug(s"persisting DataFrame: $resultName")
                   val x = interpreter.interpret(s"""$resultName.write.mode(SaveMode.Overwrite).parquet("${env.workingDir}/$jobId/$actionName/$resultName")""")
                   log.debug(s"DF=> $x")
                   log.debug(outStream.toString)
                   log.debug(s"persisted DataFrame: $resultName")
-                }
-                case rdd: RDD[_] => {
+
+                case rdd: RDD[_] =>
                   log.debug(s"persisting RDD: $resultName")
                   val x = interpreter.interpret(s"""$resultName.saveAsObjectFile("${env.workingDir}/$jobId/$actionName/$resultName")""")
                   log.debug(s"RDD=> $x")
                   log.debug(outStream.toString)
                   log.debug(s"persisted RDD: $resultName")
-                }
+
                 case _ => println(result)
               }
             }
-          }
-          case Results.Error => {
+
+          case Results.Error =>
             log.debug("Results.Error")
-            println(outStream.toString)
-          }
-          case Results.Incomplete => {
+            notifier.error(line, outStream.toString)
+
+          case Results.Incomplete =>
             log.debug("Results.Incomplete")
-            log.debug("|")
-          }
+
         }
         //}
       }
@@ -118,7 +120,7 @@ class SparkScalaRunner extends Logging {
     interpreter.interpret("import org.apache.spark.sql.SQLContext")
     interpreter.interpret("import org.apache.spark.sql.SaveMode")
     interpreter.interpret("import io.shinto.amaterasu.execution.AmaContext")
-    interpreter.interpret("import io.shinto.amaterasu.configuration.environments.Environment")
+    interpreter.interpret("import io.shinto.amaterasu.runtime.Environment")
 
     // creating a map (_contextStore) to hold the different spark contexts
     // in th REPL and getting a reference to it
@@ -147,15 +149,21 @@ class SparkScalaRunner extends Logging {
 
 object SparkScalaRunner extends Logging {
 
-  def apply(env: Environment, jobId: String, sparkAppName: String): SparkScalaRunner = {
+  def apply(
+    env: Environment,
+    jobId: String,
+    sparkAppName: String,
+    notifier: Notifier
+  ): SparkScalaRunner = {
 
     val result = new SparkScalaRunner()
     result.env = env
     result.jobId = jobId
     result.outStream = new ByteArrayOutputStream()
+    result.notifier = notifier
+
     val intp = ReplUtils.creteInterprater(env, jobId, result.outStream)
     result.interpreter = intp._1
-    //result.classServerUri = intp._2
     result.sc = createSparkContext(env, sparkAppName, intp._2)
 
     result
@@ -169,17 +177,12 @@ object SparkScalaRunner extends Logging {
       .setMaster(env.master)
       .setAppName(sparkAppName)
       .set("spark.executor.uri", s"http://${sys.env("AMA_NODE")}:8000/spark-1.6.1-2.tgz")
-      //.set("spark.io.compression.codec", "lzf")
       .set("spark.driver.memory", "512m")
       .set("spark.repl.class.uri", classServerUri)
-      //.set("spark.submit.deployMode", "cluster")
       .set("spark.mesos.coarse", "true")
       .set("spark.executor.instances", "2")
       .set("spark.cores.max", "5")
-      //.set("spark.mesos.mesosExecutor.cores", "1")
       .set("spark.hadoop.validateOutputSpecs", "false")
-    // .set("hadoop.home.dir", "/home/hadoop/hadoop")
-    //      .set("spark.submit.deployMode", "client")
     val sc = new SparkContext(conf)
     val hc = sc.hadoopConfiguration
 
