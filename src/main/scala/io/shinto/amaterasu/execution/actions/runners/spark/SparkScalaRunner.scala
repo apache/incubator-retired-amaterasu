@@ -49,6 +49,9 @@ class SparkScalaRunner extends Logging {
   }
 
   def interpretSources(source: Source, actionName: String): Unit = {
+
+    notifier.info(s"================= started action $actionName =================")
+
     for (line <- source.getLines()) {
 
       if (!line.isEmpty) {
@@ -107,6 +110,8 @@ class SparkScalaRunner extends Logging {
         //}
       }
     }
+
+    notifier.info(s"================= finished action $actionName =================")
   }
 
   def initializeAmaContext(env: Environment): Unit = {
@@ -119,7 +124,7 @@ class SparkScalaRunner extends Logging {
     interpreter.interpret("import org.apache.spark.{ SparkContext, SparkConf }")
     interpreter.interpret("import org.apache.spark.sql.SQLContext")
     interpreter.interpret("import org.apache.spark.sql.SaveMode")
-    interpreter.interpret("import io.shinto.amaterasu.execution.AmaContext")
+    interpreter.interpret("import io.shinto.amaterasu.runtime.AmaContext")
     interpreter.interpret("import io.shinto.amaterasu.runtime.Environment")
 
     // creating a map (_contextStore) to hold the different spark contexts

@@ -234,14 +234,14 @@ class JobScheduler extends AmaterasuScheduler {
 
       case NotificationType.info =>
         color = Console.WHITE
-        println(s"$color${Console.BOLD}===> ${notification.msg}")
+        println(s"$color${Console.BOLD}===> ${notification.msg} ${Console.RESET}")
       case NotificationType.success =>
         color = Console.GREEN
-        println(s"$color${Console.BOLD}===> ${notification.line}")
+        println(s"$color${Console.BOLD}===> ${notification.line} ${Console.RESET}")
       case NotificationType.error =>
         color = Console.RED
-        println(s"$color${Console.BOLD}===> ${notification.line}")
-        println(s"$color${Console.BOLD}===> ${notification.msg}")
+        println(s"$color${Console.BOLD}===> ${notification.line} ${Console.RESET}")
+        println(s"$color${Console.BOLD}===> ${notification.msg} ${Console.RESET}")
 
     }
 
