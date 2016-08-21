@@ -1,10 +1,9 @@
-package io.shinto.amaterasu.execution
+package io.shinto.amaterasu.runtime
 
 import io.shinto.amaterasu.Logging
-import io.shinto.amaterasu.configuration.environments.Environment
-import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.{ SaveMode, DataFrame, SQLContext }
 import org.apache.spark.SparkContext
+import org.apache.spark.rdd.RDD
+import org.apache.spark.sql.{ DataFrame, SQLContext, SaveMode }
 
 import scala.reflect.ClassTag
 

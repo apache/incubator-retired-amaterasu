@@ -49,7 +49,7 @@ class JobManager extends Logging {
 
   }
 
-  def outOfActions(): Boolean = !registeredActions.values.exists(a => a.data.status == ActionStatus.pending ||
+  def outOfActions: Boolean = !registeredActions.values.exists(a => a.data.status == ActionStatus.pending ||
     a.data.status == ActionStatus.queued ||
     a.data.status == ActionStatus.started)
   /**

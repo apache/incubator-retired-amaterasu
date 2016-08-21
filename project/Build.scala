@@ -65,14 +65,12 @@ object Build extends Build {
       "com.fasterxml.jackson.core" % "jackson-annotations" % "2.6.4",
       "com.fasterxml.jackson.core" % "jackson-databind" % "2.6.4",
       "com.fasterxml.jackson.dataformat" % "jackson-dataformat-yaml" % "2.6.4",
-      "com.github.scopt" %% "scopt" % "3.3.0",
+        "com.github.scopt" %% "scopt" % "3.3.0",
 
       // execution engines dependencies
       "org.apache.spark" %% "spark-repl" % "1.6.1" % "provided",
-//      "org.apache.hadoop" % "hadoop-client" % "2.4.0",
-//      "org.apache.hadoop" % "hadoop-core" % "1.0.4",
 
-      //test dependencies
+      // test dependencies
       "org.scalatest" %% "scalatest" % "2.2.2" % "test",
       "org.apache.curator" % "curator-test" % "2.9.1" % "test",
 

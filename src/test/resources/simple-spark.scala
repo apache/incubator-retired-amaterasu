@@ -1,4 +1,4 @@
-import io.shinto.amaterasu.execution.AmaContext
+import io.shinto.amaterasu.runtime.AmaContext
 import org.apache.spark.sql.{SaveMode, DataFrame}
 
 val data = Array(1, 2, 3, 4, 5)

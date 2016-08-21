@@ -5,9 +5,8 @@ import java.io.ByteArrayInputStream
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
 import io.shinto.amaterasu.Logging
+import io.shinto.amaterasu.runtime.Environment
 import org.apache.mesos.protobuf.ByteString
-
-import io.shinto.amaterasu.configuration.environments.Environment
 import io.shinto.amaterasu.dataObjects.ActionData
 
 import scala.io.Source
@@ -28,7 +27,6 @@ class TaskDataLoader(actionData: ActionData, env: String) extends Logging {
 
     val envData = mapper.readValue(envValue, classOf[Environment])
 
-    //val data = s"""{"src":"$src", "env":$envValue}"""
     val data = mapper.writeValueAsBytes(new TaskData(src, envData))
     ByteString.copyFrom(data)
 

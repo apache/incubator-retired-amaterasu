@@ -5,14 +5,17 @@ import java.util.{ UUID, Collections }
 import java.util.concurrent.locks.ReentrantLock
 import java.util.concurrent.{ ConcurrentHashMap, LinkedBlockingQueue }
 
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.scala.DefaultScalaModule
 import io.shinto.amaterasu.Logging
 import io.shinto.amaterasu.configuration.ClusterConfig
 import io.shinto.amaterasu.dataObjects.ActionData
 import io.shinto.amaterasu.enums.ActionStatus
 import io.shinto.amaterasu.enums.ActionStatus.ActionStatus
+import io.shinto.amaterasu.execution.actions.{ NotificationType, Notification, NotificationLevel }
+import io.shinto.amaterasu.execution.actions.NotificationLevel.NotificationLevel
 import io.shinto.amaterasu.execution.{ JobLoader, JobManager }
-import io.shinto.amaterasu.mesos.executors.{ TaskDataLoader, TaskData }
-import io.shinto.amaterasu.utilities.FsUtil
+import io.shinto.amaterasu.mesos.executors.TaskDataLoader
 
 import org.apache.curator.framework.{ CuratorFrameworkFactory, CuratorFramework }
 import org.apache.curator.retry.ExponentialBackoffRetry
@@ -37,7 +40,7 @@ class JobScheduler extends AmaterasuScheduler {
   private var env: String = null
   private var branch: String = null
   private var resume: Boolean = false
-
+  private var reportLevel: NotificationLevel = _
   private var awsEnv: String = ""
 
   // this map holds the following structure:
@@ -48,6 +51,9 @@ class JobScheduler extends AmaterasuScheduler {
   private val lock = new ReentrantLock()
   private val offersToTaskIds: concurrent.Map[String, String] = new ConcurrentHashMap[String, String].asScala
 
+  private val mapper = new ObjectMapper()
+  mapper.registerModule(DefaultScalaModule)
+
   def error(driver: SchedulerDriver, message: String) {}
 
   def executorLost(driver: SchedulerDriver, executorId: ExecutorID, slaveId: SlaveID, status: Int) {}
@@ -56,7 +62,19 @@ class JobScheduler extends AmaterasuScheduler {
 
   def disconnected(driver: SchedulerDriver) {}
 
-  def frameworkMessage(driver: SchedulerDriver, executorId: ExecutorID, slaveId: SlaveID, data: Array[Byte]) {}
+  def frameworkMessage(driver: SchedulerDriver, executorId: ExecutorID, slaveId: SlaveID, data: Array[Byte]) = {
+
+    val notification = mapper.readValue(data, classOf[Notification])
+
+    reportLevel match {
+      case NotificationLevel.code => printNotification(notification)
+      case NotificationLevel.execution =>
+        if (notification.notLevel != NotificationLevel.code)
+          printNotification(notification)
+      case _ =>
+    }
+
+  }
 
   def statusUpdate(driver: SchedulerDriver, status: TaskStatus) = {
 
@@ -208,11 +226,38 @@ class JobScheduler extends AmaterasuScheduler {
 
   def reregistered(driver: SchedulerDriver, masterInfo: Protos.MasterInfo) {}
 
+  def printNotification(notification: Notification) = {
+
+    var color = Console.WHITE
+
+    notification.notType match {
+
+      case NotificationType.info =>
+        color = Console.WHITE
+        println(s"$color${Console.BOLD}===> ${notification.msg} ${Console.RESET}")
+      case NotificationType.success =>
+        color = Console.GREEN
+        println(s"$color${Console.BOLD}===> ${notification.line} ${Console.RESET}")
+      case NotificationType.error =>
+        color = Console.RED
+        println(s"$color${Console.BOLD}===> ${notification.line} ${Console.RESET}")
+        println(s"$color${Console.BOLD}===> ${notification.msg} ${Console.RESET}")
+
+    }
+
+  }
 }
 
 object JobScheduler {
 
-  def apply(src: String, branch: String, env: String, resume: Boolean, config: ClusterConfig): JobScheduler = {
+  def apply(
+    src: String,
+    branch: String,
+    env: String,
+    resume: Boolean,
+    config: ClusterConfig,
+    report: String
+  ): JobScheduler = {
 
     val scheduler = new JobScheduler()
     if (!sys.env("AWS_ACCESS_KEY_ID").isEmpty &&
@@ -224,6 +269,7 @@ object JobScheduler {
     scheduler.src = src
     scheduler.branch = branch
     scheduler.env = env
+    scheduler.reportLevel = NotificationLevel.withName(report)
 
     val retryPolicy = new ExponentialBackoffRetry(1000, 3)
     scheduler.client = CuratorFrameworkFactory.newClient(config.zk, retryPolicy)

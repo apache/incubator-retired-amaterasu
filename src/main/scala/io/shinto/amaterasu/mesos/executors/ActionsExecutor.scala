@@ -1,6 +1,6 @@
 package io.shinto.amaterasu.mesos.executors
 
-import java.io.{ ByteArrayInputStream, FileInputStream }
+import java.io.ByteArrayInputStream
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
@@ -74,7 +74,7 @@ class ActionsExecutor extends Executor with Logging {
       val actionSource = taskData.src
       val env = taskData.env
 
-      val sparkScalaRunner = SparkScalaRunner(env, jobId, sparkAppName)
+      val sparkScalaRunner = SparkScalaRunner(env, jobId, sparkAppName, new MesosNotifier(driver))
 
       sparkScalaRunner.executeSource(actionSource, actionName)
 

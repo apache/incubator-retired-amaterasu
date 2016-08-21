@@ -4,6 +4,7 @@ import java.io.FileInputStream
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
+import io.shinto.amaterasu.runtime.Environment
 
 /**
   * Created by roadan on 5/23/16.
