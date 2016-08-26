@@ -15,7 +15,7 @@ import io.shinto.amaterasu.enums.ActionStatus.ActionStatus
 import io.shinto.amaterasu.execution.actions.{ NotificationType, Notification, NotificationLevel }
 import io.shinto.amaterasu.execution.actions.NotificationLevel.NotificationLevel
 import io.shinto.amaterasu.execution.{ JobLoader, JobManager }
-import io.shinto.amaterasu.mesos.executors.TaskDataLoader
+import io.shinto.amaterasu.mesos.executors.{ TaskDataLoader, TaskData }
 
 import org.apache.curator.framework.{ CuratorFrameworkFactory, CuratorFramework }
 import org.apache.curator.retry.ExponentialBackoffRetry
@@ -26,6 +26,7 @@ import org.apache.mesos.{ Protos, SchedulerDriver }
 
 import scala.collection.JavaConverters._
 import scala.collection.concurrent
+import scala.collection.concurrent.TrieMap
 
 /**
   * The JobScheduler is a mesos implementation. It is in charge of scheduling the execution of
@@ -41,6 +42,8 @@ class JobScheduler extends AmaterasuScheduler {
   private var branch: String = null
   private var resume: Boolean = false
   private var reportLevel: NotificationLevel = _
+
+  val slavesExecutors = new TrieMap[String, String]
   private var awsEnv: String = ""
 
   // this map holds the following structure:
@@ -154,11 +157,13 @@ class JobScheduler extends AmaterasuScheduler {
             val executor = ExecutorInfo
               .newBuilder
               .setName(taskId.getValue)
+
               .setExecutorId(ExecutorID.newBuilder().setValue(taskId.getValue + "-" + UUID.randomUUID()))
               .setCommand(command)
 
             val actionTask = TaskInfo
               .newBuilder
+
               .setName(taskId.getValue)
               .setTaskId(taskId)
               .setSlaveId(offer.getSlaveId)

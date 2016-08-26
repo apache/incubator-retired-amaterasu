@@ -58,7 +58,7 @@ class ActionsExecutor extends Executor with Logging {
     log.debug(s"launching task: $taskInfo")
     val status = TaskStatus.newBuilder
       .setTaskId(taskInfo.getTaskId)
-      .setState(TaskState.TASK_RUNNING).build()
+      .setState(TaskState.TASK_STARTING).build()
 
     driver.sendStatusUpdate(status)
 
@@ -75,6 +75,12 @@ class ActionsExecutor extends Executor with Logging {
       val env = taskData.env
 
       val sparkScalaRunner = SparkScalaRunner(env, jobId, sparkAppName, new MesosNotifier(driver))
+
+      val status = TaskStatus.newBuilder
+        .setTaskId(taskInfo.getTaskId)
+        .setState(TaskState.TASK_RUNNING).build()
+
+      driver.sendStatusUpdate(status)
 
       sparkScalaRunner.executeSource(actionSource, actionName)
 

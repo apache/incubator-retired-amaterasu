@@ -83,15 +83,13 @@ class SparkScalaRunner extends Logging {
               result match {
                 case df: DataFrame =>
                   log.debug(s"persisting DataFrame: $resultName")
-                  val x = interpreter.interpret(s"""$resultName.write.mode(SaveMode.Overwrite).parquet("${env.workingDir}/$jobId/$actionName/$resultName")""")
-                  log.debug(s"DF=> $x")
+                  interpreter.interpret(s"""$resultName.write.mode(SaveMode.Overwrite).parquet("${env.workingDir}/$jobId/$actionName/$resultName")""")
                   log.debug(outStream.toString)
                   log.debug(s"persisted DataFrame: $resultName")
 
                 case rdd: RDD[_] =>
                   log.debug(s"persisting RDD: $resultName")
-                  val x = interpreter.interpret(s"""$resultName.saveAsObjectFile("${env.workingDir}/$jobId/$actionName/$resultName")""")
-                  log.debug(s"RDD=> $x")
+                  interpreter.interpret(s"""$resultName.saveAsObjectFile("${env.workingDir}/$jobId/$actionName/$resultName")""")
                   log.debug(outStream.toString)
                   log.debug(s"persisted RDD: $resultName")
 
