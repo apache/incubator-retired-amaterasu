@@ -120,16 +120,16 @@ if [ -n "$NAME" ]; then
 fi
 
 if [ -n "$JOBID" ]; then
-    CMD+="--job-id ${JOBID}"
+    CMD+=" --job-id ${JOBID}"
 fi
 
 if [ -n "$REPORT" ]; then
-    CMD+="--report ${REPORT}"
+    CMD+=" --report ${REPORT}"
 fi
 
 echo $CMD
 
-eval $CMD | grep "===>"
+eval $CMD | grep "===>\|*"
 kill $SERVER_PID
 
 echo ""

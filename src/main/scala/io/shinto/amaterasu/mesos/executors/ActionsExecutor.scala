@@ -7,6 +7,7 @@ import com.fasterxml.jackson.module.scala.DefaultScalaModule
 
 import org.apache.mesos.protobuf.ByteString
 
+import io.shinto.amaterasu.runtime.Environment
 import io.shinto.amaterasu.Logging
 
 import org.apache.mesos.Protos._
@@ -24,6 +25,11 @@ class ActionsExecutor extends Executor with Logging {
   var sc: SparkContext = null
   var jobId: String = null
   var actionName: String = null
+  var sparkScalaRunner: SparkScalaRunner = null
+  var notifier: MesosNotifier = null
+
+  val mapper = new ObjectMapper()
+  mapper.registerModule(DefaultScalaModule)
 
   override def shutdown(driver: ExecutorDriver): Unit = {
 
@@ -50,11 +56,20 @@ class ActionsExecutor extends Executor with Logging {
   override def frameworkMessage(driver: ExecutorDriver, data: Array[Byte]): Unit = ???
 
   override def registered(driver: ExecutorDriver, executorInfo: ExecutorInfo, frameworkInfo: FrameworkInfo, slaveInfo: SlaveInfo): Unit = {
+
     this.executorDriver = driver
+    val env = mapper.readValue(new ByteArrayInputStream(executorInfo.getData.toByteArray), classOf[Environment])
+    val sparkAppName = s"job_${jobId}_executor_${executorInfo.getExecutorId.getValue}"
+
+    notifier = new MesosNotifier(driver)
+    notifier.info(s"Executor ${executorInfo.getExecutorId.getValue} registered")
+
+    sparkScalaRunner = SparkScalaRunner(env, jobId, sparkAppName, notifier)
   }
 
   override def launchTask(driver: ExecutorDriver, taskInfo: TaskInfo): Unit = {
 
+    notifier.info(s"launching task: ${taskInfo.getTaskId.getValue}")
     log.debug(s"launching task: $taskInfo")
     val status = TaskStatus.newBuilder
       .setTaskId(taskInfo.getTaskId)
@@ -62,19 +77,11 @@ class ActionsExecutor extends Executor with Logging {
 
     driver.sendStatusUpdate(status)
 
-    val sparkAppName = s"job_${jobId}_executor_${taskInfo.getExecutor.getExecutorId.getValue}"
-
     try {
 
-      val mapper = new ObjectMapper()
-      mapper.registerModule(DefaultScalaModule)
-
-      val taskData = mapper.readValue(new ByteArrayInputStream(taskInfo.getData().toByteArray), classOf[TaskData])
+      val taskData = mapper.readValue(new ByteArrayInputStream(taskInfo.getData.toByteArray), classOf[TaskData])
 
       val actionSource = taskData.src
-      val env = taskData.env
-
-      val sparkScalaRunner = SparkScalaRunner(env, jobId, sparkAppName, new MesosNotifier(driver))
 
       val status = TaskStatus.newBuilder
         .setTaskId(taskInfo.getTaskId)
@@ -87,7 +94,7 @@ class ActionsExecutor extends Executor with Logging {
       driver.sendStatusUpdate(TaskStatus.newBuilder()
         .setTaskId(taskInfo.getTaskId)
         .setState(TaskState.TASK_FINISHED).build())
-
+      notifier.info(s"complete task: ${taskInfo.getTaskId.getValue}")
     }
     catch {
       case e: Exception => {

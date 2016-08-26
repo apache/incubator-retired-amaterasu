@@ -35,17 +35,13 @@ class SparkScalaRunner extends Logging {
   val holder = new ResHolder(null)
 
   def execute(file: String, actionName: String): Unit = {
-    initializeAmaContext(env)
     val source = Source.fromFile(file)
     interpretSources(source, actionName)
-    interpreter.close()
   }
 
   def executeSource(actionSource: String, actionName: String): Unit = {
-    initializeAmaContext(env)
     val source = Source.fromString(actionSource)
     interpretSources(source, actionName)
-    interpreter.close()
   }
 
   def interpretSources(source: Source, actionName: String): Unit = {
@@ -168,7 +164,7 @@ object SparkScalaRunner extends Logging {
     val intp = ReplUtils.creteInterprater(env, jobId, result.outStream)
     result.interpreter = intp._1
     result.sc = createSparkContext(env, sparkAppName, intp._2)
-
+    result.initializeAmaContext(env)
     result
   }
 
