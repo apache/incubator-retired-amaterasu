@@ -1,12 +1,13 @@
 #Amaterasu
 
-       (                      )
-       )\        )      )   ( /(   (   (       )        (
-      ((_)(     (     ( /(  )\()  ))\  )(   ( /(  (    ))\
-     )\ _ )\    )\  ' )(_))(_))/ /((_)(()\  )(_)) )\  /((_)
-     (_)_\(_) _((_)) ((_) _ | |_ (_))   ((_)((_)_ ((_)(_))(
-      / _ \  | '   \()/ _` ||  _|/ -_) | '_|/ _` |(_-<| || |
-     /_/ \_\ |_|_|_|  \__,_| \__|\___| |_|  \__,_|/__/ \_,_|
+                                               /\
+    										  /	 \ /\
+    										 / /\ /  \
+        _                 _                 / /  / /\ \   
+       /_\   _ __   __ _ | |_  ___  _ _  __(_( _(_(_ )_) 
+      / _ \ | '  \ / _` ||  _|/ -_)| '_|/ _` |(_-<| || |
+     /_/ \_\|_|_|_|\__,_| \__|\___||_|  \__,_|/__/ \_,_|
+                                                        
 
 Amateraso is an open-source, distributed dataflow framework, that allows developers to build long running data-processing pipelines using a variety of standard data processing frameworks, including Apache Spark, Apache Flink and more.
 

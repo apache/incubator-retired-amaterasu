@@ -113,7 +113,7 @@ class JobManager extends Logging {
 
     log.warn(message)
     jobReport.append(
-      s""" *+-> action: $actionId failed with message:                      *
+      s""" *+-> action: $actionId failed with message:                     *
            |  $message
        """.stripMargin
     )

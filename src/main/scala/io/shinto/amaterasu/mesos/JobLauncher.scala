@@ -14,7 +14,7 @@ case class Args(
   env: String = "default",
   name: String = "amaterasu-job",
   jobId: String = null,
-  report: String = "none"
+  report: String = "code"
 )
 
 /**

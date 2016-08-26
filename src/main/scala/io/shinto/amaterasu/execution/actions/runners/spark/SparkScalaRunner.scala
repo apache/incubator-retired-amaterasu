@@ -35,17 +35,13 @@ class SparkScalaRunner extends Logging {
   val holder = new ResHolder(null)
 
   def execute(file: String, actionName: String): Unit = {
-    initializeAmaContext(env)
     val source = Source.fromFile(file)
     interpretSources(source, actionName)
-    interpreter.close()
   }
 
   def executeSource(actionSource: String, actionName: String): Unit = {
-    initializeAmaContext(env)
     val source = Source.fromString(actionSource)
     interpretSources(source, actionName)
-    interpreter.close()
   }
 
   def interpretSources(source: Source, actionName: String): Unit = {
@@ -83,15 +79,13 @@ class SparkScalaRunner extends Logging {
               result match {
                 case df: DataFrame =>
                   log.debug(s"persisting DataFrame: $resultName")
-                  val x = interpreter.interpret(s"""$resultName.write.mode(SaveMode.Overwrite).parquet("${env.workingDir}/$jobId/$actionName/$resultName")""")
-                  log.debug(s"DF=> $x")
+                  interpreter.interpret(s"""$resultName.write.mode(SaveMode.Overwrite).parquet("${env.workingDir}/$jobId/$actionName/$resultName")""")
                   log.debug(outStream.toString)
                   log.debug(s"persisted DataFrame: $resultName")
 
                 case rdd: RDD[_] =>
                   log.debug(s"persisting RDD: $resultName")
-                  val x = interpreter.interpret(s"""$resultName.saveAsObjectFile("${env.workingDir}/$jobId/$actionName/$resultName")""")
-                  log.debug(s"RDD=> $x")
+                  interpreter.interpret(s"""$resultName.saveAsObjectFile("${env.workingDir}/$jobId/$actionName/$resultName")""")
                   log.debug(outStream.toString)
                   log.debug(s"persisted RDD: $resultName")
 
@@ -170,7 +164,7 @@ object SparkScalaRunner extends Logging {
     val intp = ReplUtils.creteInterprater(env, jobId, result.outStream)
     result.interpreter = intp._1
     result.sc = createSparkContext(env, sparkAppName, intp._2)
-
+    result.initializeAmaContext(env)
     result
   }
 

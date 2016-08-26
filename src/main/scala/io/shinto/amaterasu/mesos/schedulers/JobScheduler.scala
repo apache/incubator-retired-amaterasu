@@ -15,7 +15,7 @@ import io.shinto.amaterasu.enums.ActionStatus.ActionStatus
 import io.shinto.amaterasu.execution.actions.{ NotificationType, Notification, NotificationLevel }
 import io.shinto.amaterasu.execution.actions.NotificationLevel.NotificationLevel
 import io.shinto.amaterasu.execution.{ JobLoader, JobManager }
-import io.shinto.amaterasu.mesos.executors.TaskDataLoader
+import io.shinto.amaterasu.mesos.executors.{ DataLoader, TaskData }
 
 import org.apache.curator.framework.{ CuratorFrameworkFactory, CuratorFramework }
 import org.apache.curator.retry.ExponentialBackoffRetry
@@ -26,6 +26,7 @@ import org.apache.mesos.{ Protos, SchedulerDriver }
 
 import scala.collection.JavaConverters._
 import scala.collection.concurrent
+import scala.collection.concurrent.TrieMap
 
 /**
   * The JobScheduler is a mesos implementation. It is in charge of scheduling the execution of
@@ -41,6 +42,8 @@ class JobScheduler extends AmaterasuScheduler {
   private var branch: String = null
   private var resume: Boolean = false
   private var reportLevel: NotificationLevel = _
+
+  val slavesExecutors = new TrieMap[String, ExecutorInfo]
   private var awsEnv: String = ""
 
   // this map holds the following structure:
@@ -109,8 +112,6 @@ class JobScheduler extends AmaterasuScheduler {
 
     for (offer <- offers.asScala) {
 
-      log.debug(s"start JobScheduler ${jobManager.jobId} : $offer")
-
       if (validateOffer(offer)) {
 
         log.info(s"Accepting offer, id=${offer.getId}")
@@ -135,27 +136,49 @@ class JobScheduler extends AmaterasuScheduler {
             val slaveActions = executionMap.get(offer.getSlaveId.toString).get
             slaveActions.put(taskId.getValue, ActionStatus.started)
 
-            val command = CommandInfo
-              .newBuilder
-              .setValue(
-                s"""$awsEnv env AMA_NODE=${sys.env("AMA_NODE")} env MESOS_NATIVE_JAVA_LIBRARY=/usr/lib/libmesos.so env SPARK_EXECUTOR_URI=http://${sys.env("AMA_NODE")}:8000/spark-1.6.1-2.tgz env SPARK_HOME="~/spark-1.6.1-bin-hadoop2.4" java -cp amaterasu-assembly-0.1.0.jar:spark-assembly-1.6.1-hadoop2.4.0.jar -Dscala.usejavacp=true -Djava.library.path=/usr/lib io.shinto.amaterasu.mesos.executors.ActionsExecutorLauncher ${jobManager.jobId} ${config.master} ${actionData.name}""".stripMargin
-              )
-              .addUris(URI.newBuilder
-                .setValue(s"http://${sys.env("AMA_NODE")}:8000/amaterasu-assembly-0.1.0.jar")
-                .setExecutable(false)
-                .setExtract(false)
-                .build())
-              .addUris(URI.newBuilder()
-                .setValue(s"http://${sys.env("AMA_NODE")}:8000/spark-assembly-1.6.1-hadoop2.4.0.jar")
-                .setExecutable(false)
-                .setExtract(false)
-                .build())
+            // searching for an executor that already exist on the slave, if non exist
+            // we create a new one
+            //TODO: move to .getOrElseUpdate when migrting to scala 2.11
+            var executor: ExecutorInfo = null
+            val slaveId = offer.getSlaveId.getValue
+            slavesExecutors.synchronized {
 
-            val executor = ExecutorInfo
-              .newBuilder
-              .setName(taskId.getValue)
-              .setExecutorId(ExecutorID.newBuilder().setValue(taskId.getValue + "-" + UUID.randomUUID()))
-              .setCommand(command)
+              if (slavesExecutors.contains(slaveId) &&
+                offer.getExecutorIdsList.contains(slavesExecutors(slaveId).getExecutorId)) {
+
+                executor = slavesExecutors(slaveId)
+              }
+              else {
+
+                val command = CommandInfo
+                  .newBuilder
+                  .setValue(
+                    s"""$awsEnv env AMA_NODE=${sys.env("AMA_NODE")} env MESOS_NATIVE_JAVA_LIBRARY=/usr/lib/libmesos.so env SPARK_EXECUTOR_URI=http://${sys.env("AMA_NODE")}:8000/spark-1.6.1-2.tgz env SPARK_HOME="~/spark-1.6.1-bin-hadoop2.4" java -cp amaterasu-assembly-0.1.0.jar:spark-assembly-1.6.1-hadoop2.4.0.jar -Dscala.usejavacp=true -Djava.library.path=/usr/lib io.shinto.amaterasu.mesos.executors.ActionsExecutorLauncher ${jobManager.jobId} ${config.master} ${actionData.name}""".stripMargin
+                  )
+                  .addUris(URI.newBuilder
+                    .setValue(s"http://${sys.env("AMA_NODE")}:8000/amaterasu-assembly-0.1.0.jar")
+                    .setExecutable(false)
+                    .setExtract(false)
+                    //.setCache(true)
+                    .build())
+                  .addUris(URI.newBuilder()
+                    .setValue(s"http://${sys.env("AMA_NODE")}:8000/spark-assembly-1.6.1-hadoop2.4.0.jar")
+                    .setExecutable(false)
+                    .setExtract(false)
+                    //.setCache(true)
+                    .build())
+
+                executor = ExecutorInfo
+                  .newBuilder
+                  .setData(DataLoader.getExecutorData(env))
+                  .setName(taskId.getValue)
+                  .setExecutorId(ExecutorID.newBuilder().setValue(taskId.getValue + "-" + UUID.randomUUID()))
+                  .setCommand(command)
+                  .build()
+
+                slavesExecutors.put(offer.getSlaveId.getValue, executor)
+              }
+            }
 
             val actionTask = TaskInfo
               .newBuilder
@@ -163,7 +186,8 @@ class JobScheduler extends AmaterasuScheduler {
               .setTaskId(taskId)
               .setSlaveId(offer.getSlaveId)
               .setExecutor(executor)
-              .setData(new TaskDataLoader(actionData, env).toTaskData())
+
+              .setData(DataLoader.getTaskData(actionData, env))
               .addResources(createScalarResource("cpus", config.Jobs.Tasks.cpus))
               .addResources(createScalarResource("mem", config.Jobs.Tasks.mem))
               .addResources(createScalarResource("disk", config.Jobs.repoSize))
@@ -174,7 +198,7 @@ class JobScheduler extends AmaterasuScheduler {
           else if (jobManager.outOfActions) {
             log.info(s"framework ${jobManager.jobId} execution finished")
 
-            jobManager.jobReport.append("******************************************************************")
+            jobManager.jobReport.append(" ******************************************************************")
             log.info(jobManager.jobReport.result)
             driver.declineOffer(offer.getId)
             driver.stop()
