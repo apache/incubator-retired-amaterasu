@@ -1,11 +1,12 @@
 package io.shinto.amaterasu.mesos
 
+import java.io.FileInputStream
+
 import io.shinto.amaterasu.Logging
 import io.shinto.amaterasu.configuration.ClusterConfig
 import io.shinto.amaterasu.mesos.schedulers.JobScheduler
-import io.shinto.amaterasu.utilities.FsUtil
-import org.apache.mesos.Protos.FrameworkID
 
+import org.apache.mesos.Protos.FrameworkID
 import org.apache.mesos.{ MesosSchedulerDriver, Protos }
 
 case class Args(
@@ -51,8 +52,7 @@ object JobLauncher extends App with Logging {
 
     case Some(arguments) =>
 
-      val config = ClusterConfig()
-      FsUtil(config).distributeJar()
+      val config = ClusterConfig(new FileInputStream("./amaterasu.properties"))
 
       val frameworkBuilder = Protos.FrameworkInfo.newBuilder()
         .setName(s"${arguments.name} - Amaterasu Job")

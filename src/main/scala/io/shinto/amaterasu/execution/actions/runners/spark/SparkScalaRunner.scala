@@ -34,11 +34,6 @@ class SparkScalaRunner extends Logging {
   val settings = new Settings()
   val holder = new ResHolder(null)
 
-  def execute(file: String, actionName: String): Unit = {
-    val source = Source.fromFile(file)
-    interpretSources(source, actionName)
-  }
-
   def executeSource(actionSource: String, actionName: String): Unit = {
     val source = Source.fromString(actionSource)
     interpretSources(source, actionName)

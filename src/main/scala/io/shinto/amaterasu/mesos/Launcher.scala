@@ -1,8 +1,9 @@
 package io.shinto.amaterasu.mesos
 
-import io.shinto.amaterasu.configuration.{ ClusterConfig, ClusterConfig$ }
+import java.io.FileInputStream
+
+import io.shinto.amaterasu.configuration.ClusterConfig
 import io.shinto.amaterasu.mesos.schedulers.ClusterScheduler
-import io.shinto.amaterasu.utilities.FsUtil
 import io.shinto.amaterasu.{ Logging, Kami }
 
 import org.apache.mesos.{ Protos, MesosSchedulerDriver }
@@ -24,10 +25,8 @@ object Launcher extends App with Logging {
     """
   )
 
-  val config = ClusterConfig()
+  val config = ClusterConfig(new FileInputStream("./amaterasu.properties"))
   val kami = Kami(Seq("https://github.com/roadan/amaterasu-job-sample.git"))
-
-  FsUtil(config).distributeJar()
 
   // for multi-tenancy reasons the name of the framework is composed out of the username ( which defaults
   // to empty string concatenated with - Amaterasu
