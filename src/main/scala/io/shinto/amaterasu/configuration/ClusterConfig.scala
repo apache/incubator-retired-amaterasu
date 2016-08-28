@@ -8,7 +8,7 @@ import io.shinto.amaterasu.Logging
 
 class ClusterConfig extends Logging {
 
-  val DEFAULT_FILE = getClass().getResourceAsStream("/amaterasu.properties")
+  val DEFAULT_FILE = getClass().getResourceAsStream("/src/main/scripts/amaterasu.properties")
 
   var user: String = ""
   var zk: String = ""
@@ -128,10 +128,10 @@ class ClusterConfig extends Logging {
 
 object ClusterConfig {
 
-  def apply(): ClusterConfig = {
+  def apply(file: InputStream): ClusterConfig = {
 
     val config = new ClusterConfig()
-    config.load()
+    config.load(file)
 
     config
   }

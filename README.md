@@ -9,9 +9,34 @@
      /_/ \_\|_|_|_|\__,_| \__|\___||_|  \__,_|/__/ \_,_|
                                                         
 
-Amateraso is an open-source, distributed dataflow framework, that allows developers to build long running data-processing pipelines using a variety of standard data processing frameworks, including Apache Spark, Apache Flink and more.
+Amaterasu is an open-source, deployment tool for data pipelines. Amaterasu allows developers to write and easily deploy data pipelines, and clusters manage their configuration and dependencies.
 
-##Architecture
+## Download
+
+## Configuration
+
+Configuring amaterasu is very simple. Before running amaterasu, open the `amaterasu.properties` file in the top-level amaterasu directory, and verify the following properties:
+
+| property   | Description                | Default value  |
+| ---------- |:--------------------------:| --------------:|
+| zk         | The ZooKeeper connection<br> string to be used by<br> amaterasu | 192.168.33.11  |
+| master     | The clusters' Mesos master | 192.168.33.11  |
+| user       | The user that will be used<br> to run amaterasu | root           |
+
+## Running a Job
+
+To run an amaterasu job, run the following command in the top-level amaterasu directory:
+
+```
+ama-start.sh --repo "https://github.com/roadan/amaterasu-job-sample.git" --branch master
+```
+
+## Creating a dev/test Mesos cluster
+
+We have also created a Mesos cluster you can use to test Amaterasu or use for development purposes.
+For more details, visit the [amaterasu-vagrant](https://github.com/shintoio/amaterasu-vagrant) repo
+
+## Architecture
 
 Amaterasu is an Apache Mesos framework with two levels of schedulers:
 
@@ -60,15 +85,5 @@ The main clases in Amateraso are listed bellow:
 
                       
 ## Building
+    
 sbt assembly copyScripts
-
-
-## Running a Job
-
-To run an amaterasu job, run the following command:
-
-/ama/ama-start.sh
-
-```
-java -cp /ama/amaterasu-assembly-0.1.0.jar -Djava.library.path=/usr/lib io.shinto.amaterasu.mesos.JobLauncher --repo "https://github.com/roadan/amaterasu-job-sample.git" --branch master
-```
