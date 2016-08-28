@@ -50,53 +50,58 @@ class SparkScalaRunner extends Logging {
         outStream.reset()
         log.debug(line)
 
-        val intresult = interpreter.interpret(line)
-
-        //if (interpreter.prevRequestList.last.value.exists) {
-
-        val result = interpreter.prevRequestList.last.lineRep.call("$result")
-
-        // dear future me (probably Karel or Tim) this is what we
-        // can use
-        // intresult: Success, Error, etc
-        // result: the actual result (RDD, df, etc.) for caching
-        // outStream.toString gives you the error message
-        intresult match {
-          case Results.Success =>
-            log.debug("Results.Success")
-
-            notifier.success(line)
-
-            //val resultName = interpreter.prevRequestList.last.value.name.toString
-            val resultName = interpreter.prevRequestList.last.termNames.last
-
-            if (result != null) {
-              result match {
-                case df: DataFrame =>
-                  log.debug(s"persisting DataFrame: $resultName")
-                  interpreter.interpret(s"""$resultName.write.mode(SaveMode.Overwrite).parquet("${env.workingDir}/$jobId/$actionName/$resultName")""")
-                  log.debug(outStream.toString)
-                  log.debug(s"persisted DataFrame: $resultName")
-
-                case rdd: RDD[_] =>
-                  log.debug(s"persisting RDD: $resultName")
-                  interpreter.interpret(s"""$resultName.saveAsObjectFile("${env.workingDir}/$jobId/$actionName/$resultName")""")
-                  log.debug(outStream.toString)
-                  log.debug(s"persisted RDD: $resultName")
-
-                case _ => println(result)
-              }
-            }
-
-          case Results.Error =>
-            log.debug("Results.Error")
-            notifier.error(line, outStream.toString)
-
-          case Results.Incomplete =>
-            log.debug("Results.Incomplete")
-
+        if (line.startsWith("import")) {
+          interpreter.interpret(line)
         }
-        //}
+        else {
+
+          val intresult = interpreter.interpret(line)
+
+          //if (interpreter.prevRequestList.last.value.exists) {
+
+          val result = interpreter.prevRequestList.last.lineRep.call("$result")
+
+          // dear future me (probably Karel or Tim) this is what we
+          // can use
+          // intresult: Success, Error, etc
+          // result: the actual result (RDD, df, etc.) for caching
+          // outStream.toString gives you the error message
+          intresult match {
+            case Results.Success =>
+              log.debug("Results.Success")
+
+              notifier.success(line)
+
+              //val resultName = interpreter.prevRequestList.last.value.name.toString
+              val resultName = interpreter.prevRequestList.last.termNames.last
+
+              if (result != null) {
+                result match {
+                  case df: DataFrame =>
+                    log.debug(s"persisting DataFrame: $resultName")
+                    interpreter.interpret(s"""$resultName.write.mode(SaveMode.Overwrite).parquet("${env.workingDir}/$jobId/$actionName/$resultName")""")
+                    log.debug(outStream.toString)
+                    log.debug(s"persisted DataFrame: $resultName")
+
+                  case rdd: RDD[_] =>
+                    log.debug(s"persisting RDD: $resultName")
+                    interpreter.interpret(s"""$resultName.saveAsObjectFile("${env.workingDir}/$jobId/$actionName/$resultName")""")
+                    log.debug(outStream.toString)
+                    log.debug(s"persisted RDD: $resultName")
+
+                  case _ => println(result)
+                }
+              }
+
+            case Results.Error =>
+              log.debug("Results.Error")
+              notifier.error(line, outStream.toString)
+
+            case Results.Incomplete =>
+              log.debug("Results.Incomplete")
+
+          }
+        }
       }
     }
 
@@ -157,14 +162,17 @@ object SparkScalaRunner extends Logging {
     result.outStream = new ByteArrayOutputStream()
     result.notifier = notifier
 
-    val intp = ReplUtils.creteInterprater(env, jobId, result.outStream)
+    val intp = ReplUtils.creteInterprater(env, jobId, result.outStream, jars)
+
     result.interpreter = intp._1
-    result.sc = createSparkContext(env, sparkAppName, intp._2)
+
+    result.sc = createSparkContext(env, sparkAppName, intp._2, jars)
+
     result.initializeAmaContext(env)
     result
   }
 
-  def createSparkContext(env: Environment, sparkAppName: String, classServerUri: String): SparkContext = {
+  def createSparkContext(env: Environment, sparkAppName: String, classServerUri: String, jars: Seq[String]): SparkContext = {
 
     log.debug(s"creating SparkContext with master ${env.master}")
 
@@ -179,6 +187,9 @@ object SparkScalaRunner extends Logging {
       .set("spark.cores.max", "5")
       .set("spark.hadoop.validateOutputSpecs", "false")
     val sc = new SparkContext(conf)
+    for (jar <- jars) {
+      sc.addJar(jar) // and this is how my childhood was ruined :(
+    }
     val hc = sc.hadoopConfiguration
 
     if (!sys.env("AWS_ACCESS_KEY_ID").isEmpty &&

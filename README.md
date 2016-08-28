@@ -18,7 +18,7 @@ Amaterasu is an open-source, deployment tool for data pipelines. Amaterasu allow
 Configuring amaterasu is very simple. Before running amaterasu, open the `amaterasu.properties` file in the top-level amaterasu directory, and verify the following properties:
 
 | property   | Description                | Default value  |
-| ---------- |:--------------------------:| --------------:|
+| ---------- | -------------------------- | -------------- |
 | zk         | The ZooKeeper connection<br> string to be used by<br> amaterasu | 192.168.33.11  |
 | master     | The clusters' Mesos master | 192.168.33.11  |
 | user       | The user that will be used<br> to run amaterasu | root           |

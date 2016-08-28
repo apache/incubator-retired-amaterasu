@@ -10,7 +10,7 @@ import org.apache.spark.repl.{ SparkCommandLine, SparkIMain }
   */
 object ReplUtils {
 
-  def creteInterprater(env: Environment, jobId: String, outStream: ByteArrayOutputStream): (SparkIMain, String) = {
+  def creteInterprater(env: Environment, jobId: String, outStream: ByteArrayOutputStream, jars: Seq[String]): (SparkIMain, String) = {
 
     var result: SparkIMain = null
     var classServerUri: String = null
@@ -24,7 +24,8 @@ object ReplUtils {
 
       settings.classpath.append(System.getProperty("java.class.path") + File.pathSeparator +
         "spark-assembly-1.6.1-hadoop2.4.0.jar" + File.pathSeparator +
-        "/home/vagrant/spark-1.6.1-1/conf/")
+        "/home/vagrant/spark-1.6.1-1/conf/" + File.pathSeparator +
+        jars.mkString(File.pathSeparator))
 
       settings.usejavacp.value = true
 
@@ -45,8 +46,6 @@ object ReplUtils {
         case e: Any =>
           println(String.format("Spark method classServerUri not available due to: [%s]", e.getMessage))
       }
-
-      println(classServerUri)
 
       settings.embeddedDefaults(Thread.currentThread()
         .getContextClassLoader)
