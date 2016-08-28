@@ -10,7 +10,6 @@ import scalariform.formatter.preferences._
 object Build extends Build {
 
 
-
   // Project information
   val ORGANIZATION = "io.shinto"
   val PROJECT_NAME = "amaterasu"
@@ -65,7 +64,9 @@ object Build extends Build {
       "com.fasterxml.jackson.core" % "jackson-annotations" % "2.6.4",
       "com.fasterxml.jackson.core" % "jackson-databind" % "2.6.4",
       "com.fasterxml.jackson.dataformat" % "jackson-dataformat-yaml" % "2.6.4",
-        "com.github.scopt" %% "scopt" % "3.3.0",
+      "com.github.scopt" %% "scopt" % "3.3.0",
+      "com.jcabi" % "jcabi-aether" % "0.10.1",
+      "org.apache.maven" % "maven-core" % "3.0.5",
 
       // execution engines dependencies
       "org.apache.spark" %% "spark-repl" % "1.6.1" % "provided",
@@ -78,14 +79,13 @@ object Build extends Build {
     ),
 
 
-
     scalacOptions in Compile ++= Seq(
       "-unchecked",
       "-deprecation",
       "-feature"
     ),
 
-    javaOptions in(test) += "-Djava.library.path=%s:%s".format(
+    javaOptions in (test) += "-Djava.library.path=%s:%s".format(
       sys.props("java.library   .path"),
       pathToMesosLibs
     ),

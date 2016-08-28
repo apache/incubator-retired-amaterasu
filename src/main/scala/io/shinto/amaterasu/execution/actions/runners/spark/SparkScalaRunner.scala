@@ -147,7 +147,8 @@ object SparkScalaRunner extends Logging {
     env: Environment,
     jobId: String,
     sparkAppName: String,
-    notifier: Notifier
+    notifier: Notifier,
+    jars: Seq[String]
   ): SparkScalaRunner = {
 
     val result = new SparkScalaRunner()

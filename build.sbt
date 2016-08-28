@@ -10,6 +10,7 @@ assemblyMergeStrategy in assembly := {
   case x if x.contains("xsd") => MergeStrategy.first
   case x if x.contains("Http") => MergeStrategy.first
   case x if x.contains("org/cyberneko/html") => MergeStrategy.first
+  case x if x.contains("mime.types") => MergeStrategy.first
   case x if x.contains("parquet") => MergeStrategy.first
   case x if x.contains("class") => MergeStrategy.first
   case x if x.contains("properties") => MergeStrategy.first

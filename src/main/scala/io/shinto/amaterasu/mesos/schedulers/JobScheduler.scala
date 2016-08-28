@@ -159,13 +159,11 @@ class JobScheduler extends AmaterasuScheduler {
                     .setValue(s"http://${sys.env("AMA_NODE")}:8000/amaterasu-assembly-0.1.0.jar")
                     .setExecutable(false)
                     .setExtract(false)
-                    //.setCache(true)
                     .build())
                   .addUris(URI.newBuilder()
                     .setValue(s"http://${sys.env("AMA_NODE")}:8000/spark-assembly-1.6.1-hadoop2.4.0.jar")
                     .setExecutable(false)
                     .setExtract(false)
-                    //.setCache(true)
                     .build())
 
                 executor = ExecutorInfo
@@ -198,6 +196,7 @@ class JobScheduler extends AmaterasuScheduler {
           else if (jobManager.outOfActions) {
             log.info(s"framework ${jobManager.jobId} execution finished")
 
+            jobManager.jobReport.append(" *                                                                *\n")
             jobManager.jobReport.append(" ******************************************************************")
             log.info(jobManager.jobReport.result)
             driver.declineOffer(offer.getId)
