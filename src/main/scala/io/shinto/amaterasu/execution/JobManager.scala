@@ -101,6 +101,10 @@ class JobManager extends Logging {
     action.announceComplete
     action.data.nextActionIds.foreach(id =>
       registeredActions.get(id).get.execute())
+
+    // we don't need the error action anymore
+    if (action.data.errorActionId != null)
+      registeredActions.get(action.data.errorActionId).get.announceCanceled
   }
 
   /**

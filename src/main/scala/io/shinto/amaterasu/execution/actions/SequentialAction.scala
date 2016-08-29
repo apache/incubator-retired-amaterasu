@@ -14,7 +14,7 @@ class SequentialAction extends Action {
 
   var jobId: String = null
   var jobsQueue: BlockingQueue[ActionData] = null
-  var attempts: Int = 3
+  var attempts: Int = 2
   var attempt: Int = 1
 
   def execute() = {
@@ -44,6 +44,7 @@ class SequentialAction extends Action {
     }
     else {
       announceFailure()
+      println(s"===> moving to err action ${data.errorActionId}")
       data.status = ActionStatus.failed
       data.errorActionId
     }
@@ -103,7 +104,7 @@ object ErrorAction {
     // creating a znode for the action
     action.client = zkClient
     action.actionPath = action.client.create().withMode(CreateMode.PERSISTENT).forPath(s"/${jobId}/task-$parent-error", ActionStatus.pending.toString.getBytes())
-    action.actionId = action.actionPath.substring(action.actionPath.indexOf('-') + 1)
+    action.actionId = action.actionPath.substring(action.actionPath.indexOf('-') + 1).replace("/", "-")
 
     action.jobId = jobId
     action.data = new ActionData(ActionStatus.pending, name, src, jobType, action.actionId, new ListBuffer[String])

@@ -97,6 +97,12 @@ class SparkScalaRunner extends Logging {
               log.debug("Results.Error")
               notifier.error(line, outStream.toString)
 
+            case Results.Error =>
+              log.debug("Results.Error")
+              val err = outStream.toString
+              notifier.error(line, err)
+              throw new Exception(err)
+
             case Results.Incomplete =>
               log.debug("Results.Incomplete")
 
