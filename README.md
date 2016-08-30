@@ -14,7 +14,12 @@ Amaterasu is an open-source, deployment tool for data pipelines. Amaterasu allow
 ## Download
 
 For this preview version, we have packaged amaterasu nicely for you to just [download](https://s3-ap-southeast-2.amazonaws.com/amaterasu/amaterasu.tgz) and extract.
-Once you do that, you are just a couple of stpes away from running your first job.
+Once you do that, you are just a couple of easy steps away from running your first job.
+
+## Creating a dev/test Mesos cluster
+
+We have also created a Mesos cluster you can use to test Amaterasu or use for development purposes.
+For more details, visit the [amaterasu-vagrant](https://github.com/shintoio/amaterasu-vagrant) repo
 
 ## Configuration
 
@@ -31,14 +36,12 @@ Configuring amaterasu is very simple. Before running amaterasu, open the `amater
 To run an amaterasu job, run the following command in the top-level amaterasu directory:
 
 ```
-ama-start.sh --repo "https://github.com/roadan/amaterasu-job-sample.git" --branch master
+ama-start.sh --repo="https://github.com/shintoio/amaterasu-job-sample.git" --branch="master" --env="test" --report="code" 
 ```
 
-## Creating a dev/test Mesos cluster
+We recommend you either fork or clone the job sample repo and use that as a starting point for creating your first job.
 
-We have also created a Mesos cluster you can use to test Amaterasu or use for development purposes.
-For more details, visit the [amaterasu-vagrant](https://github.com/shintoio/amaterasu-vagrant) repo
-
+# Amaterasu Developers Information 
 ## Architecture
 
 Amaterasu is an Apache Mesos framework with two levels of schedulers:
