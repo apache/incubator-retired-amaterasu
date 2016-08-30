@@ -13,6 +13,9 @@ Amaterasu is an open-source, deployment tool for data pipelines. Amaterasu allow
 
 ## Download
 
+For this preview version, we have packaged amaterasu nicely for you to just [download](https://s3-ap-southeast-2.amazonaws.com/amaterasu/amaterasu.tgz) and extract.
+Once you do that, you are just a couple of stpes away from running your first job.
+
 ## Configuration
 
 Configuring amaterasu is very simple. Before running amaterasu, open the `amaterasu.properties` file in the top-level amaterasu directory, and verify the following properties:
