@@ -1,5 +1,7 @@
 package io.shinto.amaterasu.mesos.executors
 
+import java.nio.file.{ Files, Paths }
+
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
@@ -7,9 +9,6 @@ import io.shinto.amaterasu.Logging
 import io.shinto.amaterasu.execution.dependencies.Dependencies
 import io.shinto.amaterasu.runtime.Environment
 import org.apache.mesos.protobuf.ByteString
-import org.sonatype.aether.artifact.Artifact
-import org.sonatype.aether.repository.RemoteRepository
-import org.sonatype.aether.util.artifact.DefaultArtifact
 
 //import com.google.protobuf.ByteString
 import io.shinto.amaterasu.dataObjects.ActionData
@@ -44,8 +43,13 @@ object DataLoader extends Logging {
 
     val envValue = Source.fromFile(s"repo/env/${env}.json").mkString
     val envData = mapper.readValue(envValue, classOf[Environment])
-    val depsValue = Source.fromFile(s"repo/deps/jars.yml").mkString
-    val depsData = ymlMapper.readValue(depsValue, classOf[Dependencies])
+
+    var depsData: Dependencies = null
+
+    if (Files.exists(Paths.get("repo/deps/jars.yml"))) {
+      val depsValue = Source.fromFile(s"repo/deps/jars.yml").mkString
+      depsData = ymlMapper.readValue(depsValue, classOf[Dependencies])
+    }
 
     val data = mapper.writeValueAsBytes(new ExecData(envData, depsData))
     ByteString.copyFrom(data)
@@ -54,4 +58,5 @@ object DataLoader extends Logging {
 }
 
 case class TaskData(src: String, env: Environment)
+
 case class ExecData(env: Environment, deps: Dependencies)

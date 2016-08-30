@@ -26,6 +26,7 @@ import org.sonatype.aether.util.artifact.DefaultArtifact
 
 import com.jcabi.aether.Aether
 
+import scala.collection.mutable
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.util.{ Success, Failure }
@@ -79,7 +80,11 @@ class ActionsExecutor extends Executor with Logging {
     notifier = new MesosNotifier(driver)
     notifier.info(s"Executor ${executorInfo.getExecutorId.getValue} registered")
 
-    val jars = getDependencies(data.deps)
+    var jars = Seq[String]()
+    if (data.deps != null) {
+      jars ++= getDependencies(data.deps)
+    }
+
     sparkScalaRunner = SparkScalaRunner(data.env, jobId, sparkAppName, notifier, jars)
   }
 
