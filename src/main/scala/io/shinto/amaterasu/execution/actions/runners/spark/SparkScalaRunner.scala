@@ -164,13 +164,12 @@ object SparkScalaRunner extends Logging {
     result.outStream = new ByteArrayOutputStream()
     result.notifier = notifier
 
-    val intp = ReplUtils.creteInterprater(env, jobId, result.outStream, jars)
-
-    result.interpreter = intp._1
+    result.interpreter = ReplUtils.getOrCreateScalaInterperter(result.outStream, jars)
+    val classServerUri = ReplUtils.getOrCreateClassServerUri(result.outStream, jars)
 
     log.debug(s"creating SparkContext with master ${env.master}")
 
-    result.sc = SparkRunnerHelper.createSparkContext(env, sparkAppName, intp._2, jars)
+    result.sc = SparkRunnerHelper.createSparkContext(env, sparkAppName, classServerUri, jars)
 
     result.initializeAmaContext(env)
     result

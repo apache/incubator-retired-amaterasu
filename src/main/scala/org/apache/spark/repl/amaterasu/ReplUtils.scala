@@ -10,15 +10,30 @@ import org.apache.spark.repl.{ SparkCommandLine, SparkIMain }
   */
 object ReplUtils {
 
-  def creteInterprater(env: Environment, jobId: String, outStream: ByteArrayOutputStream, jars: Seq[String]): (SparkIMain, String) = {
+  var classServerUri: String = null
+  var interperter: SparkIMain = null
+
+  def getOrCreateClassServerUri(outStream: ByteArrayOutputStream, jars: Seq[String], recreate: Boolean = false): String = {
+    if (interperter == null || recreate) {
+      initInterprater(outStream, jars)
+    }
+    classServerUri
+  }
+
+  def getOrCreateScalaInterperter(outStream: ByteArrayOutputStream, jars: Seq[String], recreate: Boolean = false): SparkIMain = {
+    if (interperter == null || recreate) {
+      initInterprater(outStream, jars)
+    }
+    interperter
+  }
+
+  private def initInterprater(outStream: ByteArrayOutputStream, jars: Seq[String]) = {
 
     var result: SparkIMain = null
     var classServerUri: String = null
 
     try {
-
-      val command =
-        new SparkCommandLine(List())
+      val command = new SparkCommandLine(List())
 
       val settings = command.settings
 
@@ -47,8 +62,7 @@ object ReplUtils {
           println(String.format("Spark method classServerUri not available due to: [%s]", e.getMessage))
       }
 
-      settings.embeddedDefaults(Thread.currentThread()
-        .getContextClassLoader)
+      settings.embeddedDefaults(Thread.currentThread().getContextClassLoader)
       intp.setContextClassLoader
       intp.initializeSynchronous
 
@@ -59,6 +73,7 @@ object ReplUtils {
         println("+++++++>" + new Predef.String(outStream.toByteArray))
 
     }
-    (result, classServerUri)
+    this.interperter = result
+    this.classServerUri = classServerUri
   }
 }
