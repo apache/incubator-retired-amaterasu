@@ -43,7 +43,7 @@ object Build extends Build {
         val file = new File(base, "src/main/scripts").listFiles().foreach(
           file => Files.copy(
             file.toPath,
-            new File(target, file.name).toPath,
+            new File(target + "/scala-2.10", file.name).toPath,
             StandardCopyOption.REPLACE_EXISTING)
         )
     },
@@ -70,6 +70,7 @@ object Build extends Build {
 
       // execution engines dependencies
       "org.apache.spark" %% "spark-repl" % "1.6.1" % "provided",
+      "net.sf.py4j" % "py4j" % "0.8.1",
 
       // test dependencies
       "org.scalatest" %% "scalatest" % "2.2.2" % "test",
