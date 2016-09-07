@@ -4,6 +4,7 @@ import java.io.ByteArrayOutputStream
 
 import io.shinto.amaterasu.Logging
 import io.shinto.amaterasu.execution.actions.Notifier
+import io.shinto.amaterasu.execution.actions.runners.spark.IAmaRunner
 import io.shinto.amaterasu.runtime.{AmaContext, Environment}
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
@@ -23,7 +24,7 @@ class SparkScalaRunner(var env: Environment,
                        var interpreter: SparkIMain,
                        var outStream: ByteArrayOutputStream,
                        var sc: SparkContext,
-                       var notifier: Notifier) extends Logging {
+                       var notifier: Notifier) extends Logging with IAmaRunner {
 
   // This is the amaterasu spark configuration need to rethink the name
 
@@ -33,7 +34,7 @@ class SparkScalaRunner(var env: Environment,
 
 
 
-  def executeSource(actionSource: String, actionName: String): Unit = {
+  override def executeSource(actionSource: String, actionName: String): Unit = {
     val source = Source.fromString(actionSource)
     interpretSources(source, actionName)
   }
@@ -109,7 +110,7 @@ class SparkScalaRunner(var env: Environment,
     notifier.info(s"================= finished action $actionName =================")
   }
 
-  def initializeAmaContext(env: Environment): Unit = {
+  override def initializeAmaContext(env: Environment): Unit = {
 
     // setting up some context :)
     val sc = this.sc
@@ -157,11 +158,7 @@ object SparkScalaRunner extends Logging {
     notifier: Notifier,
     jars: Seq[String]
   ): SparkScalaRunner = {
-
-    val result = new SparkScalaRunner(env, jobId, ReplUtils.getOrCreateScalaInterperter(outStream, jars), outStream, sparkContext, notifier)
-
-    result.initializeAmaContext(env)
-    result
+    new SparkScalaRunner(env, jobId, ReplUtils.getOrCreateScalaInterperter(outStream, jars), outStream, sparkContext, notifier)
   }
 
 }
