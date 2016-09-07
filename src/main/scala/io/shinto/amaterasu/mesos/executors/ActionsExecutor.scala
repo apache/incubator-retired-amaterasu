@@ -89,6 +89,7 @@ class ActionsExecutor extends Executor with Logging {
     val sparkContext = SparkRunnerHelper.createSparkContext(data.env, sparkAppName, classServerUri, jars)
 
     sparkScalaRunner = SparkScalaRunner(data.env, jobId, sparkContext, outStream, notifier, jars)
+    sparkScalaRunner.initializeAmaContext(data.env)
   }
 
   override def launchTask(driver: ExecutorDriver, taskInfo: TaskInfo): Unit = {
