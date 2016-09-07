@@ -32,6 +32,7 @@ object Build extends Build {
 
   lazy val copyScripts = TaskKey[Unit]("copyScripts")
 
+  val jri_version = "0.9-7"
   lazy val basicSettings = Seq(
     version := PROJECT_VERSION,
     organization := ORGANIZATION,
@@ -67,8 +68,13 @@ object Build extends Build {
       "com.github.scopt" %% "scopt" % "3.3.0",
       "com.jcabi" % "jcabi-aether" % "0.10.1",
       "org.apache.maven" % "maven-core" % "3.0.5",
+      "com.github.lucarosellini.rJava" % "JRI" % jri_version,
+      "com.github.lucarosellini.rJava" % "REngine" % jri_version,
+      "com.github.lucarosellini.rJava" % "JRIEngine" % jri_version,
 
-      // execution engines dependencies
+
+
+  // execution engines dependencies
       "org.apache.spark" %% "spark-repl" % "1.6.1" % "provided",
 
       // test dependencies
