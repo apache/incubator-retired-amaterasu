@@ -18,36 +18,14 @@ NC=`tput sgr0`
 bold=$(tput bold)
 normal=$(tput sgr0)
 
-#echo ""
-#echo ""
-#echo "${RED}      (                      )"
-#echo "      )\        )      )   ( /(   (   (       )        ("
-#echo "     ((${YELLOW}_${RED})(     (     ( ${YELLOW}/${RED}(  )${YELLOW}\(${RED})  )${YELLOW})${RED}\  )(   ( /(  (    )${YELLOW})${RED}\\"
-#echo "    )\ ${YELLOW}_${RED} )\    )\  ' )${YELLOW}(_)${RED})(_))/ /(${YELLOW}(_)${RED}(()\  )${YELLOW}(_)${RED}) )\  /((${YELLOW}_${RED})"
-#echo "    (_)${NC}_${RED}\(_) ${NC}_${RED}(${YELLOW}(_)${RED}) ((_) _ | |_ (_))   ((_)((_)_ ((_)(_))( ${NC}"
-#echo "     / _ \  | '   \()/ _\` ||  _|/ -_) | '_|/ _\` |(_-<| || |"
-#echo "    /_/ \_\ |_|_|_|  \__,_| \__|\___| |_|  \__,_|/__/ \_,_|"
-#echo ""
-#echo "    Continuously deployed data pipelines"
-#echo "    Version 0.1.0"
-#echo ""
-#echo ""
+if [ -z "$AWS_ACCESS_KEY_ID" ]; then
+    export AWS_ACCESS_KEY_ID=0
+fi
 
-#echo ""
-#echo ""
-#echo "${bold}      (                      )"
-#echo "      )\        )      )   ( /(   (   (       )        ("
-#echo "     ((_)(     (     ( /(  )\()  ))\  )(   ( /(  (    ))\\"
-#echo "    )\ _ )\    )\  ' )(_))(_))/ /((_)(()\  )(_)) )\  /((_)"
-#echo "    (_)_\(_) _((_)) ((_) _ | |_ (_))   ((_)((_)_ ((_)(_))( "
-#echo "     / _ \  | '   \()/ _\`||  _|/ -_) | '_|/ _\` |(_-<| || |"
-#echo "    /_/ \_\ |_|_|_|  \__,_| \__|\___| |_|  \__,_|/__/ \_,_| ${normal}"
-#echo ""
-#echo "    Continuously deployed data pipelines"
-#echo "    Version 0.1.0"
-#echo ""
-#echo ""
-#
+if [ -z "$AWS_SECRET_ACCESS_KEY" ]; then
+    export AWS_SECRET_ACCESS_KEY=0
+fi
+
 echo ""
 echo ""
 echo "${bold}${RED}                                             /\ "

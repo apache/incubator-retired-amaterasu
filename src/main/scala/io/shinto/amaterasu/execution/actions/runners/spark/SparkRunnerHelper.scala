@@ -26,8 +26,8 @@ object SparkRunnerHelper {
     }
     val hc = sc.hadoopConfiguration
 
-    if (!sys.env("AWS_ACCESS_KEY_ID").isEmpty &&
-      !sys.env("AWS_SECRET_ACCESS_KEY").isEmpty) {
+    if (!sys.env.get("AWS_ACCESS_KEY_ID").get.isEmpty &&
+      !sys.env.get("AWS_SECRET_ACCESS_KEY").get.isEmpty) {
 
       hc.set("fs.s3n.impl", "org.apache.hadoop.fs.s3native.NativeS3FileSystem")
       hc.set("fs.s3n.awsAccessKeyId", sys.env("AWS_ACCESS_KEY_ID"))
