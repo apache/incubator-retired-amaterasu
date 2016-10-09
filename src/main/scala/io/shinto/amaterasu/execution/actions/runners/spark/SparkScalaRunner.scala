@@ -5,12 +5,12 @@ import java.io.ByteArrayOutputStream
 import io.shinto.amaterasu.Logging
 import io.shinto.amaterasu.execution.actions.Notifier
 import io.shinto.amaterasu.execution.actions.runners.spark.IAmaRunner
-import io.shinto.amaterasu.runtime.{AmaContext, Environment}
+import io.shinto.amaterasu.runtime.{ AmaContext, Environment }
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 import org.apache.spark.repl.SparkIMain
 import org.apache.spark.repl.amaterasu.ReplUtils
-import org.apache.spark.sql.{DataFrame, SQLContext}
+import org.apache.spark.sql.{ DataFrame, SQLContext }
 
 import scala.collection.mutable
 import scala.io.Source
@@ -19,20 +19,19 @@ import scala.tools.nsc.interpreter.Results
 
 class ResHolder(var value: Any)
 
-class SparkScalaRunner(var env: Environment,
-                       var jobId: String,
-                       var interpreter: SparkIMain,
-                       var outStream: ByteArrayOutputStream,
-                       var sc: SparkContext,
-                       var notifier: Notifier) extends Logging with IAmaRunner {
+class SparkScalaRunner(
+    var env: Environment,
+    var jobId: String,
+    var interpreter: SparkIMain,
+    var outStream: ByteArrayOutputStream,
+    var sc: SparkContext,
+    var notifier: Notifier
+) extends Logging with IAmaRunner {
 
   // This is the amaterasu spark configuration need to rethink the name
 
-
   val settings = new Settings()
   val holder = new ResHolder(null)
-
-
 
   override def executeSource(actionSource: String, actionName: String): Unit = {
     val source = Source.fromString(actionSource)
