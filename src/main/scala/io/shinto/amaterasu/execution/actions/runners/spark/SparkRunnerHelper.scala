@@ -27,8 +27,6 @@ object SparkRunnerHelper {
     }
     val hc = sc.hadoopConfiguration
 
-    if (!sys.env("AWS_ACCESS_KEY_ID").isEmpty &&
-      !sys.env("AWS_SECRET_ACCESS_KEY").isEmpty) {
     if (!sys.env.get("AWS_ACCESS_KEY_ID").get.isEmpty &&
       !sys.env.get("AWS_SECRET_ACCESS_KEY").get.isEmpty) {
 
