@@ -7,7 +7,10 @@ import org.eclipse.jetty.server.handler.{ DefaultHandler, ErrorHandler, HandlerL
 import org.eclipse.jetty.servlet.{ DefaultServlet, ServletContextHandler, ServletHolder }
 import org.eclipse.jetty.util.thread.QueuedThreadPool
 import org.eclipse.jetty.util.log.StdErrLog
-
+/**
+  * Created by kirupa
+  * Implementation of Jetty Web server to server Amaterasu libraries and other distribution files
+  */
 object HttpServer extends Logging {
   val logger = Logger.getLogger(HttpServer.getClass)
   var server: Server = null
