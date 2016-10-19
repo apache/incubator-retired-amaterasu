@@ -3,9 +3,9 @@
 BASEDIR=$(dirname "$0")
 
 export AMA_NODE="$(hostname)"
-pushd $BASEDIR >/dev/null
+#pushd $BASEDIR >/dev/null
 #cd /mesos-dependencies/ && nohup java -cp ${BASEDIR}/amaterasu-assembly-0.1.0.jar -Djava.library.path=/usr/lib io.shinto.amaterasu.utilities.HttpServer &
-SERVER_PID=$!
+#SERVER_PID=$!
 
 
 
@@ -79,7 +79,7 @@ esac
 done
 
 echo "repo: ${REPO} "
-CMD="java -cp ${BASEDIR}/amaterasu-assembly-0.1.0.jar -Djava.library.path=/usr/lib io.shinto.amaterasu.mesos.JobLauncher" #--repo "https://github.com/roadan/amaterasu-job-sample.git" --branch master
+CMD="java -cp ${BASEDIR}/lib/amaterasu-assembly-0.1.0.jar -Djava.library.path=/usr/lib io.shinto.amaterasu.mesos.JobLauncher" #--repo "https://github.com/roadan/amaterasu-job-sample.git" --branch master
 
 if [ -n "$REPO" ]; then
     CMD+=" --repo ${REPO}"
