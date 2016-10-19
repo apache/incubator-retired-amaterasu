@@ -13,5 +13,6 @@ case class Environment() {
   var workingDir: String = ""
 
   var configuration: Map[String, Any] = null
+  var configuration: Map[String, String] = null
 
 }
