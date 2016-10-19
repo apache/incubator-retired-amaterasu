@@ -20,7 +20,11 @@ import scala.tools.nsc.interpreter.Results
 class ResHolder(var value: Any)
 
 class SparkScalaRunner(
+<<<<<<< HEAD
+    var env: Environment,
+=======
   var env: Environment,
+>>>>>>> master
     var jobId: String,
     var interpreter: SparkIMain,
     var outStream: ByteArrayOutputStream,

@@ -9,7 +9,7 @@ import io.shinto.amaterasu.Logging
 class ClusterConfig extends Logging {
 
   val DEFAULT_FILE = getClass().getResourceAsStream("/src/main/scripts/amaterasu.properties")
-
+  //val DEFAULT_FILE = getClass().getResourceAsStream("/amaterasu.properties")
   var user: String = ""
   var zk: String = ""
   var master: String = "127.0.0.1"
@@ -25,6 +25,19 @@ class ClusterConfig extends Logging {
   var additionalClassPath: String = ""
 
   //this should be a filesystem path that is reachable by all executors (HDFS, S3, local)
+
+  object Webserver {
+    var Port: String = ""
+    var Root: String = ""
+    var sparkVersion: String = ""
+
+    def load(props: Properties): Unit = {
+
+      if (props.containsKey("webserver.port")) Webserver.Port = props.getProperty("webserver.port")
+      if (props.containsKey("webserver.root")) Webserver.Root = props.getProperty("webserver.root")
+      if (props.containsKey("spark.version")) Webserver.sparkVersion = props.getProperty("spark.version")
+    }
+  }
 
   object Jobs {
 
@@ -113,6 +126,7 @@ class ClusterConfig extends Logging {
     JarName = Paths.get(this.getClass.getProtectionDomain.getCodeSource.getLocation.getPath).getFileName.toString
 
     Jobs.load(props)
+    Webserver.load(props)
 
     distLocation match {
 

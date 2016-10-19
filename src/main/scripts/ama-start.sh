@@ -4,12 +4,12 @@ BASEDIR=$(dirname "$0")
 
 export AMA_NODE="$(hostname)"
 pushd $BASEDIR >/dev/null
-cd /mesos-dependencies/ && nohup python -m SimpleHTTPServer 8000 &
+#cd /mesos-dependencies/ && nohup java -cp ${BASEDIR}/amaterasu-assembly-0.1.0.jar -Djava.library.path=/usr/lib io.shinto.amaterasu.utilities.HttpServer &
 SERVER_PID=$!
 
 
 
-echo "serving amaterasu from /mesos-dependencies on port 8000"
+echo "serving amaterasu from /ama/lib on user supplied port"
 popd >/dev/null
 
 RED=`tput setaf 1`

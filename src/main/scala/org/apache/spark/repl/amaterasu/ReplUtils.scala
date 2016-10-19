@@ -1,7 +1,9 @@
 package org.apache.spark.repl.amaterasu
 
-import java.io.{ PrintWriter, File, ByteArrayOutputStream }
+import java.io.{ ByteArrayOutputStream, File, PrintWriter }
 import java.lang.reflect.Method
+
+import io.shinto.amaterasu.configuration.ClusterConfig
 import io.shinto.amaterasu.runtime.Environment
 import org.apache.spark.repl.{ SparkCommandLine, SparkIMain }
 
@@ -31,15 +33,15 @@ object ReplUtils {
 
     var result: SparkIMain = null
     var classServerUri: String = null
-
+    val config = new ClusterConfig()
     try {
       val command = new SparkCommandLine(List())
 
       val settings = command.settings
 
       settings.classpath.append(System.getProperty("java.class.path") + File.pathSeparator +
-        "spark-assembly-1.6.1-hadoop2.4.0.jar" + File.pathSeparator +
-        "/home/vagrant/spark-1.6.1-1/conf/" + File.pathSeparator +
+        //"spark-assembly-1.6.1-hadoop2.4.0.jar" + File.pathSeparator +
+        "dist/spark-" + config.Webserver.sparkVersion + "/lib/*" + File.pathSeparator +
         jars.mkString(File.pathSeparator))
 
       settings.usejavacp.value = true

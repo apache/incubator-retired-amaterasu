@@ -1,9 +1,9 @@
-import java.nio.file.{StandardCopyOption, Files}
+import java.nio.file.{Files, StandardCopyOption}
 
 import sbt._
 import Keys._
-
 import com.typesafe.sbt.SbtScalariform._
+
 import _root_.scalariform.formatter.preferences.IndentSpaces
 import scalariform.formatter.preferences._
 
@@ -71,10 +71,15 @@ object Build extends Build {
       "com.github.lucarosellini.rJava" % "JRI" % jri_version,
       "com.github.lucarosellini.rJava" % "REngine" % jri_version,
       "com.github.lucarosellini.rJava" % "JRIEngine" % jri_version,
+      "org.eclipse.jetty" % "jetty-plus" % "9.2.19.v20160908",
+      "org.eclipse.jetty" % "jetty-server" % "9.2.19.v20160908",
+      "org.eclipse.jetty" % "jetty-http" % "9.2.19.v20160908",
+      "org.eclipse.jetty" % "jetty-io" % "9.2.19.v20160908",
+      "org.eclipse.jetty" % "jetty-servlet" % "9.2.19.v20160908",
+      "javax.servlet" % "servlet-api" % "2.5",
 
 
-
-  // execution engines dependencies
+      // execution engines dependencies
       "org.apache.spark" %% "spark-repl" % "1.6.1" % "provided",
 
       // test dependencies
