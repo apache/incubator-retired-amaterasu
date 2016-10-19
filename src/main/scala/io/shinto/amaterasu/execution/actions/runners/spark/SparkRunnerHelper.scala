@@ -1,5 +1,6 @@
 package io.shinto.amaterasu.execution.actions.runners.spark
 
+import io.shinto.amaterasu.configuration.ClusterConfig
 import io.shinto.amaterasu.runtime.Environment
 import org.apache.spark.{ SparkConf, SparkContext }
 import org.apache.spark.repl.amaterasu.runners.spark.SparkScalaRunner._
@@ -9,11 +10,11 @@ import org.apache.spark.repl.amaterasu.runners.spark.SparkScalaRunner._
   */
 object SparkRunnerHelper {
   def createSparkContext(env: Environment, sparkAppName: String, classServerUri: String, jars: Seq[String]): SparkContext = {
-
+    val config = new ClusterConfig()
     val conf = new SparkConf(true)
       .setMaster(env.master)
       .setAppName(sparkAppName)
-      .set("spark.executor.uri", s"http://${sys.env("AMA_NODE")}:8000/spark-1.6.1-2.tgz")
+      .set("spark.executor.uri", s"http://${sys.env("AMA_NODE")}:${config.Webserver.Port}/dist/spark-${config.Webserver.sparkVersion}.tgz")
       .set("spark.driver.memory", "512m")
       .set("spark.repl.class.uri", classServerUri)
       .set("spark.mesos.coarse", "true")

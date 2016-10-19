@@ -1,58 +1,48 @@
 package io.shinto.amaterasu.utilities
 
-import java.io.{ FileInputStream, InputStream }
-import java.util.Properties
-
+import io.shinto.amaterasu.Logging
+import org.apache.log4j.{ BasicConfigurator, Level, Logger }
 import org.eclipse.jetty.server.{ Server, ServerConnector }
 import org.eclipse.jetty.server.handler.{ DefaultHandler, ErrorHandler, HandlerList, ResourceHandler }
 import org.eclipse.jetty.servlet.{ DefaultServlet, ServletContextHandler, ServletHolder }
 import org.eclipse.jetty.util.thread.QueuedThreadPool
+import org.eclipse.jetty.util.log.StdErrLog
 
-object HttpServer {
+object HttpServer extends Logging {
+  val logger = Logger.getLogger(HttpServer.getClass)
   var server: Server = null
-  def main(args: Array[String]): Unit = {
-    start()
 
-  }
-  def start(): Unit = {
-    var port: Int = 8000
-    var serverRoot: String = "/mesos-dependencies"
-    val configFile: InputStream = getClass().getResourceAsStream("target/amaterasu.properties")
-    /*val props: Properties = new Properties()
-    props.load(configFile)
-    configFile.close()
+  def start(port: String, serverRoot: String): Unit = {
 
-    if (props.containsKey("webserver_port")) port = props.getProperty("webserver_port").toInt
-    if (props.containsKey("webserver_root")) serverRoot = props.getProperty("webserver_root")
-
-    val threadPool = new QueuedThreadPool(Runtime.getRuntime.availableProcessors() * 16)
+    /*val threadPool = new QueuedThreadPool(Runtime.getRuntime.availableProcessors() * 16)
     threadPool.setName("Jetty")*/
-
-    val server = new Server(port)
-    //val connector = new ServerConnector(server)
-    //connector.setPort(8000)
-
-    // Setup the basic application "context" for this application at "/"
-    // This is also known as the handler tree (in jetty speak)
+    BasicConfigurator.configure()
+    initLogging()
+    server = new Server()
+    val connector = new ServerConnector(server)
+    connector.setPort(port.toInt)
+    server.addConnector(connector)
     val context = new ServletContextHandler(ServletContextHandler.SESSIONS)
     context.setResourceBase(serverRoot)
     context.setContextPath("/")
     server.setHandler(context)
-
     context.setErrorHandler(new ErrorHandler())
     context.setInitParameter("dirAllowed", "true")
     context.setInitParameter("pathInfoOnly", "true")
     context.addServlet(new ServletHolder(new DefaultServlet()), "/")
     server.start()
-    server.join()
   }
+
   def stop() {
     if (server == null) throw new IllegalStateException("Server not started")
 
     server.stop()
-    server.join()
     server = null
+  }
 
-    println("Server stopped")
+  def initLogging(): Unit = {
+    System.setProperty("org.eclipse.jetty.util.log.class", classOf[StdErrLog].getName)
+    Logger.getLogger("org.eclipse.jetty").setLevel(Level.OFF)
+    Logger.getLogger("org.eclipse.jetty.websocket").setLevel(Level.OFF)
   }
 }

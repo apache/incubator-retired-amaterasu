@@ -27,7 +27,7 @@ import org.apache.mesos.{ Protos, SchedulerDriver }
 import scala.collection.JavaConverters._
 import scala.collection.concurrent
 import scala.collection.concurrent.TrieMap
-
+import io.shinto.amaterasu.utilities.HttpServer
 /**
   * The JobScheduler is a mesos implementation. It is in charge of scheduling the execution of
   * Amaterasu actions for a specific job
@@ -153,17 +153,17 @@ class JobScheduler extends AmaterasuScheduler {
                 val command = CommandInfo
                   .newBuilder
                   .setValue(
-                    s"""$awsEnv env AMA_NODE=${sys.env("AMA_NODE")} env MESOS_NATIVE_JAVA_LIBRARY=/usr/lib/libmesos.so env SPARK_EXECUTOR_URI=http://${sys.env("AMA_NODE")}:8000/spark-1.6.1-2.tgz env SPARK_HOME="~/spark-1.6.1-bin-hadoop2.4" java -cp amaterasu-assembly-0.1.0.jar:spark-assembly-1.6.1-hadoop2.4.0.jar -Dscala.usejavacp=true -Djava.library.path=/usr/lib io.shinto.amaterasu.mesos.executors.ActionsExecutorLauncher ${jobManager.jobId} ${config.master} ${actionData.name}""".stripMargin
+                    s"""$awsEnv env AMA_NODE=${sys.env("AMA_NODE")} env MESOS_NATIVE_JAVA_LIBRARY=/usr/lib/libmesos.so env SPARK_EXECUTOR_URI=http://${sys.env("AMA_NODE")}:${config.Webserver.Port}/dist/spark-${config.Webserver.sparkVersion}.tgz java -cp amaterasu-assembly-0.1.0.jar:spark-${config.Webserver.sparkVersion}/lib/* -Dscala.usejavacp=true -Djava.library.path=/usr/lib io.shinto.amaterasu.mesos.executors.ActionsExecutorLauncher ${jobManager.jobId} ${config.master} ${actionData.name}""".stripMargin
                   )
                   .addUris(URI.newBuilder
-                    .setValue(s"http://${sys.env("AMA_NODE")}:8000/amaterasu-assembly-0.1.0.jar")
+                    .setValue(s"http://${sys.env("AMA_NODE")}:${config.Webserver.Port}/amaterasu-assembly-0.1.0.jar")
                     .setExecutable(false)
                     .setExtract(false)
                     .build())
                   .addUris(URI.newBuilder()
-                    .setValue(s"http://${sys.env("AMA_NODE")}:8000/spark-assembly-1.6.1-hadoop2.4.0.jar")
+                    .setValue(s"http://${sys.env("AMA_NODE")}:${config.Webserver.Port}/dist/spark-${config.Webserver.sparkVersion}.tgz")
                     .setExecutable(false)
-                    .setExtract(false)
+                    .setExtract(true)
                     .build())
 
                 executor = ExecutorInfo
@@ -199,6 +199,7 @@ class JobScheduler extends AmaterasuScheduler {
             jobManager.jobReport.append(" *                                                                *\n")
             jobManager.jobReport.append(" ******************************************************************")
             log.info(jobManager.jobReport.result)
+            HttpServer.stop()
             driver.declineOffer(offer.getId)
             driver.stop()
           }
@@ -283,6 +284,9 @@ object JobScheduler {
   ): JobScheduler = {
 
     val scheduler = new JobScheduler()
+
+    HttpServer.start(config.Webserver.Port, config.Webserver.Root)
+
     if (!sys.env("AWS_ACCESS_KEY_ID").isEmpty &&
       !sys.env("AWS_SECRET_ACCESS_KEY").isEmpty) {
       scheduler.awsEnv = s"env AWS_ACCESS_KEY_ID=${sys.env("AWS_ACCESS_KEY_ID")} env AWS_SECRET_ACCESS_KEY=${sys.env("AWS_SECRET_ACCESS_KEY")}"
@@ -297,7 +301,6 @@ object JobScheduler {
     val retryPolicy = new ExponentialBackoffRetry(1000, 3)
     scheduler.client = CuratorFrameworkFactory.newClient(config.zk, retryPolicy)
     scheduler.client.start()
-
     scheduler.config = config
     scheduler
 
