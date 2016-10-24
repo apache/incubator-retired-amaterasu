@@ -284,16 +284,12 @@ object JobScheduler {
   ): JobScheduler = {
 
     val scheduler = new JobScheduler()
-<<<<<<< HEAD
 
     HttpServer.start(config.Webserver.Port, config.Webserver.Root)
 
     if (!sys.env("AWS_ACCESS_KEY_ID").isEmpty &&
       !sys.env("AWS_SECRET_ACCESS_KEY").isEmpty) {
-=======
-    if (!sys.env.get("AWS_ACCESS_KEY_ID").get.isEmpty &&
-      !sys.env.get("AWS_SECRET_ACCESS_KEY").get.isEmpty) {
->>>>>>> master
+
       scheduler.awsEnv = s"env AWS_ACCESS_KEY_ID=${sys.env("AWS_ACCESS_KEY_ID")} env AWS_SECRET_ACCESS_KEY=${sys.env("AWS_SECRET_ACCESS_KEY")}"
     }
 
