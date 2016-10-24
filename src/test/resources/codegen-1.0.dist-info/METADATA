@@ -1,0 +1,20 @@
+Metadata-Version: 2.0
+Name: codegen
+Version: 1.0
+Summary: Extension to ast that allow ast -> python code generation.
+Home-page: http://github.com/andreif/codegen
+Author: UNKNOWN
+Author-email: UNKNOWN
+License: BSD
+Download-URL: https://github.com/andreif/codegen/tarball/1.0
+Keywords: ast codegen
+Platform: any
+Classifier: Intended Audience :: Developers
+Classifier: Operating System :: OS Independent
+Classifier: License :: OSI Approved :: BSD License
+Classifier: Programming Language :: Python
+Classifier: Topic :: Software Development :: Libraries :: Python Modules
+
+UNKNOWN
+
+

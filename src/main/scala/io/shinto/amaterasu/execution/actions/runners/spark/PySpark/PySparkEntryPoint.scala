@@ -23,7 +23,7 @@ object PySparkEntryPoint {
     if (resultQueues == null) {
       resultQueues = new TrieMap[String, ResultQueue]()
     }
-    resultQueues.getOrElse(actionName, new ResultQueue)
+    resultQueues.getOrElseUpdate(actionName, new ResultQueue)
   }
 
   def start() = {

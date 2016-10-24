@@ -2,6 +2,8 @@ package io.shinto.amaterasu.execution.actions.runners.spark.PySpark
 
 import java.util.concurrent.{ TimeUnit, LinkedBlockingQueue }
 
+import io.shinto.amaterasu.execution.actions.runners.spark.PySpark.ResultType._
+
 /**
   * Created by roadan on 10/17/16.
   */
@@ -16,8 +18,12 @@ class ResultQueue {
 
   }
 
-  def put(result: PySparkResult) = {
+  def put(resultType: String,
+          action: String,
+          statement: String,
+          message: String) = {
 
+    val result = new PySparkResult(ResultType.withName(resultType), action, statement, message )
     queue.put(result)
 
   }

@@ -18,7 +18,3 @@ case class PySparkResult(
   statement: String,
   message: String
 )
-
-class PySparkResultQueue {
-
-}
