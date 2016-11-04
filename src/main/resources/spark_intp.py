@@ -2,6 +2,8 @@
 
 import py4j
 import ast
+import codegen
+import sys
 
 from py4j.java_gateway import JavaGateway,java_import
 
@@ -10,6 +12,7 @@ entry_point = gateway.entry_point
 queue = entry_point.getExecutionQueue()
 
 java_import(gateway.jvm, "scala.Tuple2")
+java_import(gateway.jvm, "io.shinto.amaterasu.execution.actions.runners.spark.PySpark")
 
 while True:
   actionData = queue.getNext()
@@ -24,11 +27,8 @@ while True:
     try:
       co = compile(wrapper, "<ast>", 'exec')
       exec(co)
-      str1 = str1 + ast.dump(wrapper)
-    except AssertionError:
-      str1 = str1 + "Assertion failed on line" + node.lineno + ":" + '\n\n'
-      if e.args:
-        str1 + e +'\n\n'
+      resultQueue.put('success', actionData._2(), codegen.to_source(node), '')
+    except:
+      resultQueue.put('error', actionData._2(), codegen.to_source(node), str(sys.exc_info()[0]))
 
-  with open('/Users/roadan/out_source.txt', 'a') as the_file:
-    the_file.write(str1)
+  resultQueue.put('completion', '', '', '')

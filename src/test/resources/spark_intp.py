@@ -3,6 +3,7 @@
 import py4j
 import ast
 import codegen
+import sys
 
 from py4j.java_gateway import JavaGateway,java_import
 
@@ -26,15 +27,9 @@ while True:
     try:
       co = compile(wrapper, "<ast>", 'exec')
       exec(co)
-      str1 = str1 + '--->' + codegen.to_source(node) + '\n'
-      #str1 = str1 + ast.dump(node) + '\n'
       resultQueue.put('success', actionData._2(), codegen.to_source(node), '')
-    except Error:
-      str1 = str1  + "Assertion failed on line" + node.lineno + ":" + '\n\n'
-      if e.args:
-        str1 + e +'\n\n'
+    except:
+      resultQueue.put('error', actionData._2(), codegen.to_source(node), str(sys.exc_info()[0]))
 
   resultQueue.put('completion', '', '', '')
 
-  with open('/Users/roadan/out_source.txt', 'a') as the_file:
-    the_file.write(str1)

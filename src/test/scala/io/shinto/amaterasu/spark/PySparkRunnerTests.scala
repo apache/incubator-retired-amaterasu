@@ -22,4 +22,11 @@ class PySparkRunnerTests extends FlatSpec with Matchers {
 
   }
 
+  it should "print and trows an errors" in {
+
+    a [java.lang.Exception] should be thrownBy {
+      runner.executeSource(getClass.getResource("/simple-spark-err.py").getPath, "test_action")
+    }
+  }
+
 }
