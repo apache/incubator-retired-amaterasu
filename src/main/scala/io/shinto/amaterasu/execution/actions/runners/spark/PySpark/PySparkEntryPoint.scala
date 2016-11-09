@@ -1,5 +1,8 @@
 package io.shinto.amaterasu.execution.actions.runners.spark.PySpark
 
+import io.shinto.amaterasu.runtime.{Environment, AmaContext}
+import org.apache.spark.SparkContext
+import org.apache.spark.sql.SQLContext
 import py4j.GatewayServer
 
 import scala.collection.concurrent.TrieMap
@@ -26,7 +29,16 @@ object PySparkEntryPoint {
     resultQueues.getOrElseUpdate(actionName, new ResultQueue)
   }
 
-  def start() = {
+  def getAmaContext() = {
+    AmaContext
+  }
+
+  def start(sc: SparkContext,
+            jobName: String,
+            env: Environment) = {
+    if(AmaContext.env == null)
+      AmaContext.init(sc,new SQLContext(sc), jobName, env)
+
     val gatewayServer = new GatewayServer(PySparkEntryPoint)
     gatewayServer.start()
   }

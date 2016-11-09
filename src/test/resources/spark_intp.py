@@ -12,7 +12,18 @@ entry_point = gateway.entry_point
 queue = entry_point.getExecutionQueue()
 
 java_import(gateway.jvm, "scala.Tuple2")
-java_import(gateway.jvm, "io.shinto.amaterasu.execution.actions.runners.spark.PySpark")
+
+java_import(gateway.jvm, "io.shinto.amaterasu.execution.actions.runners.spark.PySpark.*")
+
+java_import(gateway.jvm, "org.apache.spark.SparkEnv")
+java_import(gateway.jvm, "org.apache.spark.SparkConf")
+java_import(gateway.jvm, "org.apache.spark.api.java.*")
+java_import(gateway.jvm, "org.apache.spark.sql.*")
+java_import(gateway.jvm, "org.apache.spark.sql.hive.*")
+java_import(gateway.jvm, "org.apache.spark.api.python.*")
+java_import(gateway.jvm, "org.apache.spark.mllib.api.python.*")
+
+sc = entry_point.getSparkContext()
 
 while True:
   actionData = queue.getNext()
