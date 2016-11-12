@@ -2,7 +2,7 @@ package io.shinto.amaterasu.execution.actions.runners.spark.PySpark
 
 import io.shinto.amaterasu.Logging
 import io.shinto.amaterasu.execution.actions.Notifier
-import io.shinto.amaterasu.runtime.{AmaContext, Environment}
+import io.shinto.amaterasu.runtime.{ AmaContext, Environment }
 import org.apache.spark.SparkContext
 import org.apache.spark.sql.SQLContext
 
@@ -36,28 +36,32 @@ class PySparkRunner extends Logging {
         case ResultType.success =>
           notifier.success(res.statement)
         case ResultType.error =>
-          notifier.error(res.statement,res.message)
+          notifier.error(res.statement, res.message)
           throw new Exception(res.message)
         case ResultType.completion =>
           notifier.info(s"================= finished action $actionName =================")
       }
-    }
-    while (res.resultType != ResultType.completion)
+    } while (res != null && res.resultType != ResultType.completion)
   }
 
 }
 
 object PySparkRunner {
 
-  def apply(env: Environment,
-            notifier: Notifier,
-            sc: SparkContext): PySparkRunner = {
+  def apply(
+    env: Environment,
+    jobId: String,
+    notifier: Notifier,
+    sc: SparkContext
+  ): PySparkRunner = {
 
     val result = new PySparkRunner
 
+    PySparkEntryPoint.start(sc, jobId, env)
+    val port = PySparkEntryPoint.getPort()
+    val proc = Process(getClass.getResource("/spark_intp.py").getPath, Seq(port.toString))
+
     result.notifier = notifier
-    PySparkEntryPoint.start(sc)
-    val proc = Process(getClass.getResource("/spark_intp.py").getPath)
     result.proc = proc.run()
 
     result

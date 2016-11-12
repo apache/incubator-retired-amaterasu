@@ -14,17 +14,18 @@ class ResultQueue {
 
     // if the queue is idle for an hour it will return null which
     // terminates the python execution, need to revisit
-    queue.poll(1, TimeUnit.HOURS)
+    queue.poll(10, TimeUnit.MINUTES)
 
   }
 
-  def put(resultType: String,
-          action: String,
-          statement: String,
-          message: String) = {
+  def put(
+    resultType: String,
+    action: String,
+    statement: String,
+    message: String
+  ) = {
 
-    val result = new PySparkResult(ResultType.withName(resultType), action, statement, message )
+    val result = new PySparkResult(ResultType.withName(resultType), action, statement, message)
     queue.put(result)
-
   }
 }

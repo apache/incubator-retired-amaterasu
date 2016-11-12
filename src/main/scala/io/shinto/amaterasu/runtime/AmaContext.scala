@@ -3,7 +3,7 @@ package io.shinto.amaterasu.runtime
 import io.shinto.amaterasu.Logging
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.{ DataFrame, SQLContext, SaveMode }
+import org.apache.spark.sql.{DataFrame, SQLContext, SaveMode}
 
 import scala.reflect.ClassTag
 
@@ -15,11 +15,11 @@ object AmaContext extends Logging {
   var env: Environment = null
 
   def init(
-    sc: SparkContext,
-    sqlContext: SQLContext,
-    jobId: String,
-    env: Environment
-  ) = {
+            sc: SparkContext,
+            sqlContext: SQLContext,
+            jobId: String,
+            env: Environment
+          ) = {
 
     AmaContext.sc = sc
     AmaContext.sqlContext = sqlContext
