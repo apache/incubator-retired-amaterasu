@@ -1,12 +1,14 @@
 package io.shinto.amaterasu.execution.actions.runners.spark.PySpark
 
+import java.io.OutputStream
+
 import io.shinto.amaterasu.Logging
 import io.shinto.amaterasu.execution.actions.Notifier
-import io.shinto.amaterasu.runtime.{ AmaContext, Environment }
-import org.apache.spark.SparkContext
+import io.shinto.amaterasu.runtime.{AmaContext, Environment}
+import org.apache.spark.{SparkContext, SparkEnv}
 import org.apache.spark.sql.SQLContext
 
-import scala.sys.process.Process
+import scala.sys.process.{BasicIO, Process, ProcessIO}
 import scala.io.Source
 
 /**
@@ -48,21 +50,19 @@ class PySparkRunner extends Logging {
 
 object PySparkRunner {
 
-  def apply(
-    env: Environment,
-    jobId: String,
-    notifier: Notifier,
-    sc: SparkContext
-  ): PySparkRunner = {
+  def apply(env: Environment,
+            jobId: String,
+            notifier: Notifier,
+            sc: SparkContext): PySparkRunner = {
 
     val result = new PySparkRunner
 
-    PySparkEntryPoint.start(sc, jobId, env)
+    PySparkEntryPoint.start(sc, jobId, env, SparkEnv.get)
     val port = PySparkEntryPoint.getPort()
-    val proc = Process(getClass.getResource("/spark_intp.py").getPath, Seq(port.toString))
+    val proc = Process(getClass.getResource("/spark_intp.py").getPath, Seq(port.toString)).run()
 
     result.notifier = notifier
-    result.proc = proc.run()
+    //result.proc = proc.run()
 
     result
   }

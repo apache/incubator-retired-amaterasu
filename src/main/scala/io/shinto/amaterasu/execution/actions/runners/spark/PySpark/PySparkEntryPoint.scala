@@ -3,7 +3,7 @@ package io.shinto.amaterasu.execution.actions.runners.spark.PySpark
 import java.net.ServerSocket
 
 import io.shinto.amaterasu.runtime.{AmaContext, Environment}
-import org.apache.spark.{SparkConf, SparkContext}
+import org.apache.spark.{SparkConf, SparkContext, SparkEnv}
 import org.apache.spark.api.java.JavaSparkContext
 import org.apache.spark.sql.SQLContext
 import py4j.GatewayServer
@@ -20,6 +20,7 @@ object PySparkEntryPoint {
   private var resultQueues: TrieMap[String, ResultQueue] = null
   private var port: Int = 0
   private var jsc: JavaSparkContext = null
+  private var sparkEnv: SparkEnv = null
 
   def getExecutionQueue(): PySparkExecutionQueue = {
     queue
@@ -31,6 +32,7 @@ object PySparkEntryPoint {
 
 
   def getJavaSparkContext(): SparkContext = {
+    SparkEnv.set(sparkEnv)
     jsc
   }
 
@@ -55,7 +57,8 @@ object PySparkEntryPoint {
   def start(
     sc: SparkContext,
     jobName: String,
-    env: Environment
+    env: Environment,
+    sparkEnv: SparkEnv
   ) = {
 
     if (!started) {
@@ -64,6 +67,7 @@ object PySparkEntryPoint {
     }
 
     jsc = new JavaSparkContext(sc)
+    PySparkEntryPoint.sparkEnv = sparkEnv
     queue = new PySparkExecutionQueue()
     resultQueues = new TrieMap[String, ResultQueue]()
     port = generatePort()

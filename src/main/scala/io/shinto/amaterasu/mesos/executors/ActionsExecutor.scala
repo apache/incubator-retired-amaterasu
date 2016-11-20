@@ -1,35 +1,30 @@
 package io.shinto.amaterasu.mesos.executors
 
-import java.io.{ File, ByteArrayInputStream }
+import java.io.{ByteArrayInputStream, File}
 
 import org.eclipse.aether.util.artifact.JavaScopes
 import org.sonatype.aether.artifact.Artifact
 
 import collection.JavaConversions._
 import collection.JavaConverters._
-
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
-
-import io.shinto.amaterasu.execution.dependencies.{ Repo, Dependencies }
+import io.shinto.amaterasu.execution.dependencies.{Dependencies, Repo}
 import io.shinto.amaterasu.Logging
-
 import org.apache.mesos.protobuf.ByteString
 import org.apache.mesos.Protos._
-import org.apache.mesos.{ MesosExecutorDriver, ExecutorDriver, Executor }
-
+import org.apache.mesos.{Executor, ExecutorDriver, MesosExecutorDriver}
 import org.apache.spark.repl.amaterasu.runners.spark.SparkScalaRunner
 import org.apache.spark.SparkContext
-
 import org.sonatype.aether.repository.RemoteRepository
 import org.sonatype.aether.util.artifact.DefaultArtifact
-
 import com.jcabi.aether.Aether
+import io.shinto.amaterasu.execution.actions.runners.spark.PySpark.PySparkRunner
 
 import scala.collection.mutable
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.util.{ Success, Failure }
+import scala.util.{Failure, Success}
 
 /**
   * Created by roadan on 1/1/16.
@@ -42,6 +37,7 @@ class ActionsExecutor extends Executor with Logging {
   var jobId: String = null
   var actionName: String = null
   var sparkScalaRunner: SparkScalaRunner = null
+  var pySparkRunner: PySparkRunner = null
   var notifier: MesosNotifier = null
 
   val mapper = new ObjectMapper()
@@ -86,6 +82,7 @@ class ActionsExecutor extends Executor with Logging {
     }
 
     sparkScalaRunner = SparkScalaRunner(data.env, jobId, sparkAppName, notifier, jars)
+    pySparkRunner = PySparkRunner(data.env, jobId, notifier, sc)
   }
 
   override def launchTask(driver: ExecutorDriver, taskInfo: TaskInfo): Unit = {
@@ -98,7 +95,8 @@ class ActionsExecutor extends Executor with Logging {
 
     driver.sendStatusUpdate(status)
 
-    val task = Future{
+    val task = Future {
+
       val taskData = mapper.readValue(new ByteArrayInputStream(taskInfo.getData.toByteArray), classOf[TaskData])
 
       val actionSource = taskData.src
