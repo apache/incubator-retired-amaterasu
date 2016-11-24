@@ -69,8 +69,8 @@ object Build extends Build {
       "org.apache.maven" % "maven-core" % "3.0.5",
 
       // execution engines dependencies
-      "org.apache.spark" %% "spark-repl" % "1.6.1"  % "provided" exclude("org.jboss.netty", "netty"),
-      "net.sf.py4j" % "py4j" % "0.8.1",
+      "org.apache.spark" %% "spark-repl" % "1.6.1"  % "provided" exclude("io.netty", "netty"),
+      "net.sf.py4j" % "py4j" % "0.9",
 
       // test dependencies
       "org.scalatest" %% "scalatest" % "2.2.2" % "test",

@@ -21,8 +21,6 @@ gateway = JavaGateway(client,auto_convert = True)
 entry_point = gateway.entry_point
 queue = entry_point.getExecutionQueue()
 
-#java_import(gateway.jvm, "scala.Tuple2")
-
 java_import(gateway.jvm, "io.shinto.amaterasu.execution.actions.runners.spark.PySpark.*")
 java_import(gateway.jvm, "io.shinto.amaterasu.runtime.*")
 
@@ -40,6 +38,8 @@ java_import(gateway.jvm, "org.apache.spark.SparkConf")
 
 jsc = entry_point.getJavaSparkContext()
 jconf = entry_point.getSparkConf()
+
+java_import(gateway.jvm, "scala.Tuple2")
 
 # this is an ugly hack
 # this is an ugly hack
