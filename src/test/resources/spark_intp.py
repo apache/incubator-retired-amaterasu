@@ -35,8 +35,13 @@ java_import(gateway.jvm, "java.util.*")
 java_import(gateway.jvm, "org.apache.spark.SparkEnv")
 java_import(gateway.jvm, "org.apache.spark.SparkConf")
 
+def get_patched_jsc(jconf):
+    jsc = entry_point.getJavaSparkContext()
+    sc = jsc.sc
+    setattr(sc, 'conf', lambda: jconf)
+    setattr(jsc,"sc", lambda: sc)
+    return jsc
 
-jsc = entry_point.getJavaSparkContext()
 jconf = entry_point.getSparkConf()
 
 java_import(gateway.jvm, "scala.Tuple2")
@@ -48,12 +53,13 @@ java_import(gateway.jvm, "scala.Tuple2")
 # def sc():
 #     return xsc
 #
-# setattr(jsc,"sc", sc)
+
 
 # with open('/Users/roadan/2sc.txt', 'a') as the_file:
 #     the_file.write(str(jsc.sc()) + '\n')
-
+jsc = get_patched_jsc(jconf)
 conf = SparkConf(_jvm = gateway.jvm, _jconf = jconf)
+
 sc = SparkContext(jsc=jsc, gateway=gateway, conf=conf)
 
 while True:
