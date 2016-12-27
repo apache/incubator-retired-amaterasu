@@ -1,9 +1,9 @@
-import java.nio.file.{Files, StandardCopyOption}
+import java.nio.file.{StandardCopyOption, Files}
 
 import sbt._
 import Keys._
-import com.typesafe.sbt.SbtScalariform._
 
+import com.typesafe.sbt.SbtScalariform._
 import _root_.scalariform.formatter.preferences.IndentSpaces
 import scalariform.formatter.preferences._
 
@@ -32,7 +32,6 @@ object Build extends Build {
 
   lazy val copyScripts = TaskKey[Unit]("copyScripts")
 
-  val jri_version = "0.9-7"
   lazy val basicSettings = Seq(
     version := PROJECT_VERSION,
     organization := ORGANIZATION,
@@ -44,7 +43,7 @@ object Build extends Build {
         val file = new File(base, "src/main/scripts").listFiles().foreach(
           file => Files.copy(
             file.toPath,
-            new File(target, file.name).toPath,
+            new File(target + "/scala-2.10", file.name).toPath,
             StandardCopyOption.REPLACE_EXISTING)
         )
     },
@@ -68,9 +67,6 @@ object Build extends Build {
       "com.github.scopt" %% "scopt" % "3.3.0",
       "com.jcabi" % "jcabi-aether" % "0.10.1",
       "org.apache.maven" % "maven-core" % "3.0.5",
-      "com.github.lucarosellini.rJava" % "JRI" % jri_version,
-      "com.github.lucarosellini.rJava" % "REngine" % jri_version,
-      "com.github.lucarosellini.rJava" % "JRIEngine" % jri_version,
       "org.eclipse.jetty" % "jetty-plus" % "9.2.19.v20160908",
       "org.eclipse.jetty" % "jetty-server" % "9.2.19.v20160908",
       "org.eclipse.jetty" % "jetty-http" % "9.2.19.v20160908",
@@ -80,7 +76,8 @@ object Build extends Build {
 
 
       // execution engines dependencies
-      "org.apache.spark" %% "spark-repl" % "1.6.1" % "provided",
+      "org.apache.spark" %% "spark-repl" % "1.6.1"  % "provided" exclude("io.netty", "netty"),
+      "net.sf.py4j" % "py4j" % "0.9",
 
       // test dependencies
       "org.scalatest" %% "scalatest" % "2.2.2" % "test",
