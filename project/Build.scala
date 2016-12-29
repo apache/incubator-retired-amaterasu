@@ -27,8 +27,7 @@ object Build extends Build {
 
   lazy val commonSettings =
     basicSettings ++
-      formatSettings ++
-      net.virtualvoid.sbt.graph.Plugin.graphSettings
+      formatSettings
 
   lazy val copyScripts = TaskKey[Unit]("copyScripts")
 
@@ -48,6 +47,7 @@ object Build extends Build {
         )
     },
 
+
     libraryDependencies ++= Seq(
 
       //"org.apache.mesos" % "mesos" % "0.28.2",
@@ -56,7 +56,7 @@ object Build extends Build {
       "ch.qos.logback" % "logback-classic" % "1.1.2" % "runtime",
       "com.github.nscala-time" %% "nscala-time" % "2.2.0",
       "commons-io" % "commons-io" % "2.4",
-      "org.apache.curator" % "curator-framework" % "2.9.1",
+      "org.apache.curator" % "curator-framework" % "2.9.1" exclude("io.netty", "netty") ,
       "org.eclipse.jgit" % "org.eclipse.jgit" % "4.2.0.201601211800-r",
       "com.amazonaws" % "aws-java-sdk-s3" % "1.10.27",
       "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.6.3",
@@ -69,12 +69,16 @@ object Build extends Build {
       "org.apache.maven" % "maven-core" % "3.0.5",
 
       // execution engines dependencies
-      "org.apache.spark" %% "spark-repl" % "1.6.1"  % "provided" exclude("io.netty", "netty"),
+      //"org.apache.spark" %% "spark-repl" % "1.6.3" % "provided" exclude("io.netty", "netty"),
+
+      "org.apache.spark" %% "spark-repl" % "1.6.3" % "provided"
+        exclude("io.netty", "netty"),
+
       "net.sf.py4j" % "py4j" % "0.9",
 
       // test dependencies
-      "org.scalatest" %% "scalatest" % "2.2.2" % "test",
-      "org.apache.curator" % "curator-test" % "2.9.1" % "test",
+      "org.scalatest" %% "scalatest" % "3.0.1" % "test",
+      "org.apache.curator" % "curator-test" % "2.9.1" % "test" exclude("io.netty", "netty") ,
 
       "org.apache.mesos" % "mesos" % "0.21.1" classifier "shaded-protobuf" exclude("com.google.protobuf", "protobuf-java")
     ),
@@ -87,7 +91,7 @@ object Build extends Build {
     ),
 
     javaOptions in (test) += "-Djava.library.path=%s:%s".format(
-      sys.props("java.library   .path"),
+      sys.props("java.library.path"),
       pathToMesosLibs
     ),
 

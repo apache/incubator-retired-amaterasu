@@ -29,7 +29,6 @@ from py4j.compat import (
 
 
 JAVA_MAX_INT = 2147483647
-JAVA_MIN_INT = -2147483648
 
 JAVA_INFINITY = "Infinity"
 JAVA_NEGATIVE_INFINITY = "-Infinity"
@@ -41,7 +40,6 @@ ESCAPE_CHAR = "\\"
 # Entry point
 ENTRY_POINT_OBJECT_ID = "t"
 CONNECTION_PROPERTY_OBJECT_ID = "c"
-GATEWAY_SERVER_OBJECT_ID = "GATEWAY_SERVER"
 STATIC_PREFIX = "z:"
 
 # JVM
@@ -74,7 +72,6 @@ PYTHON_PROXY_TYPE = "f"
 END = "e"
 ERROR = "x"
 SUCCESS = "y"
-RETURN_MESSAGE = "!"
 
 
 # Shortcuts
@@ -97,7 +94,6 @@ ARRAY_COMMAND_NAME = "a\n"
 JVMVIEW_COMMAND_NAME = "j\n"
 EXCEPTION_COMMAND_NAME = "p\n"
 DIR_COMMAND_NAME = "d\n"
-STREAM_COMMAND_NAME = "S\n"
 
 # Array subcommands
 ARRAY_GET_SUB_COMMAND_NAME = "g\n"
@@ -109,7 +105,6 @@ ARRAY_CREATE_SUB_COMMAND_NAME = "c\n"
 # Reflection subcommands
 REFL_GET_UNKNOWN_SUB_COMMAND_NAME = "u\n"
 REFL_GET_MEMBER_SUB_COMMAND_NAME = "m\n"
-REFL_GET_JAVA_LANG_CLASS_SUB_COMMAND_NAME = "c\n"
 
 
 # List subcommands
@@ -141,8 +136,7 @@ REMOVE_IMPORT_SUB_COMMAND_NAME = "r\n"
 
 # Callback specific
 PYTHON_PROXY_PREFIX = "p"
-ERROR_RETURN_MESSAGE = RETURN_MESSAGE + ERROR + "\n"
-SUCCESS_RETURN_MESSAGE = RETURN_MESSAGE + SUCCESS + "\n"
+ERROR_RETURN_MESSAGE = ERROR + "\n"
 
 CALL_PROXY_COMMAND_NAME = "c"
 GARBAGE_COLLECT_PROXY_COMMAND_NAME = "g"
@@ -165,10 +159,6 @@ OUTPUT_CONVERTER = {
 }
 
 INPUT_CONVERTER = []
-
-# ERRORS
-ERROR_ON_SEND = "on_send"
-ERROR_ON_RECEIVE = "on_receive"
 
 
 def escape_new_line(original):
@@ -268,8 +258,7 @@ def get_command_part(parameter, python_proxy_pool=None):
         command_part = BOOLEAN_TYPE + smart_decode(parameter)
     elif isinstance(parameter, Decimal):
         command_part = DECIMAL_TYPE + smart_decode(parameter)
-    elif isinstance(parameter, int) and parameter <= JAVA_MAX_INT\
-            and parameter >= JAVA_MIN_INT:
+    elif isinstance(parameter, int) and parameter <= JAVA_MAX_INT:
         command_part = INTEGER_TYPE + smart_decode(parameter)
     elif isinstance(parameter, long) or isinstance(parameter, int):
         command_part = LONG_TYPE + smart_decode(parameter)
@@ -392,10 +381,7 @@ class Py4JError(Exception):
 
 class Py4JNetworkError(Py4JError):
     """Exception raised when a network error occurs with Py4J."""
-    def __init__(self, args=None, cause=None, when=None):
-        super(Py4JNetworkError, self).__init__(args)
-        self.cause = cause
-        self.when = when
+    pass
 
 
 class Py4JJavaError(Py4JError):

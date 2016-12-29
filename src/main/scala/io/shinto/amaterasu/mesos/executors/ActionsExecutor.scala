@@ -1,6 +1,6 @@
 package io.shinto.amaterasu.mesos.executors
 
-import java.io.{ByteArrayInputStream, File}
+import java.io.{ ByteArrayInputStream, File }
 
 import org.eclipse.aether.util.artifact.JavaScopes
 import org.sonatype.aether.artifact.Artifact
@@ -9,11 +9,11 @@ import collection.JavaConversions._
 import collection.JavaConverters._
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
-import io.shinto.amaterasu.execution.dependencies.{Dependencies, Repo}
+import io.shinto.amaterasu.execution.dependencies.{ Dependencies, Repo }
 import io.shinto.amaterasu.Logging
 import org.apache.mesos.protobuf.ByteString
 import org.apache.mesos.Protos._
-import org.apache.mesos.{Executor, ExecutorDriver, MesosExecutorDriver}
+import org.apache.mesos.{ Executor, ExecutorDriver, MesosExecutorDriver }
 import org.apache.spark.repl.amaterasu.runners.spark.SparkScalaRunner
 import org.apache.spark.SparkContext
 import org.sonatype.aether.repository.RemoteRepository
@@ -24,7 +24,7 @@ import io.shinto.amaterasu.execution.actions.runners.spark.PySpark.PySparkRunner
 import scala.collection.mutable
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.util.{Failure, Success}
+import scala.util.{ Failure, Success }
 
 /**
   * Created by roadan on 1/1/16.
@@ -82,7 +82,7 @@ class ActionsExecutor extends Executor with Logging {
     }
 
     sparkScalaRunner = SparkScalaRunner(data.env, jobId, sparkAppName, notifier, jars)
-    pySparkRunner = PySparkRunner(data.env, jobId, notifier, sc)
+    //pySparkRunner = PySparkRunner(data.env, jobId, notifier, sc)
   }
 
   override def launchTask(driver: ExecutorDriver, taskInfo: TaskInfo): Unit = {

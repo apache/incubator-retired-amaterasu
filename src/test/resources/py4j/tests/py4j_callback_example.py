@@ -17,8 +17,7 @@ class Addition(object):
         implements = ["py4j.examples.Operator"]
 
 if __name__ == "__main__":
-    gateway = JavaGateway(
-        callback_server_parameters=CallbackServerParameters())
+    gateway = JavaGateway(CallbackServerParameters())
     operator = Addition()
     numbers = gateway.entry_point.randomBinaryOperator(operator)
     print(numbers)

@@ -7,7 +7,6 @@ Created on Dec 10, 2009
 from __future__ import unicode_literals, absolute_import
 
 from collections import deque
-from contextlib import contextmanager
 from decimal import Decimal
 import gc
 import math
@@ -28,37 +27,17 @@ from py4j.finalizer import ThreadSafeFinalizer
 from py4j.java_gateway import (
     JavaGateway, JavaMember, get_field, get_method,
     GatewayClient, set_field, java_import, JavaObject, is_instance_of,
-    GatewayParameters, CallbackServerParameters, quiet_close, DEFAULT_PORT,
-    set_default_callback_accept_timeout, GatewayConnectionGuard,
-    get_java_class)
+    GatewayParameters, CallbackServerParameters, quiet_close)
 from py4j.protocol import (
     Py4JError, Py4JJavaError, Py4JNetworkError, decode_bytearray,
-    encode_bytearray, escape_new_line, unescape_new_line, smart_decode)
+    encode_bytearray, escape_new_line, unescape_new_line)
 
 
 SERVER_PORT = 25333
 TEST_PORT = 25332
-PY4J_PREFIX_PATH = os.path.dirname(os.path.realpath(__file__))
-PY4J_JAVA_PATHS = [
-    os.path.join(PY4J_PREFIX_PATH,
-                 "../../../../py4j-java/build/classes/main"),  # gradle
-    os.path.join(PY4J_PREFIX_PATH,
-                 "../../../../py4j-java/build/classes/test"),  # gradle
-    os.path.join(PY4J_PREFIX_PATH,
-                 "../../../../py4j-java/build/resources/main"),  # gradle
-    os.path.join(PY4J_PREFIX_PATH,
-                 "../../../../py4j-java/build/resources/test"),  # gradle
-    os.path.join(PY4J_PREFIX_PATH,
-                 "../../../../py4j-java/target/classes/"),  # maven
-    os.path.join(PY4J_PREFIX_PATH,
-                 "../../../../py4j-java/target/test-classes/"),  # maven
-    os.path.join(PY4J_PREFIX_PATH,
-                 "../../../../py4j-java/bin"),  # ant
-]
-PY4J_JAVA_PATH = os.pathsep.join(PY4J_JAVA_PATHS)
-
-
-set_default_callback_accept_timeout(0.125)
+PY4J_JAVA_PATH = os.path.join(
+    os.path.dirname(os.path.realpath(__file__)),
+    "../../../../py4j-java/bin")
 
 
 def sleep(sleep_time=0.250):
@@ -86,51 +65,20 @@ def start_example_server():
         "py4j.examples.ExampleApplication"])
 
 
-def start_short_timeout_example_server():
-    subprocess.call([
-        "java", "-Xmx512m", "-cp", PY4J_JAVA_PATH,
-        "py4j.examples.ExampleApplication$ExampleShortTimeoutApplication"])
-
-
-def start_ipv6_example_server():
-    subprocess.call([
-        "java", "-Xmx512m", "-cp", PY4J_JAVA_PATH,
-        "py4j.examples.ExampleApplication$ExampleIPv6Application"])
-
-
 def start_example_app_process():
     # XXX DO NOT FORGET TO KILL THE PROCESS IF THE TEST DOES NOT SUCCEED
     p = Process(target=start_example_server)
     p.start()
     sleep()
-    check_connection()
+    test_gateway_connection()
     return p
 
 
-def start_short_timeout_app_process():
-    # XXX DO NOT FORGET TO KILL THE PROCESS IF THE TEST DOES NOT SUCCEED
-    p = Process(target=start_short_timeout_example_server)
-    p.start()
-    sleep()
-    check_connection()
-    return p
-
-
-def start_ipv6_app_process():
-    # XXX DO NOT FORGET TO KILL THE PROCESS IF THE TEST DOES NOT SUCCEED
-    p = Process(target=start_ipv6_example_server)
-    p.start()
-    # Sleep twice because we do not check connections.
-    sleep()
-    sleep()
-    return p
-
-
-def check_connection(gateway_parameters=None):
-    test_gateway = JavaGateway(gateway_parameters=gateway_parameters)
+def test_gateway_connection():
+    test_gateway = JavaGateway()
     try:
         # Call a dummy method just to make sure we can connect to the JVM
-        test_gateway.jvm.System.currentTimeMillis()
+        test_gateway.jvm.System.lineSeparator()
     except Py4JNetworkError:
         # We could not connect. Let"s wait a long time.
         # If it fails after that, there is a bug with our code!
@@ -146,34 +94,10 @@ def get_socket():
 
 
 def safe_shutdown(instance):
-    if hasattr(instance, 'gateway'):
-        try:
-            instance.gateway.shutdown()
-        except Exception:
-            print_exc()
-
-
-@contextmanager
-def gateway(*args, **kwargs):
-    g = JavaGateway(
-        gateway_parameters=GatewayParameters(
-            *args, auto_convert=True, **kwargs))
-    time = g.jvm.System.currentTimeMillis()
     try:
-        yield g
-        # Call a dummy method to make sure we haven't corrupted the streams
-        assert time <= g.jvm.System.currentTimeMillis()
-    finally:
-        g.shutdown()
-
-
-@contextmanager
-def example_app_process():
-    p = start_example_app_process()
-    try:
-        yield p
-    finally:
-        p.join()
+        instance.gateway.shutdown()
+    except Exception:
+        print_exc()
 
 
 class TestConnection(object):
@@ -230,20 +154,20 @@ class ProtocolTest(unittest.TestCase):
         p = start_echo_server_process()
         try:
             testSocket = get_socket()
-            testSocket.sendall("!yo\n".encode("utf-8"))
-            testSocket.sendall("!yro0\n".encode("utf-8"))
-            testSocket.sendall("!yo\n".encode("utf-8"))
-            testSocket.sendall("!ysHello World\n".encode("utf-8"))
+            testSocket.sendall("yo\n".encode("utf-8"))
+            testSocket.sendall("yro0\n".encode("utf-8"))
+            testSocket.sendall("yo\n".encode("utf-8"))
+            testSocket.sendall("ysHello World\n".encode("utf-8"))
             # No extra echange (method3) because it is already cached.
-            testSocket.sendall("!yi123\n".encode("utf-8"))
-            testSocket.sendall("!yd1.25\n".encode("utf-8"))
-            testSocket.sendall("!yo\n".encode("utf-8"))
-            testSocket.sendall("!yn\n".encode("utf-8"))
-            testSocket.sendall("!yo\n".encode("utf-8"))
-            testSocket.sendall("!ybTrue\n".encode("utf-8"))
-            testSocket.sendall("!yo\n".encode("utf-8"))
-            testSocket.sendall("!yL123\n".encode("utf-8"))
-            testSocket.sendall("!ydinf\n".encode("utf-8"))
+            testSocket.sendall("yi123\n".encode("utf-8"))
+            testSocket.sendall("yd1.25\n".encode("utf-8"))
+            testSocket.sendall("yo\n".encode("utf-8"))
+            testSocket.sendall("yn\n".encode("utf-8"))
+            testSocket.sendall("yo\n".encode("utf-8"))
+            testSocket.sendall("ybTrue\n".encode("utf-8"))
+            testSocket.sendall("yo\n".encode("utf-8"))
+            testSocket.sendall("yL123\n".encode("utf-8"))
+            testSocket.sendall("ydinf\n".encode("utf-8"))
             testSocket.close()
             sleep()
 
@@ -278,13 +202,13 @@ class IntegrationTest(unittest.TestCase):
     def testIntegration(self):
         try:
             testSocket = get_socket()
-            testSocket.sendall("!yo\n".encode("utf-8"))
-            testSocket.sendall("!yro0\n".encode("utf-8"))
-            testSocket.sendall("!yo\n".encode("utf-8"))
-            testSocket.sendall("!ysHello World\n".encode("utf-8"))
-            testSocket.sendall("!yro1\n".encode("utf-8"))
-            testSocket.sendall("!yo\n".encode("utf-8"))
-            testSocket.sendall("!ysHello World2\n".encode("utf-8"))
+            testSocket.sendall("yo\n".encode("utf-8"))
+            testSocket.sendall("yro0\n".encode("utf-8"))
+            testSocket.sendall("yo\n".encode("utf-8"))
+            testSocket.sendall("ysHello World\n".encode("utf-8"))
+            testSocket.sendall("yro1\n".encode("utf-8"))
+            testSocket.sendall("yo\n".encode("utf-8"))
+            testSocket.sendall("ysHello World2\n".encode("utf-8"))
             testSocket.close()
             sleep()
 
@@ -303,10 +227,10 @@ class IntegrationTest(unittest.TestCase):
     def testException(self):
         try:
             testSocket = get_socket()
-            testSocket.sendall("!yo\n".encode("utf-8"))
-            testSocket.sendall("!yro0\n".encode("utf-8"))
-            testSocket.sendall("!yo\n".encode("utf-8"))
-            testSocket.sendall(b"!x\n")
+            testSocket.sendall("yo\n".encode("utf-8"))
+            testSocket.sendall("yro0\n".encode("utf-8"))
+            testSocket.sendall("yo\n".encode("utf-8"))
+            testSocket.sendall(b"x\n")
             testSocket.close()
             sleep()
 
@@ -437,22 +361,6 @@ class FieldTest(unittest.TestCase):
         self.assertEqual(1, get_method(ex, "method1")())
 
 
-class DeprecatedTest(unittest.TestCase):
-    def setUp(self):
-        self.p = start_example_app_process()
-
-    def test_gateway_client(self):
-        gateway_client = GatewayClient(port=DEFAULT_PORT)
-        self.gateway = JavaGateway(gateway_client=gateway_client)
-
-        i = self.gateway.jvm.System.currentTimeMillis()
-        self.assertTrue(i > 0)
-
-    def tearDown(self):
-        safe_shutdown(self)
-        self.p.join()
-
-
 class UtilityTest(unittest.TestCase):
     def setUp(self):
         self.p = start_example_app_process()
@@ -461,16 +369,6 @@ class UtilityTest(unittest.TestCase):
     def tearDown(self):
         safe_shutdown(self)
         self.p.join()
-
-    def testGetJavaClass(self):
-        ArrayList = self.gateway.jvm.java.util.ArrayList
-        clazz1 = ArrayList._java_lang_class
-        clazz2 = get_java_class(ArrayList)
-
-        self.assertEqual("java.util.ArrayList", clazz1.getName())
-        self.assertEqual("java.util.ArrayList", clazz2.getName())
-        self.assertEqual("java.lang.Class", clazz1.getClass().getName())
-        self.assertEqual("java.lang.Class", clazz2.getClass().getName())
 
     def testIsInstance(self):
         a_list = self.gateway.jvm.java.util.ArrayList()
@@ -497,7 +395,6 @@ class UtilityTest(unittest.TestCase):
 
 class MemoryManagementTest(unittest.TestCase):
     def setUp(self):
-        ThreadSafeFinalizer.clear_finalizers(True)
         self.p = start_example_app_process()
 
     def tearDown(self):
@@ -534,58 +431,6 @@ class MemoryManagementTest(unittest.TestCase):
             len(ThreadSafeFinalizer.finalizers) - finalizers_size_start, 0)
         self.gateway.shutdown()
 
-    def testGCCollect(self):
-        self.gateway = JavaGateway()
-        gc.collect()
-        finalizers_size_start = len(ThreadSafeFinalizer.finalizers)
-
-        def internal():
-            sb = self.gateway.jvm.java.lang.StringBuffer()
-            sb.append("Hello World")
-            sb2 = self.gateway.jvm.java.lang.StringBuffer()
-            sb2.append("Hello World")
-            finalizers_size_middle = len(ThreadSafeFinalizer.finalizers)
-            return finalizers_size_middle
-        finalizers_size_middle = internal()
-        gc.collect()
-
-        # Before collection: two objects created + two returned objects (append
-        # returns a stringbuffer reference for easy chaining).
-        self.assertEqual(finalizers_size_middle, 4)
-
-        # Assert after collection
-        self.assertEqual(
-            len(ThreadSafeFinalizer.finalizers) - finalizers_size_start, 0)
-
-        self.gateway.shutdown()
-
-    def testGCCollectNoMemoryManagement(self):
-        self.gateway = JavaGateway(
-            gateway_parameters=GatewayParameters(
-                enable_memory_management=False))
-        gc.collect()
-        # Should have nothing in the finalizers
-        self.assertEqual(len(ThreadSafeFinalizer.finalizers), 0)
-
-        def internal():
-            sb = self.gateway.jvm.java.lang.StringBuffer()
-            sb.append("Hello World")
-            sb2 = self.gateway.jvm.java.lang.StringBuffer()
-            sb2.append("Hello World")
-            finalizers_size_middle = len(ThreadSafeFinalizer.finalizers)
-            return finalizers_size_middle
-        finalizers_size_middle = internal()
-        gc.collect()
-
-        # Before collection: two objects created + two returned objects (append
-        # returns a stringbuffer reference for easy chaining).
-        self.assertEqual(finalizers_size_middle, 0)
-
-        # Assert after collection
-        self.assertEqual(len(ThreadSafeFinalizer.finalizers), 0)
-
-        self.gateway.shutdown()
-
 
 class TypeConversionTest(unittest.TestCase):
     def setUp(self):
@@ -600,7 +445,6 @@ class TypeConversionTest(unittest.TestCase):
         ex = self.gateway.getNewExample()
         self.assertEqual(1, ex.method7(1234))
         self.assertEqual(4, ex.method7(2147483648))
-        self.assertEqual(4, ex.method7(-2147483649))
         self.assertEqual(4, ex.method7(long(2147483648)))
         self.assertEqual(long(4), ex.method8(3))
         self.assertEqual(4, ex.method8(3))
@@ -622,10 +466,6 @@ class TypeConversionTest(unittest.TestCase):
         self.assertEqual(float("-inf"), java_neg_inf)
         java_nan = self.gateway.jvm.java.lang.Double.parseDouble("NaN")
         self.assertTrue(math.isnan(java_nan))
-
-    def testUnboxingInt(self):
-        ex = self.gateway.getNewExample()
-        self.assertEqual(4, ex.getInteger(4))
 
 
 class UnicodeTest(unittest.TestCase):
@@ -654,42 +494,6 @@ class UnicodeTest(unittest.TestCase):
         self.assertEqual(len(s2), len(array2))
         self.assertEqual(ord(s1[0]), array1[0])
         self.assertEqual(ord(s2[4]), array2[4])
-
-
-class StreamTest(unittest.TestCase):
-    def setUp(self):
-        self.p = start_example_app_process()
-        self.gateway = JavaGateway()
-
-    def tearDown(self):
-        safe_shutdown(self)
-        self.p.join()
-
-    def testBinarySuccess(self):
-        e = self.gateway.getNewExample()
-
-        # not binary - just get the Java object
-        v1 = e.getStream()
-        self.assertTrue(
-            is_instance_of(
-                self.gateway, v1, "java.nio.channels.ReadableByteChannel"))
-
-        # pull it as a binary stream
-        with e.getStream.stream() as conn:
-            self.assertTrue(isinstance(conn, GatewayConnectionGuard))
-            expected =\
-                u"Lorem ipsum dolor sit amet, consectetur adipiscing elit."
-            self.assertEqual(expected, smart_decode(conn.read(len(expected))))
-
-    def testBinaryFailure(self):
-        e = self.gateway.getNewExample()
-        self.assertRaises(Py4JJavaError, lambda: e.getBrokenStream())
-        self.assertRaises(Py4JJavaError, lambda: e.getBrokenStream.stream())
-
-    def testNotAStream(self):
-        e = self.gateway.getNewExample()
-        self.assertEqual(1, e.method1())
-        self.assertRaises(Py4JError, lambda: e.method1.stream())
 
 
 class ByteTest(unittest.TestCase):
@@ -868,11 +672,6 @@ class JVMTest(unittest.TestCase):
         ex = self.gateway.entry_point.getNewExample()
         ex.method4(None)
 
-    def testJavaGatewayServer(self):
-        server = self.gateway.java_gateway_server
-        self.assertEqual(
-            server.getListeningPort(), DEFAULT_PORT)
-
     def testJVMView(self):
         newView = self.gateway.new_jvm_view("myjvm")
         time = newView.System.currentTimeMillis()
@@ -991,15 +790,6 @@ class GatewayLauncherTest(unittest.TestCase):
         self.gateway = JavaGateway.launch_gateway()
         self.assertTrue(self.gateway.jvm)
 
-    def testJavaPath(self):
-        self.gateway = JavaGateway.launch_gateway(java_path=None)
-        self.assertTrue(self.gateway.jvm)
-
-    def testCreateNewProcessGroup(self):
-        self.gateway = JavaGateway.launch_gateway(
-            create_new_process_group=True)
-        self.assertTrue(self.gateway.jvm)
-
     def testJavaopts(self):
         self.gateway = JavaGateway.launch_gateway(javaopts=["-Xmx64m"])
         self.assertTrue(self.gateway.jvm)
@@ -1009,14 +799,7 @@ class GatewayLauncherTest(unittest.TestCase):
         for i in range(4097):  # Hangs if not properly redirected
             self.gateway.jvm.System.out.println("Test")
 
-    def testRedirectToNullOtherProcessGroup(self):
-        self.gateway = JavaGateway.launch_gateway(
-            create_new_process_group=True)
-        for i in range(4097):  # Hangs if not properly redirected
-            self.gateway.jvm.System.out.println("Test")
-
     def testRedirectToQueue(self):
-        end = os.linesep
         qout = Queue()
         qerr = Queue()
         self.gateway = JavaGateway.launch_gateway(
@@ -1026,13 +809,12 @@ class GatewayLauncherTest(unittest.TestCase):
             self.gateway.jvm.System.err.println("Test2")
         sleep()
         for i in range(10):
-            self.assertEqual("Test{0}".format(end), qout.get())
-            self.assertEqual("Test2{0}".format(end), qerr.get())
+            self.assertEqual("Test\n", qout.get())
+            self.assertEqual("Test2\n", qerr.get())
         self.assertTrue(qout.empty)
         self.assertTrue(qerr.empty)
 
     def testRedirectToDeque(self):
-        end = os.linesep
         qout = deque()
         qerr = deque()
         self.gateway = JavaGateway.launch_gateway(
@@ -1042,15 +824,14 @@ class GatewayLauncherTest(unittest.TestCase):
             self.gateway.jvm.System.err.println("Test2")
         sleep()
         for i in range(10):
-            self.assertEqual("Test{0}".format(end), qout.pop())
-            self.assertEqual("Test2{0}".format(end), qerr.pop())
+            self.assertEqual("Test\n", qout.pop())
+            self.assertEqual("Test2\n", qerr.pop())
         self.assertEqual(0, len(qout))
         self.assertEqual(0, len(qerr))
 
     def testRedirectToFile(self):
-        end = os.linesep
-        (out_handle, outpath) = tempfile.mkstemp(text=True)
-        (err_handle, errpath) = tempfile.mkstemp(text=True)
+        (_, outpath) = tempfile.mkstemp(text=True)
+        (_, errpath) = tempfile.mkstemp(text=True)
 
         stdout = open(outpath, "w")
         stderr = open(errpath, "w")
@@ -1061,8 +842,6 @@ class GatewayLauncherTest(unittest.TestCase):
             for i in range(10):
                 self.gateway.jvm.System.out.println("Test")
                 self.gateway.jvm.System.err.println("Test2")
-            self.gateway.shutdown()
-            sleep()
             # Should not be necessary
             quiet_close(stdout)
             quiet_close(stderr)
@@ -1071,195 +850,15 @@ class GatewayLauncherTest(unittest.TestCase):
             with open(outpath, "r") as stdout:
                 lines = stdout.readlines()
                 self.assertEqual(10, len(lines))
-                self.assertEqual("Test{0}".format(end), lines[0])
+                self.assertEqual("Test\n", lines[0])
 
             with open(errpath, "r") as stderr:
                 lines = stderr.readlines()
                 self.assertEqual(10, len(lines))
-                # XXX Apparently, it's \n by default even on windows...
-                # Go figure
                 self.assertEqual("Test2\n", lines[0])
         finally:
-            os.close(out_handle)
-            os.close(err_handle)
             os.unlink(outpath)
             os.unlink(errpath)
-
-
-class WaitOperator(object):
-
-    def __init__(self, sleepTime):
-        self.sleepTime = sleepTime
-        self.callCount = 0
-
-    def doOperation(self, i, j):
-        self.callCount += 1
-        if self.callCount == 1:
-            sleep(self.sleepTime)
-        return i + j
-
-    class Java:
-        implements = ["py4j.examples.Operator"]
-
-
-class IPv6Test(unittest.TestCase):
-
-    def testIpV6(self):
-        self.p = start_ipv6_app_process()
-        gateway = JavaGateway(
-            gateway_parameters=GatewayParameters(address="::1"),
-            callback_server_parameters=CallbackServerParameters(address="::1"))
-
-        try:
-            timeMillis = gateway.jvm.System.currentTimeMillis()
-            self.assertTrue(timeMillis > 0)
-
-            operator = WaitOperator(0.1)
-            opExample = gateway.jvm.py4j.examples.OperatorExample()
-            a_list = opExample.randomBinaryOperator(operator)
-            self.assertEqual(a_list[0] + a_list[1], a_list[2])
-        finally:
-            gateway.shutdown()
-            self.p.join()
-
-
-class RetryTest(unittest.TestCase):
-
-    def testBadRetry(self):
-        """Should not retry from Python to Java.
-        Python calls a long Java method. The call goes through, but the
-        response takes a long time to get back.
-
-        If there is a bug, Python will fail on read and retry (sending the same
-        call twice).
-
-        If there is no bug, Python will fail on read and raise an Exception.
-        """
-        self.p = start_example_app_process()
-        gateway = JavaGateway(
-            gateway_parameters=GatewayParameters(read_timeout=0.250))
-        try:
-            value = gateway.entry_point.getNewExample().sleepFirstTimeOnly(500)
-            self.fail(
-                "Should never retry once the first command went through."
-                "number of calls made: {0}".format(value))
-        except Py4JError:
-            self.assertTrue(True)
-        finally:
-            gateway.shutdown()
-            self.p.join()
-
-    def testGoodRetry(self):
-        """Should retry from Python to Java.
-        Python calls Java twice in a row, then waits, then calls again.
-
-        Java fails when it does not receive calls quickly.
-
-        If there is a bug, Python will fail on the third call because the Java
-        connection was closed and it did not retry.
-
-        If there is a bug, Python might not fail because Java did not close the
-        connection on timeout. The connection used to call Java will be the
-        same one for all calls (and an assertion will fail).
-
-        If there is no bug, Python will call Java twice with the same
-        connection. On the third call, the write will fail, and a new
-        connection will be created.
-        """
-        self.p = start_short_timeout_app_process()
-        gateway = JavaGateway()
-        connections = gateway._gateway_client.deque
-        try:
-            # Call #1
-            gateway.jvm.System.currentTimeMillis()
-            str_connection = str(connections[0])
-
-            # Call #2 after, should not create new connections if the system is
-            # not too slow :-)
-            gateway.jvm.System.currentTimeMillis()
-            self.assertEqual(1, len(connections))
-            str_connection2 = str(connections[0])
-            self.assertEqual(str_connection, str_connection2)
-
-            sleep(0.5)
-            gateway.jvm.System.currentTimeMillis()
-            self.assertEqual(1, len(connections))
-            str_connection3 = str(connections[0])
-            # A new connection was automatically created.
-            self.assertNotEqual(str_connection, str_connection3)
-        except Py4JError:
-            self.fail("Should retry automatically by default.")
-        finally:
-            gateway.shutdown()
-            self.p.join()
-
-    def testBadRetryFromJava(self):
-        """Should not retry from Java to Python.
-        Similar use case as testBadRetry, but from Java: Java calls a long
-        Python operation.
-
-        If there is a bug, Java will call Python, then read will fail, then it
-        will call Python again.
-
-        If there is no bug, Java will call Python, read will fail, then Java
-        will raise an Exception that will be received as a Py4JError on the
-        Python side.
-        """
-        self.p = start_short_timeout_app_process()
-        gateway = JavaGateway(
-            callback_server_parameters=CallbackServerParameters())
-        try:
-            operator = WaitOperator(0.5)
-            opExample = gateway.jvm.py4j.examples.OperatorExample()
-
-            opExample.randomBinaryOperator(operator)
-            self.fail(
-                "Should never retry once the first command went through."
-                " number of calls made: {0}".format(operator.callCount))
-        except Py4JJavaError:
-            self.assertTrue(True)
-        finally:
-            gateway.shutdown()
-            self.p.join()
-
-    def testGoodRetryFromJava(self):
-        """Should retry from Java to Python.
-        Similar use case as testGoodRetry, but from Java: Python calls Java,
-        which calls Python back two times in a row. Then python waits for a
-        while. Python then calls Java, which calls Python.
-
-        Because Python Callback server has been waiting for too much time, the
-        receiving socket has closed so the call from Java to Python will fail
-        on send, and Java must retry by creating a new connection
-        (CallbackConnection).
-        """
-        self.p = start_example_app_process()
-        gateway = JavaGateway(
-            callback_server_parameters=CallbackServerParameters(
-                read_timeout=0.250))
-        try:
-            operator = WaitOperator(0)
-            opExample = gateway.jvm.py4j.examples.OperatorExample()
-            opExample.randomBinaryOperator(operator)
-            str_connection = str(list(gateway._callback_server.connections)[0])
-
-            opExample.randomBinaryOperator(operator)
-            str_connection2 = str(
-                list(gateway._callback_server.connections)[0])
-
-            sleep(0.5)
-
-            opExample.randomBinaryOperator(operator)
-            str_connection3 = str(
-                list(gateway._callback_server.connections)[0])
-
-            self.assertEqual(str_connection, str_connection2)
-            self.assertNotEqual(str_connection, str_connection3)
-        except Py4JJavaError:
-            self.fail("Java callbackclient did not retry.")
-        finally:
-            gateway.shutdown()
-            self.p.join()
 
 
 if __name__ == "__main__":

@@ -1,6 +1,11 @@
+javacOptions ++= Seq("-source", "1.7", "-target", "1.7", "-Xlint")
+
+scalacOptions := Seq("-target:jvm-1.7")
+
 assemblyMergeStrategy in assembly := {
   case x if x.startsWith("META-INF") => MergeStrategy.discard // Bumf
   case x if x.endsWith(".html") => MergeStrategy.discard // More bumf
+  case x if x.contains("io.netty") => MergeStrategy.discard
   case x if x.contains("slf4j-api") => MergeStrategy.last
   case x if x.contains("slf4j") => MergeStrategy.last
   case x if x.contains("commons") => MergeStrategy.first
