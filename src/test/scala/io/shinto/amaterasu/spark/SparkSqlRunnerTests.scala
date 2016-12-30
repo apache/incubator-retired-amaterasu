@@ -38,13 +38,19 @@ class SparkSqlRunnerTests extends FlatSpec with Matchers {
 
   sc.setLogLevel("ERROR")
 
-  val sparkSql = SparkSqlRunner(env, "spark-sql-job1", "spark-sql-action", notifier, sc)
+  val sparkSql = SparkSqlRunner(env, "spark-sql-parquet", "spark-sql-parquet-action", notifier, sc)
 
-  "SparkSql" should "run SparkSql and persist the Data in working directory" in {
+  "SparkSql" should "load PARQUET data and persist the Data in working directory" in {
 
-    sparkSql.executeQuery("temptable", getClass.getResource("/SparkSql/SparkSqlTestData.json").getPath, "select * from temptable")
+    sparkSql.executeQuery("temptable", getClass.getResource("/SparkSql/parquet").getPath, "select * from temptable")
 
   }
 
-  //sc.stop()
+  val sparkSqlJson = SparkSqlRunner(env, "spark-sql-json", "spark-sql-json-action", notifier, sc)
+  "SparkSql" should "load JSON data and persist the Data in working directory" in {
+
+    sparkSqlJson.executeQuery("temptable", getClass.getResource("/SparkSql/json/SparkSqlTestData.json").getPath, "select * from temptable")
+
+  }
+
 }
