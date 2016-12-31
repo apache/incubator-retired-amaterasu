@@ -3,8 +3,8 @@ package io.shinto.amaterasu.spark
 import io.shinto.amaterasu.runtime.Environment
 import io.shinto.amaterasu.utils.TestNotifier
 import io.shinto.amaterasu.execution.actions.runners.spark.PySpark.PySparkRunner
-import org.apache.spark.{ SparkConf, SparkContext }
-import org.scalatest.{ BeforeAndAfter, FlatSpec, Matchers }
+import org.apache.spark.{SparkConf, SparkContext}
+import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 /**
   * Created by roadan on 9/2/16.
@@ -22,6 +22,7 @@ class PySparkRunnerTests extends FlatSpec with Matchers with BeforeAndAfter {
     val conf = new SparkConf(true)
       .setMaster("local[*]")
       .setAppName("job_5")
+      .setExecutorEnv("PYTHONPATH", getClass.getResource("/").getPath)
 
     sc = new SparkContext(conf)
 

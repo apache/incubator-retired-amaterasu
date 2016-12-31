@@ -18,7 +18,6 @@ from pyspark.broadcast import Broadcast
 from pyspark.serializers import MarshalSerializer, PickleSerializer
 from pyspark.sql import SchemaRDD
 
-
 client = GatewayClient(port=int(sys.argv[1]))
 gateway = JavaGateway(client, auto_convert = True)
 entry_point = gateway.entry_point
@@ -34,10 +33,7 @@ java_import(gateway.jvm, "org.apache.spark.sql.hive.*")
 java_import(gateway.jvm, "scala.Tuple2")
 
 jconf = entry_point.getSparkConf()
-jsc = entry_point.getJavaSparkContext() #get_patched_jsc(jconf)
-
-print(gateway.jvm)
-
+jsc = entry_point.getJavaSparkContext()
 
 conf = SparkConf(_jvm = gateway.jvm, _jconf = jconf)
 
