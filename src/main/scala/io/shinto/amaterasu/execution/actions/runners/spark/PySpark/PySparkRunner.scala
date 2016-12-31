@@ -62,7 +62,7 @@ object PySparkRunner {
 
     PySparkEntryPoint.start(sc, jobId, env, SparkEnv.get)
     val port = PySparkEntryPoint.getPort()
-    val proc = Process(Seq("python", getClass.getResource("/spark_intp.py").getPath, port.toString), None, "PYTHONPATH" -> pypath, "PYSPARK_PYTHON" -> pypath).run()
+    val proc = Process(Seq("python", getClass.getResource("/spark_intp.py").getPath, port.toString), None, "PYTHONPATH" -> pypath, "PYSPARK_PYTHON" -> "/usr/bin/python", "PYTHONHASHSEED" -> 0.toString).run()
 
     result.notifier = notifier
     //result.proc = proc.run()

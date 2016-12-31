@@ -20,7 +20,7 @@ class PySparkRunnerTests extends FlatSpec with Matchers with BeforeAndAfter {
     val notifier = new TestNotifier()
 
     val conf = new SparkConf(true)
-      .setMaster("local")
+      .setMaster("local[*]")
       .setAppName("job_5")
 
     sc = new SparkContext(conf)

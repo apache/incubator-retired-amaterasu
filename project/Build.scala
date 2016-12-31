@@ -71,8 +71,7 @@ object Build extends Build {
       // execution engines dependencies
       //"org.apache.spark" %% "spark-repl" % "1.6.3" % "provided" exclude("io.netty", "netty"),
 
-      "org.apache.spark" %% "spark-repl" % "1.6.3" % "provided"
-        exclude("io.netty", "netty"),
+      "org.apache.spark" %% "spark-repl" % "1.6.3" % "provided",// exclude("io.netty", "netty"),
 
       "net.sf.py4j" % "py4j" % "0.9",
 
