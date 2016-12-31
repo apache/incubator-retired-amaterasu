@@ -46,13 +46,13 @@ class PySparkRunnerTests extends FlatSpec with Matchers with BeforeAndAfter {
   //  }
   //
 
-  it should "also execute spark code written in python" in {
-    runner.executeSource(getClass.getResource("/simple-pyspark.py").getPath, "test_action3")
-  }
+//  it should "also execute spark code written in python" in {
+//    runner.executeSource(getClass.getResource("/simple-pyspark.py").getPath, "test_action3")
+//  }
 
-  //  it should "also execute spark code written in python with AmaContext being used" in {
-  //    runner.executeSource(getClass.getResource("/pyspark-with-amacontext.py").getPath, "test_action4")
-  //  }
-  //
+    it should "also execute spark code written in python with AmaContext being used" in {
+      runner.executeSource(getClass.getResource("/pyspark-with-amacontext.py").getPath, "test_action4")
+    }
+
   //  sc.stop()
 }

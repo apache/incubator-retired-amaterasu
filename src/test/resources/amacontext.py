@@ -1,4 +1,6 @@
-class amacontext(object):
+class AmaContext(object):
 
-  def __init__(self, ):
-    self.tangerine = "And now a thousand years between"
+    def __init__(self, sc, sqlContext):
+        self.sc = sc
+        self.sqlContext = sqlContext
+

@@ -21,9 +21,10 @@ public class PySparkEntryPoint {
     private static Boolean started = false;
     private static PySparkExecutionQueue queue = new PySparkExecutionQueue();
     private static ConcurrentHashMap<String, ResultQueue> resultQueues = new ConcurrentHashMap<>();
-    ;
+
     private static int port = 0;
     private static JavaSparkContext jsc = null;
+    private static SQLContext sqlContext = null;
     private static SparkEnv sparkEnv = null;
 
     public static PySparkExecutionQueue getExecutionQueue() {
@@ -38,6 +39,11 @@ public class PySparkEntryPoint {
     public static JavaSparkContext getJavaSparkContext() {
         SparkEnv.set(sparkEnv);
         return jsc;
+    }
+
+    public static SQLContext getSqlContext() {
+        SparkEnv.set(sparkEnv);
+        return sqlContext;
     }
 
     public static SparkConf getSparkConf() {
@@ -73,6 +79,7 @@ public class PySparkEntryPoint {
         }
 
         jsc = new JavaSparkContext(sc);
+        sqlContext = new SQLContext(sc);
         PySparkEntryPoint.sparkEnv = sparkEnv;
         generatePort();
         GatewayServer gatewayServer = new GatewayServer(new PySparkEntryPoint(), port);

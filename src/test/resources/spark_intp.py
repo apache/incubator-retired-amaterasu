@@ -4,6 +4,7 @@ import py4j
 import ast
 import codegen
 import sys,os,os.path
+from amacontext import AmaContext
 
 from py4j.java_gateway import JavaGateway, GatewayClient, java_import
 from py4j.protocol import Py4JJavaError
@@ -16,7 +17,7 @@ from pyspark import accumulators
 from pyspark.accumulators import Accumulator, AccumulatorParam
 from pyspark.broadcast import Broadcast
 from pyspark.serializers import MarshalSerializer, PickleSerializer
-from pyspark.sql import SchemaRDD
+from pyspark.sql import SQLContext, HiveContext, Row, SchemaRDD
 
 client = GatewayClient(port=int(sys.argv[1]))
 gateway = JavaGateway(client, auto_convert = True)
@@ -38,6 +39,9 @@ jsc = entry_point.getJavaSparkContext()
 conf = SparkConf(_jvm = gateway.jvm, _jconf = jconf)
 
 sc = SparkContext(jsc=jsc, gateway=gateway, conf=conf)
+sqlContext = SQLContext(sparkContext=sc, sqlContext=entry_point.getSqlContext())
+
+ama_context = AmaContext(sc, sqlContext)
 
 while True:
     actionData = queue.getNext()
