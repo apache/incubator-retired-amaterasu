@@ -19,10 +19,10 @@ import org.apache.spark.SparkContext
 import org.sonatype.aether.repository.RemoteRepository
 import org.sonatype.aether.util.artifact.DefaultArtifact
 import com.jcabi.aether.Aether
+import io.shinto.amaterasu.execution.actions.runners.spark.PySpark.PySparkRunner
 import io.shinto.amaterasu.execution.actions.runners.spark.SparkRunnerHelper
 import org.apache.spark.repl.amaterasu.ReplUtils
 import org.apache.spark.repl.amaterasu.runners.spark.SparkScalaRunner._
-
 import scala.collection.mutable
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -39,6 +39,7 @@ class ActionsExecutor extends Executor with Logging {
   var jobId: String = null
   var actionName: String = null
   var sparkScalaRunner: SparkScalaRunner = null
+  var pySparkRunner: PySparkRunner = null
   var notifier: MesosNotifier = null
 
   val mapper = new ObjectMapper()
@@ -102,7 +103,8 @@ class ActionsExecutor extends Executor with Logging {
 
     driver.sendStatusUpdate(status)
 
-    val task = Future{
+    val task = Future {
+
       val taskData = mapper.readValue(new ByteArrayInputStream(taskInfo.getData.toByteArray), classOf[TaskData])
 
       val actionSource = taskData.src

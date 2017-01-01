@@ -3,10 +3,8 @@ package io.shinto.amaterasu.mesos.schedulers
 import java.util
 
 import io.shinto.amaterasu.configuration.ClusterConfig
-import io.shinto.amaterasu.utilities.FsUtil
 import io.shinto.amaterasu.Kami
 
-import org.apache.mesos.Protos.CommandInfo.URI
 import org.apache.mesos.Protos._
 import org.apache.mesos.{ Protos, SchedulerDriver }
 
@@ -14,10 +12,10 @@ import scala.collection.JavaConverters._
 
 class ClusterScheduler extends AmaterasuScheduler {
 
-  private var kami: Kami = null
-  private var config: ClusterConfig = null
+  private var kami: Kami = _
+  private var config: ClusterConfig = _
 
-  private var driver: SchedulerDriver = null
+  private var driver: SchedulerDriver = _
 
   def error(driver: SchedulerDriver, message: String) {}
 
@@ -48,12 +46,10 @@ class ClusterScheduler extends AmaterasuScheduler {
 
   def buildCommandInfo(jobSrc: String): CommandInfo = {
 
-    val fsUtil = FsUtil(config)
-
     println(s"Starting amaterasu job: java -cp ${config.JarName} io.shinto.amaterasu.mesos.executors.JobExecutor $jobSrc")
 
     CommandInfo.newBuilder
-      .addUris(URI.newBuilder.setValue(fsUtil.getJarUrl()).setExecutable(false))
+      //.addUris(URI.newBuilder.setValue(fsUtil.getJarUrl()).setExecutable(false))
       //.addUris(URI.newBuilder.setValue(jobSrc)
       .setValue(s"java -cp ${config.Jar} io.shinto.amaterasu.mesos.executors.JobExecutor $jobSrc")
       .build()

@@ -107,7 +107,7 @@ fi
 
 echo $CMD
 
-eval $CMD | grep "===>\|*"
+eval $CMD | grep "===>"
 kill $SERVER_PID
 
 echo ""
