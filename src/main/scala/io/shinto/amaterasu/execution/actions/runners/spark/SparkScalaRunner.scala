@@ -174,9 +174,7 @@ object SparkScalaRunner extends Logging {
     result
   }
 
-  def createSparkContext(env: Environment,
-                         sparkAppName: String,
-                         classServerUri: String, jars: Seq[String]): SparkContext = {
+  def createSparkContext(env: Environment, sparkAppName: String, classServerUri: String, jars: Seq[String]): SparkContext = {
 
     log.debug(s"creating SparkContext with master ${env.master}")
 
@@ -190,7 +188,7 @@ object SparkScalaRunner extends Logging {
       .set("spark.executor.instances", "2")
       .set("spark.cores.max", "5")
       .set("spark.hadoop.validateOutputSpecs", "false")
-
+      .setExecutorEnv('PYTHONPATH',
     val sc = new SparkContext(conf)
     for (jar <- jars) {
       sc.addJar(jar) // and this is how my childhood was ruined :(
