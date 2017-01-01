@@ -1,6 +1,6 @@
 package io.shinto.amaterasu.mesos.executors
 
-import java.io.{ ByteArrayInputStream, File }
+import java.io.{ ByteArrayInputStream, ByteArrayOutputStream, File }
 
 import org.eclipse.aether.util.artifact.JavaScopes
 import org.sonatype.aether.artifact.Artifact
@@ -20,7 +20,9 @@ import org.sonatype.aether.repository.RemoteRepository
 import org.sonatype.aether.util.artifact.DefaultArtifact
 import com.jcabi.aether.Aether
 import io.shinto.amaterasu.execution.actions.runners.spark.PySpark.PySparkRunner
-
+import io.shinto.amaterasu.execution.actions.runners.spark.SparkRunnerHelper
+import org.apache.spark.repl.amaterasu.ReplUtils
+import org.apache.spark.repl.amaterasu.runners.spark.SparkScalaRunner._
 import scala.collection.mutable
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -81,8 +83,14 @@ class ActionsExecutor extends Executor with Logging {
       jars ++= getDependencies(data.deps)
     }
 
-    sparkScalaRunner = SparkScalaRunner(data.env, jobId, sparkAppName, notifier, jars)
-    //pySparkRunner = PySparkRunner(data.env, jobId, notifier, sc)
+    val outStream = new ByteArrayOutputStream()
+
+    val classServerUri = ReplUtils.getOrCreateClassServerUri(outStream, jars)
+    log.debug(s"creating SparkContext with master ${data.env.master}")
+    val sparkContext = SparkRunnerHelper.createSparkContext(data.env, sparkAppName, classServerUri, jars)
+
+    sparkScalaRunner = SparkScalaRunner(data.env, jobId, sparkContext, outStream, notifier, jars)
+    sparkScalaRunner.initializeAmaContext(data.env)
   }
 
   override def launchTask(driver: ExecutorDriver, taskInfo: TaskInfo): Unit = {

@@ -3,13 +3,13 @@
 BASEDIR=$(dirname "$0")
 
 export AMA_NODE="$(hostname)"
-pushd $BASEDIR >/dev/null
-cd /mesos-dependencies/ && nohup python -m SimpleHTTPServer 8000 &
-SERVER_PID=$!
+#pushd $BASEDIR >/dev/null
+#cd /mesos-dependencies/ && nohup java -cp ${BASEDIR}/amaterasu-assembly-0.1.0.jar -Djava.library.path=/usr/lib io.shinto.amaterasu.utilities.HttpServer &
+#SERVER_PID=$!
 
 
 
-echo "serving amaterasu from /mesos-dependencies on port 8000"
+echo "serving amaterasu from /ama/lib on user supplied port"
 popd >/dev/null
 
 RED=`tput setaf 1`
@@ -17,6 +17,14 @@ YELLOW=`tput setaf 3`
 NC=`tput sgr0`
 bold=$(tput bold)
 normal=$(tput sgr0)
+
+if [ -z "$AWS_ACCESS_KEY_ID" ]; then
+    export AWS_ACCESS_KEY_ID=0
+fi
+
+if [ -z "$AWS_SECRET_ACCESS_KEY" ]; then
+    export AWS_SECRET_ACCESS_KEY=0
+fi
 
 echo ""
 echo ""
@@ -71,7 +79,7 @@ esac
 done
 
 echo "repo: ${REPO} "
-CMD="java -cp ${BASEDIR}/amaterasu-assembly-0.1.0.jar -Djava.library.path=/usr/lib io.shinto.amaterasu.mesos.JobLauncher" #--repo "https://github.com/roadan/amaterasu-job-sample.git" --branch master
+CMD="java -cp ${BASEDIR}/lib/amaterasu-assembly-0.1.0.jar -Djava.library.path=/usr/lib io.shinto.amaterasu.mesos.JobLauncher" #--repo "https://github.com/roadan/amaterasu-job-sample.git" --branch master
 
 if [ -n "$REPO" ]; then
     CMD+=" --repo ${REPO}"

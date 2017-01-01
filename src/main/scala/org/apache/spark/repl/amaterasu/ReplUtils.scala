@@ -1,7 +1,9 @@
 package org.apache.spark.repl.amaterasu
 
-import java.io.{ PrintWriter, File, ByteArrayOutputStream }
+import java.io.{ ByteArrayOutputStream, File, PrintWriter }
 import java.lang.reflect.Method
+
+import io.shinto.amaterasu.configuration.ClusterConfig
 import io.shinto.amaterasu.runtime.Environment
 import org.apache.spark.repl.{ SparkCommandLine, SparkIMain }
 
@@ -10,21 +12,36 @@ import org.apache.spark.repl.{ SparkCommandLine, SparkIMain }
   */
 object ReplUtils {
 
-  def creteInterprater(env: Environment, jobId: String, outStream: ByteArrayOutputStream, jars: Seq[String]): (SparkIMain, String) = {
+  var classServerUri: String = null
+  var interperter: SparkIMain = null
+
+  def getOrCreateClassServerUri(outStream: ByteArrayOutputStream, jars: Seq[String], recreate: Boolean = false): String = {
+    if (interperter == null || recreate) {
+      initInterprater(outStream, jars)
+    }
+    classServerUri
+  }
+
+  def getOrCreateScalaInterperter(outStream: ByteArrayOutputStream, jars: Seq[String], recreate: Boolean = false): SparkIMain = {
+    if (interperter == null || recreate) {
+      initInterprater(outStream, jars)
+    }
+    interperter
+  }
+
+  private def initInterprater(outStream: ByteArrayOutputStream, jars: Seq[String]) = {
 
     var result: SparkIMain = null
     var classServerUri: String = null
-
+    val config = new ClusterConfig()
     try {
-
-      val command =
-        new SparkCommandLine(List())
+      val command = new SparkCommandLine(List())
 
       val settings = command.settings
 
       settings.classpath.append(System.getProperty("java.class.path") + File.pathSeparator +
-        "spark-assembly-1.6.1-hadoop2.4.0.jar" + File.pathSeparator +
-        "/home/vagrant/spark-1.6.1-1/conf/" + File.pathSeparator +
+        //"spark-assembly-1.6.1-hadoop2.4.0.jar" + File.pathSeparator +
+        "dist/spark-" + config.Webserver.sparkVersion + "/lib/*" + File.pathSeparator +
         jars.mkString(File.pathSeparator))
 
       settings.usejavacp.value = true
@@ -47,8 +64,7 @@ object ReplUtils {
           println(String.format("Spark method classServerUri not available due to: [%s]", e.getMessage))
       }
 
-      settings.embeddedDefaults(Thread.currentThread()
-        .getContextClassLoader)
+      settings.embeddedDefaults(Thread.currentThread().getContextClassLoader)
       intp.setContextClassLoader
       intp.initializeSynchronous
 
@@ -59,6 +75,7 @@ object ReplUtils {
         println("+++++++>" + new Predef.String(outStream.toByteArray))
 
     }
-    (result, classServerUri)
+    this.interperter = result
+    this.classServerUri = classServerUri
   }
 }

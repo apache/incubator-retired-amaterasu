@@ -1,17 +1,16 @@
 package org.apache.spark.repl.amaterasu.runners.spark
 
-import java.io.{ ByteArrayOutputStream, PrintWriter }
+import java.io.ByteArrayOutputStream
 
 import io.shinto.amaterasu.Logging
 import io.shinto.amaterasu.execution.actions.Notifier
+import io.shinto.amaterasu.execution.actions.runners.spark.IAmaRunner
 import io.shinto.amaterasu.runtime.{ AmaContext, Environment }
-
+import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
-import org.apache.spark.repl.amaterasu.ReplUtils
-import org.apache.spark.sql.SQLContext
-import org.apache.spark.sql.DataFrame
-import org.apache.spark.{ SparkConf, SparkContext }
 import org.apache.spark.repl.SparkIMain
+import org.apache.spark.repl.amaterasu.ReplUtils
+import org.apache.spark.sql.{ DataFrame, SQLContext }
 
 import scala.collection.mutable
 import scala.io.Source
@@ -20,21 +19,21 @@ import scala.tools.nsc.interpreter.Results
 
 class ResHolder(var value: Any)
 
-class SparkScalaRunner extends Logging {
+class SparkScalaRunner(
+    var env: Environment,
+    var jobId: String,
+    var interpreter: SparkIMain,
+    var outStream: ByteArrayOutputStream,
+    var sc: SparkContext,
+    var notifier: Notifier
+) extends Logging with IAmaRunner {
 
   // This is the amaterasu spark configuration need to rethink the name
-  var env: Environment = null
-  var jobId: String = null
-  var interpreter: SparkIMain = null
-  var out: PrintWriter = null
-  var outStream: ByteArrayOutputStream = null
-  var sc: SparkContext = null
-  var notifier: Notifier = null
 
   val settings = new Settings()
   val holder = new ResHolder(null)
 
-  def executeSource(actionSource: String, actionName: String): Unit = {
+  override def executeSource(actionSource: String, actionName: String): Unit = {
     val source = Source.fromString(actionSource)
     interpretSources(source, actionName)
   }
@@ -110,7 +109,7 @@ class SparkScalaRunner extends Logging {
     notifier.info(s"================= finished action $actionName =================")
   }
 
-  def initializeAmaContext(env: Environment): Unit = {
+  override def initializeAmaContext(env: Environment): Unit = {
 
     // setting up some context :)
     val sc = this.sc
@@ -153,10 +152,12 @@ object SparkScalaRunner extends Logging {
   def apply(
     env: Environment,
     jobId: String,
-    sparkAppName: String,
+    sparkContext: SparkContext,
+    outStream: ByteArrayOutputStream,
     notifier: Notifier,
     jars: Seq[String]
   ): SparkScalaRunner = {
+/*<<<<<<< pyspark-support
 
     val result = new SparkScalaRunner()
     result.env = env
@@ -204,6 +205,9 @@ object SparkScalaRunner extends Logging {
     }
     sc
 
+=======*/
+    new SparkScalaRunner(env, jobId, ReplUtils.getOrCreateScalaInterperter(outStream, jars), outStream, sparkContext, notifier)
+//>>>>>>> master
   }
 
 }

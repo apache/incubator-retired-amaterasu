@@ -1,9 +1,9 @@
-import java.nio.file.{StandardCopyOption, Files}
+import java.nio.file.{Files, StandardCopyOption}
 
 import sbt._
 import Keys._
-
 import com.typesafe.sbt.SbtScalariform._
+
 import _root_.scalariform.formatter.preferences.IndentSpaces
 import scalariform.formatter.preferences._
 
@@ -31,6 +31,7 @@ object Build extends Build {
 
   lazy val copyScripts = TaskKey[Unit]("copyScripts")
 
+  val jri_version = "0.9-7"
   lazy val basicSettings = Seq(
     version := PROJECT_VERSION,
     organization := ORGANIZATION,
@@ -67,6 +68,16 @@ object Build extends Build {
       "com.github.scopt" %% "scopt" % "3.3.0",
       "com.jcabi" % "jcabi-aether" % "0.10.1",
       "org.apache.maven" % "maven-core" % "3.0.5",
+      "com.github.lucarosellini.rJava" % "JRI" % jri_version,
+      "com.github.lucarosellini.rJava" % "REngine" % jri_version,
+      "com.github.lucarosellini.rJava" % "JRIEngine" % jri_version,
+      "org.eclipse.jetty" % "jetty-plus" % "9.2.19.v20160908",
+      "org.eclipse.jetty" % "jetty-server" % "9.2.19.v20160908",
+      "org.eclipse.jetty" % "jetty-http" % "9.2.19.v20160908",
+      "org.eclipse.jetty" % "jetty-io" % "9.2.19.v20160908",
+      "org.eclipse.jetty" % "jetty-servlet" % "9.2.19.v20160908",
+      "javax.servlet" % "servlet-api" % "2.5",
+
 
       // execution engines dependencies
       //"org.apache.spark" %% "spark-repl" % "1.6.3" % "provided" exclude("io.netty", "netty"),
