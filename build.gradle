@@ -1,0 +1,8 @@
+group 'io.shinto'
+version '0.2.0'
+
+//task buildDev (dependsOn: shadowJar, test) {
+//    doLast {
+//
+//    }
+//}

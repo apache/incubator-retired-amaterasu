@@ -1,0 +1,28 @@
+plugins {
+    id 'scala'
+}
+
+repositories {
+    maven {
+        url "https://plugins.gradle.org/m2/"
+    }
+    mavenCentral()
+}
+
+dependencies {
+    compile 'org.scala-lang:scala-library:2.10.5'
+    compile group: 'com.github.nscala-time', name: 'nscala-time_2.10', version: '2.2.0'
+    compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.9'
+
+    // currently we have to use this specific mesos version to prevent from
+    // clashing with spark
+    compile('org.apache.mesos:mesos:0.21.1:shaded-protobuf'){
+        exclude group: 'com.google.protobuf', module: 'protobuf-java'
+    }
+
+    testCompile "gradle.plugin.com.github.maiflai:gradle-scalatest:0.14"
+    testRuntime 'org.pegdown:pegdown:1.1.0'
+    testCompile 'junit:junit:4.11'
+    testCompile 'org.scalatest:scalatest_2.10:3.0.1'
+    testCompile 'org.scala-lang:scala-library:2.10.5'
+}
