@@ -1,12 +1,11 @@
-package io.shinto.amaterasu.common.execution
+package io.shinto.amaterasu.leader.execution
 
-import java.util.concurrent.{ BlockingQueue, LinkedBlockingQueue }
+import java.util.concurrent.BlockingQueue
 
-import io.shinto.amaterasu.common.logging.Logging
 import io.shinto.amaterasu.common.dataobjects.ActionData
-import io.shinto.amaterasu.dsl.{ JobParser, GitUtil }
+import io.shinto.amaterasu.common.logging.Logging
 import io.shinto.amaterasu.enums.ActionStatus
-
+import io.shinto.amaterasu.leader.dsl.{GitUtil, JobParser}
 import org.apache.curator.framework.CuratorFramework
 import org.apache.zookeeper.CreateMode
 

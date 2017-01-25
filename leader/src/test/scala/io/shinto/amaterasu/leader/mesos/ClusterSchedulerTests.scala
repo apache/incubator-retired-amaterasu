@@ -1,7 +1,7 @@
-package io.shinto.amaterasu.mesos
+package io.shinto.amaterasu.leader.mesos
 
 import io.shinto.amaterasu.common.configuration.ClusterConfig
-import io.shinto.amaterasu.mesos.schedulers.ClusterScheduler
+import io.shinto.amaterasu.leader.mesos.schedulers.ClusterScheduler
 import io.shinto.amaterasu.Kami
 import org.scalatest._
 

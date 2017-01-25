@@ -1,4 +1,4 @@
-package io.shinto.amaterasu.mesos
+package io.shinto.amaterasu.leader.mesos
 
 import java.util
 import java.util.UUID

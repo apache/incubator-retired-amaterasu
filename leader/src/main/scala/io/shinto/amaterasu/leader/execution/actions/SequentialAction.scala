@@ -1,14 +1,13 @@
-package io.shinto.amaterasu.common.execution.actions
+package io.shinto.amaterasu.leader.execution.actions
 
 import java.util.concurrent.BlockingQueue
 
 import io.shinto.amaterasu.common.dataobjects.ActionData
 import io.shinto.amaterasu.enums.ActionStatus
-
-import scala.collection.mutable.ListBuffer
-
 import org.apache.curator.framework.CuratorFramework
 import org.apache.zookeeper.CreateMode
+
+import scala.collection.mutable.ListBuffer
 
 class SequentialAction extends Action {
 

@@ -1,4 +1,4 @@
-package io.shinto.amaterasu.mesos.executors
+package io.shinto.amaterasu.leader.mesos.executors
 
 import java.nio.file.{ Files, Paths }
 

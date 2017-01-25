@@ -1,10 +1,10 @@
-package io.shinto.amaterasu.mesos
+package io.shinto.amaterasu.leader.mesos
 
 import java.io.FileInputStream
 
 import io.shinto.amaterasu.common.logging.Logging
 import io.shinto.amaterasu.common.configuration.ClusterConfig
-import io.shinto.amaterasu.mesos.schedulers.JobScheduler
+import io.shinto.amaterasu.leader.mesos.schedulers.JobScheduler
 
 import org.apache.mesos.Protos.FrameworkID
 import org.apache.mesos.{ MesosSchedulerDriver, Protos }

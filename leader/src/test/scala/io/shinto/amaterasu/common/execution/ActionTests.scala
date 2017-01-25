@@ -5,7 +5,7 @@ import java.util.concurrent.LinkedBlockingQueue
 import io.shinto.amaterasu.common.configuration.ClusterConfig
 import io.shinto.amaterasu.common.dataobjects.ActionData
 import io.shinto.amaterasu.enums.ActionStatus
-import io.shinto.amaterasu.common.execution.actions.SequentialAction
+import io.shinto.amaterasu.leader.execution.actions.SequentialAction
 import org.apache.curator.framework.CuratorFrameworkFactory
 import org.apache.curator.test.TestingServer
 import org.apache.curator.retry.ExponentialBackoffRetry

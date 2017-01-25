@@ -1,4 +1,4 @@
-package io.shinto.amaterasu.dsl
+package io.shinto.amaterasu.leader.dsl
 
 import java.io.File
 

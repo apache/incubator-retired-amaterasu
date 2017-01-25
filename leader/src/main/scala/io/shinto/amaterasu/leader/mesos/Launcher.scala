@@ -1,9 +1,9 @@
-package io.shinto.amaterasu.mesos
+package io.shinto.amaterasu.leader.mesos
 
 import java.io.FileInputStream
 
 import io.shinto.amaterasu.common.configuration.ClusterConfig
-import io.shinto.amaterasu.mesos.schedulers.ClusterScheduler
+import io.shinto.amaterasu.leader.mesos.schedulers.ClusterScheduler
 import io.shinto.amaterasu.Kami
 import io.shinto.amaterasu.common.logging.Logging
 

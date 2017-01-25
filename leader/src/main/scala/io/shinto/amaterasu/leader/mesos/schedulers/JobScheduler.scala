@@ -1,9 +1,9 @@
-package io.shinto.amaterasu.mesos.schedulers
+package io.shinto.amaterasu.leader.mesos.schedulers
 
 import java.util
-import java.util.{ UUID, Collections }
+import java.util.{Collections, UUID}
 import java.util.concurrent.locks.ReentrantLock
-import java.util.concurrent.{ ConcurrentHashMap, LinkedBlockingQueue }
+import java.util.concurrent.{ConcurrentHashMap, LinkedBlockingQueue}
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
@@ -12,22 +12,21 @@ import io.shinto.amaterasu.common.configuration.ClusterConfig
 import io.shinto.amaterasu.common.dataobjects.ActionData
 import io.shinto.amaterasu.enums.ActionStatus
 import io.shinto.amaterasu.enums.ActionStatus.ActionStatus
-import io.shinto.amaterasu.common.execution.{ JobLoader, JobManager }
-import io.shinto.amaterasu.mesos.executors.DataLoader
-
+import io.shinto.amaterasu.leader.execution.JobManager
+import io.shinto.amaterasu.leader.mesos.executors.DataLoader
 import io.shinto.amaterasu.common.execution.actions._
 import io.shinto.amaterasu.common.execution.actions.NotificationLevel.NotificationLevel
-import org.apache.curator.framework.{ CuratorFrameworkFactory, CuratorFramework }
+import io.shinto.amaterasu.leader.execution.{JobLoader, JobManager}
+import io.shinto.amaterasu.leader.utilities.HttpServer
+import org.apache.curator.framework.{CuratorFramework, CuratorFrameworkFactory}
 import org.apache.curator.retry.ExponentialBackoffRetry
-
 import org.apache.mesos.Protos.CommandInfo.URI
 import org.apache.mesos.Protos._
-import org.apache.mesos.{ Protos, SchedulerDriver }
+import org.apache.mesos.{Protos, SchedulerDriver}
 
 import scala.collection.JavaConverters._
 import scala.collection.concurrent
 import scala.collection.concurrent.TrieMap
-import io.shinto.amaterasu.utilities.HttpServer
 
 /**
   * The JobScheduler is a mesos implementation. It is in charge of scheduling the execution of
@@ -154,7 +153,7 @@ class JobScheduler extends AmaterasuScheduler {
                 val command = CommandInfo
                   .newBuilder
                   .setValue(
-                    s"""$awsEnv env AMA_NODE=${sys.env("AMA_NODE")} env MESOS_NATIVE_JAVA_LIBRARY=/usr/lib/libmesos.so env SPARK_EXECUTOR_URI=http://${sys.env("AMA_NODE")}:${config.Webserver.Port}/dist/spark-${config.Webserver.sparkVersion}.tgz java -cp amaterasu-assembly-0.1.0.jar:spark-${config.Webserver.sparkVersion}/lib/* -Dscala.usejavacp=true -Djava.library.path=/usr/lib io.shinto.amaterasu.mesos.executors.ActionsExecutorLauncher ${jobManager.jobId} ${config.master} ${actionData.name}""".stripMargin
+                    s"""$awsEnv env AMA_NODE=${sys.env("AMA_NODE")} env MESOS_NATIVE_JAVA_LIBRARY=/usr/lib/libmesos.so env SPARK_EXECUTOR_URI=http://${sys.env("AMA_NODE")}:${config.Webserver.Port}/dist/spark-${config.Webserver.sparkVersion}.tgz java -cp amaterasu-assembly-0.1.0.jar:spark-${config.Webserver.sparkVersion}/lib/* -Dscala.usejavacp=true -Djava.library.path=/usr/lib io.shinto.amaterasu.leader.mesos.executors.ActionsExecutorLauncher ${jobManager.jobId} ${config.master} ${actionData.name}""".stripMargin
                   )
                   .addUris(URI.newBuilder
                     .setValue(s"http://${sys.env("AMA_NODE")}:${config.Webserver.Port}/amaterasu-assembly-0.1.0.jar")

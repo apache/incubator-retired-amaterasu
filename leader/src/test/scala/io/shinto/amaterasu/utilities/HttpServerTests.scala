@@ -2,6 +2,7 @@ package io.shinto.amaterasu.utilities
 
 import java.io.File
 
+import io.shinto.amaterasu.leader.utilities.HttpServer
 import org.scalatest.{FlatSpec, Matchers}
 
 import scala.io.Source

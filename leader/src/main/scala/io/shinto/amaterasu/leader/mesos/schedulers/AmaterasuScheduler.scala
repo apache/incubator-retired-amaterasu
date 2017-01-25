@@ -1,4 +1,4 @@
-package io.shinto.amaterasu.mesos.schedulers
+package io.shinto.amaterasu.leader.mesos.schedulers
 
 import io.shinto.amaterasu.common.logging.Logging
 import org.apache.mesos.Protos.{ Value, Resource }

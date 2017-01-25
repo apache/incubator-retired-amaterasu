@@ -1,4 +1,4 @@
-package io.shinto.amaterasu.mesos.executors
+package io.shinto.amaterasu.leader.mesos.executors
 
 import io.shinto.amaterasu.common.logging.Logging
 import org.apache.mesos.Protos._

@@ -1,6 +1,6 @@
 package io.shinto.amaterasu.integration
 
-import io.shinto.amaterasu.dsl.GitUtil
+import io.shinto.amaterasu.leader.dsl.GitUtil
 import org.scalatest.{ Matchers, FlatSpec }
 import scala.reflect.io.Path
 

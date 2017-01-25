@@ -1,11 +1,9 @@
-package io.shinto.amaterasu.common.execution.actions
+package io.shinto.amaterasu.leader.execution.actions
 
-import io.shinto.amaterasu.common.logging.Logging
 import io.shinto.amaterasu.common.dataobjects.ActionData
+import io.shinto.amaterasu.common.logging.Logging
 import io.shinto.amaterasu.enums.ActionStatus
-
 import org.apache.curator.framework.CuratorFramework
-import org.apache.zookeeper.CreateMode
 
 trait Action extends Logging {
 

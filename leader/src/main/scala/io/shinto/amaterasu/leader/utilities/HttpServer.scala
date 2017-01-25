@@ -1,11 +1,10 @@
-package io.shinto.amaterasu.utilities
+package io.shinto.amaterasu.leader.utilities
 
 import io.shinto.amaterasu.common.logging.Logging
-import org.apache.log4j.{ BasicConfigurator, Level, Logger }
-import org.eclipse.jetty.server.{ Server, ServerConnector }
-import org.eclipse.jetty.server.handler.{ DefaultHandler, ErrorHandler, HandlerList, ResourceHandler }
-import org.eclipse.jetty.servlet.{ DefaultServlet, ServletContextHandler, ServletHolder }
-import org.eclipse.jetty.util.thread.QueuedThreadPool
+import org.apache.log4j.{BasicConfigurator, Level, Logger}
+import org.eclipse.jetty.server.handler.ErrorHandler
+import org.eclipse.jetty.server.{Server, ServerConnector}
+import org.eclipse.jetty.servlet.{DefaultServlet, ServletContextHandler, ServletHolder}
 import org.eclipse.jetty.util.log.StdErrLog
 /**
   * Created by kirupa

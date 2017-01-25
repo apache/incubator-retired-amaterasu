@@ -3,7 +3,7 @@ package io.shinto.amaterasu.common.execution
 import java.util.concurrent.LinkedBlockingQueue
 
 import io.shinto.amaterasu.common.dataobjects.ActionData
-import io.shinto.amaterasu.dsl.JobParser
+import io.shinto.amaterasu.leader.dsl.JobParser
 
 import org.apache.curator.framework.CuratorFrameworkFactory
 import org.apache.curator.retry.ExponentialBackoffRetry
