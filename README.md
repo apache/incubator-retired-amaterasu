@@ -42,6 +42,19 @@ ama-start.sh --repo="https://github.com/shintoio/amaterasu-job-sample.git" --bra
 We recommend you either fork or clone the job sample repo and use that as a starting point for creating your first job.
 
 # Amaterasu Developers Information 
+
+## Building Amaterasu
+
+to build the amaterasu home dir (for dev purposes) run:
+```
+./gradlew buildHomeDir test
+```
+
+to create a distributable jar (clean creates the home dir first) run:
+```
+./gradlew buildDistribution test
+```
+
 ## Architecture
 
 Amaterasu is an Apache Mesos framework with two levels of schedulers:
@@ -90,6 +103,4 @@ The main clases in Amateraso are listed bellow:
                       +------------------------+
 
                       
-## Building
-    
-sbt assembly copyScripts
+

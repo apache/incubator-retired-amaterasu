@@ -120,7 +120,7 @@ class SparkScalaRunner(
     interpreter.interpret("import org.apache.spark.{ SparkContext, SparkConf }")
     interpreter.interpret("import org.apache.spark.sql.SQLContext")
     interpreter.interpret("import org.apache.spark.sql.SaveMode")
-    interpreter.interpret("import io.shinto.amaterasu.common.runtime.AmaContext")
+    interpreter.interpret("import io.shinto.amaterasu.executor.runtime.AmaContext")
     interpreter.interpret("import io.shinto.amaterasu.common.runtime.Environment")
 
     // creating a map (_contextStore) to hold the different spark contexts

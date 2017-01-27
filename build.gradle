@@ -1,5 +1,6 @@
-allprojects {
+apply plugin: 'distribution'
 
+allprojects {
     group 'io.shinto'
     version '0.2.0'
 }
@@ -11,4 +12,20 @@ project(':executor')
 task buildHomeDir() {
     dependsOn subprojects.collect { getTasksByName('shadowJar', true) }
     dependsOn subprojects.collect { getTasksByName('copyToHome', true) }
+}
+
+distributions {
+    custom {
+        baseName = 'amaterasu'
+        version = project.version
+        contents {
+            from { 'build/amaterasu' }
+        }
+    }
+}
+
+task buildDistribution() {
+    delete 'build/amaterasu'
+    dependsOn buildHomeDir
+    dependsOn customDistTar
 }

@@ -37,7 +37,7 @@ echo "    / _ \ | '  \ / _\` ||  _|/ -_)| '_|/ _\` |(_-<| || | "
 echo "   /_/ \_\|_|_|_|\__,_| \__|\___||_|  \__,_|/__/ \_,_| "
 echo ""
 echo "    Continuously deployed data pipelines"
-echo "    Version 0.1.0"
+echo "    Version 0.2.0"
 echo "${NC}"
 echo ""
 
