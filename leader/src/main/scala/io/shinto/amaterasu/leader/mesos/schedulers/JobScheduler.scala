@@ -82,12 +82,12 @@ class JobScheduler extends AmaterasuScheduler {
   def statusUpdate(driver: SchedulerDriver, status: TaskStatus) = {
 
     status.getState match {
-      case TaskState.TASK_RUNNING  => jobManager.actionStarted(status.getTaskId.getValue)
+      case TaskState.TASK_RUNNING => jobManager.actionStarted(status.getTaskId.getValue)
       case TaskState.TASK_FINISHED => jobManager.actionComplete(status.getTaskId.getValue)
       case TaskState.TASK_FAILED |
-        TaskState.TASK_KILLED |
-        TaskState.TASK_ERROR |
-        TaskState.TASK_LOST => jobManager.actionFailed(status.getTaskId.getValue, status.getMessage) //TODO: revisit this
+           TaskState.TASK_KILLED |
+           TaskState.TASK_ERROR |
+           TaskState.TASK_LOST => jobManager.actionFailed(status.getTaskId.getValue, status.getMessage) //TODO: revisit this
       case _ => log.warn("WTF? just got unexpected task state: " + status.getState)
     }
 
@@ -153,15 +153,15 @@ class JobScheduler extends AmaterasuScheduler {
                 val command = CommandInfo
                   .newBuilder
                   .setValue(
-                    s"""$awsEnv env AMA_NODE=${sys.env("AMA_NODE")} env MESOS_NATIVE_JAVA_LIBRARY=/usr/lib/libmesos.so env SPARK_EXECUTOR_URI=http://${sys.env("AMA_NODE")}:${config.Webserver.Port}/dist/spark-${config.Webserver.sparkVersion}.tgz java -cp amaterasu-assembly-0.1.0.jar:spark-${config.Webserver.sparkVersion}/lib/* -Dscala.usejavacp=true -Djava.library.path=/usr/lib io.shinto.amaterasu.leader.mesos.executors.ActionsExecutorLauncher ${jobManager.jobId} ${config.master} ${actionData.name}""".stripMargin
+                    s"""$awsEnv env AMA_NODE=${sys.env("AMA_NODE")} env MESOS_NATIVE_JAVA_LIBRARY=/usr/lib/libmesos.so env SPARK_EXECUTOR_URI=http://${sys.env("AMA_NODE")}:${config.Webserver.Port}/dist/spark-${config.Webserver.sparkVersion}.tgz java -cp executor-0.2.0-all.jar:spark-${config.Webserver.sparkVersion}/lib/* -Dscala.usejavacp=true -Djava.library.path=/usr/lib io.shinto.amaterasu.executor.mesos.executors.ActionsExecutorLauncher ${jobManager.jobId} ${config.master} ${actionData.name}""".stripMargin
                   )
                   .addUris(URI.newBuilder
-                    .setValue(s"http://${sys.env("AMA_NODE")}:${config.Webserver.Port}/amaterasu-assembly-0.1.0.jar")
+                    .setValue(s"http://${sys.env("AMA_NODE")}:${config.Webserver.Port}/executor-0.2.0-all.jar")
                     .setExecutable(false)
                     .setExtract(false)
                     .build())
                   .addUris(URI.newBuilder()
-                    .setValue(s"http://${sys.env("AMA_NODE")}:${config.Webserver.Port}/dist/spark-${config.Webserver.sparkVersion}.tgz")
+                    .setValue(s"http://${sys.env("AMA_NODE")}:${config.Webserver.Port}/spark-${config.Webserver.sparkVersion}.tgz")
                     .setExecutable(false)
                     .setExtract(true)
                     .build())
@@ -274,18 +274,17 @@ class JobScheduler extends AmaterasuScheduler {
 
 object JobScheduler {
 
-  def apply(
-    src: String,
-    branch: String,
-    env: String,
-    resume: Boolean,
-    config: ClusterConfig,
-    report: String
-  ): JobScheduler = {
+  def apply(src: String,
+            branch: String,
+            env: String,
+            resume: Boolean,
+            config: ClusterConfig,
+            report: String,
+            home: String): JobScheduler = {
 
     val scheduler = new JobScheduler()
 
-    HttpServer.start(config.Webserver.Port, config.Webserver.Root)
+    HttpServer.start(config.Webserver.Port, s"$home/${config.Webserver.Root}")
 
     if (!sys.env("AWS_ACCESS_KEY_ID").isEmpty &&
       !sys.env("AWS_SECRET_ACCESS_KEY").isEmpty) {

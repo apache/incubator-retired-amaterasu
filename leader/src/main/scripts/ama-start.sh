@@ -79,7 +79,7 @@ esac
 done
 
 echo "repo: ${REPO} "
-CMD="java -cp ${BASEDIR}/bin/amaterasu-assembly-0.1.0.jar -Djava.library.path=/usr/lib io.shinto.amaterasu.leader.mesos.JobLauncher" #--repo "https://github.com/roadan/amaterasu-job-sample.git" --branch master
+CMD="java -cp ${BASEDIR}/bin/*.jar -Djava.library.path=/usr/lib io.shinto.amaterasu.leader.mesos.JobLauncher --home ${BASEDIR}" #--repo "https://github.com/roadan/amaterasu-job-sample.git" --branch master
 
 if [ -n "$REPO" ]; then
     CMD+=" --repo ${REPO}"

@@ -1,28 +1,30 @@
 package io.shinto.amaterasu.leader.mesos
 
 import java.io.FileInputStream
+import java.nio.file.Paths
 
 import io.shinto.amaterasu.common.logging.Logging
 import io.shinto.amaterasu.common.configuration.ClusterConfig
 import io.shinto.amaterasu.leader.mesos.schedulers.JobScheduler
-
 import org.apache.mesos.Protos.FrameworkID
-import org.apache.mesos.{ MesosSchedulerDriver, Protos }
+import org.apache.mesos.{MesosSchedulerDriver, Protos}
 
 case class Args(
-  repo: String = "",
-  branch: String = "master",
-  env: String = "default",
-  name: String = "amaterasu-job",
-  jobId: String = null,
-  report: String = "code"
-)
+                 repo: String = "",
+                 branch: String = "master",
+                 env: String = "default",
+                 name: String = "amaterasu-job",
+                 jobId: String = null,
+                 report: String = "code",
+                 home: String = ""
+               )
 
 /**
   * The JobLauncher allows the execution of a single job, without creating a full
   * Amaterasu cluster (no cluster scheduler).
   */
 object JobLauncher extends App with Logging {
+
 
   val parser = new scopt.OptionParser[Args]("amaterasu job") {
     head("amaterasu job", "0.2.0") //TODO: Get the version from the build
@@ -44,15 +46,19 @@ object JobLauncher extends App with Logging {
     } text "The jobId - should be passed only when resuming a job"
     opt[String]('r', "report") action { (x, c) =>
       c.copy(report = x)
+    }
+    opt[String]('h', "home") action { (x, c) =>
+      c.copy(home = x)
     } text "The level of reporting"
 
   }
+
 
   parser.parse(args, Args()) match {
 
     case Some(arguments) =>
 
-      val config = ClusterConfig(new FileInputStream("scripts/amaterasu.properties"))
+      val config = ClusterConfig(new FileInputStream(s"${arguments.home}/amaterasu.properties"))
 
       val frameworkBuilder = Protos.FrameworkInfo.newBuilder()
         .setName(s"${arguments.name} - Amaterasu Job")
@@ -75,7 +81,8 @@ object JobLauncher extends App with Logging {
         arguments.env,
         resume,
         config,
-        arguments.report
+        arguments.report,
+        arguments.home
       )
 
       val driver = new MesosSchedulerDriver(scheduler, framework, masterAddress)
