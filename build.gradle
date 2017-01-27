@@ -1,8 +1,14 @@
-group 'io.shinto'
-version '0.2.0'
+allprojects {
 
-//task buildDev (dependsOn: shadowJar, test) {
-//    doLast {
-//
-//    }
-//}
+    group 'io.shinto'
+    version '0.2.0'
+}
+
+project(':leader')
+project(':common')
+project(':executor')
+
+task buildHomeDir() {
+    dependsOn subprojects.collect { getTasksByName('shadowJar', true) }
+    dependsOn subprojects.collect { getTasksByName('copyToHome', true) }
+}

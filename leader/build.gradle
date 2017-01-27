@@ -44,3 +44,18 @@ dependencies {
 test {
     maxParallelForks = 1
 }
+
+task copyToHomeRoot(type: Copy) {
+    from 'src/main/scripts'
+    into '../build/amaterasu/'
+}
+
+task copyToHomeBin(type: Copy) {
+    from 'build/libs'
+    into '../build/amaterasu/bin'
+}
+
+task copyToHome() {
+    dependsOn copyToHomeRoot
+    dependsOn copyToHomeBin
+}

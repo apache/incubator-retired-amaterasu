@@ -52,7 +52,7 @@ object JobLauncher extends App with Logging {
 
     case Some(arguments) =>
 
-      val config = ClusterConfig(new FileInputStream("./amaterasu.properties"))
+      val config = ClusterConfig(new FileInputStream("scripts/amaterasu.properties"))
 
       val frameworkBuilder = Protos.FrameworkInfo.newBuilder()
         .setName(s"${arguments.name} - Amaterasu Job")

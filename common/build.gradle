@@ -1,5 +1,10 @@
 plugins {
+    id 'com.github.johnrengelman.shadow' version '1.2.4'
     id 'scala'
+}
+
+shadowJar {
+    zip64 true
 }
 
 repositories {
@@ -26,3 +31,8 @@ dependencies {
     testCompile 'org.scalatest:scalatest_2.10:3.0.1'
     testCompile 'org.scala-lang:scala-library:2.10.5'
 }
+
+task copyToHome() {
+}
+
+

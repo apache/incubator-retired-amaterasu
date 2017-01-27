@@ -26,7 +26,7 @@ object Launcher extends App with Logging {
     """
   )
 
-  val config = ClusterConfig(new FileInputStream("./amaterasu.properties"))
+  val config = ClusterConfig(new FileInputStream("scripts/amaterasu.properties"))
   val kami = Kami(Seq("https://github.com/roadan/amaterasu-job-sample.git"))
 
   // for multi-tenancy reasons the name of the framework is composed out of the username ( which defaults
