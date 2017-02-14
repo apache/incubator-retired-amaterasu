@@ -5,15 +5,15 @@ import java.io.ByteArrayOutputStream
 import io.shinto.amaterasu.common.execution.actions.Notifier
 import io.shinto.amaterasu.common.logging.Logging
 import io.shinto.amaterasu.common.runtime.Environment
+import io.shinto.amaterasu.sdk.AmaterasuRunner
 import org.apache.spark.SparkContext
 
 /**
   * Created by eyalbenivri on 02/09/2016.
   */
-class SparkRRunner extends Logging with IAmaRunner {
-  override def initializeAmaContext(env: Environment): Unit = {
+class SparkRRunner extends Logging with AmaterasuRunner {
 
-  }
+  override def getIdentifier = "spark-r"
 
   override def executeSource(actionSource: String, actionName: String): Unit = {
 

@@ -5,8 +5,8 @@ import java.io.ByteArrayOutputStream
 import io.shinto.amaterasu.common.execution.actions.Notifier
 import io.shinto.amaterasu.common.logging.Logging
 import io.shinto.amaterasu.common.runtime.Environment
-import io.shinto.amaterasu.executor.execution.actions.runners.spark.IAmaRunner
 import io.shinto.amaterasu.executor.runtime.AmaContext
+import io.shinto.amaterasu.sdk.AmaterasuRunner
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 import org.apache.spark.repl.SparkIMain
@@ -20,17 +20,16 @@ import scala.tools.nsc.interpreter.Results
 
 class ResHolder(var value: Any)
 
-class SparkScalaRunner(
-    var env: Environment,
-    var jobId: String,
-    var interpreter: SparkIMain,
-    var outStream: ByteArrayOutputStream,
-    var sc: SparkContext,
-    var notifier: Notifier
-) extends Logging with IAmaRunner {
+class SparkScalaRunner(var env: Environment,
+                       var jobId: String,
+                       var interpreter: SparkIMain,
+                       var outStream: ByteArrayOutputStream,
+                       var sc: SparkContext,
+                       var notifier: Notifier) extends Logging with AmaterasuRunner {
+
+  override def getIdentifier = "scala"
 
   // This is the amaterasu spark configuration need to rethink the name
-
   val settings = new Settings()
   val holder = new ResHolder(null)
 
@@ -110,7 +109,7 @@ class SparkScalaRunner(
     notifier.info(s"================= finished action $actionName =================")
   }
 
-  override def initializeAmaContext(env: Environment): Unit = {
+  def initializeAmaContext(env: Environment): Unit = {
 
     // setting up some context :)
     val sc = this.sc
@@ -150,63 +149,61 @@ class SparkScalaRunner(
 
 object SparkScalaRunner extends Logging {
 
-  def apply(
-    env: Environment,
-    jobId: String,
-    sparkContext: SparkContext,
-    outStream: ByteArrayOutputStream,
-    notifier: Notifier,
-    jars: Seq[String]
-  ): SparkScalaRunner = {
-/*<<<<<<< pyspark-support
+  def apply(env: Environment,
+            jobId: String,
+            sparkContext: SparkContext,
+            outStream: ByteArrayOutputStream,
+            notifier: Notifier,
+            jars: Seq[String]): SparkScalaRunner = {
+    /*<<<<<<< pyspark-support
 
-    val result = new SparkScalaRunner()
-    result.env = env
-    result.jobId = jobId
-    result.outStream = new ByteArrayOutputStream()
-    result.notifier = notifier
+        val result = new SparkScalaRunner()
+        result.env = env
+        result.jobId = jobId
+        result.outStream = new ByteArrayOutputStream()
+        result.notifier = notifier
 
-    val intp = ReplUtils.creteInterprater(env, jobId, result.outStream, jars)
+        val intp = ReplUtils.creteInterprater(env, jobId, result.outStream, jars)
 
-    result.interpreter = intp._1
+        result.interpreter = intp._1
 
-    result.sc = createSparkContext(env, sparkAppName, intp._2, jars)
+        result.sc = createSparkContext(env, sparkAppName, intp._2, jars)
 
-    result.initializeAmaContext(env)
-    result
-  }
+        result.initializeAmaContext(env)
+        result
+      }
 
-  def createSparkContext(env: Environment, sparkAppName: String, classServerUri: String, jars: Seq[String]): SparkContext = {
+      def createSparkContext(env: Environment, sparkAppName: String, classServerUri: String, jars: Seq[String]): SparkContext = {
 
-    log.debug(s"creating SparkContext with master ${env.master}")
+        log.debug(s"creating SparkContext with master ${env.master}")
 
-    val conf = new SparkConf(true)
-      .setMaster(env.master)
-      .setAppName(sparkAppName)
-      .set("spark.executor.uri", s"http://${sys.env("AMA_NODE")}:8000/spark-1.6.1-2.tgz")
-      .set("spark.driver.memory", "512m")
-      .set("spark.repl.class.uri", classServerUri)
-      .set("spark.mesos.coarse", "true")
-      .set("spark.executor.instances", "2")
-      .set("spark.cores.max", "5")
-      .set("spark.hadoop.validateOutputSpecs", "false")
-      .setExecutorEnv('PYTHONPATH',
-    val sc = new SparkContext(conf)
-    for (jar <- jars) {
-      sc.addJar(jar) // and this is how my childhood was ruined :(
-    }
-    val hc = sc.hadoopConfiguration
+        val conf = new SparkConf(true)
+          .setMaster(env.master)
+          .setAppName(sparkAppName)
+          .set("spark.executor.uri", s"http://${sys.env("AMA_NODE")}:8000/spark-1.6.1-2.tgz")
+          .set("spark.driver.memory", "512m")
+          .set("spark.repl.class.uri", classServerUri)
+          .set("spark.mesos.coarse", "true")
+          .set("spark.executor.instances", "2")
+          .set("spark.cores.max", "5")
+          .set("spark.hadoop.validateOutputSpecs", "false")
+          .setExecutorEnv('PYTHONPATH',
+        val sc = new SparkContext(conf)
+        for (jar <- jars) {
+          sc.addJar(jar) // and this is how my childhood was ruined :(
+        }
+        val hc = sc.hadoopConfiguration
 
-    if (!sys.env("AWS_ACCESS_KEY_ID").isEmpty &&
-      !sys.env("AWS_SECRET_ACCESS_KEY").isEmpty) {
+        if (!sys.env("AWS_ACCESS_KEY_ID").isEmpty &&
+          !sys.env("AWS_SECRET_ACCESS_KEY").isEmpty) {
 
-      hc.set("fs.s3n.impl", "org.apache.hadoop.fs.s3native.NativeS3FileSystem")
-      hc.set("fs.s3n.awsAccessKeyId", sys.env("AWS_ACCESS_KEY_ID"))
-      hc.set("fs.s3n.awsSecretAccessKey", sys.env("AWS_SECRET_ACCESS_KEY"))
-    }
-    sc
+          hc.set("fs.s3n.impl", "org.apache.hadoop.fs.s3native.NativeS3FileSystem")
+          hc.set("fs.s3n.awsAccessKeyId", sys.env("AWS_ACCESS_KEY_ID"))
+          hc.set("fs.s3n.awsSecretAccessKey", sys.env("AWS_SECRET_ACCESS_KEY"))
+        }
+        sc
 
-=======*/
+    =======*/
     new SparkScalaRunner(env, jobId, ReplUtils.getOrCreateScalaInterperter(outStream, jars), outStream, sparkContext, notifier)
 
   }

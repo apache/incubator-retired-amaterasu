@@ -7,12 +7,10 @@ import java.util.concurrent.{ConcurrentHashMap, LinkedBlockingQueue}
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
-import io.shinto.amaterasu.common.logging.Logging
 import io.shinto.amaterasu.common.configuration.ClusterConfig
 import io.shinto.amaterasu.common.dataobjects.ActionData
 import io.shinto.amaterasu.enums.ActionStatus
 import io.shinto.amaterasu.enums.ActionStatus.ActionStatus
-import io.shinto.amaterasu.leader.execution.JobManager
 import io.shinto.amaterasu.leader.mesos.executors.DataLoader
 import io.shinto.amaterasu.common.execution.actions._
 import io.shinto.amaterasu.common.execution.actions.NotificationLevel.NotificationLevel

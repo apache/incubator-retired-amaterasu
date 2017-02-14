@@ -5,6 +5,7 @@ import java.io.OutputStream
 import io.shinto.amaterasu.common.execution.actions.Notifier
 import io.shinto.amaterasu.common.logging.Logging
 import io.shinto.amaterasu.common.runtime.Environment
+import io.shinto.amaterasu.sdk.AmaterasuRunner
 import org.apache.spark.{SparkContext, SparkEnv}
 import org.apache.spark.sql.SQLContext
 
@@ -14,12 +15,14 @@ import scala.io.Source
 /**
   * Created by roadan on 9/2/16.
   */
-class PySparkRunner extends Logging {
+class PySparkRunner extends AmaterasuRunner with Logging {
 
   var proc: Process = null
   var notifier: Notifier = null
 
-  def executeSource(sourcePath: String, actionName: String): Unit = {
+  override def getIdentifier(): String = "pyspark"
+
+  override def executeSource(sourcePath: String, actionName: String): Unit = {
     val source = Source.fromFile(sourcePath).getLines().mkString("\n")
     interpretSources(source, actionName)
   }

@@ -35,7 +35,7 @@ class SequentialAction extends Action {
 
   override def handleFailure(message: String): String = {
 
-    log.debug(s"Part ${data.name} of type ${data.actionType} failed on attempt $attempt with message: $message")
+    log.debug(s"Part ${data.name} of group ${data.groupId} and of type ${data.typeId} failed on attempt $attempt with message: $message")
     attempt += 1
 
     if (attempt <= attempts) {
@@ -56,7 +56,8 @@ object SequentialAction {
 
   def apply(name: String,
             src: String,
-            jobType: String,
+            groupId: String,
+            typeId: String,
             jobId: String,
             queue: BlockingQueue[ActionData],
             zkClient: CuratorFramework,
@@ -73,7 +74,7 @@ object SequentialAction {
 
     action.attempts = attempts
     action.jobId = jobId
-    action.data = new ActionData(ActionStatus.pending, name, src, jobType, action.actionId, new ListBuffer[String])
+    action.data = new ActionData(ActionStatus.pending, name, src, groupId, typeId, action.actionId, new ListBuffer[String])
     action.jobsQueue = queue
     action.client = zkClient
 
@@ -87,7 +88,8 @@ object ErrorAction {
   def apply(name: String,
             src: String,
             parent: String,
-            jobType: String,
+            groupId: String,
+            typeId: String,
             jobId: String,
             queue: BlockingQueue[ActionData],
             zkClient: CuratorFramework): SequentialAction = {
@@ -102,7 +104,7 @@ object ErrorAction {
     action.actionId = action.actionPath.substring(action.actionPath.indexOf('-') + 1).replace("/", "-")
 
     action.jobId = jobId
-    action.data = new ActionData(ActionStatus.pending, name, src, jobType, action.actionId, new ListBuffer[String])
+    action.data = new ActionData(ActionStatus.pending, name, src, groupId, typeId, action.actionId, new ListBuffer[String])
     action.jobsQueue = queue
     action.client = zkClient
 

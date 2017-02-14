@@ -23,28 +23,28 @@ trait Action extends Logging {
     */
   def announceStart: Unit = {
 
-    log.debug(s"Starting action ${data.name} of type ${data.actionType}")
+    log.debug(s"Starting action ${data.name} of group ${data.groupId} and type ${data.typeId}")
     client.setData().forPath(actionPath, ActionStatus.started.toString.getBytes)
     data.status = ActionStatus.started
   }
 
   def announceQueued: Unit = {
 
-    log.debug(s"Action ${data.name} of type ${data.actionType} is queued for execution")
+    log.debug(s"Action ${data.name} of group ${data.groupId} and of type ${data.typeId} is queued for execution")
     client.setData().forPath(actionPath, ActionStatus.queued.toString.getBytes)
     data.status = ActionStatus.queued
   }
 
   def announceComplete: Unit = {
 
-    log.debug(s"Action ${data.name} of type ${data.actionType} completed")
+    log.debug(s"Action ${data.name} of group ${data.groupId} and of type ${data.typeId} completed")
     client.setData().forPath(actionPath, ActionStatus.complete.toString.getBytes)
     data.status = ActionStatus.complete
   }
 
   def announceCanceled: Unit = {
 
-    log.debug(s"Action ${data.name} of type ${data.actionType} was canceled")
+    log.debug(s"Action ${data.name} of group ${data.groupId} and of type ${data.typeId} was canceled")
     client.setData().forPath(actionPath, ActionStatus.canceled.toString.getBytes)
     data.status = ActionStatus.canceled
   }

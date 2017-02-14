@@ -1,3 +1,6 @@
 include 'leader'
 include 'executor'
 include 'common'
+include 'sdk'
+findProject(':sdk')?.name = 'amaterasu-sdk'
+

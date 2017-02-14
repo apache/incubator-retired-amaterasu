@@ -7,7 +7,8 @@ import scala.collection.mutable.ListBuffer
 case class ActionData(var status: ActionStatus,
                       name: String,
                       src: String,
-                      actionType: String,
+                      groupId: String,
+                      typeId: String,
                       id: String,
                       nextActionIds: ListBuffer[String]) {
   var errorActionId: String = null
