@@ -20,6 +20,12 @@ class PySparkRunnerTests extends FlatSpec with Matchers with BeforeAndAfterAll {
   var sc: SparkContext = _
   var runner: PySparkRunner = _
 
+  def delete(file: File) {
+    if (file.isDirectory)
+      Option(file.listFiles).map(_.toList).getOrElse(Nil).foreach(delete(_))
+    file.delete
+  }
+
   override protected def beforeAll(): Unit = {
     val env = new Environment()
     val notifier = new TestNotifier()
@@ -44,7 +50,10 @@ class PySparkRunnerTests extends FlatSpec with Matchers with BeforeAndAfterAll {
 
   override protected def afterAll(): Unit = {
     sc.stop()
-
+    val pysparkDir = new File(getClass.getResource("/pyspark").getPath)
+    val py4jDir = new File(getClass.getResource("/py4j").getPath)
+    delete(pysparkDir)
+    delete(py4jDir)
     super.afterAll()
   }
 
