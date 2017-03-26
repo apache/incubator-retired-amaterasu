@@ -1,0 +1,78 @@
+plugins {
+    id 'com.github.johnrengelman.shadow' version '1.2.4'
+    id 'com.github.maiflai.scalatest' version '0.6-5-g9065d91'
+    id 'scala'
+    id 'java'
+}
+
+shadowJar {
+    zip64 true
+}
+
+sourceCompatibility = 1.7
+targetCompatibility = 1.7
+
+repositories {
+    maven {
+        url "https://plugins.gradle.org/m2/"
+    }
+    mavenCentral()
+}
+
+test {
+    maxParallelForks = 1
+}
+
+dependencies {
+
+    compile group: 'org.scala-lang', name: 'scala-library', version: '2.10.5'
+    compile ('com.jcabi:jcabi-aether:0.10.1') {
+        exclude group: 'org.jboss.netty'
+    }
+    compile group: 'org.apache.maven', name: 'maven-core', version: '3.0.5'
+
+    compile project(':common')
+
+    //runtime dependency for spark
+    compile ('org.apache.spark:spark-repl_2.10:1.6.3')
+
+    testCompile project(':common')
+    testCompile "gradle.plugin.com.github.maiflai:gradle-scalatest:0.14"
+    testRuntime 'org.pegdown:pegdown:1.1.0'
+    testCompile 'junit:junit:4.11'
+    testCompile 'org.scalatest:scalatest_2.10:3.0.1'
+    testCompile 'org.scala-lang:scala-library:2.10.5'
+    testCompile ('org.apache.spark:spark-repl_2.10:1.6.3')
+//            {
+//        exclude group: 'io.netty'
+//    }
+
+    testCompile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.9'
+
+}
+
+sourceSets {
+    test {
+        resources.srcDirs += [file('src/test/resources')]
+    }
+
+    // this is done so Scala will compile before Java
+    main {
+        scala {
+            srcDirs = ['src/main/scala', 'src/main/java']
+        }
+        java {
+            srcDirs = []
+        }
+    }
+}
+
+test {
+
+    maxParallelForks = 1
+}
+
+task copyToHome(type: Copy) {
+    from 'build/libs'
+    into '../build/amaterasu/dist'
+}

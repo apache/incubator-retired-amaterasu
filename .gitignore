@@ -22,5 +22,14 @@ project/plugins/project/
 .idea
 out
 
+#Gradle
+.gradletasknamecache
+.gradle/
+build/
+bin/
+
 #General
 .DS_Store
+/.gitignore
+amaterasu-executor/
+project/project/

@@ -1,0 +1,61 @@
+plugins {
+    id "com.github.johnrengelman.shadow" version "1.2.4"
+    id 'com.github.maiflai.scalatest' version '0.6-5-g9065d91'
+    id 'scala'
+}
+
+repositories {
+    maven {
+        url "https://plugins.gradle.org/m2/"
+    }
+    mavenCentral()
+}
+
+dependencies {
+    compile 'org.scala-lang:scala-library:2.10.5'
+
+    compile project(':common')
+
+    compile group: 'com.github.scopt', name: 'scopt_2.10', version: '3.3.0'
+    compile group: 'com.github.nscala-time', name: 'nscala-time_2.10', version: '2.2.0'
+    compile group: 'org.apache.curator', name: 'curator-framework', version: '2.9.1'
+    compile group: 'com.fasterxml.jackson.module', name: 'jackson-module-scala_2.10', version: '2.6.3'
+    compile group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: '2.6.4'
+    compile group: 'com.fasterxml.jackson.core', name: 'jackson-annotations', version: '2.6.4'
+    compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.6.4'
+    compile group: 'com.fasterxml.jackson.dataformat', name: 'jackson-dataformat-yaml', version: '2.6.4'
+    compile group: 'org.eclipse.jetty', name: 'jetty-plus', version: '9.2.19.v20160908'
+    compile group: 'org.eclipse.jetty', name: 'jetty-server', version: '9.2.19.v20160908'
+    compile group: 'org.eclipse.jetty', name: 'jetty-http', version: '9.2.19.v20160908'
+    compile group: 'org.eclipse.jetty', name: 'jetty-io', version: '9.2.19.v20160908'
+    compile group: 'org.eclipse.jetty', name: 'jetty-servlet', version: '9.2.19.v20160908'
+    compile group: 'javax.servlet', name: 'javax.servlet-api', version: '2.5.0'
+    compile group: 'org.eclipse.jgit', name: 'org.eclipse.jgit', version: '4.2.0.201601211800-r'
+
+    testCompile "gradle.plugin.com.github.maiflai:gradle-scalatest:0.14"
+    testRuntime 'org.pegdown:pegdown:1.1.0'
+    testCompile 'junit:junit:4.11'
+    testCompile 'org.scalatest:scalatest_2.10:3.0.1'
+    testCompile 'org.scala-lang:scala-library:2.10.5'
+    testCompile group: 'org.apache.curator', name: 'curator-test', version: '2.9.1'
+
+}
+
+test {
+    maxParallelForks = 1
+}
+
+task copyToHomeRoot(type: Copy) {
+    from 'src/main/scripts'
+    into '../build/amaterasu/'
+}
+
+task copyToHomeBin(type: Copy) {
+    from 'build/libs'
+    into '../build/amaterasu/bin'
+}
+
+task copyToHome() {
+    dependsOn copyToHomeRoot
+    dependsOn copyToHomeBin
+}
