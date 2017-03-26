@@ -32,7 +32,7 @@ object DataLoader extends Logging {
 
     val envData = mapper.readValue(envValue, classOf[Environment])
 
-    val data = mapper.writeValueAsBytes(new TaskData(src, envData))
+    val data = mapper.writeValueAsBytes(new TaskData(src, envData, actionData.groupId, actionData.typeId))
     ByteString.copyFrom(data)
 
   }

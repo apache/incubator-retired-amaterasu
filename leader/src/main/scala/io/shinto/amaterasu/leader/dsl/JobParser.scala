@@ -129,6 +129,7 @@ object JobParser {
     SequentialAction(
       action.path("name").asText,
       action.path("file").asText,
+      action.path("group").asText,
       action.path("type").asText,
       jobId,
       actionsQueue,
@@ -150,6 +151,7 @@ object JobParser {
       action.path("name").asText,
       action.path("file").asText,
       parent,
+      action.path("group").asText,
       action.path("type").asText,
       jobId,
       actionsQueue,

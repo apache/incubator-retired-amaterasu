@@ -1,0 +1,13 @@
+apply plugin: 'java'
+
+sourceCompatibility = 1.7
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile project(':common')
+
+    testCompile group: 'junit', name: 'junit', version: '4.11'
+}

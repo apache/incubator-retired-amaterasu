@@ -5,7 +5,6 @@ import java.io.File
 import io.shinto.amaterasu.common.execution.actions.Notifier
 import io.shinto.amaterasu.common.logging.Logging
 import io.shinto.amaterasu.common.runtime.Environment
-import io.shinto.amaterasu.executor.runtime.AmaContext
 import org.apache.commons.io.FilenameUtils
 import org.apache.spark.SparkContext
 import org.apache.spark.sql.{DataFrame, SQLContext, SaveMode}
@@ -16,30 +15,30 @@ import org.apache.spark.sql.{DataFrame, SQLContext, SaveMode}
   * CSV data source support will be provided in the later versions.
   */
 class SparkSqlRunner extends Logging {
-  var env: Environment = null
-  var notifier: Notifier = null
-  var jobId: String = null
-  var actionName: String = null
-  var sc: SparkContext = null
+  var env: Environment = _
+  var notifier: Notifier = _
+  var jobId: String = _
+  var actionName: String = _
+  var sc: SparkContext = _
+  var sqlContext: SQLContext = _
 
   def executeQuery(sparkSqlTempTable: String,
                     dataSource: String,
                     query: String) = {
 
     notifier.info(s"================= started action $actionName =================")
-    val sqlContext = AmaContext.sqlContext
     val file: File = new File(dataSource)
     notifier.info(s"================= auto-detecting file type of data source =================")
     val loadData: DataFrame = file match {
-      case _ if (file.isFile) => FilenameUtils.getExtension(file.toString) match {
+      case _ if file.isFile => FilenameUtils.getExtension(file.toString) match {
         case "json" => sqlContext.read.json(dataSource)
         case "parquet" => sqlContext.read.parquet(dataSource)
       }
-      case _ if (file.isDirectory) => {
+      case _ if file.isDirectory => {
         val extensions = findFileType(file)
         extensions match {
-          case _ if (extensions.contains("json")) => sqlContext.read.json(dataSource)
-          case _ if (extensions.contains("parquet")) => sqlContext.read.parquet(dataSource)
+          case _ if extensions.contains("json") => sqlContext.read.json(dataSource)
+          case _ if extensions.contains("parquet") => sqlContext.read.parquet(dataSource)
         }
       }
     }
@@ -52,7 +51,6 @@ class SparkSqlRunner extends Logging {
       sqlDf.write.mode(SaveMode.Overwrite).parquet(s"${env.workingDir}/$jobId/$actionName")
     }
 
-    //AmaContext.sc.stop()
     notifier.info(s"================= finished action $actionName =================")
   }
 
@@ -86,7 +84,7 @@ object SparkSqlRunner {
     sparkSqlRunnerObj.actionName = actionName
     sparkSqlRunnerObj.notifier = notifier
     sparkSqlRunnerObj.sc = sc
-
+    sparkSqlRunnerObj.sqlContext = new SQLContext(sc)
     sparkSqlRunnerObj
   }
 }

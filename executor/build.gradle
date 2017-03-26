@@ -23,15 +23,22 @@ test {
     maxParallelForks = 1
 }
 
+tasks.withType(Test)  {
+    maxParallelForks = 1
+}
+
 dependencies {
 
     compile group: 'org.scala-lang', name: 'scala-library', version: '2.10.5'
+    compile group: 'org.scala-lang', name: 'scala-reflect', version: '2.10.5'
     compile ('com.jcabi:jcabi-aether:0.10.1') {
         exclude group: 'org.jboss.netty'
     }
     compile group: 'org.apache.maven', name: 'maven-core', version: '3.0.5'
+    compile group: 'org.reflections', name: 'reflections', version: '0.9.10'
 
     compile project(':common')
+    compile project(':amaterasu-sdk')
 
     //runtime dependency for spark
     compile ('org.apache.spark:spark-repl_2.10:1.6.3')
@@ -43,9 +50,6 @@ dependencies {
     testCompile 'org.scalatest:scalatest_2.10:3.0.1'
     testCompile 'org.scala-lang:scala-library:2.10.5'
     testCompile ('org.apache.spark:spark-repl_2.10:1.6.3')
-//            {
-//        exclude group: 'io.netty'
-//    }
 
     testCompile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.9'
 

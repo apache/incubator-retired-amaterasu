@@ -18,7 +18,7 @@ class ActionTests extends FlatSpec with Matchers {
   val retryPolicy = new ExponentialBackoffRetry(1000, 3)
   val server = new TestingServer(2181, true)
   val jobId = s"job_${System.currentTimeMillis}"
-  val data = ActionData(ActionStatus.pending, "test_action", "start.scala", "spark-scala", null, null)
+  val data = ActionData(ActionStatus.pending, "test_action", "start.scala", "spark","scala", null, null)
 
   "an Action" should "queue it's ActionData int the job queue when executed" in {
 
@@ -29,7 +29,7 @@ class ActionTests extends FlatSpec with Matchers {
     client.start()
 
     client.create().withMode(CreateMode.PERSISTENT).forPath(s"/${jobId}")
-    val action = SequentialAction(data.name, data.src, data.actionType, jobId, queue, client, 1)
+    val action = SequentialAction(data.name, data.src, data.groupId, data.typeId, jobId, queue, client, 1)
 
     action.execute()
     queue.peek().name should be(data.name)

@@ -17,7 +17,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class PySparkEntryPoint {
 
-    private static Boolean started = false;
+    //private static Boolean started = false;
     private static PySparkExecutionQueue queue = new PySparkExecutionQueue();
     private static ConcurrentHashMap<String, ResultQueue> resultQueues = new ConcurrentHashMap<>();
 
@@ -72,10 +72,7 @@ public class PySparkEntryPoint {
                              Environment env,
                              SparkEnv sparkEnv) {
 
-        if (!started) {
-            AmaContext.init(sc, new SQLContext(sc), jobName, env);
-            started = true;
-        }
+        AmaContext.init(sc, new SQLContext(sc), jobName, env);
 
         jsc = new JavaSparkContext(sc);
         sqlContext = new SQLContext(sc);
