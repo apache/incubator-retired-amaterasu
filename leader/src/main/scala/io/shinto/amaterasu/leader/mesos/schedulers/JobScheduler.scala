@@ -32,12 +32,12 @@ import scala.collection.concurrent.TrieMap
   */
 class JobScheduler extends AmaterasuScheduler {
 
-  private var jobManager: JobManager = null
-  private var client: CuratorFramework = null
-  private var config: ClusterConfig = null
-  private var src: String = null
-  private var env: String = null
-  private var branch: String = null
+  private var jobManager: JobManager = _
+  private var client: CuratorFramework = _
+  private var config: ClusterConfig = _
+  private var src: String = _
+  private var env: String = _
+  private var branch: String = _
   private var resume: Boolean = false
   private var reportLevel: NotificationLevel = _
 
@@ -151,15 +151,15 @@ class JobScheduler extends AmaterasuScheduler {
                 val command = CommandInfo
                   .newBuilder
                   .setValue(
-                    s"""$awsEnv env AMA_NODE=${sys.env("AMA_NODE")} env MESOS_NATIVE_JAVA_LIBRARY=/usr/lib/libmesos.so env SPARK_EXECUTOR_URI=http://${sys.env("AMA_NODE")}:${config.Webserver.Port}/dist/spark-${config.Webserver.sparkVersion}.tgz java -cp executor-0.2.0-all.jar:spark-${config.Webserver.sparkVersion}/lib/* -Dscala.usejavacp=true -Djava.library.path=/usr/lib io.shinto.amaterasu.executor.mesos.executors.ActionsExecutorLauncher ${jobManager.jobId} ${config.master} ${actionData.name}""".stripMargin
+                    s"""$awsEnv env AMA_NODE=${sys.env("AMA_NODE")} env MESOS_NATIVE_JAVA_LIBRARY=/usr/lib/libmesos.so env SPARK_EXECUTOR_URI=http://${sys.env("AMA_NODE")}:${config.Webserver.Port}/dist/spark-${config.Webserver.sparkVersion}.tgz java -cp executor-0.2.0-incubating-all.jar:spark-${config.Webserver.sparkVersion}/lib/* -Dscala.usejavacp=true -Djava.library.path=/usr/lib io.shinto.amaterasu.executor.mesos.executors.ActionsExecutorLauncher ${jobManager.jobId} ${config.master} ${actionData.name}""".stripMargin
                   )
                   .addUris(URI.newBuilder
-                    .setValue(s"http://${sys.env("AMA_NODE")}:${config.Webserver.Port}/executor-0.2.0-all.jar")
+                    .setValue(s"http://${sys.env("AMA_NODE")}:${config.Webserver.Port}/executor-0.2.0-incubating-all.jar")
                     .setExecutable(false)
                     .setExtract(false)
                     .build())
                   .addUris(URI.newBuilder()
-                    .setValue(s"http://${sys.env("AMA_NODE")}:${config.Webserver.Port}/spark-${config.Webserver.sparkVersion}.tgz")
+                    .setValue(s"http://${sys.env("AMA_NODE")}:${config.Webserver.Port}/spark-2.1.0-1-bin-2.7.tgz")
                     .setExecutable(false)
                     .setExtract(true)
                     .build())
@@ -282,7 +282,7 @@ object JobScheduler {
 
     val scheduler = new JobScheduler()
 
-    HttpServer.start(config.Webserver.Port, s"$home/${config.Webserver.Root}")
+    HttpServer.start(config.Webserver.Port, s"$home/${config.Webserver.Root}", sys.env("AMA_NODE"))
 
     if (!sys.env("AWS_ACCESS_KEY_ID").isEmpty &&
       !sys.env("AWS_SECRET_ACCESS_KEY").isEmpty) {

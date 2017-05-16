@@ -2,14 +2,15 @@ package org.apache.spark.repl.amaterasu
 
 import java.io.PrintWriter
 
-import org.apache.spark.repl.{ SparkIMain, SparkILoop }
+import org.apache.spark.repl.SparkILoop
 
 import scala.tools.nsc.Settings
+import scala.tools.nsc.interpreter.IMain
 
 /**
   * Created by roadan on 8/13/16.
   */
-class AmaSparkILoop(writer: PrintWriter) extends SparkILoop(null, writer) {
+class AmaSparkILoop(writer: PrintWriter) extends SparkILoop(None, writer) {
 
   def create = {
     this.createInterpreter
@@ -19,7 +20,7 @@ class AmaSparkILoop(writer: PrintWriter) extends SparkILoop(null, writer) {
     this.settings = settings
   }
 
-  def getIntp: SparkIMain = {
+  def getIntp: IMain = {
     this.intp
   }
 
