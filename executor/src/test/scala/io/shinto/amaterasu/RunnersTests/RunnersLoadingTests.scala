@@ -27,7 +27,7 @@ class RunnersLoadingTests extends FlatSpec with Matchers with BeforeAndAfterAll 
 
   override protected def afterAll(): Unit = {
 
-    factory.getRunner("spark", "scala").get.asInstanceOf[SparkScalaRunner].sc.stop()
+    factory.getRunner("spark", "scala").get.asInstanceOf[SparkScalaRunner].spark.stop()
 
     super.afterAll()
   }

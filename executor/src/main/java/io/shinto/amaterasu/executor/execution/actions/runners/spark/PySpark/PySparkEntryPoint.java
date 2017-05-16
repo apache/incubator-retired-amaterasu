@@ -9,6 +9,7 @@ import org.apache.spark.sql.SQLContext;
 import org.apache.spark.SparkConf;
 import org.apache.spark.SparkContext;
 
+import org.apache.spark.sql.SparkSession;
 import py4j.GatewayServer;
 
 import java.io.IOException;
@@ -22,6 +23,7 @@ public class PySparkEntryPoint {
     private static ConcurrentHashMap<String, ResultQueue> resultQueues = new ConcurrentHashMap<>();
 
     private static int port = 0;
+    private static SparkSession sparkSession = null;
     private static JavaSparkContext jsc = null;
     private static SQLContext sqlContext = null;
     private static SparkEnv sparkEnv = null;
@@ -43,6 +45,11 @@ public class PySparkEntryPoint {
     public static SQLContext getSqlContext() {
         SparkEnv.set(sparkEnv);
         return sqlContext;
+    }
+
+    public static SparkSession getSparkSession() {
+        SparkEnv.set(sparkEnv);
+        return sparkSession;
     }
 
     public static SparkConf getSparkConf() {
@@ -67,15 +74,16 @@ public class PySparkEntryPoint {
         return port;
     }
 
-    public static void start(SparkContext sc,
+    public static void start(SparkSession spark,
                              String jobName,
                              Environment env,
                              SparkEnv sparkEnv) {
 
-        AmaContext.init(sc, new SQLContext(sc), jobName, env);
+        AmaContext.init(spark, jobName, env);
 
-        jsc = new JavaSparkContext(sc);
-        sqlContext = new SQLContext(sc);
+        sparkSession = spark;
+        jsc = new JavaSparkContext(spark.sparkContext());
+        sqlContext = spark.sqlContext();
         PySparkEntryPoint.sparkEnv = sparkEnv;
         generatePort();
         GatewayServer gatewayServer = new GatewayServer(new PySparkEntryPoint(), port);

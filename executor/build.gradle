@@ -29,8 +29,8 @@ tasks.withType(Test)  {
 
 dependencies {
 
-    compile group: 'org.scala-lang', name: 'scala-library', version: '2.10.5'
-    compile group: 'org.scala-lang', name: 'scala-reflect', version: '2.10.5'
+    compile group: 'org.scala-lang', name: 'scala-library', version: '2.11.11'
+    compile group: 'org.scala-lang', name: 'scala-reflect', version: '2.11.11'
     compile ('com.jcabi:jcabi-aether:0.10.1') {
         exclude group: 'org.jboss.netty'
     }
@@ -41,15 +41,16 @@ dependencies {
     compile project(':amaterasu-sdk')
 
     //runtime dependency for spark
-    compile ('org.apache.spark:spark-repl_2.10:1.6.3')
+    compile ('org.apache.spark:spark-repl_2.11:2.1.0')
+    compile ('org.apache.spark:spark-core_2.11:2.1.0')
 
     testCompile project(':common')
     testCompile "gradle.plugin.com.github.maiflai:gradle-scalatest:0.14"
     testRuntime 'org.pegdown:pegdown:1.1.0'
     testCompile 'junit:junit:4.11'
-    testCompile 'org.scalatest:scalatest_2.10:3.0.1'
-    testCompile 'org.scala-lang:scala-library:2.10.5'
-    testCompile ('org.apache.spark:spark-repl_2.10:1.6.3')
+    testCompile 'org.scalatest:scalatest_2.11:3.0.2'
+    testCompile 'org.scala-lang:scala-library:2.11.11'
+    testCompile ('org.apache.spark:spark-repl_2.11:2.1.0')
 
     testCompile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.9'
 

@@ -7,24 +7,22 @@ import io.shinto.amaterasu.common.logging.Logging
 import io.shinto.amaterasu.common.runtime.Environment
 import io.shinto.amaterasu.executor.runtime.AmaContext
 import io.shinto.amaterasu.sdk.AmaterasuRunner
-import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
-import org.apache.spark.repl.SparkIMain
 import org.apache.spark.repl.amaterasu.ReplUtils
-import org.apache.spark.sql.{DataFrame, SQLContext}
+import org.apache.spark.sql.{ Dataset, SparkSession}
 
 import scala.collection.mutable
 import scala.io.Source
 import scala.tools.nsc.Settings
-import scala.tools.nsc.interpreter.Results
+import scala.tools.nsc.interpreter.{IMain, Results}
 
 class ResHolder(var value: Any)
 
 class SparkScalaRunner(var env: Environment,
                        var jobId: String,
-                       var interpreter: SparkIMain,
+                       var interpreter: IMain,
                        var outStream: ByteArrayOutputStream,
-                       var sc: SparkContext,
+                       var spark: SparkSession,
                        var notifier: Notifier) extends Logging with AmaterasuRunner {
 
   override def getIdentifier = "scala"
@@ -76,7 +74,7 @@ class SparkScalaRunner(var env: Environment,
 
               if (result != null) {
                 result match {
-                  case df: DataFrame =>
+                  case ds: Dataset[_] =>
                     log.debug(s"persisting DataFrame: $resultName")
                     interpreter.interpret(s"""$resultName.write.mode(SaveMode.Overwrite).parquet("${env.workingDir}/$jobId/$actionName/$resultName")""")
                     log.debug(outStream.toString)
@@ -112,8 +110,8 @@ class SparkScalaRunner(var env: Environment,
   def initializeAmaContext(env: Environment): Unit = {
 
     // setting up some context :)
-    val sc = this.sc
-    val sqlContext = new SQLContext(sc)
+    val sc = this.spark.sparkContext
+    val sqlContext = this.spark.sqlContext
 
     interpreter.interpret("import scala.util.control.Exception._")
     interpreter.interpret("import org.apache.spark.{ SparkContext, SparkConf }")
@@ -126,7 +124,7 @@ class SparkScalaRunner(var env: Environment,
     // in th REPL and getting a reference to it
     interpreter.interpret("var _contextStore = scala.collection.mutable.Map[String, AnyRef]()")
     val contextStore = interpreter.prevRequestList.last.lineRep.call("$result").asInstanceOf[mutable.Map[String, AnyRef]]
-    AmaContext.init(sc, sqlContext, jobId, env)
+    AmaContext.init(spark, jobId, env)
 
     // populating the contextStore
     contextStore.put("sc", sc)
@@ -151,7 +149,7 @@ object SparkScalaRunner extends Logging {
 
   def apply(env: Environment,
             jobId: String,
-            sparkContext: SparkContext,
+            spark: SparkSession,
             outStream: ByteArrayOutputStream,
             notifier: Notifier,
             jars: Seq[String]): SparkScalaRunner = {
@@ -204,7 +202,7 @@ object SparkScalaRunner extends Logging {
         sc
 
     =======*/
-    new SparkScalaRunner(env, jobId, ReplUtils.getOrCreateScalaInterperter(outStream, jars), outStream, sparkContext, notifier)
+    new SparkScalaRunner(env, jobId, ReplUtils.getOrCreateScalaInterperter(outStream, jars), outStream, spark, notifier)
 
   }
 

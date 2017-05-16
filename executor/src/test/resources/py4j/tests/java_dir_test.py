@@ -1,12 +1,10 @@
 from __future__ import unicode_literals, absolute_import
 
-
-from py4j.java_gateway import JavaGateway, GatewayParameters, java_import,\
-    UserHelpAutoCompletion
+from py4j.java_gateway import (
+    java_import, UserHelpAutoCompletion)
 from py4j.protocol import Py4JError
 from py4j.tests.java_gateway_test import (
-    start_example_app_process, sleep)
-from contextlib import contextmanager
+    example_app_process, gateway)
 
 ExampleClassFields = sorted([
     "field10",
@@ -24,6 +22,7 @@ ExampleClassMethods = sorted([
     "method4",
     "method5",
     "method6",
+    "sleepFirstTimeOnly",
     # overloaded
     "method7",
     "method8",
@@ -39,6 +38,9 @@ ExampleClassMethods = sorted([
     "callHello",
     "callHello2",
     "static_method",
+    "getInteger",
+    "getBrokenStream",
+    "getStream",
 
     # From Object
     "getClass",
@@ -57,34 +59,12 @@ ExampleClassStatics = sorted([
 ])
 
 
-@contextmanager
-def example_app_process():
-    p = start_example_app_process()
-    try:
-        yield p
-    finally:
-        p.join()
-        sleep()
-
-
-@contextmanager
-def gateway(*args, **kwargs):
-    g = JavaGateway(
-        gateway_parameters=GatewayParameters(
-            *args, auto_convert=True, **kwargs))
-    lineSep = g.jvm.System.lineSeparator()
-    try:
-        yield g
-        # Call a dummy method to make sure we haven't corrupted the streams
-        assert lineSep == g.jvm.System.lineSeparator()
-    finally:
-        g.shutdown()
-
-
 def test_dir_object():
     with example_app_process():
         with gateway() as g:
             ex = g.getNewExample()
+            print(sorted(dir(ex)))
+            print(ExampleClassMethods)
             assert sorted(dir(ex)) == ExampleClassMethods
 
 

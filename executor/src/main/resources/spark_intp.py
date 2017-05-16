@@ -1,5 +1,11 @@
 #!/usr/bin/python
 
+# import os
+# user_paths = os.environ['PYTHONPATH']
+#
+# with open('/Users/roadan/pypath.txt', 'a') as the_file:
+#     the_file.write(user_paths)
+
 import py4j
 import ast
 import codegen
@@ -17,7 +23,7 @@ from pyspark import accumulators
 from pyspark.accumulators import Accumulator, AccumulatorParam
 from pyspark.broadcast import Broadcast
 from pyspark.serializers import MarshalSerializer, PickleSerializer
-from pyspark.sql import SQLContext, HiveContext, Row, SchemaRDD
+from pyspark.sql import SparkSession
 
 client = GatewayClient(port=int(sys.argv[1]))
 gateway = JavaGateway(client, auto_convert = True)
@@ -39,26 +45,28 @@ jsc = entry_point.getJavaSparkContext()
 conf = SparkConf(_jvm = gateway.jvm, _jconf = jconf)
 
 sc = SparkContext(jsc=jsc, gateway=gateway, conf=conf)
-sqlContext = SQLContext(sparkContext=sc, sqlContext=entry_point.getSqlContext())
 
-ama_context = AmaContext(sc, sqlContext)
+spark = SparkSession(sc, entry_point.getSparkSession())
+sqlc = spark._wrapped
+
+ama_context = AmaContext(sc, sqlc)
 
 while True:
-  actionData = queue.getNext()
-  resultQueue = entry_point.getResultQueue(actionData._2())
-  actionSource = actionData._1()
+    actionData = queue.getNext()
+    resultQueue = entry_point.getResultQueue(actionData._2())
+    actionSource = actionData._1()
 
-  tree = ast.parse(actionSource)
+    tree = ast.parse(actionSource)
 
-  for node in tree.body:
+    for node in tree.body:
 
-    wrapper = ast.Module(body=[node])
-    try:
-      co  = compile(wrapper, "<ast>", 'exec')
-      exec(co)
-      resultQueue.put('success', actionData._2(), codegen.to_source(node), '')
+        wrapper = ast.Module(body=[node])
+        try:
+            co  = compile(wrapper, "<ast>", 'exec')
+            exec(co)
+            resultQueue.put('success', actionData._2(), codegen.to_source(node), '')
 
-    except:
-      resultQueue.put('error', actionData._2(), codegen.to_source(node), str(sys.exc_info()[1]))
+        except:
+            resultQueue.put('error', actionData._2(), codegen.to_source(node), str(sys.exc_info()[1]))
 
-  resultQueue.put('completion', '', '', '')
+    resultQueue.put('completion', '', '', '')

@@ -6,7 +6,8 @@ import io.shinto.amaterasu.executor.execution.actions.runners.spark.PySpark.PySp
 import io.shinto.amaterasu.common.runtime.Environment
 import io.shinto.amaterasu.utilities.TestNotifier
 import org.apache.log4j.{Level, Logger}
-import org.apache.spark.{SparkConf, SparkContext}
+import org.apache.spark.sql.SparkSession
+import org.apache.spark.SparkConf
 import org.scalatest.{BeforeAndAfterAll, FlatSpec, Matchers}
 
 class PySparkRunnerTests extends FlatSpec with Matchers with BeforeAndAfterAll {
@@ -17,11 +18,11 @@ class PySparkRunnerTests extends FlatSpec with Matchers with BeforeAndAfterAll {
   Logger.getLogger("jetty").setLevel(Level.OFF)
   Logger.getRootLogger.setLevel(Level.OFF)
 
-  var sc: SparkContext = _
+  var spark: SparkSession = _
   var runner: PySparkRunner = _
 
   override protected def beforeAll(): Unit = {
-    val env = new Environment()
+    val env = Environment()
     val notifier = new TestNotifier()
 
     // this is an ugly hack, getClass.getResource("/").getPath should have worked but
@@ -34,16 +35,19 @@ class PySparkRunnerTests extends FlatSpec with Matchers with BeforeAndAfterAll {
       .set("spark.local.ip", "127.0.0.1")
       .setExecutorEnv("PYTHONPATH", resources)
 
-    sc = new SparkContext("local[*]", "job_5", conf)
+    spark = SparkSession.builder.
+      master("local")
+      .appName("job_5")
+      .config(conf)
+      .getOrCreate()
 
-
-    runner = PySparkRunner(env, "job_5", notifier, sc, resources)
+    runner = PySparkRunner(env, "job_5", notifier, spark, resources)
 
     super.beforeAll()
   }
 
   override protected def afterAll(): Unit = {
-    sc.stop()
+    spark.stop()
 
     super.afterAll()
   }

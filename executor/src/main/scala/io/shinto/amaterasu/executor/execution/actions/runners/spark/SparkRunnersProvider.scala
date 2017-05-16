@@ -36,18 +36,18 @@ class SparkRunnersProvider extends RunnersProvider {// with Logging {
       jars ++= getDependencies(data.deps)
     }
 
-    val classServerUri = ReplUtils.getOrCreateClassServerUri(outStream, jars)
+    //val classServerUri = ReplUtils.getOrCreateClassServerUri(outStream, jars)
 
     val sparkAppName = s"job_${jobId}_executor_$executorId"
     //log.debug(s"creating SparkContext with master ${data.env.master}")
-    val sparkContext = SparkRunnerHelper.createSparkContext(data.env, sparkAppName, classServerUri, jars)
-
-    val sparkScalaRunner = SparkScalaRunner(data.env, jobId, sparkContext, outStream, notifier, jars)
+    val spark = SparkRunnerHelper.createSpark(data.env, sparkAppName, jars)
+    val sparkContext = spark.sparkContext
+    val sparkScalaRunner = SparkScalaRunner(data.env, jobId, spark, outStream, notifier, jars)
     sparkScalaRunner.initializeAmaContext(data.env)
 
     runners.put(sparkScalaRunner.getIdentifier, sparkScalaRunner)
 
-    val pySparkRunner = PySparkRunner(data.env, jobId, notifier, sparkContext, "")
+    val pySparkRunner = PySparkRunner(data.env, jobId, notifier, spark, "")
     runners.put(pySparkRunner.getIdentifier(), pySparkRunner)
   }
 

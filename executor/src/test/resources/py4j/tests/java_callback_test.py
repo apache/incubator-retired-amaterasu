@@ -5,6 +5,7 @@ Created on Apr 5, 2010
 """
 from __future__ import unicode_literals, absolute_import
 
+from contextlib import contextmanager
 from multiprocessing import Process
 import subprocess
 from threading import Thread
@@ -13,15 +14,31 @@ import unittest
 
 from py4j.compat import range
 from py4j.java_gateway import (
-    JavaGateway, PythonProxyPool, CallbackServerParameters)
+    JavaGateway, PythonProxyPool, CallbackServerParameters,
+    set_default_callback_accept_timeout)
 from py4j.tests.java_gateway_test import (
-    PY4J_JAVA_PATH, safe_shutdown, sleep, test_gateway_connection)
+    PY4J_JAVA_PATH, safe_shutdown, sleep, check_connection)
+
+
+set_default_callback_accept_timeout(0.125)
 
 
 def start_example_server():
     subprocess.call([
         "java", "-cp", PY4J_JAVA_PATH,
         "py4j.examples.ExampleApplication"])
+
+
+def start_no_mem_example_server():
+    subprocess.call([
+        "java", "-cp", PY4J_JAVA_PATH,
+        "py4j.examples.ExampleApplication$ExampleNoMemManagementApplication"])
+
+
+def start_python_entry_point_server():
+    subprocess.call([
+        "java", "-cp", PY4J_JAVA_PATH,
+        "py4j.examples.ExampleApplication$ExamplePythonEntryPointApplication"])
 
 
 def start_example_server2():
@@ -36,13 +53,28 @@ def start_example_server3():
         "py4j.examples.InterfaceExample"])
 
 
-def start_example_app_process():
+def start_example_app_process(app=None):
     # XXX DO NOT FORGET TO KILL THE PROCESS IF THE TEST DOES NOT SUCCEED
-    p = Process(target=start_example_server)
+    if not app:
+        target = start_example_server
+    elif app == "nomem":
+        target = start_no_mem_example_server
+    elif app == "pythonentrypoint":
+        target = start_python_entry_point_server
+    p = Process(target=target)
     p.start()
     sleep()
-    test_gateway_connection()
+    check_connection()
     return p
+
+
+@contextmanager
+def gateway_example_app_process(app=None):
+    p = start_example_app_process(app)
+    try:
+        yield p
+    finally:
+        p.join()
 
 
 def start_example_app_process2():
@@ -50,7 +82,7 @@ def start_example_app_process2():
     p = Process(target=start_example_server2)
     p.start()
     sleep()
-    test_gateway_connection()
+    check_connection()
     return p
 
 
@@ -59,7 +91,7 @@ def start_example_app_process3():
     p = Process(target=start_example_server3)
     p.start()
     sleep()
-    test_gateway_connection()
+    check_connection()
     return p
 
 
@@ -149,11 +181,61 @@ class IHelloImpl(object):
         implements = ["py4j.examples.IHello"]
 
 
-class TestIntegration(unittest.TestCase):
+class PythonEntryPointTest(unittest.TestCase):
+
+    def test_python_entry_point(self):
+        from py4j.tests.py4j_callback_recursive_example import (
+            HelloState)
+        hello_state = HelloState()
+        gateway = JavaGateway(
+            callback_server_parameters=CallbackServerParameters(),
+            python_server_entry_point=hello_state)
+
+        with gateway_example_app_process("pythonentrypoint"):
+            gateway.shutdown()
+
+        # Check that Java correctly called Python
+        self.assertEqual(2, len(hello_state.calls))
+        self.assertEqual((None, None), hello_state.calls[0])
+        self.assertEqual((2, "Hello World"), hello_state.calls[1])
+
+
+class NoMemManagementTest(unittest.TestCase):
+    def testGC(self):
+        with gateway_example_app_process("nomem"):
+            # This will only work with some JVM.
+            gateway = JavaGateway(
+                callback_server_parameters=CallbackServerParameters())
+            sleep()
+            example = gateway.entry_point.getNewExample()
+            impl = IHelloImpl()
+            self.assertEqual("This is Hello!", example.callHello(impl))
+            self.assertEqual(
+                "This is Hello;\n10MyMy!\n;",
+                example.callHello2(impl))
+            self.assertEqual(2, len(gateway.gateway_property.pool))
+
+            # Make sure that finalizers do not block
+            impl2 = IHelloImpl()
+            self.assertEqual("This is Hello!", example.callHello(impl2))
+            self.assertEqual(3, len(gateway.gateway_property.pool))
+
+            gateway.jvm.java.lang.System.gc()
+
+            # Leave time for sotimeout
+            sleep(3)
+            # Make sure the three objects have not been removed from the pool
+            # because the Java side should not send gc request.
+            self.assertEqual(len(gateway.gateway_property.pool), 3)
+            gateway.shutdown()
+
+
+class IntegrationTest(unittest.TestCase):
     def setUp(self):
         self.p = start_example_app_process()
         self.gateway = JavaGateway(
             callback_server_parameters=CallbackServerParameters())
+        sleep()
 
     def tearDown(self):
         safe_shutdown(self)
@@ -190,8 +272,16 @@ class TestIntegration(unittest.TestCase):
             "This is Hello;\n10MyMy!\n;",
             example.callHello2(impl))
         self.assertEqual(2, len(self.gateway.gateway_property.pool))
+
+        # Make sure that finalizers do not block
+        impl2 = IHelloImpl()
+        self.assertEqual("This is Hello!", example.callHello(impl2))
+        self.assertEqual(3, len(self.gateway.gateway_property.pool))
+
         self.gateway.jvm.java.lang.System.gc()
-        sleep(1)
+
+        # Leave time for sotimeout
+        sleep(3)
         self.assertTrue(len(self.gateway.gateway_property.pool) < 2)
 
     def testDoubleCallbackServer(self):
@@ -213,11 +303,39 @@ class TestIntegration(unittest.TestCase):
         self.assertTrue(oe2 is not None)
 
 
-class TestPeriodicCleanup(unittest.TestCase):
+class ResetCallbackClientTest(unittest.TestCase):
+    def setUp(self):
+        self.p = start_example_app_process()
+        self.gateway = JavaGateway(
+            callback_server_parameters=CallbackServerParameters(port=0))
+        sleep()
+
+    def tearDown(self):
+        safe_shutdown(self)
+        self.p.join()
+        sleep()
+
+    def testProxy(self):
+        sleep()
+        pythonAddress = self.gateway.java_gateway_server.getPythonAddress()
+        port = self.gateway.get_callback_server().get_listening_port()
+        self.gateway.java_gateway_server.resetCallbackClient(
+            pythonAddress, port)
+
+        example = self.gateway.entry_point.getNewExample()
+        impl = IHelloImpl()
+        self.assertEqual("This is Hello!", example.callHello(impl))
+        self.assertEqual(
+            "This is Hello;\n10MyMy!\n;",
+            example.callHello2(impl))
+
+
+class PeriodicCleanupTest(unittest.TestCase):
     def setUp(self):
         self.p = start_example_app_process2()
         self.gateway = JavaGateway(
             callback_server_parameters=CallbackServerParameters())
+        sleep()
 
     def tearDown(self):
         safe_shutdown(self)
@@ -262,6 +380,7 @@ class InterfaceTest(unittest.TestCase):
         self.p = start_example_app_process3()
         self.gateway = JavaGateway(
             callback_server_parameters=CallbackServerParameters())
+        sleep()
 
     def tearDown(self):
         safe_shutdown(self)
@@ -292,7 +411,7 @@ class InterfaceDeprecatedTest(unittest.TestCase):
             self.fail()
 
 
-class LazyStart(unittest.TestCase):
+class LazyStartTest(unittest.TestCase):
     def setUp(self):
         self.p = start_example_app_process3()
         self.gateway = JavaGateway(

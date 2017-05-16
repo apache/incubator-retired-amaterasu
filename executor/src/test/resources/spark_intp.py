@@ -23,7 +23,7 @@ from pyspark import accumulators
 from pyspark.accumulators import Accumulator, AccumulatorParam
 from pyspark.broadcast import Broadcast
 from pyspark.serializers import MarshalSerializer, PickleSerializer
-from pyspark.sql import SQLContext, HiveContext, Row, SchemaRDD
+from pyspark.sql import SparkSession
 
 client = GatewayClient(port=int(sys.argv[1]))
 gateway = JavaGateway(client, auto_convert = True)
@@ -45,9 +45,11 @@ jsc = entry_point.getJavaSparkContext()
 conf = SparkConf(_jvm = gateway.jvm, _jconf = jconf)
 
 sc = SparkContext(jsc=jsc, gateway=gateway, conf=conf)
-sqlContext = SQLContext(sparkContext=sc, sqlContext=entry_point.getSqlContext())
 
-ama_context = AmaContext(sc, sqlContext)
+spark = SparkSession(sc, entry_point.getSparkSession())
+sqlc = spark._wrapped
+
+ama_context = AmaContext(sc, sqlc)
 
 while True:
     actionData = queue.getNext()

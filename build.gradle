@@ -2,7 +2,7 @@ apply plugin: 'distribution'
 
 allprojects {
     group 'io.shinto'
-    version '0.2.0'
+    version '0.2.0-incubating'
 }
 
 project(':leader')
