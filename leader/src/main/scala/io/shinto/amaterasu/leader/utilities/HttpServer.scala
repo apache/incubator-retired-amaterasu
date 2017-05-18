@@ -34,15 +34,13 @@ object HttpServer extends Logging {
 
     val requestLogHandler = new RequestLogHandler()
     requestLogHandler.setRequestLog(requestLog)
-    handlers.addHandler(requestLogHandler)
+    //handlers.addHandler(requestLogHandler)
 
     val connector = new ServerConnector(server)
     connector.setPort(port.toInt)
     connector.setHost(host)
     server.addConnector(connector)
     val context = new ServletContextHandler(ServletContextHandler.SESSIONS)
-    println("--------------------------")
-    println(serverRoot)
     context.setResourceBase(serverRoot)
     context.setContextPath("/")
     handlers.addHandler(context)
