@@ -1,9 +1,13 @@
 package io.shinto.amaterasu.executor.execution.actions.runners.spark
 
+import java.util.Properties
+
 import io.shinto.amaterasu.common.configuration.ClusterConfig
 import io.shinto.amaterasu.common.runtime.Environment
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.{SparkConf, SparkContext}
+
+import scala.collection.JavaConversions._
 
 /**
   * Created by eyalbenivri on 02/09/2016.
@@ -19,21 +23,24 @@ object SparkRunnerHelper {
 
     val config = new ClusterConfig()
 
+    Thread.currentThread().setContextClassLoader(getClass.getClassLoader())
 
     val conf = new SparkConf(true)
-      .setMaster(env.master)
-      .setAppName(sparkAppName)
-      .set("spark.executor.uri", s"http://$getNode:${config.Webserver.Port}/dist/spark-${config.Webserver.sparkVersion}.tgz")
-//      .set("spark.driver.memory", "512m")
+      .set("spark.executor.uri", s"http://$getNode:${config.Webserver.Port}/spark-${config.Webserver.sparkVersion}.tgz")
+      //      .set("spark.driver.memory", "512m")
       //.set("spark.repl.class.uri", classServerUri)
-//      .set("spark.mesos.coarse", "true")
-//      .set("spark.executor.instances", "2")
-//      .set("spark.cores.max", "5")
-//      .set("spark.hadoop.valFidateOutputSpecs", "false")
+      //      .set("spark.mesos.coarse", "true")
+      //      .set("spark.executor.instances", "2")
+      //      .set("spark.cores.max", "5")
+      .set("spark.hadoop.validateOutputSpecs", "false")
       .setJars(jars)
-    //val sc = new SparkContext(conf)
+
     val sparkSession = SparkSession.builder
-        .config(conf).getOrCreate()
+      .appName(sparkAppName)
+      .master(env.master)
+
+      //.enableHiveSupport()
+      .config(conf).getOrCreate()
 
     val hc = sparkSession.sparkContext.hadoopConfiguration
 

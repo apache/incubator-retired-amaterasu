@@ -61,7 +61,7 @@ object AmaContext extends Logging {
 
   def getDataFrame(actionName: String, dfName: String): DataFrame = {
 
-    sqlContext.read.parquet(s"${env.workingDir}/$jobId/$actionName/$dfName")
+    spark.read.parquet(s"${env.workingDir}/$jobId/$actionName/$dfName")
 
   }
 
@@ -73,7 +73,7 @@ object AmaContext extends Logging {
 
   def getActionResult(actionName: String): DataFrame = {
 
-    sqlContext.sql(s"select * from ${AmaContext.jobId}.$actionName")
+    spark.sql(s"select * from ${AmaContext.jobId}.$actionName")
 
   }
 
