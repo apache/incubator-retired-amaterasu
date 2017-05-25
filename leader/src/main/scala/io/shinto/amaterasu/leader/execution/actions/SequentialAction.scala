@@ -16,7 +16,7 @@ class SequentialAction extends Action {
   var attempts: Int = 2
   var attempt: Int = 1
 
-  def execute() = {
+  def execute(): Unit = {
 
     try {
 
@@ -58,6 +58,7 @@ object SequentialAction {
             src: String,
             groupId: String,
             typeId: String,
+            exports: Map[String, String],
             jobId: String,
             queue: BlockingQueue[ActionData],
             zkClient: CuratorFramework,
@@ -69,12 +70,12 @@ object SequentialAction {
 
     // creating a znode for the action
     action.client = zkClient
-    action.actionPath = action.client.create().withMode(CreateMode.PERSISTENT_SEQUENTIAL).forPath(s"/${jobId}/task-", ActionStatus.pending.toString.getBytes())
+    action.actionPath = action.client.create().withMode(CreateMode.PERSISTENT_SEQUENTIAL).forPath(s"/$jobId/task-", ActionStatus.pending.toString.getBytes())
     action.actionId = action.actionPath.substring(action.actionPath.indexOf("task-") + 5)
 
     action.attempts = attempts
     action.jobId = jobId
-    action.data = new ActionData(ActionStatus.pending, name, src, groupId, typeId, action.actionId, new ListBuffer[String])
+    action.data = ActionData(ActionStatus.pending, name, src, groupId, typeId, action.actionId,exports, new ListBuffer[String])
     action.jobsQueue = queue
     action.client = zkClient
 
@@ -100,11 +101,11 @@ object ErrorAction {
 
     // creating a znode for the action
     action.client = zkClient
-    action.actionPath = action.client.create().withMode(CreateMode.PERSISTENT).forPath(s"/${jobId}/task-$parent-error", ActionStatus.pending.toString.getBytes())
+    action.actionPath = action.client.create().withMode(CreateMode.PERSISTENT).forPath(s"/$jobId/task-$parent-error", ActionStatus.pending.toString.getBytes())
     action.actionId = action.actionPath.substring(action.actionPath.indexOf('-') + 1).replace("/", "-")
 
     action.jobId = jobId
-    action.data = new ActionData(ActionStatus.pending, name, src, groupId, typeId, action.actionId, new ListBuffer[String])
+    action.data = ActionData(ActionStatus.pending, name, src, groupId, typeId, action.actionId, Map.empty, new ListBuffer[String])
     action.jobsQueue = queue
     action.client = zkClient
 

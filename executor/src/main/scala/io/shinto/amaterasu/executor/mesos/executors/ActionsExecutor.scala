@@ -4,9 +4,10 @@ import java.io.{ByteArrayInputStream, ByteArrayOutputStream, File}
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
+
 import io.shinto.amaterasu.common.dataobjects.{ExecData, TaskData}
 import io.shinto.amaterasu.common.logging.Logging
-import io.shinto.amaterasu.sdk.AmaterasuRunner
+
 import org.apache.mesos.Protos._
 import org.apache.mesos.protobuf.ByteString
 import org.apache.mesos.{Executor, ExecutorDriver, MesosExecutorDriver}
@@ -15,6 +16,8 @@ import org.apache.spark.SparkContext
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.util.{Failure, Success}
+
+import collection.JavaConverters._
 
 /**
   * Created by roadan on 1/1/16.
@@ -59,7 +62,7 @@ class ActionsExecutor extends Executor with Logging {
 
   override def frameworkMessage(driver: ExecutorDriver, data: Array[Byte]) = ???
 
-  override def registered(driver: ExecutorDriver, executorInfo: ExecutorInfo, frameworkInfo: FrameworkInfo, slaveInfo: SlaveInfo) = {
+  override def registered(driver: ExecutorDriver, executorInfo: ExecutorInfo, frameworkInfo: FrameworkInfo, slaveInfo: SlaveInfo): Unit = {
 
     this.executorDriver = driver
     val data = mapper.readValue(new ByteArrayInputStream(executorInfo.getData.toByteArray), classOf[ExecData])
@@ -72,7 +75,7 @@ class ActionsExecutor extends Executor with Logging {
 
   }
 
-  override def launchTask(driver: ExecutorDriver, taskInfo: TaskInfo) = {
+  override def launchTask(driver: ExecutorDriver, taskInfo: TaskInfo): Unit = {
 
     notifier.info(s"launching task: ${taskInfo.getTaskId.getValue}")
     log.debug(s"launching task: $taskInfo")
@@ -86,8 +89,6 @@ class ActionsExecutor extends Executor with Logging {
 
       val taskData = mapper.readValue(new ByteArrayInputStream(taskInfo.getData.toByteArray), classOf[TaskData])
 
-      val actionSource = taskData.src
-
       val status = TaskStatus.newBuilder
         .setTaskId(taskInfo.getTaskId)
         .setState(TaskState.TASK_RUNNING).build()
@@ -96,7 +97,7 @@ class ActionsExecutor extends Executor with Logging {
 
       val runner = providersFactory.getRunner(taskData.groupId, taskData.typeId)
       runner match {
-        case Some(r) => r.executeSource(taskData.src, actionName)
+        case Some(r) => r.executeSource(taskData.src, actionName, taskData.exports.asJava)
         case None =>
           notifier.error("", s"Runner not found for group: ${taskData.groupId}, type ${taskData.typeId}. Please verify the tasks")
           None
@@ -105,17 +106,18 @@ class ActionsExecutor extends Executor with Logging {
     }
 
     task onComplete {
-      case Failure(t) => {
+
+      case Failure(t) =>
         println(s"launching task failed: ${t.getMessage}")
         System.exit(1)
-      }
-      case Success(ts) => {
+
+      case Success(ts) =>
 
         driver.sendStatusUpdate(TaskStatus.newBuilder()
           .setTaskId(taskInfo.getTaskId)
           .setState(TaskState.TASK_FINISHED).build())
         notifier.info(s"complete task: ${taskInfo.getTaskId.getValue}")
-      }
+
     }
 
   }
