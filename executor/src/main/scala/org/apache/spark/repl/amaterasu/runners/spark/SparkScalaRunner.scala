@@ -1,20 +1,22 @@
 package org.apache.spark.repl.amaterasu.runners.spark
 
 import java.io.ByteArrayOutputStream
+import java.{lang, util}
 
 import io.shinto.amaterasu.common.execution.actions.Notifier
 import io.shinto.amaterasu.common.logging.Logging
 import io.shinto.amaterasu.common.runtime.Environment
 import io.shinto.amaterasu.executor.runtime.AmaContext
 import io.shinto.amaterasu.sdk.AmaterasuRunner
-import org.apache.spark.rdd.RDD
 import org.apache.spark.repl.amaterasu.ReplUtils
-import org.apache.spark.sql.{ Dataset, SparkSession}
+import org.apache.spark.sql.{Dataset, SparkSession}
 
 import scala.collection.mutable
+import scala.collection.JavaConverters._
 import scala.io.Source
 import scala.tools.nsc.Settings
 import scala.tools.nsc.interpreter.{IMain, Results}
+
 
 class ResHolder(var value: Any)
 
@@ -31,12 +33,12 @@ class SparkScalaRunner(var env: Environment,
   val settings = new Settings()
   val holder = new ResHolder(null)
 
-  override def executeSource(actionSource: String, actionName: String): Unit = {
+  override def executeSource(actionSource: String, actionName: String, exports: util.Map[String, String]): Unit = {
     val source = Source.fromString(actionSource)
-    interpretSources(source, actionName)
+    interpretSources(source, actionName, exports.asScala.toMap)
   }
 
-  def interpretSources(source: Source, actionName: String): Unit = {
+  def interpretSources(source: Source, actionName: String, exports: Map[String, String]): Unit = {
 
     notifier.info(s"================= started action $actionName =================")
 
@@ -54,8 +56,6 @@ class SparkScalaRunner(var env: Environment,
 
           val intresult = interpreter.interpret(line)
 
-          //if (interpreter.prevRequestList.last.value.exists) {
-
           val result = interpreter.prevRequestList.last.lineRep.call("$result")
 
           // dear future me (probably Karel or Tim) this is what we
@@ -69,28 +69,34 @@ class SparkScalaRunner(var env: Environment,
 
               notifier.success(line)
 
-              //val resultName = interpreter.prevRequestList.last.value.name.toString
               val resultName = interpreter.prevRequestList.last.termNames.last
 
-              if (result != null) {
-                //notifier.info(result.getClass.toString)
-                result match {
-                  case ds: Dataset[_] =>
-                    log.debug(s"persisting DataFrame: $resultName")
-                    interpreter.interpret(s"""$resultName.write.mode(SaveMode.Overwrite).format("parquet").save("${env.workingDir}/$jobId/$actionName/$resultName")""")
-                    notifier.info(outStream.toString)
-                    notifier.info(s"""$resultName.write.mode(SaveMode.Overwrite).format("parquet").save("${env.workingDir}/$jobId/$actionName/$resultName")""")
-                    log.debug(outStream.toString)
-                    log.debug(s"persisted DataFrame: $resultName")
+              if (exports.contains(resultName.toString)) {
 
-                  case rdd: RDD[_] =>
-                    log.debug(s"persisting RDD: $resultName")
-                    interpreter.interpret(s"""$resultName.saveAsObjectFile("${env.workingDir}/$jobId/$actionName/$resultName")""")
-                    notifier.info(s"${env.workingDir}/$jobId/$actionName/$resultName")
-                    log.debug(outStream.toString)
-                    log.debug(s"persisted RDD: $resultName")
+                val format = exports(resultName.toString)
 
-                  case _ => println(result)
+                if (result != null) {
+
+
+                  //notifier.info(result.getClass.toString)
+                  result match {
+                    case ds: Dataset[_] =>
+                      log.debug(s"persisting DataFrame: $resultName")
+                      interpreter.interpret(s"""$resultName.write.mode(SaveMode.Overwrite).format("$format").save("${env.workingDir}/$jobId/$actionName/$resultName")""")
+                      notifier.info(outStream.toString)
+                      notifier.info(s"""$resultName.write.mode(SaveMode.Overwrite).format("$format").save("${env.workingDir}/$jobId/$actionName/$resultName")""")
+                      log.debug(outStream.toString)
+                      log.debug(s"persisted DataFrame: $resultName")
+
+                    //                  case rdd: RDD[_] =>
+                    //                    log.debug(s"persisting RDD: $resultName")
+                    //                    interpreter.interpret(s"""$resultName.saveAsObjectFile("${env.workingDir}/$jobId/$actionName/$resultName")""")
+                    //                    notifier.info(s"${env.workingDir}/$jobId/$actionName/$resultName")
+                    //                    log.debug(outStream.toString)
+                    //                    log.debug(s"persisted RDD: $resultName")
+
+                    case _ => println(result)
+                  }
                 }
               }
 
