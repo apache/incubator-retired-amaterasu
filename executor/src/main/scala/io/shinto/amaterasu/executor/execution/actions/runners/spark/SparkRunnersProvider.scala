@@ -7,15 +7,11 @@ import io.shinto.amaterasu.common.execution.actions.Notifier
 import io.shinto.amaterasu.common.execution.dependencies.Dependencies
 import io.shinto.amaterasu.sdk.{AmaterasuRunner, RunnersProvider}
 import io.shinto.amaterasu.executor.execution.actions.runners.spark.PySpark.PySparkRunner
-
 import org.apache.spark.repl.amaterasu.ReplUtils
-import org.apache.spark.repl.amaterasu.runners.spark.SparkScalaRunner
-
+import org.apache.spark.repl.amaterasu.runners.spark.{SparkRunnerHelper, SparkScalaRunner}
 import org.eclipse.aether.util.artifact.JavaScopes
-
 import org.sonatype.aether.repository.RemoteRepository
 import org.sonatype.aether.util.artifact.DefaultArtifact
-
 import com.jcabi.aether.Aether
 
 import scala.collection.JavaConversions._

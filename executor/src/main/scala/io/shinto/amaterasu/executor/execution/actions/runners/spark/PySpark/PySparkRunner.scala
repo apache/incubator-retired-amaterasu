@@ -1,15 +1,15 @@
 package io.shinto.amaterasu.executor.execution.actions.runners.spark.PySpark
 
-import java.io.OutputStream
+import java.util
 
 import io.shinto.amaterasu.common.execution.actions.Notifier
 import io.shinto.amaterasu.common.logging.Logging
 import io.shinto.amaterasu.common.runtime.Environment
 import io.shinto.amaterasu.sdk.AmaterasuRunner
-import org.apache.spark.{SparkContext, SparkEnv}
-import org.apache.spark.sql.{SQLContext, SparkSession}
+import org.apache.spark.SparkEnv
+import org.apache.spark.sql.SparkSession
 
-import scala.sys.process.{BasicIO, Process, ProcessIO}
+import scala.sys.process.Process
 import scala.io.Source
 
 /**
@@ -17,19 +17,19 @@ import scala.io.Source
   */
 class PySparkRunner extends AmaterasuRunner with Logging {
 
-  var proc: Process = null
-  var notifier: Notifier = null
+  var proc: Process = _
+  var notifier: Notifier = _
 
-  override def getIdentifier(): String = "pyspark"
+  override def getIdentifier: String = "pyspark"
 
-  override def executeSource(sourcePath: String, actionName: String): Unit = {
-    val source = Source.fromFile(sourcePath).getLines().mkString("\n")
+  override def executeSource(actionSource: String, actionName: String, exports: util.Map[String, String]): Unit = {
+    val source = Source.fromFile(actionSource).getLines().mkString("\n")
     interpretSources(source, actionName)
   }
 
-  def interpretSources(source: String, actionName: String) = {
+  def interpretSources(source: String, actionName: String): Unit = {
 
-    PySparkEntryPoint.getExecutionQueue().setForExec((source, actionName))
+    PySparkEntryPoint.getExecutionQueue.setForExec((source, actionName))
     val resQueue = PySparkEntryPoint.getResultQueue(actionName)
 
     notifier.info(s"================= started action $actionName =================")
@@ -63,7 +63,7 @@ object PySparkRunner {
     val result = new PySparkRunner
 
     PySparkEntryPoint.start(spark, jobId, env, SparkEnv.get)
-    val port = PySparkEntryPoint.getPort()
+    val port = PySparkEntryPoint.getPort
     val proc = Process(Seq("python", getClass.getResource("/spark_intp.py").getPath, port.toString), None,
       "PYTHONPATH" -> pypath,
       "PYSPARK_PYTHON" -> "/usr/bin/python",
