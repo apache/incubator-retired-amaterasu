@@ -1,7 +1,7 @@
 package org.apache.spark.repl.amaterasu.runners.spark
 
-import java.io.ByteArrayOutputStream
-import java.{lang, util}
+import java.io.{ByteArrayOutputStream, File}
+import java.util
 
 import io.shinto.amaterasu.common.execution.actions.Notifier
 import io.shinto.amaterasu.common.logging.Logging
@@ -14,7 +14,7 @@ import org.apache.spark.sql.{Dataset, SparkSession}
 import scala.collection.mutable
 import scala.collection.JavaConverters._
 import scala.io.Source
-import scala.tools.nsc.Settings
+import scala.tools.nsc.GenericRunnerSettings
 import scala.tools.nsc.interpreter.{IMain, Results}
 
 
@@ -25,12 +25,23 @@ class SparkScalaRunner(var env: Environment,
                        var interpreter: IMain,
                        var outStream: ByteArrayOutputStream,
                        var spark: SparkSession,
-                       var notifier: Notifier) extends Logging with AmaterasuRunner {
+                       var notifier: Notifier,
+                       var jars: Seq[String]) extends Logging with AmaterasuRunner {
+
+  private def scalaOptionError(msg: String): Unit = {
+    notifier.error("", msg)
+  }
 
   override def getIdentifier = "scala"
 
-  // This is the amaterasu spark configuration need to rethink the name
-  val settings = new Settings()
+  val interpArguments = List(
+    "-Yrepl-class-based",
+    "-Yrepl-outdir", s"${spark.conf.get("spark.repl.class.outputDir")}",
+    "-classpath", jars.mkString(File.pathSeparator)
+  ) //++ args.toList
+
+  val settings = new GenericRunnerSettings(scalaOptionError)
+  settings.processArguments(interpArguments, true)
   val holder = new ResHolder(null)
 
   override def executeSource(actionSource: String, actionName: String, exports: util.Map[String, String]): Unit = {
@@ -41,6 +52,7 @@ class SparkScalaRunner(var env: Environment,
   def interpretSources(source: Source, actionName: String, exports: Map[String, String]): Unit = {
 
     notifier.info(s"================= started action $actionName =================")
+
 
     for (line <- source.getLines()) {
 
@@ -83,8 +95,8 @@ class SparkScalaRunner(var env: Environment,
                     case ds: Dataset[_] =>
                       log.debug(s"persisting DataFrame: $resultName")
                       interpreter.interpret(s"""$resultName.write.mode(SaveMode.Overwrite).format("$format").save("${env.workingDir}/$jobId/$actionName/$resultName")""")
-                      notifier.info(outStream.toString)
                       notifier.info(s"""$resultName.write.mode(SaveMode.Overwrite).format("$format").save("${env.workingDir}/$jobId/$actionName/$resultName")""")
+                      notifier.info(outStream.toString)
                       log.debug(outStream.toString)
                       log.debug(s"persisted DataFrame: $resultName")
 
@@ -137,6 +149,7 @@ class SparkScalaRunner(var env: Environment,
     val contextStore = interpreter.prevRequestList.last.lineRep.call("$result").asInstanceOf[mutable.Map[String, AnyRef]]
     AmaContext.init(spark, jobId, env)
 
+    notifier.info(sc.getConf.getAll.mkString("##"))
     // populating the contextStore
     contextStore.put("sc", sc)
     contextStore.put("sqlContext", sqlContext)
@@ -167,7 +180,7 @@ object SparkScalaRunner extends Logging {
             notifier: Notifier,
             jars: Seq[String]): SparkScalaRunner = {
 
-    new SparkScalaRunner(env, jobId, ReplUtils.getOrCreateScalaInterperter(outStream, jars), outStream, spark, notifier)
+    new SparkScalaRunner(env, jobId, ReplUtils.getOrCreateScalaInterperter(outStream, jars), outStream, spark, notifier, jars)
 
   }
 

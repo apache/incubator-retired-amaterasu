@@ -5,10 +5,12 @@ import java.nio.file.{Files, Paths}
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
+
 import io.shinto.amaterasu.common.dataobjects._
 import io.shinto.amaterasu.common.execution.dependencies.Dependencies
 import io.shinto.amaterasu.common.logging.Logging
 import io.shinto.amaterasu.common.runtime.Environment
+
 import org.apache.mesos.protobuf.ByteString
 
 import scala.io.Source

@@ -1,13 +1,10 @@
-package io.shinto.amaterasu.executor.execution.actions.runners.spark
-
-import java.util.Properties
+package org.apache.spark.repl.amaterasu.runners.spark
 
 import io.shinto.amaterasu.common.configuration.ClusterConfig
 import io.shinto.amaterasu.common.runtime.Environment
+import org.apache.spark.SparkConf
 import org.apache.spark.sql.SparkSession
-import org.apache.spark.{SparkConf, SparkContext}
-
-import scala.collection.JavaConversions._
+import org.apache.spark.util.Utils
 
 /**
   * Created by eyalbenivri on 02/09/2016.
@@ -23,7 +20,7 @@ object SparkRunnerHelper {
 
     val config = new ClusterConfig()
 
-    Thread.currentThread().setContextClassLoader(getClass.getClassLoader())
+    Thread.currentThread().setContextClassLoader(getClass.getClassLoader)
 
     val conf = new SparkConf(true)
       .set("spark.executor.uri", s"http://$getNode:${config.Webserver.Port}/spark-${config.Webserver.sparkVersion}.tgz")
@@ -33,7 +30,13 @@ object SparkRunnerHelper {
       //      .set("spark.executor.instances", "2")
       //      .set("spark.cores.max", "5")
       .set("spark.hadoop.validateOutputSpecs", "false")
+
       .setJars(jars)
+
+    val rootDir = conf.getOption("spark.repl.classdir").getOrElse(Utils.getLocalDir(conf))
+    val outputDir = Utils.createTempDir(root = rootDir, namePrefix = "repl")
+
+    conf.set("spark.repl.class.outputDir", outputDir.getAbsolutePath)
 
     val sparkSession = SparkSession.builder
       .appName(sparkAppName)
