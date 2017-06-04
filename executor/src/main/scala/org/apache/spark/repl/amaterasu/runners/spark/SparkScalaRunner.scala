@@ -149,7 +149,7 @@ class SparkScalaRunner(var env: Environment,
     val contextStore = interpreter.prevRequestList.last.lineRep.call("$result").asInstanceOf[mutable.Map[String, AnyRef]]
     AmaContext.init(spark, jobId, env)
 
-    notifier.info(sc.getConf.getAll.mkString("##"))
+    notifier.info(sc.getConf.getAll.mkString("\n"))
     // populating the contextStore
     contextStore.put("sc", sc)
     contextStore.put("sqlContext", sqlContext)
