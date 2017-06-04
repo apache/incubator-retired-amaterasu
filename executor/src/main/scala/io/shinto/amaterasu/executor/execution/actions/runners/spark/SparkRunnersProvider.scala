@@ -27,7 +27,9 @@ class SparkRunnersProvider extends RunnersProvider {// with Logging {
 
   override def init(data: ExecData, jobId: String, outStream: ByteArrayOutputStream, notifier: Notifier, executorId: String) : Unit = {
 
-    var jars = Seq[String]()
+    // i've added the current jar as a jar to be distributed as a covfefe attempt to overcome the dpendency issue we've run into.
+    var jars = Seq[String]("executor-0.2.0-incubating-all.jar")
+
     if (data.deps != null) {
       jars ++= getDependencies(data.deps)
     }

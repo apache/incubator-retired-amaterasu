@@ -7,7 +7,7 @@ import io.shinto.amaterasu.common.logging.Logging
 import io.shinto.amaterasu.common.runtime.Environment
 import org.apache.commons.io.FilenameUtils
 import org.apache.spark.SparkContext
-import org.apache.spark.sql.{DataFrame, SQLContext, SaveMode}
+import org.apache.spark.sql.{DataFrame, SQLContext, SaveMode, SparkSession}
 
 /**
   * Created by kirupa on 11/12/16.
@@ -20,7 +20,7 @@ class SparkSqlRunner extends Logging {
   var jobId: String = _
   var actionName: String = _
   var sc: SparkContext = _
-  var sqlContext: SQLContext = _
+  var spark: SparkSession = _
 
   def executeQuery(sparkSqlTempTable: String,
                     dataSource: String,
@@ -31,22 +31,22 @@ class SparkSqlRunner extends Logging {
     notifier.info(s"================= auto-detecting file type of data source =================")
     val loadData: DataFrame = file match {
       case _ if file.isFile => FilenameUtils.getExtension(file.toString) match {
-        case "json" => sqlContext.read.json(dataSource)
-        case "parquet" => sqlContext.read.parquet(dataSource)
+        case "json" => spark.read.json(dataSource)
+        case "parquet" => spark.read.parquet(dataSource)
       }
       case _ if file.isDirectory => {
         val extensions = findFileType(file)
         extensions match {
-          case _ if extensions.contains("json") => sqlContext.read.json(dataSource)
-          case _ if extensions.contains("parquet") => sqlContext.read.parquet(dataSource)
+          case _ if extensions.contains("json") => spark.read.json(dataSource)
+          case _ if extensions.contains("parquet") => spark.read.parquet(dataSource)
         }
       }
     }
 
-    loadData.registerTempTable(sparkSqlTempTable)
+    loadData.createOrReplaceTempView(sparkSqlTempTable)
     notifier.info(s"================= executing the SQL query =================")
     if (!query.isEmpty) {
-      val sqlDf = sqlContext.sql(query)
+      val sqlDf = spark.sql(query)
       println(s"${env.workingDir}/$jobId/$actionName")
       sqlDf.write.mode(SaveMode.Overwrite).parquet(s"${env.workingDir}/$jobId/$actionName")
     }
@@ -84,7 +84,7 @@ object SparkSqlRunner {
     sparkSqlRunnerObj.actionName = actionName
     sparkSqlRunnerObj.notifier = notifier
     sparkSqlRunnerObj.sc = sc
-    sparkSqlRunnerObj.sqlContext = new SQLContext(sc)
+    sparkSqlRunnerObj.spark = SparkSession.builder().config(sc.getConf).enableHiveSupport().getOrCreate()
     sparkSqlRunnerObj
   }
 }
