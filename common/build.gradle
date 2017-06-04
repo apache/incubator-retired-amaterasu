@@ -3,6 +3,9 @@ plugins {
     id 'scala'
 }
 
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
 shadowJar {
     zip64 true
 }
