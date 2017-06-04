@@ -6,6 +6,8 @@ import org.apache.spark.SparkConf
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.util.Utils
 
+import scala.reflect.io.File
+
 /**
   * Created by eyalbenivri on 02/09/2016.
   */
@@ -23,13 +25,16 @@ object SparkRunnerHelper {
     Thread.currentThread().setContextClassLoader(getClass.getClassLoader)
 
     val conf = new SparkConf(true)
-      .set("spark.executor.uri", s"http://$getNode:${config.Webserver.Port}/spark-${config.Webserver.sparkVersion}.tgz")
+      .set("spark.executor.uri", s"http://$getNode:${config.Webserver.Port}/spark-2.1.0-1-bin-2.7.tgz")
+      .set("spark.driver.host", "192.168.33.11")
+      .set("spark.submit.deployMode", "client")
+      .set("spark.home",s"${File(".").toCanonical.toString}/spark-2.1.0-1-bin-2.7")
       //      .set("spark.driver.memory", "512m")
       //.set("spark.repl.class.uri", classServerUri)
       //      .set("spark.mesos.coarse", "true")
       //      .set("spark.executor.instances", "2")
       //      .set("spark.cores.max", "5")
-      .set("spark.hadoop.validateOutputSpecs", "false")
+      //.set("spark.hadoop.validateOutputSpecs", "false")
 
       .setJars(jars)
 
@@ -42,7 +47,7 @@ object SparkRunnerHelper {
       .appName(sparkAppName)
       .master(env.master)
 
-      //.enableHiveSupport()
+      .enableHiveSupport()
       .config(conf).getOrCreate()
 
     val hc = sparkSession.sparkContext.hadoopConfiguration
