@@ -50,8 +50,8 @@ dependencies {
     compile project(':amaterasu-sdk')
 
     //runtime dependency for spark
-    compile ('org.apache.spark:spark-repl_2.11:2.1.0')
-    compile ('org.apache.spark:spark-core_2.11:2.1.0')
+    compile ('org.apache.spark:spark-repl_2.11:2.1.1')
+    compile ('org.apache.spark:spark-core_2.11:2.1.1')
 //    provided group: 'org.apache.spark', name: 'spark-repl_2.11', version: '2.1.0'
 //    provided group: 'org.apache.spark', name: 'spark-core_2.11', version: '2.1.0'
 
@@ -61,7 +61,7 @@ dependencies {
     testCompile 'junit:junit:4.11'
     testCompile 'org.scalatest:scalatest_2.11:3.0.2'
     testCompile 'org.scala-lang:scala-library:2.11.10'
-    testCompile ('org.apache.spark:spark-repl_2.11:2.1.0')
+    testCompile ('org.apache.spark:spark-repl_2.11:2.1.1')
 
     testCompile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.9'
 

@@ -27,10 +27,10 @@ object SparkRunnerHelper {
     val conf = new SparkConf(true)
       .setAppName(sparkAppName)
       .set("spark.master", env.master)
-      .set("spark.executor.uri", s"http://$getNode:${config.Webserver.Port}/spark-2.1.0-1-bin-2.7.tgz")
+      .set("spark.executor.uri", s"http://$getNode:${config.Webserver.Port}/spark-2.1.1-bin-hadoop2.7.tgz")
       .set("spark.driver.host", "192.168.33.11")
       .set("spark.submit.deployMode", "client")
-      .set("spark.home",s"${File(".").toCanonical.toString}/spark-2.1.0-1-bin-2.7")
+      .set("spark.home",s"${File(".").toCanonical.toString}/spark-2.1.1-bin-hadoop2.7")
       //      .set("spark.driver.memory", "512m")
       //.set("spark.repl.class.uri", classServerUri)
       //      .set("spark.mesos.coarse", "true")
@@ -40,7 +40,7 @@ object SparkRunnerHelper {
 
       .setJars(jars)
     // we need SparkContext instance to be alive in order for the application web ui to be available.
-    val sc = new SparkContext(conf)
+    //val sc = new SparkContext(conf)
     val rootDir = conf.getOption("spark.repl.classdir").getOrElse(Utils.getLocalDir(conf))
     val outputDir = Utils.createTempDir(root = rootDir, namePrefix = "repl")
 
@@ -49,7 +49,8 @@ object SparkRunnerHelper {
     val sparkSession = SparkSession.builder
       .appName(sparkAppName)
       .master(env.master)
-      .enableHiveSupport()
+
+      //.enableHiveSupport()
       .config(conf).getOrCreate()
 
     val hc = sparkSession.sparkContext.hadoopConfiguration
