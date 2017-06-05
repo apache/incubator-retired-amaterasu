@@ -107,12 +107,12 @@ fi
 
 if ! ls ${BASEDIR}/dist/spark*.tgz 1> /dev/null 2>&1; then
     echo "${bold} Fetching spark distributable ${NC}"
-    wget https://downloads.mesosphere.com/spark/assets/spark-2.1.0-1-bin-2.7.tgz -P ${BASEDIR}/dist
+    wget https://d3kbcqa49mib13.cloudfront.net/spark-2.1.1-bin-hadoop2.7.tgz -P ${BASEDIR}/dist
 fi
 
 echo $CMD
 
-eval $CMD #| grep "===>"
+eval $CMD | grep "===>"
 kill $SERVER_PID
 
 echo ""

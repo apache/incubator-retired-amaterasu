@@ -94,8 +94,14 @@ class SparkScalaRunner(var env: Environment,
                   result match {
                     case ds: Dataset[_] =>
                       log.debug(s"persisting DataFrame: $resultName")
-                      interpreter.interpret(s"""$resultName.write.mode(SaveMode.Overwrite).format("$format").save("${env.workingDir}/$jobId/$actionName/$resultName")""")
-                      notifier.info(s"""$resultName.write.mode(SaveMode.Overwrite).format("$format").save("${env.workingDir}/$jobId/$actionName/$resultName")""")
+                      val intresult1 = interpreter.interpret(s"""$resultName.write.mode(SaveMode.Overwrite).format("$format").save("${env.workingDir}/$jobId/$actionName/$resultName")""")
+                              notifier.info(s"""$resultName.write.mode(SaveMode.Overwrite).format("$format").save("${env.workingDir}/$jobId/$actionName/$resultName")""")
+
+                      //val intresult = interpreter.interpret(line)
+                      val result1 = interpreter.prevRequestList.last.lineRep.call("$result")
+
+                      notifier.info(intresult1.toString)
+                      notifier.info(result1.toString)
                       notifier.info(outStream.toString)
                       log.debug(outStream.toString)
                       log.debug(s"persisted DataFrame: $resultName")

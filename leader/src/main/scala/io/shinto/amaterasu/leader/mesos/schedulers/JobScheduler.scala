@@ -158,7 +158,7 @@ class JobScheduler extends AmaterasuScheduler {
                     .setExtract(false)
                     .build())
                   .addUris(URI.newBuilder()
-                    .setValue(s"http://${sys.env("AMA_NODE")}:${config.Webserver.Port}/spark-2.1.0-1-bin-2.7.tgz")
+                    .setValue(s"http://${sys.env("AMA_NODE")}:${config.Webserver.Port}/spark-2.1.1-bin-hadoop2.7.tgz")
                     .setExecutable(false)
                     .setExtract(true)
                     .build())

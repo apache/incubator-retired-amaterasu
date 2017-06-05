@@ -57,15 +57,6 @@ object ReplUtils {
 
       val intp = interpreter.getIntp
 
-//      try {
-//        val classServer: Method = intp.getClass.getMethod("classServerUri")
-//        classServerUri = classServer.invoke(intp).asInstanceOf[String]
-//      }
-//      catch {
-//        case e: Any =>
-//          println(String.format("Spark method classServerUri not available due to: [%s]", e.getMessage))
-//      }
-
       settings.embeddedDefaults(Thread.currentThread().getContextClassLoader)
       intp.setContextClassLoader
       intp.initializeSynchronous
@@ -81,8 +72,4 @@ object ReplUtils {
     this.classServerUri = classServerUri
   }
 
-//  private httpServer(): HttPServer = {
-//
-//
-//  }
 }
