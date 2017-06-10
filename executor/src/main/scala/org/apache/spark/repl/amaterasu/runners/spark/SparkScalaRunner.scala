@@ -30,7 +30,7 @@ class SparkScalaRunner(var env: Environment,
   }
 
   override def getIdentifier = "scala"
-  
+
   val holder = new ResHolder(null)
 
   override def executeSource(actionSource: String, actionName: String, exports: util.Map[String, String]): Unit = {
