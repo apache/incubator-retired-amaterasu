@@ -1,21 +1,97 @@
 package org.apache.spark.repl.amaterasu.runners.spark
 
+import java.io.{ByteArrayOutputStream, File, PrintWriter}
+
 import io.shinto.amaterasu.common.configuration.ClusterConfig
+import io.shinto.amaterasu.common.execution.actions.Notifier
 import io.shinto.amaterasu.common.runtime.Environment
+import org.apache.spark.repl.amaterasu.AmaSparkILoop
 import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.util.Utils
 
-import scala.reflect.io.File
+import scala.tools.nsc.{GenericRunnerSettings, Settings}
+import scala.tools.nsc.interpreter.IMain
+
 
 /**
   * Created by eyalbenivri on 02/09/2016.
   */
 object SparkRunnerHelper {
 
+  private val conf = new SparkConf()
+  private val rootDir = conf.getOption("spark.repl.classdir").getOrElse(Utils.getLocalDir(conf))
+  private val outputDir = Utils.createTempDir(root = rootDir, namePrefix = "repl")
+
+  private var sparkContext: SparkContext = _
+  private var sparkSession: SparkSession = _
+
+  var notifier: Notifier = _
+  //private var interpreter: IMain = null
+
+  //var classServerUri: String = null
+  private var interpreter: IMain = _
+
   def getNode: String = sys.env.get("AMA_NODE") match {
     case None => "127.0.0.1"
     case _ => sys.env("AMA_NODE")
+  }
+
+  def getOrCreateScalaInterperter(outStream: ByteArrayOutputStream, jars: Seq[String], recreate: Boolean = false): IMain = {
+    if (interpreter == null || recreate) {
+      initInterpreter(outStream, jars)
+    }
+    interpreter
+  }
+
+  private def scalaOptionError(msg: String): Unit = {
+    notifier.error("", msg)
+  }
+  private def initInterpreter(outStream: ByteArrayOutputStream, jars: Seq[String]) = {
+
+    var result: IMain = null
+    //var classServerUri: String = null
+    val config = new ClusterConfig()
+    try {
+      //val command = new SparkCommandLine(List())
+
+      val interpArguments = List(
+        "-Yrepl-class-based",
+        "-Yrepl-outdir", s"${outputDir.getAbsolutePath}",
+        "-classpath", jars.mkString(File.separator)
+      )
+
+      val settings = new GenericRunnerSettings(scalaOptionError)
+      settings.processArguments(interpArguments, true)
+
+      settings.classpath.append(System.getProperty("java.class.path") + java.io.File.pathSeparator +
+        "spark-" + config.Webserver.sparkVersion + "/jars/*" + java.io.File.pathSeparator +
+        jars.mkString(java.io.File.pathSeparator))
+
+      settings.usejavacp.value = true
+
+      //val in: Option[BufferedReader] = null
+      val out = new PrintWriter(outStream)
+      val interpreter = new AmaSparkILoop(out)
+      interpreter.setSttings(settings)
+
+      interpreter.create
+
+      val intp = interpreter.getIntp
+
+      settings.embeddedDefaults(Thread.currentThread().getContextClassLoader)
+      intp.setContextClassLoader
+      intp.initializeSynchronous
+
+      result = intp
+    }
+    catch {
+      case e: Exception =>
+        println("+++++++>" + new Predef.String(outStream.toByteArray))
+
+    }
+
+    interpreter = result
   }
 
   def createSpark(env: Environment, sparkAppName: String, jars: Seq[String]): SparkSession = {
@@ -24,13 +100,12 @@ object SparkRunnerHelper {
 
     Thread.currentThread().setContextClassLoader(getClass.getClassLoader)
 
-    val conf = new SparkConf(true)
-      .setAppName(sparkAppName)
+    conf.setAppName(sparkAppName)
       .set("spark.master", env.master)
       .set("spark.executor.uri", s"http://$getNode:${config.Webserver.Port}/spark-2.1.1-bin-hadoop2.7.tgz")
       .set("spark.driver.host", "192.168.33.11")
       .set("spark.submit.deployMode", "client")
-      .set("spark.home",s"${File(".").toCanonical.toString}/spark-2.1.1-bin-hadoop2.7")
+      .set("spark.home", s"${scala.reflect.io.File(".").toCanonical.toString}/spark-2.1.1-bin-hadoop2.7")
       //      .set("spark.driver.memory", "512m")
       //.set("spark.repl.class.uri", classServerUri)
       //      .set("spark.mesos.coarse", "true")
@@ -39,14 +114,10 @@ object SparkRunnerHelper {
       //.set("spark.hadoop.validateOutputSpecs", "false")
 
       .setJars(jars)
-    // we need SparkContext instance to be alive in order for the application web ui to be available.
-    //val sc = new SparkContext(conf)
-    val rootDir = conf.getOption("spark.repl.classdir").getOrElse(Utils.getLocalDir(conf))
-    val outputDir = Utils.createTempDir(root = rootDir, namePrefix = "repl")
 
     conf.set("spark.repl.class.outputDir", outputDir.getAbsolutePath)
 
-    val sparkSession = SparkSession.builder
+    sparkSession = SparkSession.builder
       .appName(sparkAppName)
       .master(env.master)
 

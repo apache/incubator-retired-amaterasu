@@ -8,7 +8,6 @@ import io.shinto.amaterasu.common.execution.dependencies.Dependencies
 import io.shinto.amaterasu.sdk.{AmaterasuRunner, RunnersProvider}
 import io.shinto.amaterasu.executor.execution.actions.runners.spark.PySpark.PySparkRunner
 
-import org.apache.spark.repl.amaterasu.ReplUtils
 import org.apache.spark.repl.amaterasu.runners.spark.{SparkRunnerHelper, SparkScalaRunner}
 import org.eclipse.aether.util.artifact.JavaScopes
 import org.sonatype.aether.repository.RemoteRepository
@@ -39,8 +38,9 @@ class SparkRunnersProvider extends RunnersProvider {// with Logging {
 
     val sparkAppName = s"job_${jobId}_executor_$executorId"
     //log.debug(s"creating SparkContext with master ${data.env.master}")
+    SparkRunnerHelper.notifier = notifier
     val spark = SparkRunnerHelper.createSpark(data.env, sparkAppName, jars)
-    val sparkContext = spark.sparkContext
+
     val sparkScalaRunner = SparkScalaRunner(data.env, jobId, spark, outStream, notifier, jars)
     sparkScalaRunner.initializeAmaContext(data.env)
 

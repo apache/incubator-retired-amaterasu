@@ -8,7 +8,6 @@ import io.shinto.amaterasu.common.logging.Logging
 import io.shinto.amaterasu.common.runtime.Environment
 import io.shinto.amaterasu.executor.runtime.AmaContext
 import io.shinto.amaterasu.sdk.AmaterasuRunner
-import org.apache.spark.repl.amaterasu.ReplUtils
 import org.apache.spark.sql.{Dataset, SparkSession}
 
 import scala.collection.mutable
@@ -16,7 +15,6 @@ import scala.collection.JavaConverters._
 import scala.io.Source
 import scala.tools.nsc.GenericRunnerSettings
 import scala.tools.nsc.interpreter.{IMain, Results}
-
 
 class ResHolder(var value: Any)
 
@@ -34,14 +32,14 @@ class SparkScalaRunner(var env: Environment,
 
   override def getIdentifier = "scala"
 
-  val interpArguments = List(
-    "-Yrepl-class-based",
-    "-Yrepl-outdir", s"${spark.conf.get("spark.repl.class.outputDir")}",
-    "-classpath", jars.mkString(File.pathSeparator)
-  ) //++ args.toList
-
-  val settings = new GenericRunnerSettings(scalaOptionError)
-  settings.processArguments(interpArguments, true)
+//  val interpArguments = List(
+//    "-Yrepl-class-based",
+//    "-Yrepl-outdir", s"${spark.conf.get("spark.repl.class.outputDir")}",
+//    "-classpath", jars.mkString(File.pathSeparator)
+//  ) //++ args.toList
+//
+//  val settings = new GenericRunnerSettings(scalaOptionError)
+//  settings.processArguments(interpArguments, true)
   val holder = new ResHolder(null)
 
   override def executeSource(actionSource: String, actionName: String, exports: util.Map[String, String]): Unit = {
@@ -89,29 +87,12 @@ class SparkScalaRunner(var env: Environment,
 
                 if (result != null) {
 
-
-                  //notifier.info(result.getClass.toString)
                   result match {
                     case ds: Dataset[_] =>
                       log.debug(s"persisting DataFrame: $resultName")
-                      val intresult1 = interpreter.interpret(s"""$resultName.write.mode(SaveMode.Overwrite).format("$format").save("${env.workingDir}/$jobId/$actionName/$resultName")""")
-                              notifier.info(s"""$resultName.write.mode(SaveMode.Overwrite).format("$format").save("${env.workingDir}/$jobId/$actionName/$resultName")""")
+                      interpreter.interpret(s"""$resultName.write.mode(SaveMode.Overwrite).format("$format").save("${env.workingDir}/$jobId/$actionName/$resultName")""")
 
-                      //val intresult = interpreter.interpret(line)
-                      val result1 = interpreter.prevRequestList.last.lineRep.call("$result")
-
-                      notifier.info(intresult1.toString)
-                      notifier.info(result1.toString)
-                      notifier.info(outStream.toString)
-                      log.debug(outStream.toString)
                       log.debug(s"persisted DataFrame: $resultName")
-
-                    //                  case rdd: RDD[_] =>
-                    //                    log.debug(s"persisting RDD: $resultName")
-                    //                    interpreter.interpret(s"""$resultName.saveAsObjectFile("${env.workingDir}/$jobId/$actionName/$resultName")""")
-                    //                    notifier.info(s"${env.workingDir}/$jobId/$actionName/$resultName")
-                    //                    log.debug(outStream.toString)
-                    //                    log.debug(s"persisted RDD: $resultName")
 
                     case _ => println(result)
                   }
@@ -155,7 +136,6 @@ class SparkScalaRunner(var env: Environment,
     val contextStore = interpreter.prevRequestList.last.lineRep.call("$result").asInstanceOf[mutable.Map[String, AnyRef]]
     AmaContext.init(spark, jobId, env)
 
-    notifier.info(sc.getConf.getAll.mkString("\n"))
     // populating the contextStore
     contextStore.put("sc", sc)
     contextStore.put("sqlContext", sqlContext)
@@ -186,7 +166,7 @@ object SparkScalaRunner extends Logging {
             notifier: Notifier,
             jars: Seq[String]): SparkScalaRunner = {
 
-    new SparkScalaRunner(env, jobId, ReplUtils.getOrCreateScalaInterperter(outStream, jars), outStream, spark, notifier, jars)
+    new SparkScalaRunner(env, jobId, SparkRunnerHelper.getOrCreateScalaInterperter(outStream, jars), outStream, spark, notifier, jars)
 
   }
 
