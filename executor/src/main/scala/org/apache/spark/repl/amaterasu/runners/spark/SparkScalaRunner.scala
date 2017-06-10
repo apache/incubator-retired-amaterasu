@@ -1,6 +1,6 @@
 package org.apache.spark.repl.amaterasu.runners.spark
 
-import java.io.{ByteArrayOutputStream, File}
+import java.io.ByteArrayOutputStream
 import java.util
 
 import io.shinto.amaterasu.common.execution.actions.Notifier
@@ -13,7 +13,6 @@ import org.apache.spark.sql.{Dataset, SparkSession}
 import scala.collection.mutable
 import scala.collection.JavaConverters._
 import scala.io.Source
-import scala.tools.nsc.GenericRunnerSettings
 import scala.tools.nsc.interpreter.{IMain, Results}
 
 class ResHolder(var value: Any)
@@ -31,15 +30,7 @@ class SparkScalaRunner(var env: Environment,
   }
 
   override def getIdentifier = "scala"
-
-//  val interpArguments = List(
-//    "-Yrepl-class-based",
-//    "-Yrepl-outdir", s"${spark.conf.get("spark.repl.class.outputDir")}",
-//    "-classpath", jars.mkString(File.pathSeparator)
-//  ) //++ args.toList
-//
-//  val settings = new GenericRunnerSettings(scalaOptionError)
-//  settings.processArguments(interpArguments, true)
+  
   val holder = new ResHolder(null)
 
   override def executeSource(actionSource: String, actionName: String, exports: util.Map[String, String]): Unit = {
