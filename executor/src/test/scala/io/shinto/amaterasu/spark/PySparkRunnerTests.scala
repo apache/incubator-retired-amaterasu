@@ -5,9 +5,12 @@ import java.io.File
 import io.shinto.amaterasu.executor.execution.actions.runners.spark.PySpark.PySparkRunner
 import io.shinto.amaterasu.common.runtime.Environment
 import io.shinto.amaterasu.utilities.TestNotifier
+
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.{SparkConf, SparkContext}
 import org.scalatest.{BeforeAndAfterAll, FlatSpec, Matchers}
+
+import scala.collection.JavaConverters._
 
 class PySparkRunnerTests extends FlatSpec with Matchers with BeforeAndAfterAll {
 
@@ -35,9 +38,10 @@ class PySparkRunnerTests extends FlatSpec with Matchers with BeforeAndAfterAll {
     val resources = new File(getClass.getResource("/spark_intp.py").getPath).getParent
 
     val conf = new SparkConf(true)
-      .setMaster("local[*]")
+      .setMaster("local[1]")
       .setAppName("job_5")
       .set("spark.local.ip", "127.0.0.1")
+      .set("spark.ui.port", "4081")
       .setExecutorEnv("PYTHONPATH", resources)
 
     sc = new SparkContext("local[*]", "job_5", conf)
@@ -59,21 +63,21 @@ class PySparkRunnerTests extends FlatSpec with Matchers with BeforeAndAfterAll {
 
 
   "PySparkRunner.executeSource" should "execute simple python code" in {
-    runner.executeSource(getClass.getResource("/simple-python.py").getPath, "test_action1")
+    runner.executeSource(getClass.getResource("/simple-python.py").getPath, "test_action1", Map.empty[String, String].asJava)
   }
 
   it should "print and trows an errors" in {
     a[java.lang.Exception] should be thrownBy {
-      runner.executeSource(getClass.getResource("/simple-python-err.py").getPath, "test_action2")
+      runner.executeSource(getClass.getResource("/simple-python-err.py").getPath, "test_action2", Map.empty[String, String].asJava)
     }
   }
 
   it should "also execute spark code written in python" in {
-    runner.executeSource(getClass.getResource("/simple-pyspark.py").getPath, "test_action3")
+    runner.executeSource(getClass.getResource("/simple-pyspark.py").getPath, "test_action3", Map.empty[String, String].asJava)
   }
 
   it should "also execute spark code written in python with AmaContext being used" in {
-    runner.executeSource(getClass.getResource("/pyspark-with-amacontext.py").getPath, "test_action4")
+    runner.executeSource(getClass.getResource("/pyspark-with-amacontext.py").getPath, "test_action4", Map.empty[String, String].asJava)
   }
 
 }
