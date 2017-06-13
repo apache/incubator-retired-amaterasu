@@ -5,13 +5,19 @@
 #
 # with open('/Users/roadan/pypath.txt', 'a') as the_file:
 #     the_file.write(user_paths)
-
-import py4j
+import sys
 import ast
 import codegen
-import sys,os,os.path
+import os
 from runtime import AmaContext
-
+os.chdir(os.getcwd() + '/executor/build/resources/test/')
+import tarfile
+tar = tarfile.open('pyspark.tar.gz', 'r')
+tar.extractall()
+tar = tarfile.open('py4j.tar.gz', 'r')
+tar.extractall()
+# sys.path.insert(1, os.getcwd() + '/executor/src/test/resources/pyspark')
+# sys.path.insert(1, os.getcwd() + '/executor/src/test/resources/py4j')
 from py4j.java_gateway import JavaGateway, GatewayClient, java_import
 from py4j.protocol import Py4JJavaError
 from pyspark.conf import SparkConf
@@ -24,7 +30,6 @@ from pyspark.accumulators import Accumulator, AccumulatorParam
 from pyspark.broadcast import Broadcast
 from pyspark.serializers import MarshalSerializer, PickleSerializer
 from pyspark.sql import SQLContext, HiveContext, Row, SchemaRDD
-
 client = GatewayClient(port=int(sys.argv[1]))
 gateway = JavaGateway(client, auto_convert = True)
 entry_point = gateway.entry_point
@@ -53,7 +58,6 @@ while True:
     actionData = queue.getNext()
     resultQueue = entry_point.getResultQueue(actionData._2())
     actionSource = actionData._1()
-
     tree = ast.parse(actionSource)
 
     for node in tree.body:
@@ -63,8 +67,6 @@ while True:
             co  = compile(wrapper, "<ast>", 'exec')
             exec(co)
             resultQueue.put('success', actionData._2(), codegen.to_source(node), '')
-
         except:
             resultQueue.put('error', actionData._2(), codegen.to_source(node), str(sys.exc_info()[1]))
-
     resultQueue.put('completion', '', '', '')
