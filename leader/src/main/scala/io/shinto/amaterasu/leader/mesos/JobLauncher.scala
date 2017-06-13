@@ -27,7 +27,7 @@ object JobLauncher extends App with Logging {
 
 
   val parser = new scopt.OptionParser[Args]("amaterasu job") {
-    head("amaterasu job", "0.2.0") //TODO: Get the version from the build
+    head("amaterasu job", "0.2.0-incubating") //TODO: Get the version from the build
 
     opt[String]('r', "repo") action { (x, c) =>
       c.copy(repo = x)

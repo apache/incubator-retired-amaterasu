@@ -5,6 +5,7 @@ import io.shinto.amaterasu.common.execution.actions.Notifier;
 import io.shinto.amaterasu.common.runtime.Environment;
 
 import java.io.ByteArrayOutputStream;
+import java.util.List;
 
 /**
  * RunnersProvider an interface representing a factory that creates a group of related
@@ -19,5 +20,6 @@ public interface RunnersProvider {
               Notifier notifier,
               String executorId);
     String getGroupIdentifier();
+
     AmaterasuRunner getRunner(String id);
 }

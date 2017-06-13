@@ -21,7 +21,7 @@ class RunnersLoadingTests extends FlatSpec with Matchers with BeforeAndAfterAll 
     env = Environment()
     env.workingDir = "file:///tmp/"
     env.master = "local[*]"
-    factory = ProvidersFactory(ExecData(env, Dependencies(ListBuffer.empty[Repo], List.empty[Artifact])), "test", new ByteArrayOutputStream(), new TestNotifier(), "test")
+    factory = ProvidersFactory(ExecData(env, Dependencies(ListBuffer.empty[Repo], List.empty[Artifact]), null), "test", new ByteArrayOutputStream(), new TestNotifier(), "test")
     super.beforeAll()
   }
 
