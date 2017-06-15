@@ -19,6 +19,7 @@ public interface RunnersProvider {
               ByteArrayOutputStream outStream,
               Notifier notifier,
               String executorId);
+
     String getGroupIdentifier();
 
     AmaterasuRunner getRunner(String id);
