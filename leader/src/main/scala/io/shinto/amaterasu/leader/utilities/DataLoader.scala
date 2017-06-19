@@ -29,13 +29,16 @@ object DataLoader extends Logging {
   val mapper = new ObjectMapper()
   mapper.registerModule(DefaultScalaModule)
 
+  val ymlMapper = new ObjectMapper(new YAMLFactory())
+  ymlMapper.registerModule(DefaultScalaModule)
+
   def getTaskData(actionData: ActionData, env: String): ByteString = {
 
     val srcFile = actionData.src
     val src = Source.fromFile(s"repo/src/$srcFile").mkString
-    val envValue = Source.fromFile(s"repo/env/$env/job.json").mkString
+    val envValue = Source.fromFile(s"repo/env/$env/job.yml").mkString
 
-    val envData = mapper.readValue(envValue, classOf[Environment])
+    val envData = ymlMapper.readValue(envValue, classOf[Environment])
 
     val data = mapper.writeValueAsBytes(TaskData(src, envData, actionData.groupId, actionData.typeId, actionData.exports))
     ByteString.copyFrom(data)
@@ -44,15 +47,12 @@ object DataLoader extends Logging {
 
   def getExecutorData(env: String): ByteString = {
 
-    val ymlMapper = new ObjectMapper(new YAMLFactory())
-    ymlMapper.registerModule(DefaultScalaModule)
-
     // loading the job configuration
-    val envValue = Source.fromFile(s"repo/env/$env/job.json").mkString //TODO: change this to YAML
-    val envData = mapper.readValue(envValue, classOf[Environment])
+    val envValue = Source.fromFile(s"repo/env/$env/job.yml").mkString //TODO: change this to YAML
+    val envData = ymlMapper.readValue(envValue, classOf[Environment])
 
     // loading all additional configurations
-    val files = new File(s"repo/env/$env/").listFiles().filter(_.isFile).filter(_.getName != "job.json")
+    val files = new File(s"repo/env/$env/").listFiles().filter(_.isFile).filter(_.getName != "job.yml")
     val config = files.map(yamlToMap).toMap
 
     // loading the job's dependencies
