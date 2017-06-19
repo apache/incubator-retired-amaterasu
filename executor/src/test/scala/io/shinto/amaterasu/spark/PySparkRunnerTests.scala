@@ -5,15 +5,14 @@ import java.io.File
 import io.shinto.amaterasu.executor.execution.actions.runners.spark.PySpark.PySparkRunner
 import io.shinto.amaterasu.common.runtime.Environment
 import io.shinto.amaterasu.utilities.TestNotifier
-
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.SparkConf
-import org.scalatest.{BeforeAndAfterAll, FlatSpec, Matchers}
+import org.scalatest.{BeforeAndAfterAll, FlatSpec, Matchers, OneInstancePerTest}
 
 import scala.collection.JavaConverters._
 
-class PySparkRunnerTests extends FlatSpec with Matchers with BeforeAndAfterAll {
+class PySparkRunnerTests extends FlatSpec with OneInstancePerTest with Matchers with BeforeAndAfterAll {
 
   Logger.getLogger("org").setLevel(Level.OFF)
   Logger.getLogger("akka").setLevel(Level.OFF)
@@ -23,6 +22,7 @@ class PySparkRunnerTests extends FlatSpec with Matchers with BeforeAndAfterAll {
 
   var spark: SparkSession = _
   var runner: PySparkRunner = _
+
 
   override protected def beforeAll(): Unit = {
     val env = Environment()

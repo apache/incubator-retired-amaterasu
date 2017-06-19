@@ -39,11 +39,7 @@ class SparkRunnersProvider extends RunnersProvider {
     conf = data.configurations("spark")
 
     val sparkAppName = s"job_${jobId}_executor_$executorId"
-
-    for ((k, v) <- conf) {
-      notifier.info(s"key: $k, value: $v")
-    }
-
+    
     SparkRunnerHelper.notifier = notifier
     val spark = SparkRunnerHelper.createSpark(data.env, sparkAppName, jars, conf)
 
