@@ -5,55 +5,33 @@ import java.io.File
 import io.shinto.amaterasu.executor.execution.actions.runners.spark.PySpark.PySparkRunner
 import io.shinto.amaterasu.common.runtime.Environment
 import io.shinto.amaterasu.utilities.TestNotifier
-import org.apache.log4j.{Level, Logger}
+
 import org.apache.spark.sql.SparkSession
-import org.apache.spark.SparkConf
-import org.scalatest.{BeforeAndAfterAll, FlatSpec, Matchers, OneInstancePerTest}
+
+import org.scalatest._
 
 import scala.collection.JavaConverters._
 
-class PySparkRunnerTests extends FlatSpec with OneInstancePerTest with Matchers with BeforeAndAfterAll {
+@DoNotDiscover
+class PySparkRunnerTests extends FlatSpec with Matchers with BeforeAndAfterAll {
 
-  Logger.getLogger("org").setLevel(Level.OFF)
-  Logger.getLogger("akka").setLevel(Level.OFF)
-  Logger.getLogger("spark").setLevel(Level.OFF)
-  Logger.getLogger("jetty").setLevel(Level.OFF)
-  Logger.getRootLogger.setLevel(Level.OFF)
 
-  var spark: SparkSession = _
   var runner: PySparkRunner = _
-
+  var spark: SparkSession = _
+  var env: Environment = _
 
   override protected def beforeAll(): Unit = {
-    val env = Environment()
+
+
     val notifier = new TestNotifier()
 
     // this is an ugly hack, getClass.getResource("/").getPath should have worked but
     // stopped working when we moved to gradle :(
     val resources = new File(getClass.getResource("/spark_intp.py").getPath).getParent
 
-    val conf = new SparkConf(true)
-      .setMaster("local[1]")
-      .setAppName("job_5")
-      .set("spark.local.ip", "127.0.0.1")
-      .set("spark.ui.port", "4081")
-      .setExecutorEnv("PYTHONPATH", resources)
-
-    spark = SparkSession.builder.
-      master("local")
-      .appName("job_5")
-      .config(conf)
-      .getOrCreate()
-
     runner = PySparkRunner(env, "job_5", notifier, spark, resources)
 
     super.beforeAll()
-  }
-
-  override protected def afterAll(): Unit = {
-    spark.stop()
-
-    super.afterAll()
   }
 
 

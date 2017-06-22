@@ -30,3 +30,6 @@ task buildDistribution() {
     dependsOn customDistTar
 }
 
+tasks.withType(Test)  {
+    maxParallelForks = 1
+}

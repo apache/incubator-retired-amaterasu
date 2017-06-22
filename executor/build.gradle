@@ -1,11 +1,9 @@
 plugins {
     id 'com.github.johnrengelman.shadow' version '1.2.4'
-    id 'com.github.maiflai.scalatest' version '0.15'
+    id 'com.github.maiflai.scalatest' version '0.6-5-g9065d91'
     id 'scala'
     id 'java'
 }
-
-//apply plugin:
 
 shadowJar {
     zip64 true
@@ -22,7 +20,6 @@ repositories {
 }
 
 test {
-//    org.gradle.parallel=false
     maxParallelForks = 1
     forkEvery = 1
 }
@@ -41,7 +38,7 @@ dependencies {
 
     compile group: 'org.scala-lang', name: 'scala-library', version: '2.11.11'
     compile group: 'org.scala-lang', name: 'scala-reflect', version: '2.11.11'
-    compile('com.jcabi:jcabi-aether:0.10.1') {
+    compile ('com.jcabi:jcabi-aether:0.10.1') {
         exclude group: 'org.jboss.netty'
     }
     compile group: 'org.apache.maven', name: 'maven-core', version: '3.0.5'
@@ -51,17 +48,18 @@ dependencies {
     compile project(':amaterasu-sdk')
 
     //runtime dependency for spark
-    compile('org.apache.spark:spark-repl_2.11:2.1.1')
-    compile('org.apache.spark:spark-core_2.11:2.1.1')
+    compile ('org.apache.spark:spark-repl_2.11:2.1.1')
+    compile ('org.apache.spark:spark-core_2.11:2.1.1')
+//    provided group: 'org.apache.spark', name: 'spark-repl_2.11', version: '2.1.0'
+//    provided group: 'org.apache.spark', name: 'spark-core_2.11', version: '2.1.0'
 
     testCompile project(':common')
-    testCompile "gradle.plugin.com.github.maiflai:gradle-scalatest:0.15"
-    testRuntime 'org.pegdown:pegdown:1.4.2'
+    testCompile "gradle.plugin.com.github.maiflai:gradle-scalatest:0.14"
+    testRuntime 'org.pegdown:pegdown:1.1.0'
     testCompile 'junit:junit:4.11'
-    testCompile 'org.scalatest:scalatest_2.11:3.0.3'
-    testCompile group: 'org.testng', name: 'testng', version: '6.11'
+    testCompile 'org.scalatest:scalatest_2.11:3.0.2'
     testCompile 'org.scala-lang:scala-library:2.11.10'
-    testCompile('org.apache.spark:spark-repl_2.11:2.1.1')
+    testCompile ('org.apache.spark:spark-repl_2.11:2.1.1')
 
     testCompile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.9'
 
@@ -92,8 +90,3 @@ task copyToHome(type: Copy) {
     from 'build/libs'
     into '../build/amaterasu/dist'
 }
-
-//task sparkTests(type: Test) {
-//    suite 'io.shinto.sparkTests'
-//    suites 'PySparkRunnerTests.class', 'RunnersLoadingTests.class'
-//}

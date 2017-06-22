@@ -27,6 +27,7 @@ class SparkRunnersProvider extends RunnersProvider {
 
   private val runners = new TrieMap[String, AmaterasuRunner]
   private var conf: Map[String, Any] = _
+  private var executorEnv: Map[String, Any] = _
 
   override def init(data: ExecData, jobId: String, outStream: ByteArrayOutputStream, notifier: Notifier, executorId: String): Unit = {
 
@@ -37,11 +38,12 @@ class SparkRunnersProvider extends RunnersProvider {
     }
 
     conf = data.configurations("spark")
+    executorEnv = data.configurations("spark_exec")
 
     val sparkAppName = s"job_${jobId}_executor_$executorId"
-    
+
     SparkRunnerHelper.notifier = notifier
-    val spark = SparkRunnerHelper.createSpark(data.env, sparkAppName, jars, conf)
+    val spark = SparkRunnerHelper.createSpark(data.env, sparkAppName, jars, conf, executorEnv)
 
     val sparkScalaRunner = SparkScalaRunner(data.env, jobId, spark, outStream, notifier, jars)
     sparkScalaRunner.initializeAmaContext(data.env)

@@ -58,8 +58,6 @@ class SparkScalaRunner(var env: Environment,
 
           val result = interpreter.prevRequestList.last.lineRep.call("$result")
 
-          // dear future me (probably Karel or Tim) this is what we
-          // can use
           // intresult: Success, Error, etc
           // result: the actual result (RDD, df, etc.) for caching
           // outStream.toString gives you the error message
@@ -78,7 +76,7 @@ class SparkScalaRunner(var env: Environment,
                 if (result != null) {
 
                   result match {
-                    case ds: Dataset[_] =>
+                    case ds:  Dataset[_] =>
                       log.debug(s"persisting DataFrame: $resultName")
                       interpreter.interpret(s"""$resultName.write.mode(SaveMode.Overwrite).format("$format").save("${env.workingDir}/$jobId/$actionName/$resultName")""")
 
