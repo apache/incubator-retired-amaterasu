@@ -95,7 +95,7 @@ object SparkRunnerHelper {
     interpreter = result
   }
 
-  def createSpark(env: Environment, sparkAppName: String, jars: Seq[String], sparkConf: Map[String, Any]): SparkSession = {
+  def createSpark(env: Environment, sparkAppName: String, jars: Seq[String], sparkConf: Map[String, Any], executorEnv: Map[String, Any]): SparkSession = {
 
     val config = new ClusterConfig()
 
@@ -104,17 +104,24 @@ object SparkRunnerHelper {
     conf.setAppName(sparkAppName)
       .set("spark.master", env.master)
       .set("spark.executor.uri", s"http://$getNode:${config.Webserver.Port}/spark-2.1.1-bin-hadoop2.7.tgz")
-      .set("spark.driver.host", "192.168.33.11")
+      .set("spark.driver.host", getNode)
       .set("spark.submit.deployMode", "client")
       .set("spark.home", s"${scala.reflect.io.File(".").toCanonical.toString}/spark-2.1.1-bin-hadoop2.7")
       .set("spark.hadoop.validateOutputSpecs", "false")
 
+      //.setExecutorEnv("PYTHONPATH", pysparkPath)
       .setJars(jars)
 
     // adding the the configurations from spark.yml
     for (c <- sparkConf) {
       if (c._2.isInstanceOf[String])
         conf.set(c._1, c._2.toString)
+    }
+
+    // setting the executor env from spark_exec.yml
+    for (c <- executorEnv) {
+      if (c._2.isInstanceOf[String])
+        conf.setExecutorEnv(c._1, c._2.toString)
     }
 
     conf.set("spark.repl.class.outputDir", outputDir.getAbsolutePath)
