@@ -38,7 +38,7 @@ class SparkRunnersProvider extends RunnersProvider {
     }
 
     conf = data.configurations("spark")
-    executorEnv = data.configurations("spark_exec")
+    executorEnv = data.configurations("spark_exec_env")
 
     val sparkAppName = s"job_${jobId}_executor_$executorId"
 
