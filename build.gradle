@@ -29,3 +29,7 @@ task buildDistribution() {
     dependsOn buildHomeDir
     dependsOn customDistTar
 }
+
+tasks.withType(Test)  {
+    maxParallelForks = 1
+}

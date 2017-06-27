@@ -21,11 +21,9 @@ repositories {
 
 test {
     maxParallelForks = 1
+    forkEvery = 1
 }
 
-tasks.withType(Test)  {
-    maxParallelForks = 1
-}
 configurations {
     provided
 }
