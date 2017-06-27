@@ -11,8 +11,8 @@ import org.eclipse.jetty.util.log.StdErrLog
   * Implementation of Jetty Web server to server Amaterasu libraries and other distribution files
   */
 object HttpServer extends Logging {
-  val logger = Logger.getLogger(HttpServer.getClass)
-  var server: Server = null
+  //private val logger = Logger.getLogger(HttpServer.getClass)
+  var server: Server = _
 
   def start(port: String, serverRoot: String): Unit = {
 

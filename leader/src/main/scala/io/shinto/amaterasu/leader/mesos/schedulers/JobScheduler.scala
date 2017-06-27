@@ -11,11 +11,10 @@ import io.shinto.amaterasu.common.configuration.ClusterConfig
 import io.shinto.amaterasu.common.dataobjects.ActionData
 import io.shinto.amaterasu.enums.ActionStatus
 import io.shinto.amaterasu.enums.ActionStatus.ActionStatus
-import io.shinto.amaterasu.leader.mesos.executors.DataLoader
 import io.shinto.amaterasu.common.execution.actions._
 import io.shinto.amaterasu.common.execution.actions.NotificationLevel.NotificationLevel
 import io.shinto.amaterasu.leader.execution.{JobLoader, JobManager}
-import io.shinto.amaterasu.leader.utilities.HttpServer
+import io.shinto.amaterasu.leader.utilities.{DataLoader, HttpServer}
 import org.apache.curator.framework.{CuratorFramework, CuratorFrameworkFactory}
 import org.apache.curator.retry.ExponentialBackoffRetry
 import org.apache.mesos.Protos.CommandInfo.URI
@@ -32,12 +31,12 @@ import scala.collection.concurrent.TrieMap
   */
 class JobScheduler extends AmaterasuScheduler {
 
-  private var jobManager: JobManager = null
-  private var client: CuratorFramework = null
-  private var config: ClusterConfig = null
-  private var src: String = null
-  private var env: String = null
-  private var branch: String = null
+  private var jobManager: JobManager = _
+  private var client: CuratorFramework = _
+  private var config: ClusterConfig = _
+  private var src: String = _
+  private var env: String = _
+  private var branch: String = _
   private var resume: Boolean = false
   private var reportLevel: NotificationLevel = _
 
@@ -63,7 +62,7 @@ class JobScheduler extends AmaterasuScheduler {
 
   def disconnected(driver: SchedulerDriver) {}
 
-  def frameworkMessage(driver: SchedulerDriver, executorId: ExecutorID, slaveId: SlaveID, data: Array[Byte]) = {
+  def frameworkMessage(driver: SchedulerDriver, executorId: ExecutorID, slaveId: SlaveID, data: Array[Byte]): Unit = {
 
     val notification = mapper.readValue(data, classOf[Notification])
 
@@ -77,7 +76,7 @@ class JobScheduler extends AmaterasuScheduler {
 
   }
 
-  def statusUpdate(driver: SchedulerDriver, status: TaskStatus) = {
+  def statusUpdate(driver: SchedulerDriver, status: TaskStatus): Unit = {
 
     status.getState match {
       case TaskState.TASK_RUNNING => jobManager.actionStarted(status.getTaskId.getValue)
@@ -99,9 +98,9 @@ class JobScheduler extends AmaterasuScheduler {
       resources.count(r => r.getName == "mem" && r.getScalar.getValue >= config.Jobs.Tasks.mem) > 0
   }
 
-  def offerRescinded(driver: SchedulerDriver, offerId: OfferID) = {
+  def offerRescinded(driver: SchedulerDriver, offerId: OfferID): Unit = {
 
-    val actionId = offersToTaskIds.get(offerId.getValue).get
+    val actionId = offersToTaskIds(offerId.getValue)
     jobManager.reQueueAction(actionId)
 
   }
@@ -131,7 +130,7 @@ class JobScheduler extends AmaterasuScheduler {
             // on a slave level to efficiently handle slave loses
             executionMap.putIfAbsent(offer.getSlaveId.toString, new ConcurrentHashMap[String, ActionStatus].asScala)
 
-            val slaveActions = executionMap.get(offer.getSlaveId.toString).get
+            val slaveActions = executionMap(offer.getSlaveId.toString)
             slaveActions.put(taskId.getValue, ActionStatus.started)
 
             // searching for an executor that already exist on the slave, if non exist
@@ -148,18 +147,19 @@ class JobScheduler extends AmaterasuScheduler {
               }
               else {
 
+                //println(s"""===> $awsEnv env AMA_NODE=${sys.env("AMA_NODE")} env MESOS_NATIVE_JAVA_LIBRARY=/usr/lib/libmesos.so env SPARK_EXECUTOR_URI=http://${sys.env("AMA_NODE")}:${config.Webserver.Port}/dist/spark-${config.Webserver.sparkVersion}.tgz java -cp executor-0.2.0-incubating-all.jar:spark-${config.Webserver.sparkVersion}/jars/* -Dscala.usejavacp=true -Djava.library.path=/usr/lib io.shinto.amaterasu.executor.mesos.executors.ActionsExecutorLauncher ${jobManager.jobId} ${config.master} ${actionData.name}""".stripMargin)
                 val command = CommandInfo
                   .newBuilder
                   .setValue(
-                    s"""$awsEnv env AMA_NODE=${sys.env("AMA_NODE")} env MESOS_NATIVE_JAVA_LIBRARY=/usr/lib/libmesos.so env SPARK_EXECUTOR_URI=http://${sys.env("AMA_NODE")}:${config.Webserver.Port}/dist/spark-${config.Webserver.sparkVersion}.tgz java -cp executor-0.2.0-all.jar:spark-${config.Webserver.sparkVersion}/lib/* -Dscala.usejavacp=true -Djava.library.path=/usr/lib io.shinto.amaterasu.executor.mesos.executors.ActionsExecutorLauncher ${jobManager.jobId} ${config.master} ${actionData.name}""".stripMargin
+                    s"""$awsEnv env AMA_NODE=${sys.env("AMA_NODE")} env MESOS_NATIVE_JAVA_LIBRARY=/usr/lib/libmesos.so env SPARK_EXECUTOR_URI=http://${sys.env("AMA_NODE")}:${config.Webserver.Port}/dist/spark-${config.Webserver.sparkVersion}.tgz java -cp executor-0.2.0-incubating-all.jar:spark-${config.Webserver.sparkVersion}/jars/* -Dscala.usejavacp=true -Djava.library.path=/usr/lib io.shinto.amaterasu.executor.mesos.executors.ActionsExecutorLauncher ${jobManager.jobId} ${config.master} ${actionData.name}""".stripMargin
                   )
                   .addUris(URI.newBuilder
-                    .setValue(s"http://${sys.env("AMA_NODE")}:${config.Webserver.Port}/executor-0.2.0-all.jar")
+                    .setValue(s"http://${sys.env("AMA_NODE")}:${config.Webserver.Port}/executor-0.2.0-incubating-all.jar")
                     .setExecutable(false)
                     .setExtract(false)
                     .build())
                   .addUris(URI.newBuilder()
-                    .setValue(s"http://${sys.env("AMA_NODE")}:${config.Webserver.Port}/spark-${config.Webserver.sparkVersion}.tgz")
+                    .setValue(s"http://${sys.env("AMA_NODE")}:${config.Webserver.Port}/spark-2.1.1-bin-hadoop2.7.tgz")
                     .setExecutable(false)
                     .setExtract(true)
                     .build())
@@ -248,7 +248,7 @@ class JobScheduler extends AmaterasuScheduler {
 
   def reregistered(driver: SchedulerDriver, masterInfo: Protos.MasterInfo) {}
 
-  def printNotification(notification: Notification) = {
+  def printNotification(notification: Notification): Unit = {
 
     var color = Console.WHITE
 

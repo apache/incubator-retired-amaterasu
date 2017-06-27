@@ -4,30 +4,31 @@ import io.shinto.amaterasu.common.logging.Logging
 import io.shinto.amaterasu.common.runtime.Environment
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.{DataFrame, SQLContext, SaveMode}
+import org.apache.spark.sql.{DataFrame, SQLContext, SaveMode, SparkSession}
 
 import scala.reflect.ClassTag
 
 object AmaContext extends Logging {
 
+  var spark: SparkSession = _
   var sc: SparkContext = _
   var jobId: String = _
   var sqlContext: SQLContext = _
   var env: Environment = _
 
-  def init(sc: SparkContext,
-           sqlContext: SQLContext,
+  def init(spark: SparkSession,
            jobId: String,
-           env: Environment) = {
+           env: Environment): Unit = {
 
-    AmaContext.sc = sc
-    AmaContext.sqlContext = sqlContext
+    AmaContext.spark = spark
+    AmaContext.sqlContext = spark.sqlContext
+    AmaContext.sc = spark.sparkContext
     AmaContext.jobId = jobId
     AmaContext.env = env
 
   }
 
-  def saveDataFrame(df: DataFrame, actionName: String, dfName: String) = {
+  def saveDataFrame(df: DataFrame, actionName: String, dfName: String): Unit = {
 
     try {
 
@@ -36,14 +37,13 @@ object AmaContext extends Logging {
 
     }
     catch {
-      case e: Exception => {
+      case e: Exception =>
         log.error(s"failed storing DataFrame: ${e.getMessage}")
-      }
 
     }
   }
 
-  def saveRDD(rdd: RDD[_], actionName: String, rddName: String) = {
+  def saveRDD(rdd: RDD[_], actionName: String, rddName: String): Unit = {
 
     try {
 
@@ -52,9 +52,8 @@ object AmaContext extends Logging {
 
     }
     catch {
-      case e: Exception => {
+      case e: Exception =>
         log.error(s"failed storing RDD: ${e.getMessage}")
-      }
 
     }
 
@@ -62,7 +61,7 @@ object AmaContext extends Logging {
 
   def getDataFrame(actionName: String, dfName: String): DataFrame = {
 
-    sqlContext.read.parquet(s"${env.workingDir}/$jobId/$actionName/$dfName")
+    spark.read.parquet(s"${env.workingDir}/$jobId/$actionName/$dfName")
 
   }
 
@@ -74,7 +73,7 @@ object AmaContext extends Logging {
 
   def getActionResult(actionName: String): DataFrame = {
 
-    sqlContext.sql(s"select * from ${AmaContext.jobId}.$actionName")
+    spark.sql(s"select * from ${AmaContext.jobId}.$actionName")
 
   }
 

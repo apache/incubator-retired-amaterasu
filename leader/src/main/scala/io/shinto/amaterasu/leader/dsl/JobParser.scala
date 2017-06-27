@@ -5,8 +5,7 @@ import java.util.concurrent.BlockingQueue
 import com.fasterxml.jackson.databind.{JsonNode, ObjectMapper}
 import com.fasterxml.jackson.databind.node.ArrayNode
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
-import io.shinto.amaterasu.common.dataobjects.ActionData
-import io.shinto.amaterasu.leader.execution.actions.{ErrorAction, SequentialAction}
+import io.shinto.amaterasu.common.dataobjects.{ActionData, Export}
 import io.shinto.amaterasu.leader.execution.JobManager
 import io.shinto.amaterasu.leader.execution.actions.{Action, ErrorAction, SequentialAction}
 import org.apache.curator.framework.CuratorFramework
@@ -35,13 +34,11 @@ object JobParser {
     * @param client
     * @return
     */
-  def parse(
-    jobId: String,
-    maki: String,
-    actionsQueue: BlockingQueue[ActionData],
-    client: CuratorFramework,
-    attempts: Int
-  ): JobManager = {
+  def parse(jobId: String,
+            maki: String,
+            actionsQueue: BlockingQueue[ActionData],
+            client: CuratorFramework,
+            attempts: Int): JobManager = {
 
     val mapper = new ObjectMapper(new YAMLFactory())
 
@@ -129,8 +126,9 @@ object JobParser {
     SequentialAction(
       action.path("name").asText,
       action.path("file").asText,
-      action.path("group").asText,
-      action.path("type").asText,
+      action.path("runner").path("group").asText,
+      action.path("runner").path("type").asText,
+      action.path("exports").fields().asScala.toSeq.map(e=> (e.getKey, e.getValue.asText())).toMap,
       jobId,
       actionsQueue,
       client,

@@ -1,6 +1,7 @@
 package io.shinto.amaterasu.executor.execution.actions.runners.spark
 
 import java.io.ByteArrayOutputStream
+import java.util
 
 import io.shinto.amaterasu.common.execution.actions.Notifier
 import io.shinto.amaterasu.common.logging.Logging
@@ -15,8 +16,7 @@ class SparkRRunner extends Logging with AmaterasuRunner {
 
   override def getIdentifier = "spark-r"
 
-  override def executeSource(actionSource: String, actionName: String): Unit = {
-
+  override def executeSource(actionSource: String, actionName: String, exports: util.Map[String, String]): Unit = {
   }
 }
 

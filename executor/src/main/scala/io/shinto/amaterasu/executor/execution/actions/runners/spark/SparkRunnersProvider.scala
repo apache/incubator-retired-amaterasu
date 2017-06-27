@@ -8,14 +8,10 @@ import io.shinto.amaterasu.common.execution.dependencies.Dependencies
 import io.shinto.amaterasu.sdk.{AmaterasuRunner, RunnersProvider}
 import io.shinto.amaterasu.executor.execution.actions.runners.spark.PySpark.PySparkRunner
 
-import org.apache.spark.repl.amaterasu.ReplUtils
-import org.apache.spark.repl.amaterasu.runners.spark.SparkScalaRunner
-
+import org.apache.spark.repl.amaterasu.runners.spark.{SparkRunnerHelper, SparkScalaRunner}
 import org.eclipse.aether.util.artifact.JavaScopes
-
 import org.sonatype.aether.repository.RemoteRepository
 import org.sonatype.aether.util.artifact.DefaultArtifact
-
 import com.jcabi.aether.Aether
 
 import scala.collection.JavaConversions._
@@ -31,23 +27,26 @@ class SparkRunnersProvider extends RunnersProvider {// with Logging {
 
   override def init(data: ExecData, jobId: String, outStream: ByteArrayOutputStream, notifier: Notifier, executorId: String) : Unit = {
 
-    var jars = Seq[String]()
+    // i've added the current jar as a jar to be distributed as a covfefe attempt to overcome the dpendency issue we've run into.
+    var jars = Seq[String]("executor-0.2.0-incubating-all.jar")
+
     if (data.deps != null) {
       jars ++= getDependencies(data.deps)
     }
 
-    val classServerUri = ReplUtils.getOrCreateClassServerUri(outStream, jars)
+    //val classServerUri = ReplUtils.getOrCreateClassServerUri(outStream, jars)
 
     val sparkAppName = s"job_${jobId}_executor_$executorId"
     //log.debug(s"creating SparkContext with master ${data.env.master}")
-    val sparkContext = SparkRunnerHelper.createSparkContext(data.env, sparkAppName, classServerUri, jars)
+    SparkRunnerHelper.notifier = notifier
+    val spark = SparkRunnerHelper.createSpark(data.env, sparkAppName, jars)
 
-    val sparkScalaRunner = SparkScalaRunner(data.env, jobId, sparkContext, outStream, notifier, jars)
+    val sparkScalaRunner = SparkScalaRunner(data.env, jobId, spark, outStream, notifier, jars)
     sparkScalaRunner.initializeAmaContext(data.env)
 
     runners.put(sparkScalaRunner.getIdentifier, sparkScalaRunner)
 
-    val pySparkRunner = PySparkRunner(data.env, jobId, notifier, sparkContext, "")
+    val pySparkRunner = PySparkRunner(data.env, jobId, notifier, spark, "")
     runners.put(pySparkRunner.getIdentifier(), pySparkRunner)
   }
 
