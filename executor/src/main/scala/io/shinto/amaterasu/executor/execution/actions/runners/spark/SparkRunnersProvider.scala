@@ -26,8 +26,8 @@ import scala.collection.concurrent.TrieMap
 class SparkRunnersProvider extends RunnersProvider {
 
   private val runners = new TrieMap[String, AmaterasuRunner]
-  private var conf: Map[String, Any] = _
-  private var executorEnv: Map[String, Any] = _
+  private var conf: Option[Map[String, Any]] = _
+  private var executorEnv: Option[Map[String, Any]] = _
 
   override def init(data: ExecData, jobId: String, outStream: ByteArrayOutputStream, notifier: Notifier, executorId: String): Unit = {
 
@@ -37,8 +37,8 @@ class SparkRunnersProvider extends RunnersProvider {
       jars ++= getDependencies(data.deps)
     }
 
-    conf = data.configurations("spark")
-    executorEnv = data.configurations("spark_exec_env")
+    conf = data.configurations.get("spark")
+    executorEnv = data.configurations.get("spark_exec_env")
 
     val sparkAppName = s"job_${jobId}_executor_$executorId"
 
