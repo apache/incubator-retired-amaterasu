@@ -8,7 +8,7 @@ import java.util.concurrent.{ConcurrentHashMap, LinkedBlockingQueue}
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
 import io.shinto.amaterasu.common.configuration.ClusterConfig
-import io.shinto.amaterasu.common.dataobjects.ActionData
+import io.shinto.amaterasu.common.dataobjects.{ActionData, ExecData}
 import io.shinto.amaterasu.enums.ActionStatus
 import io.shinto.amaterasu.enums.ActionStatus.ActionStatus
 import io.shinto.amaterasu.common.execution.actions._
@@ -26,7 +26,7 @@ import scala.collection.concurrent
 import scala.collection.concurrent.TrieMap
 
 /**
-  * The JobScheduler is a mesos implementation. It is in charge of scheduling the execution of
+  * The JobScheduler is a Mesos implementation. It is in charge of scheduling the execution of
   * Amaterasu actions for a specific job
   */
 class JobScheduler extends AmaterasuScheduler {
@@ -147,7 +147,10 @@ class JobScheduler extends AmaterasuScheduler {
               }
               else {
 
-                //println(s"""===> $awsEnv env AMA_NODE=${sys.env("AMA_NODE")} env MESOS_NATIVE_JAVA_LIBRARY=/usr/lib/libmesos.so env SPARK_EXECUTOR_URI=http://${sys.env("AMA_NODE")}:${config.Webserver.Port}/dist/spark-${config.Webserver.sparkVersion}.tgz java -cp executor-0.2.0-incubating-all.jar:spark-${config.Webserver.sparkVersion}/jars/* -Dscala.usejavacp=true -Djava.library.path=/usr/lib io.shinto.amaterasu.executor.mesos.executors.ActionsExecutorLauncher ${jobManager.jobId} ${config.master} ${actionData.name}""".stripMargin)
+                val execData = DataLoader.getExecutorData(env)
+                //TODO: wait for Eyal's refactoring to extract the containers params
+                //val extraJavaOps = execData...
+
                 val command = CommandInfo
                   .newBuilder
                   .setValue(
@@ -166,7 +169,7 @@ class JobScheduler extends AmaterasuScheduler {
 
                 executor = ExecutorInfo
                   .newBuilder
-                  .setData(DataLoader.getExecutorData(env))
+                  .setData(execData)
                   .setName(taskId.getValue)
                   .setExecutorId(ExecutorID.newBuilder().setValue(taskId.getValue + "-" + UUID.randomUUID()))
                   .setCommand(command)
@@ -194,9 +197,6 @@ class JobScheduler extends AmaterasuScheduler {
           else if (jobManager.outOfActions) {
             log.info(s"framework ${jobManager.jobId} execution finished")
 
-            jobManager.jobReport.append(" *                                                                *\n")
-            jobManager.jobReport.append(" ******************************************************************")
-            log.info(jobManager.jobReport.result)
             HttpServer.stop()
             driver.declineOffer(offer.getId)
             driver.stop()
