@@ -32,13 +32,31 @@ dependencies {
     compile group: 'javax.servlet', name: 'javax.servlet-api', version: '2.5.0'
     compile group: 'org.eclipse.jgit', name: 'org.eclipse.jgit', version: '4.2.0.201601211800-r'
 
+    testCompile project(':common')
     testCompile "gradle.plugin.com.github.maiflai:gradle-scalatest:0.14"
     testRuntime 'org.pegdown:pegdown:1.1.0'
     testCompile 'junit:junit:4.11'
-    testCompile 'org.scalatest:scalatest_2.11:3.0.1'
-    testCompile 'org.scala-lang:scala-library:2.11.5'
+    testCompile 'org.scalatest:scalatest_2.11:3.0.2'
+    testCompile 'org.scala-lang:scala-library:2.11.10'
     testCompile group: 'org.apache.curator', name: 'curator-test', version: '2.9.1'
 
+}
+
+
+sourceSets {
+    test {
+        resources.srcDirs += [file('src/test/resources')]
+    }
+
+    // this is done so Scala will compile before Java
+    main {
+        scala {
+            srcDirs = ['src/main/scala', 'src/main/java']
+        }
+        java {
+            srcDirs = []
+        }
+    }
 }
 
 test {
