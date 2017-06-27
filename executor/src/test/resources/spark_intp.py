@@ -6,12 +6,19 @@
 # with open('/Users/roadan/pypath.txt', 'a') as the_file:
 #     the_file.write(user_paths)
 
-import py4j
 import ast
 import codegen
-import sys,os,os.path
+import os
+import sys
 from runtime import AmaContext
-
+os.chdir(os.getcwd() + '/build/resources/test/')
+import zipfile
+zip = zipfile.ZipFile('pyspark.zip')
+zip.extractall()
+zip = zipfile.ZipFile('py4j-0.10.4-src.zip', 'r')
+zip.extractall()
+# sys.path.insert(1, os.getcwd() + '/executor/src/test/resources/pyspark')
+# sys.path.insert(1, os.getcwd() + '/executor/src/test/resources/py4j')
 from py4j.java_gateway import JavaGateway, GatewayClient, java_import
 from py4j.protocol import Py4JJavaError
 from pyspark.conf import SparkConf
@@ -55,7 +62,6 @@ while True:
     actionData = queue.getNext()
     resultQueue = entry_point.getResultQueue(actionData._2())
     actionSource = actionData._1()
-
     tree = ast.parse(actionSource)
 
     for node in tree.body:
@@ -65,8 +71,6 @@ while True:
             co  = compile(wrapper, "<ast>", 'exec')
             exec(co)
             resultQueue.put('success', actionData._2(), codegen.to_source(node), '')
-
         except:
             resultQueue.put('error', actionData._2(), codegen.to_source(node), str(sys.exc_info()[1]))
-
     resultQueue.put('completion', '', '', '')

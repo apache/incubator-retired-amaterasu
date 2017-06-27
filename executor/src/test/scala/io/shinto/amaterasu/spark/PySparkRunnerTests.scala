@@ -7,7 +7,6 @@ import io.shinto.amaterasu.common.runtime.Environment
 import io.shinto.amaterasu.utilities.TestNotifier
 
 import org.apache.spark.sql.SparkSession
-
 import org.scalatest._
 
 import scala.collection.JavaConverters._
@@ -19,6 +18,12 @@ class PySparkRunnerTests extends FlatSpec with Matchers with BeforeAndAfterAll {
   var runner: PySparkRunner = _
   var spark: SparkSession = _
   var env: Environment = _
+
+  def delete(file: File) {
+    if (file.isDirectory)
+      Option(file.listFiles).map(_.toList).getOrElse(Nil).foreach(delete(_))
+    file.delete
+  }
 
   override protected def beforeAll(): Unit = {
 
@@ -34,6 +39,16 @@ class PySparkRunnerTests extends FlatSpec with Matchers with BeforeAndAfterAll {
     super.beforeAll()
   }
 
+  override protected def afterAll(): Unit = {
+    spark.stop()
+    val pysparkDir = new File(getClass.getResource("/pyspark").getPath)
+    val py4jDir = new File(getClass.getResource("/py4j").getPath)
+    delete(pysparkDir)
+    delete(py4jDir)
+    spark.stop()
+
+    super.afterAll()
+  }
 
   "PySparkRunner.executeSource" should "execute simple python code" in {
     runner.executeSource(getClass.getResource("/simple-python.py").getPath, "test_action1", Map.empty[String, String].asJava)

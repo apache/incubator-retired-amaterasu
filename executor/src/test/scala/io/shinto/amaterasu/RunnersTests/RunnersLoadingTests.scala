@@ -15,5 +15,3 @@ class RunnersLoadingTests extends FlatSpec with Matchers with BeforeAndAfterAll 
     r should not be null
   }
 }
-
-
