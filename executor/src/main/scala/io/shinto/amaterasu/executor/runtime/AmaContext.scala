@@ -3,17 +3,13 @@ package io.shinto.amaterasu.executor.runtime
 import io.shinto.amaterasu.common.logging.Logging
 import io.shinto.amaterasu.common.runtime.Environment
 import org.apache.spark.SparkContext
-import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.{DataFrame, SQLContext, SaveMode, SparkSession}
-
-import scala.reflect.ClassTag
+import org.apache.spark.sql._
 
 object AmaContext extends Logging {
 
   var spark: SparkSession = _
   var sc: SparkContext = _
   var jobId: String = _
-  var sqlContext: SQLContext = _
   var env: Environment = _
 
   def init(spark: SparkSession,
@@ -21,13 +17,13 @@ object AmaContext extends Logging {
            env: Environment): Unit = {
 
     AmaContext.spark = spark
-    AmaContext.sqlContext = spark.sqlContext
     AmaContext.sc = spark.sparkContext
     AmaContext.jobId = jobId
     AmaContext.env = env
 
   }
 
+  @deprecated
   def saveDataFrame(df: DataFrame, actionName: String, dfName: String): Unit = {
 
     try {
@@ -43,37 +39,15 @@ object AmaContext extends Logging {
     }
   }
 
-  def saveRDD(rdd: RDD[_], actionName: String, rddName: String): Unit = {
+  def getDataFrame(actionName: String, dfName: String, format: String = "parquet"): DataFrame = {
 
-    try {
-
-      log.debug(s"${env.workingDir}/$jobId/$actionName/$rddName")
-      rdd.saveAsObjectFile(s"${env.workingDir}/$jobId/$actionName/$rddName")
-
-    }
-    catch {
-      case e: Exception =>
-        log.error(s"failed storing RDD: ${e.getMessage}")
-
-    }
+    spark.read.format(format).load(s"${env.workingDir}/$jobId/$actionName/$dfName")
 
   }
 
-  def getDataFrame(actionName: String, dfName: String): DataFrame = {
+  def getDataset[T](actionName: String, dfName: String, format: String = "parquet"): Dataset[T] = {
 
-    spark.read.parquet(s"${env.workingDir}/$jobId/$actionName/$dfName")
-
-  }
-
-  def getRDD[T: ClassTag](actionName: String, rddName: String): RDD[T] = {
-
-    sc.objectFile[T](s"${env.workingDir}/$jobId/$actionName/$rddName")
-
-  }
-
-  def getActionResult(actionName: String): DataFrame = {
-
-    spark.sql(s"select * from ${AmaContext.jobId}.$actionName")
+    getDataFrame(actionName, dfName, format).as[T]
 
   }
 

@@ -5,13 +5,13 @@ package io.shinto.amaterasu.common.runtime
   */
 case class Environment() {
 
-  var name: String = ""
-  var master: String = ""
+  var name: String = _
+  var master: String = _
 
-  var inputRootPath: String = ""
-  var outputRootPath: String = ""
-  var workingDir: String = ""
+  var inputRootPath: String = _
+  var outputRootPath: String = _
+  var workingDir: String = _
 
-  var configuration: Map[String, String] = null
+  var configuration: Map[String, String] = _
 
 }
