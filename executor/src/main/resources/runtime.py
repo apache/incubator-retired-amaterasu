@@ -6,7 +6,7 @@ class AmaContext:
         self.jobId = jobId
         self.env = env
 
-    def get_data_frame(self, action_name, dataset_name, format = "parquet"):
+    def get_dataframe(self, action_name, dataset_name, format = "parquet"):
         self.spark.read.format(format).load("{0}/{1}/{2}/{3}").fotmat(self.env.workingDir, self.jobId, action_name, dataset_name)
 
 class Environment:
