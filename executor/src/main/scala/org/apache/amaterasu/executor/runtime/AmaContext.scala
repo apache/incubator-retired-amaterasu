@@ -39,29 +39,13 @@ object AmaContext extends Logging {
 
   }
 
-  @deprecated
-  def saveDataFrame(df: DataFrame, actionName: String, dfName: String): Unit = {
-
-    try {
-
-      log.debug(s"${env.workingDir}/$jobId/$actionName/$dfName")
-      df.write.mode(SaveMode.Overwrite).parquet(s"${env.workingDir}/$jobId/$actionName/$dfName")
-
-    }
-    catch {
-      case e: Exception =>
-        log.error(s"failed storing DataFrame: ${e.getMessage}")
-
-    }
-  }
-
   def getDataFrame(actionName: String, dfName: String, format: String = "parquet"): DataFrame = {
 
     spark.read.format(format).load(s"${env.workingDir}/$jobId/$actionName/$dfName")
 
   }
 
-  def getDataset[T](actionName: String, dfName: String, format: String = "parquet"): Dataset[T] = {
+  def getDataset[T: Encoder](actionName: String, dfName: String, format: String = "parquet"): Dataset[T] = {
 
     getDataFrame(actionName, dfName, format).as[T]
 

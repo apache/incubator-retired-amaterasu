@@ -58,6 +58,14 @@ public class PySparkEntryPoint {
         return jsc;
     }
 
+    public static String getJobId(){
+        return AmaContext.jobId();
+    }
+
+    public static Environment getEnv(){
+        return AmaContext.env();
+    }
+
     public static SQLContext getSqlContext() {
         SparkEnv.set(sparkEnv);
         return sqlContext;

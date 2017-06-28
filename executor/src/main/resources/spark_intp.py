@@ -10,7 +10,8 @@ import ast
 import codegen
 import os
 import sys
-from runtime import AmaContext
+from runtime import AmaContext, Environment
+
 os.chdir(os.getcwd() + '/build/resources/test/')
 # import zipfile
 # zip = zipfile.ZipFile('pyspark.zip')
@@ -33,7 +34,7 @@ from pyspark.serializers import MarshalSerializer, PickleSerializer
 from pyspark.sql import SparkSession
 
 client = GatewayClient(port=int(sys.argv[1]))
-gateway = JavaGateway(client, auto_convert = True)
+gateway = JavaGateway(client, auto_convert=True)
 entry_point = gateway.entry_point
 queue = entry_point.getExecutionQueue()
 
@@ -49,14 +50,18 @@ java_import(gateway.jvm, "scala.Tuple2")
 jconf = entry_point.getSparkConf()
 jsc = entry_point.getJavaSparkContext()
 
-conf = SparkConf(_jvm = gateway.jvm, _jconf = jconf)
+jobId = entry_point.getJobId()
+javaEnv = entry_point.getEnv()
+
+env = Environment(javaEnv.name, javaEnv.master, javaEnv.inputRootPath, javaEnv.outputRootPath, javaEnv.workingDir, javaEnv.configuration)
+conf = SparkConf(_jvm=gateway.jvm, _jconf=jconf)
 
 sc = SparkContext(jsc=jsc, gateway=gateway, conf=conf)
 
 spark = SparkSession(sc, entry_point.getSparkSession())
-sqlc = spark._wrapped
+# sqlc = spark._wrapped
 
-ama_context = AmaContext(sc, sqlc)
+ama_context = AmaContext(sc, spark, jobId, env)
 
 while True:
     actionData = queue.getNext()
@@ -68,8 +73,8 @@ while True:
 
         wrapper = ast.Module(body=[node])
         try:
-            co  = compile(wrapper, "<ast>", 'exec')
-            exec(co)
+            co = compile(wrapper, "<ast>", 'exec')
+            exec (co)
             resultQueue.put('success', actionData._2(), codegen.to_source(node), '')
         except:
             resultQueue.put('error', actionData._2(), codegen.to_source(node), str(sys.exc_info()[1]))
