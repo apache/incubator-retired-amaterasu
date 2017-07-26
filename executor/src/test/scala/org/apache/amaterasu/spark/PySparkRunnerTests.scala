@@ -73,7 +73,7 @@ class PySparkRunnerTests extends FlatSpec with Matchers with BeforeAndAfterAll {
   }
 
   it should "also execute spark code written in python" in {
-    runner.executeSource(getClass.getResource("/simple-pyspark.py").getPath, "test_action3", Map.empty[String, String].asJava)
+    runner.executeSource(getClass.getResource("/simple-pyspark.py").getPath, "test_action3", Map("numDS" -> "parquet").asJava)
   }
 
   it should "also execute spark code written in python with AmaContext being used" in {
