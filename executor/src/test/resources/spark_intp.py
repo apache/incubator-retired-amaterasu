@@ -32,6 +32,7 @@ from pyspark.accumulators import Accumulator, AccumulatorParam
 from pyspark.broadcast import Broadcast
 from pyspark.serializers import MarshalSerializer, PickleSerializer
 from pyspark.sql import SparkSession
+from pyspark.sql import Row
 
 client = GatewayClient(port=int(sys.argv[1]))
 gateway = JavaGateway(client, auto_convert=True)
@@ -50,24 +51,23 @@ java_import(gateway.jvm, "scala.Tuple2")
 jconf = entry_point.getSparkConf()
 jsc = entry_point.getJavaSparkContext()
 
-jobId = entry_point.getJobId()
+job_id = entry_point.getJobId()
 javaEnv = entry_point.getEnv()
 
-env = Environment(javaEnv.name, javaEnv.master, javaEnv.inputRootPath, javaEnv.outputRootPath, javaEnv.workingDir, javaEnv.configuration)
+env = Environment(javaEnv.name(), javaEnv.master(), javaEnv.inputRootPath(), javaEnv.outputRootPath(), javaEnv.workingDir(), javaEnv.configuration())
 conf = SparkConf(_jvm=gateway.jvm, _jconf=jconf)
 
 sc = SparkContext(jsc=jsc, gateway=gateway, conf=conf)
-
 spark = SparkSession(sc, entry_point.getSparkSession())
-# sqlc = spark._wrapped
 
-ama_context = AmaContext(sc, spark, jobId, env)
+ama_context = AmaContext(sc, spark, job_id, env)
 
 while True:
     actionData = queue.getNext()
     resultQueue = entry_point.getResultQueue(actionData._2())
     actionSource = actionData._1()
     tree = ast.parse(actionSource)
+    exports = actionData._3()
 
     for node in tree.body:
 
@@ -76,6 +76,19 @@ while True:
             co = compile(wrapper, "<ast>", 'exec')
             exec (co)
             resultQueue.put('success', actionData._2(), codegen.to_source(node), '')
+
+            #if this node is an assignment, we need to check if it needs to be persisted
+            try:
+                persistCode = ''
+                if(isinstance(node,ast.Assign)):
+                    varName = node.targets[0].id
+                    if(exports.containsKey(varName)):
+                            persistCode = varName + ".write.save(\"" + env.working_dir + "/" + job_id + "/" + actionData._2() + "/" + varName + "\", format=\"" + exports[varName] + "\", mode='overwrite')"
+                            persist = compile(persistCode, '<stdin>', 'exec')
+                            exec(persist)
+
+            except:
+                resultQueue.put('error', actionData._2(), persistCode, str(sys.exc_info()[1]))
         except:
             resultQueue.put('error', actionData._2(), codegen.to_source(node), str(sys.exc_info()[1]))
     resultQueue.put('completion', '', '', '')

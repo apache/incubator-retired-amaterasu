@@ -1,13 +1,13 @@
 class AmaContext:
 
-    def __init__(self, sc, spark, jobId, env):
+    def __init__(self, sc, spark, job_id, env):
         self.sc = sc
         self.spark = spark
-        self.jobId = jobId
+        self.job_id = job_id
         self.env = env
 
     def get_dataframe(self, action_name, dataset_name, format = "parquet"):
-        self.spark.read.format(format).load("{0}/{1}/{2}/{3}").fotmat(self.env.workingDir, self.jobId, action_name, dataset_name)
+        return self.spark.read.format(format).load(str(self.env.working_dir) + "/" + self.job_id + "/" + action_name + "/" + dataset_name)
 
 class Environment:
 
