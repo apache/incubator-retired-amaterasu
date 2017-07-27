@@ -18,6 +18,7 @@ package org.apache.amaterasu.utilities
 
 import java.io.File
 
+import org.apache.amaterasu.leader.utilities.HttpServer
 import org.scalatest.{FlatSpec, Matchers}
 
 import scala.io.Source

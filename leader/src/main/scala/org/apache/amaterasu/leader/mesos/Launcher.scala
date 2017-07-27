@@ -18,7 +18,10 @@ package org.apache.amaterasu.leader.mesos
 
 import java.io.FileInputStream
 
+import org.apache.amaterasu.common.configuration.ClusterConfig
+import org.apache.amaterasu.common.logging.Logging
 import org.apache.amaterasu.leader.Kami
+import org.apache.amaterasu.leader.mesos.schedulers.ClusterScheduler
 import org.apache.mesos.{MesosSchedulerDriver, Protos}
 
 object Launcher extends App with Logging {
