@@ -23,10 +23,19 @@ import java.util.{Collections, UUID}
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
-import org.apache.amaterasu.leader.execution.JobManager
-import org.apache.amaterasu.leader.utilities.DataLoader
+
+import org.apache.amaterasu.common.configuration.ClusterConfig
+import org.apache.amaterasu.common.dataobjects.ActionData
+import org.apache.amaterasu.common.execution.actions.{Notification, NotificationLevel, NotificationType}
+import org.apache.amaterasu.common.execution.actions.NotificationLevel.NotificationLevel
+import org.apache.amaterasu.enums.ActionStatus
+import org.apache.amaterasu.enums.ActionStatus.ActionStatus
+import org.apache.amaterasu.leader.execution.{JobLoader, JobManager}
+import org.apache.amaterasu.leader.utilities.{DataLoader, HttpServer}
+
 import org.apache.curator.framework.{CuratorFramework, CuratorFrameworkFactory}
 import org.apache.curator.retry.ExponentialBackoffRetry
+
 import org.apache.mesos.Protos.CommandInfo.URI
 import org.apache.mesos.Protos._
 import org.apache.mesos.{Protos, SchedulerDriver}

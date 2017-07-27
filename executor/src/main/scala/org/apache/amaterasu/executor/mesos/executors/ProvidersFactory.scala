@@ -20,7 +20,7 @@ import java.io.ByteArrayOutputStream
 
 import org.apache.amaterasu.common.dataobjects.ExecData
 import org.apache.amaterasu.common.execution.actions.Notifier
-import io.shinto.amaterasu.sdk.{AmaterasuRunner, RunnersProvider}
+import org.apache.amaterasu.sdk.{AmaterasuRunner, RunnersProvider}
 import org.reflections.Reflections
 
 import scala.collection.JavaConversions._

@@ -18,11 +18,16 @@ package org.apache.amaterasu.common.execution
 
 import java.util.concurrent.LinkedBlockingQueue
 
-import org.apache.amaterasu.leader.execution.JobManager
+import org.apache.amaterasu.common.dataobjects.ActionData
+import org.apache.amaterasu.enums.ActionStatus
+import org.apache.amaterasu.leader.execution.{JobLoader, JobManager}
+
 import org.apache.curator.framework.{CuratorFramework, CuratorFrameworkFactory}
 import org.apache.curator.retry.ExponentialBackoffRetry
 import org.apache.curator.test.TestingServer
+
 import org.apache.zookeeper.CreateMode
+
 import org.scalatest.{BeforeAndAfterEach, FlatSpec, Matchers}
 
 import scala.io.Source

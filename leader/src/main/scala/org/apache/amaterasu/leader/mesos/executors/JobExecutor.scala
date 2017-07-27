@@ -16,6 +16,7 @@
  */
 package org.apache.amaterasu.leader.mesos.executors
 
+import org.apache.amaterasu.common.logging.Logging
 import org.apache.mesos.Protos._
 import org.apache.mesos.{Executor, ExecutorDriver}
 
