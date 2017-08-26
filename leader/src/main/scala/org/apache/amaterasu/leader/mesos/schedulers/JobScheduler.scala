@@ -185,6 +185,11 @@ class JobScheduler extends AmaterasuScheduler {
                     .setExecutable(false)
                     .setExtract(true)
                     .build())
+                  .addUris(URI.newBuilder()
+                    .setValue(s"http://${sys.env("AMA_NODE")}:${config.Webserver.Port}/Miniconda2-latest-Linux-x86_64.sh")
+                    .setExecutable(false)
+                    .setExtract(false)
+                    .build())
 
                 executor = ExecutorInfo
                   .newBuilder
