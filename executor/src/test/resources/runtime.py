@@ -1,4 +1,4 @@
-class AmaContext:
+class AmaContext(object):
 
     def __init__(self, sc, spark, job_id, env):
         self.sc = sc
@@ -9,7 +9,7 @@ class AmaContext:
     def get_dataframe(self, action_name, dataset_name, format = "parquet"):
         return self.spark.read.format(format).load(str(self.env.working_dir) + "/" + self.job_id + "/" + action_name + "/" + dataset_name)
 
-class Environment:
+class Environment(object):
 
     def __init__(self, name, master, input_root_path, output_root_path, working_dir, configuration):
         self.name = name
