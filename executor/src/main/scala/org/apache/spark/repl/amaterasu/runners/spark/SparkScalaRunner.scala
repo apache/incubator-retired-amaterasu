@@ -131,8 +131,8 @@ class SparkScalaRunner(var env: Environment,
     interpreter.interpret("import org.apache.spark.sql.SQLContext")
     interpreter.interpret("import org.apache.spark.sql.{ Dataset, SparkSession }")
     interpreter.interpret("import org.apache.spark.sql.SaveMode")
-    interpreter.interpret("import io.shinto.amaterasu.executor.runtime.AmaContext")
-    interpreter.interpret("import io.shinto.amaterasu.common.runtime.Environment")
+    interpreter.interpret("import org.apache.amaterasu.executor.runtime.AmaContext")
+    interpreter.interpret("import org.apache.amaterasu.common.runtime.Environment")
 
     // creating a map (_contextStore) to hold the different spark contexts
     // in th REPL and getting a reference to it
