@@ -22,7 +22,13 @@ import java.nio.file.{Files, Paths}
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
+
+import org.apache.amaterasu.common.dataobjects.{ActionData, ExecData, TaskData}
+import org.apache.amaterasu.common.execution.dependencies.Dependencies
+import org.apache.amaterasu.common.logging.Logging
+import org.apache.amaterasu.common.runtime.Environment
 import org.apache.mesos.protobuf.ByteString
+
 import org.yaml.snakeyaml.Yaml
 
 import scala.collection.JavaConverters._

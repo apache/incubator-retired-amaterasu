@@ -61,12 +61,12 @@ class ClusterScheduler extends AmaterasuScheduler {
 
   def buildCommandInfo(jobSrc: String): CommandInfo = {
 
-    println(s"Starting amaterasu job: java -cp ${config.JarName} io.shinto.amaterasu.leader.mesos.executors.JobExecutor $jobSrc")
+    println(s"Starting amaterasu job: java -cp ${config.JarName} org.apache.amaterasu.leader.mesos.executors.JobExecutor $jobSrc")
 
     CommandInfo.newBuilder
       //.addUris(URI.newBuilder.setValue(fsUtil.getJarUrl()).setExecutable(false))
       //.addUris(URI.newBuilder.setValue(jobSrc)
-      .setValue(s"java -cp ${config.Jar} io.shinto.amaterasu.leader.mesos.executors.JobExecutor $jobSrc")
+      .setValue(s"java -cp ${config.Jar} org.apache.amaterasu.leader.mesos.executors.JobExecutor $jobSrc")
       .build()
   }
 
