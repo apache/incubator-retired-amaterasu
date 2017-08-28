@@ -190,6 +190,16 @@ class JobScheduler extends AmaterasuScheduler {
                     .setExecutable(false)
                     .setExtract(false)
                     .build())
+                  .addUris(URI.newBuilder()
+                    .setValue(s"http://${sys.env("AMA_NODE")}:${config.Webserver.Port}/spark_intp.py")
+                    .setExecutable(false)
+                    .setExtract(false)
+                    .build())
+                  .addUris(URI.newBuilder()
+                    .setValue(s"http://${sys.env("AMA_NODE")}:${config.Webserver.Port}/runtime.py")
+                    .setExecutable(false)
+                    .setExtract(false)
+                    .build())
 
                 executor = ExecutorInfo
                   .newBuilder

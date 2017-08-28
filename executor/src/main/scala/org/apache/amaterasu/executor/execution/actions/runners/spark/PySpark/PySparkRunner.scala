@@ -80,9 +80,9 @@ object PySparkRunner {
 
     PySparkEntryPoint.start(spark, jobId, env, SparkEnv.get)
     val port = PySparkEntryPoint.getPort
-    val proc = Process(Seq("python", getClass.getResource("/spark_intp.py").getPath, port.toString), None,
+    val proc = Process(Seq("spark-1.6.1-2/bin/pyspark", "spark_intp.py", port.toString), None,
       "PYTHONPATH" -> pypath,
-      "PYSPARK_PYTHON" -> "/usr/bin/python",
+      "PYSPARK_PYTHON" -> "miniconda/bin/python",
       "PYTHONHASHSEED" -> 0.toString) #> System.out
 
     proc.run()

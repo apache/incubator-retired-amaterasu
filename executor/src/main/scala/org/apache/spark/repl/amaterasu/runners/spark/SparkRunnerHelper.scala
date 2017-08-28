@@ -120,6 +120,7 @@ object SparkRunnerHelper {
       .set("spark.submit.deployMode", "client")
       .set("spark.home", s"${scala.reflect.io.File(".").toCanonical.toString}/spark-2.1.1-bin-hadoop2.7")
       .set("spark.hadoop.validateOutputSpecs", "false")
+      .set("spark.submit.pyFiles", "miniconda/pkgs")
       .setJars(jars)
 
     // adding the the configurations from spark.yml
