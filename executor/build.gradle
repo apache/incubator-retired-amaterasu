@@ -102,4 +102,6 @@ test {
 task copyToHome(type: Copy) {
     from 'build/libs'
     into '../build/amaterasu/dist'
+    from 'build/resources/main'
+    into '../build/amaterasu/dist'
 }
