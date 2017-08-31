@@ -27,6 +27,7 @@ import org.eclipse.aether.util.artifact.JavaScopes
 import org.sonatype.aether.repository.RemoteRepository
 import org.sonatype.aether.util.artifact.DefaultArtifact
 import com.jcabi.aether.Aether
+import org.apache.amaterasu.common.logging.Logging
 import org.apache.amaterasu.executor.execution.actions.runners.spark.PySpark.PySparkRunner
 
 import scala.collection.JavaConversions._
@@ -37,9 +38,14 @@ import sys.process._
 /**
   * Created by roadan on 2/9/17.
   */
-class SparkRunnersProvider extends RunnersProvider {
+class SparkRunnersProvider extends RunnersProvider with Logging {
 
   private val runners = new TrieMap[String, AmaterasuRunner]
+  private val shellLoger = ProcessLogger(
+    (o:String) => log.info(o),
+    (e:String) => log.error(e)
+
+  )
   private var conf: Option[Map[String, Any]] = _
   private var executorEnv: Option[Map[String, Any]] = _
 
@@ -71,18 +77,18 @@ class SparkRunnersProvider extends RunnersProvider {
 //    log.info(s"installAnacondaPackage: $pythonPackage")
     val channel = pythonPackage.channel.getOrElse("anaconda")
     if (channel == "anaconda") {
-      Seq("bash", "-c", s"$$PWD/miniconda/bin/python -m conda install -y ${pythonPackage.packageId}").!!
+      Seq("bash", "-c", s"$$PWD/miniconda/bin/python -m conda install -y ${pythonPackage.packageId}") ! shellLoger
     } else {
-      Seq("bash", "-c", s"$$PWD/miniconda/bin/python -m conda install -y -c $channel ${pythonPackage.packageId}").!!
+      Seq("bash", "-c", s"$$PWD/miniconda/bin/python -m conda install -y -c $channel ${pythonPackage.packageId}") ! shellLoger
     }
   }
 
   private def installAnacondaOnNode(): Unit = {
 //    log.debug(s"Preparing to install Miniconda")
-    Seq("bash", "-c", "sh Miniconda2-latest-Linux-x86_64.sh -b -p $PWD/miniconda").!!
-    Seq("bash", "-c", "$PWD/miniconda/bin/python -m conda install -y conda-build").!!
-    Seq("bash", "-c", "$PWD/miniconda/bin/python -m conda update -y").!!
-    Seq("bash", "-c", "ln -s $PWD/spark-1.6.1-2/python/pyspark $PWD/miniconda/pkgs/pyspark").!!
+    Seq("bash", "-c", "sh Miniconda2-latest-Linux-x86_64.sh -b -p $PWD/miniconda") ! shellLoger
+    Seq("bash", "-c", "$PWD/miniconda/bin/python -m conda install -y conda-build") ! shellLoger
+    Seq("bash", "-c", "$PWD/miniconda/bin/python -m conda update -y") ! shellLoger
+    Seq("bash", "-c", "ln -s $PWD/spark-1.6.1-2/python/pyspark $PWD/miniconda/pkgs/pyspark") ! shellLoger
 
   }
 
