@@ -20,7 +20,7 @@ import java.io.{ByteArrayOutputStream, File, PrintWriter, StringWriter}
 
 import org.apache.amaterasu.common.dataobjects.ExecData
 import org.apache.amaterasu.common.execution.actions.Notifier
-import org.apache.amaterasu.common.execution.dependencies.Dependencies
+import org.apache.amaterasu.common.execution.dependencies.{Dependencies, PythonPackage}
 import org.apache.amaterasu.sdk.{AmaterasuRunner, RunnersProvider}
 import org.apache.spark.repl.amaterasu.runners.spark.{SparkRunnerHelper, SparkScalaRunner}
 import org.eclipse.aether.util.artifact.JavaScopes
@@ -32,6 +32,7 @@ import org.apache.amaterasu.executor.execution.actions.runners.spark.PySpark.PyS
 import scala.collection.JavaConversions._
 import scala.collection.JavaConverters._
 import scala.collection.concurrent.TrieMap
+import sys.process._
 
 /**
   * Created by roadan on 2/9/17.
@@ -43,7 +44,6 @@ class SparkRunnersProvider extends RunnersProvider {
   private var executorEnv: Option[Map[String, Any]] = _
 
   override def init(data: ExecData, jobId: String, outStream: ByteArrayOutputStream, notifier: Notifier, executorId: String): Unit = {
-
     var jars = Seq.empty[String]
 
     if (data.deps != null) {
@@ -71,18 +71,18 @@ class SparkRunnersProvider extends RunnersProvider {
 //    log.info(s"installAnacondaPackage: $pythonPackage")
     val channel = pythonPackage.channel.getOrElse("anaconda")
     if (channel == "anaconda") {
-      Seq("bash", "-c", s"$$PWD/miniconda/bin/python -m conda install -y ${pythonPackage.packageId}") ! shellLogger
+      Seq("bash", "-c", s"$$PWD/miniconda/bin/python -m conda install -y ${pythonPackage.packageId}").!!
     } else {
-      Seq("bash", "-c", s"$$PWD/miniconda/bin/python -m conda install -y -c $channel ${pythonPackage.packageId}") ! shellLogger
+      Seq("bash", "-c", s"$$PWD/miniconda/bin/python -m conda install -y -c $channel ${pythonPackage.packageId}").!!
     }
   }
 
   private def installAnacondaOnNode(): Unit = {
 //    log.debug(s"Preparing to install Miniconda")
-    Seq("bash", "-c", "sh Miniconda2-latest-Linux-x86_64.sh -b -p $PWD/miniconda") ! shellLogger
-    Seq("bash", "-c", "$PWD/miniconda/bin/python -m conda install -y conda-build") ! shellLogger
-    Seq("bash", "-c", "$PWD/miniconda/bin/python -m conda update -y") ! shellLogger
-    Seq("bash", "-c", "ln -s $PWD/spark-1.6.1-2/python/pyspark $PWD/miniconda/pkgs/pyspark") ! shellLogger
+    Seq("bash", "-c", "sh Miniconda2-latest-Linux-x86_64.sh -b -p $PWD/miniconda").!!
+    Seq("bash", "-c", "$PWD/miniconda/bin/python -m conda install -y conda-build").!!
+    Seq("bash", "-c", "$PWD/miniconda/bin/python -m conda update -y").!!
+    Seq("bash", "-c", "ln -s $PWD/spark-1.6.1-2/python/pyspark $PWD/miniconda/pkgs/pyspark").!!
 
   }
 
