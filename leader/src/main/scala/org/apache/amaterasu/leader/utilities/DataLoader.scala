@@ -58,33 +58,33 @@ object DataLoader extends Logging {
   }
 
   def getExecutorData(env: String): ByteString = {
-    log.info("IN DATALOADER #1!!")
+//    log.info("IN DATALOADER #1!!")
     // loading the job configuration
     val envValue = Source.fromFile(s"repo/env/$env/job.yml").mkString //TODO: change this to YAML
     val envData = ymlMapper.readValue(envValue, classOf[Environment])
-    log.info("IN DATALOADER #2!!")
+//    log.info("IN DATALOADER #2!!")
     // loading all additional configurations
     val files = new File(s"repo/env/$env/").listFiles().filter(_.isFile).filter(_.getName != "job.yml")
     val config = files.map(yamlToMap).toMap
-    log.info("IN DATALOADER #3!!")
+//    log.info("IN DATALOADER #3!!")
     // loading the job's dependencies
     var depsData: Dependencies = null
     var pyDepsData: PythonDependencies = null
-    log.info("IN DATALOADER #4!!")
+//    log.info("IN DATALOADER #4!!")
     if (Files.exists(Paths.get("repo/deps/jars.yml"))) {
       val depsValue = Source.fromFile(s"repo/deps/jars.yml").mkString
       depsData = ymlMapper.readValue(depsValue, classOf[Dependencies])
     }
-    log.info("IN DATALOADER #5!!")
+//    log.info("IN DATALOADER #5!!")
     if (Files.exists(Paths.get("repo/deps/python.yml"))) {
       val pyDepsValue = Source.fromFile(s"repo/deps/python.yml").mkString
-      log.info("IN DATALOADER #6!!")
-      log.info(s"pyDepsValue: ${pyDepsValue}")
+//      log.info("IN DATALOADER #6!!")
+//      log.info(s"pyDepsValue: ${pyDepsValue}")
       pyDepsData = ymlMapper.readValue(pyDepsValue, classOf[PythonDependencies])
-      log.info("IN DATALOADER #7!!")
-      log.info(s"pyDepsData: ${pyDepsData}")
+//      log.info("IN DATALOADER #7!!")
+//      log.info(s"pyDepsData: ${pyDepsData}")
     }
-    log.info("IN DATALOADER #8!!")
+//    log.info("IN DATALOADER #8!!")
     val data = mapper.writeValueAsBytes(ExecData(envData, depsData, pyDepsData, config))
     ByteString.copyFrom(data)
   }
