@@ -138,9 +138,9 @@ class JobScheduler extends AmaterasuScheduler {
 
         try {
           val actionData = jobManager.getNextActionData
-
+          log.info("======= RESOURCE OFFERS #2 ======")
           if (actionData != null) {
-
+            log.info("======= RESOURCE OFFERS #3  ======")
             val taskId = Protos.TaskID.newBuilder().setValue(actionData.id).build()
 
             offersToTaskIds.put(offer.getId.getValue, taskId.getValue)
@@ -158,14 +158,14 @@ class JobScheduler extends AmaterasuScheduler {
             var executor: ExecutorInfo = null
             val slaveId = offer.getSlaveId.getValue
             slavesExecutors.synchronized {
-
+              log.info("======= RESOURCE OFFERS #4 ======")
               if (slavesExecutors.contains(slaveId) &&
                 offer.getExecutorIdsList.contains(slavesExecutors(slaveId).getExecutorId)) {
-
+                log.info("======= RESOURCE OFFERS #5 ======")
                 executor = slavesExecutors(slaveId)
               }
               else {
-
+                log.info("======= RESOURCE OFFERS #6 ======")
                 val execData = DataLoader.getExecutorData(env)
                 //TODO: wait for Eyal's refactoring to extract the containers params
                 //val extraJavaOps = execData...
