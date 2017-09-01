@@ -78,10 +78,12 @@ object DataLoader extends Logging {
     log.info("IN DATALOADER #5!!")
     if (Files.exists(Paths.get("repo/deps/python.yml"))) {
       val pyDepsValue = Source.fromFile(s"repo/deps/python.yml").mkString
+      log.info("IN DATALOADER #6!!")
+      log.info(s"pyDepsValue: ${pyDepsValue}")
       pyDepsData = ymlMapper.readValue(pyDepsValue, classOf[PythonDependencies])
-      println(s"Python dependencies: ${pyDepsData.toString}")
+      log.info("IN DATALOADER #7!!")
     }
-
+    log.info("IN DATALOADER #8!!")
     val data = mapper.writeValueAsBytes(ExecData(envData, depsData, pyDepsData, config))
     ByteString.copyFrom(data)
   }
