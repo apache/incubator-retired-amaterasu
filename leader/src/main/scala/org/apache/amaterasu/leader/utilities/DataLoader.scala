@@ -82,6 +82,7 @@ object DataLoader extends Logging {
       log.info(s"pyDepsValue: ${pyDepsValue}")
       pyDepsData = ymlMapper.readValue(pyDepsValue, classOf[PythonDependencies])
       log.info("IN DATALOADER #7!!")
+      log.info(s"pyDepsData: ${pyDepsData}")
     }
     log.info("IN DATALOADER #8!!")
     val data = mapper.writeValueAsBytes(ExecData(envData, depsData, pyDepsData, config))
