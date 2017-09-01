@@ -41,7 +41,7 @@ import sys.process._
 class SparkRunnersProvider extends RunnersProvider with Logging {
 
   private val runners = new TrieMap[String, AmaterasuRunner]
-  private val shellLoger = ProcessLogger(
+  private var shellLoger = ProcessLogger(
     (o:String) => log.info(o),
     (e:String) => log.error(e)
 
@@ -50,6 +50,11 @@ class SparkRunnersProvider extends RunnersProvider with Logging {
   private var executorEnv: Option[Map[String, Any]] = _
 
   override def init(data: ExecData, jobId: String, outStream: ByteArrayOutputStream, notifier: Notifier, executorId: String): Unit = {
+    shellLoger = ProcessLogger(
+      (o:String) => notifier.info(o),
+      (e:String) => notifier.error("", e)
+
+    )
     var jars = Seq.empty[String]
     if (data.deps != null) {
       jars ++= getDependencies(data.deps)
