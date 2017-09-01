@@ -125,7 +125,7 @@ class JobScheduler extends AmaterasuScheduler {
   }
 
   def resourceOffers(driver: SchedulerDriver, offers: util.List[Offer]): Unit = {
-
+    log.info("======= RESOURCE OFFERS ======")
     for (offer <- offers.asScala) {
 
       if (validateOffer(offer)) {
