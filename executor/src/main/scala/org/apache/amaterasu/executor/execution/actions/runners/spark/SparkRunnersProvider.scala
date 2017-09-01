@@ -51,11 +51,10 @@ class SparkRunnersProvider extends RunnersProvider with Logging {
 
   override def init(data: ExecData, jobId: String, outStream: ByteArrayOutputStream, notifier: Notifier, executorId: String): Unit = {
     var jars = Seq.empty[String]
-    var pyPackages = Seq.empty[String]
     if (data.deps != null) {
       jars ++= getDependencies(data.deps)
     }
-    log.info(s"INIT!! PythonDeps: ${data.pyDeps}")
+    notifier.info(s"INIT!! PythonDeps: ${data.pyDeps}")
     if (data.pyDeps != null) {
       loadPythonDependencies(data.pyDeps)
     }
