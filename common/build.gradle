@@ -37,6 +37,7 @@ dependencies {
     compile 'org.scala-lang:scala-library:2.11.1'
     compile group: 'com.github.nscala-time', name: 'nscala-time_2.11', version: '2.2.0'
     compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.9'
+    compile group: 'org.slf4j', name: 'slf4j-simple', version: '1.7.9'
 
     // currently we have to use this specific mesos version to prevent from
     // clashing with spark
