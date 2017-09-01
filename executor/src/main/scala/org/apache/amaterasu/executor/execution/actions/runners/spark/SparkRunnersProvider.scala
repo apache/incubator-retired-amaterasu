@@ -54,8 +54,8 @@ class SparkRunnersProvider extends RunnersProvider with Logging {
     if (data.deps != null) {
       jars ++= getDependencies(data.deps)
     }
-    notifier.info(s"INIT!! PythonDeps: ${data.pyDeps}")
     if (data.pyDeps != null) {
+      notifier.info(s"INIT!! PythonDeps: ${data.pyDeps}")
       loadPythonDependencies(data.pyDeps)
     }
 
