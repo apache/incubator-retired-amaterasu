@@ -22,13 +22,11 @@ import java.nio.file.{Files, Paths}
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
-
 import org.apache.amaterasu.common.dataobjects.{ActionData, ExecData, TaskData}
-import org.apache.amaterasu.common.execution.dependencies.Dependencies
+import org.apache.amaterasu.common.execution.dependencies.{Dependencies, PythonDependencies}
 import org.apache.amaterasu.common.logging.Logging
 import org.apache.amaterasu.common.runtime.Environment
 import org.apache.mesos.protobuf.ByteString
-
 import org.yaml.snakeyaml.Yaml
 
 import scala.collection.JavaConverters._
@@ -71,13 +69,18 @@ object DataLoader extends Logging {
 
     // loading the job's dependencies
     var depsData: Dependencies = null
-
+    var pyDepsData: PythonDependencies = null
     if (Files.exists(Paths.get("repo/deps/jars.yml"))) {
       val depsValue = Source.fromFile(s"repo/deps/jars.yml").mkString
       depsData = ymlMapper.readValue(depsValue, classOf[Dependencies])
     }
 
-    val data = mapper.writeValueAsBytes(ExecData(envData, depsData, config))
+    if (Files.exists(Paths.get("repo/deps/python.yml"))) {
+      val pyDepsValue = Source.fromFile(s"repo/deps/python.yml").mkString
+      pyDepsData = ymlMapper.readValue(pyDepsValue, classOf[PythonDependencies])
+    }
+
+    val data = mapper.writeValueAsBytes(ExecData(envData, depsData, pyDepsData, config))
     ByteString.copyFrom(data)
   }
 

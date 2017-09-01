@@ -20,7 +20,7 @@ import java.io.{ByteArrayOutputStream, File, PrintWriter, StringWriter}
 
 import org.apache.amaterasu.common.dataobjects.ExecData
 import org.apache.amaterasu.common.execution.actions.Notifier
-import org.apache.amaterasu.common.execution.dependencies.{Dependencies, PythonPackage}
+import org.apache.amaterasu.common.execution.dependencies.{Dependencies, PythonDependencies, PythonPackage}
 import org.apache.amaterasu.sdk.{AmaterasuRunner, RunnersProvider}
 import org.apache.spark.repl.amaterasu.runners.spark.{SparkRunnerHelper, SparkScalaRunner}
 import org.eclipse.aether.util.artifact.JavaScopes
@@ -51,9 +51,12 @@ class SparkRunnersProvider extends RunnersProvider with Logging {
 
   override def init(data: ExecData, jobId: String, outStream: ByteArrayOutputStream, notifier: Notifier, executorId: String): Unit = {
     var jars = Seq.empty[String]
-
+    var pyPackages = Seq.empty[String]
     if (data.deps != null) {
       jars ++= getDependencies(data.deps)
+    }
+    if (data.pyDeps != null) {
+      loadPythonDependencies(data.pyDeps)
     }
 
     conf = data.configurations.get("spark")
@@ -92,35 +95,32 @@ class SparkRunnersProvider extends RunnersProvider with Logging {
 
   }
 
-  private def loadPythonDependencies(deps: Dependencies) = {
+  private def loadPythonDependencies(deps: PythonDependencies): Unit = {
     installAnacondaOnNode()
     val py4jPackage = PythonPackage("py4j", channel=Option("conda-forge"))
     installAnacondaPackage(py4jPackage)
     val codegenPackage = PythonPackage("codegen", channel=Option("auto"))
     installAnacondaPackage(codegenPackage)
-    if (deps.pythonPackages.isDefined) {
-      try {
+    try {
 //        log.info(s"deps: $deps")
-        deps.pythonPackages.head.foreach(pack => {
+      deps.packages.foreach(pack => {
 //          log.info(s"PyPackage: $pack, index: ${pack.index}")
-          pack.index.getOrElse("anaconda").toLowerCase match {
-            case "anaconda" => installAnacondaPackage(pack)
-            //            case "pypi" => installPyPiPackage(pack)
-          }
-        })
-      }
-      catch {
-        case rte: RuntimeException =>
-          val sw = new StringWriter
-          rte.printStackTrace(new PrintWriter(sw))
-//          log.error(s"Failed to activate environment (runtime) - cause: ${rte.getCause}, message: ${rte.getMessage}, Stack: \n${sw.toString}")
-        case e: Exception =>
-          val sw = new StringWriter
-          e.printStackTrace(new PrintWriter(sw))
-//          log.error(s"Failed to activate environment (other) - type: ${e.getClass.getName}, cause: ${e.getCause}, message: ${e.getMessage}, Stack: \n${sw.toString}")
-      }
+        pack.index.getOrElse("anaconda").toLowerCase match {
+          case "anaconda" => installAnacondaPackage(pack)
+          //            case "pypi" => installPyPiPackage(pack)
+        }
+      })
     }
-
+    catch {
+      case rte: RuntimeException =>
+        val sw = new StringWriter
+        rte.printStackTrace(new PrintWriter(sw))
+        log.error(s"Failed to activate environment (runtime) - cause: ${rte.getCause}, message: ${rte.getMessage}, Stack: \n${sw.toString}")
+      case e: Exception =>
+        val sw = new StringWriter
+        e.printStackTrace(new PrintWriter(sw))
+        log.error(s"Failed to activate environment (other) - type: ${e.getClass.getName}, cause: ${e.getCause}, message: ${e.getMessage}, Stack: \n${sw.toString}")
+    }
   }
 
   override def getGroupIdentifier: String = "spark"
@@ -140,7 +140,6 @@ class SparkRunnersProvider extends RunnersProvider with Logging {
       )).toList.asJava
 
     val aether = new Aether(remotes, repo)
-    loadPythonDependencies(deps)
 
     deps.artifacts.flatMap(a => {
       aether.resolve(
