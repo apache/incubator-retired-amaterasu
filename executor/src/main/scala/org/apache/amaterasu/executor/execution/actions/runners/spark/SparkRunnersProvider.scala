@@ -56,7 +56,7 @@ class SparkRunnersProvider extends RunnersProvider with Logging {
     }
     if (data.pyDeps != null) {
       notifier.info(s"INIT!! PythonDeps: ${data.pyDeps}")
-      loadPythonDependencies(data.pyDeps)
+      loadPythonDependencies(data.pyDeps, notifier)
     }
 
     conf = data.configurations.get("spark")
@@ -95,14 +95,19 @@ class SparkRunnersProvider extends RunnersProvider with Logging {
 
   }
 
-  private def loadPythonDependencies(deps: PythonDependencies): Unit = {
+  private def loadPythonDependencies(deps: PythonDependencies, notifier: Notifier): Unit = {
+    notifier.info("loadPythonDependencies #1")
     installAnacondaOnNode()
+    notifier.info("loadPythonDependencies #2")
     val py4jPackage = PythonPackage("py4j", channel=Option("conda-forge"))
     installAnacondaPackage(py4jPackage)
+    notifier.info("loadPythonDependencies #3")
     val codegenPackage = PythonPackage("codegen", channel=Option("auto"))
     installAnacondaPackage(codegenPackage)
+    notifier.info("loadPythonDependencies #4")
     try {
 //        log.info(s"deps: $deps")
+      notifier.info("loadPythonDependencies #5")
       deps.packages.foreach(pack => {
 //          log.info(s"PyPackage: $pack, index: ${pack.index}")
         pack.index.getOrElse("anaconda").toLowerCase match {
@@ -110,16 +115,18 @@ class SparkRunnersProvider extends RunnersProvider with Logging {
           //            case "pypi" => installPyPiPackage(pack)
         }
       })
+      notifier.info("loadPythonDependencies #6")
     }
     catch {
+
       case rte: RuntimeException =>
         val sw = new StringWriter
         rte.printStackTrace(new PrintWriter(sw))
-        log.error(s"Failed to activate environment (runtime) - cause: ${rte.getCause}, message: ${rte.getMessage}, Stack: \n${sw.toString}")
+        notifier.error("", s"Failed to activate environment (runtime) - cause: ${rte.getCause}, message: ${rte.getMessage}, Stack: \n${sw.toString}")
       case e: Exception =>
         val sw = new StringWriter
         e.printStackTrace(new PrintWriter(sw))
-        log.error(s"Failed to activate environment (other) - type: ${e.getClass.getName}, cause: ${e.getCause}, message: ${e.getMessage}, Stack: \n${sw.toString}")
+        notifier.error("", s"Failed to activate environment (other) - type: ${e.getClass.getName}, cause: ${e.getCause}, message: ${e.getMessage}, Stack: \n${sw.toString}")
     }
   }
 
