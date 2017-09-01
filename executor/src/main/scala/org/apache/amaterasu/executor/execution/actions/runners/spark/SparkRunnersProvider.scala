@@ -69,7 +69,7 @@ class SparkRunnersProvider extends RunnersProvider with Logging {
 
     runners.put(sparkScalaRunner.getIdentifier, sparkScalaRunner)
 
-    val pySparkRunner = PySparkRunner(data.env, jobId, notifier, spark, "spark-1.6.1-2/python/pyspark")
+    val pySparkRunner = PySparkRunner(data.env, jobId, notifier, spark, "spark-2.1.1-bin-hadoop2.7/python/pyspark")
     runners.put(pySparkRunner.getIdentifier(), pySparkRunner)
   }
 
