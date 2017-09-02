@@ -42,8 +42,8 @@ class SparkRunnersProvider extends RunnersProvider with Logging {
 
   private val runners = new TrieMap[String, AmaterasuRunner]
   private var shellLoger = ProcessLogger(
-    (o:String) => log.info(o),
-    (e:String) => log.error(e)
+    (o: String) => log.info(o),
+    (e: String) => log.error(e)
 
   )
   private var conf: Option[Map[String, Any]] = _
@@ -51,8 +51,8 @@ class SparkRunnersProvider extends RunnersProvider with Logging {
 
   override def init(data: ExecData, jobId: String, outStream: ByteArrayOutputStream, notifier: Notifier, executorId: String): Unit = {
     shellLoger = ProcessLogger(
-      (o:String) => notifier.info(o),
-      (e:String) => notifier.error("", e)
+      (o: String) => notifier.info(o),
+      (e: String) => notifier.error("", e)
 
     )
     var jars = Seq.empty[String]
@@ -82,7 +82,7 @@ class SparkRunnersProvider extends RunnersProvider with Logging {
   }
 
   private def installAnacondaPackage(pythonPackage: PythonPackage): Unit = {
-//    log.info(s"installAnacondaPackage: $pythonPackage")
+    //    log.info(s"installAnacondaPackage: $pythonPackage")
     val channel = pythonPackage.channel.getOrElse("anaconda")
     if (channel == "anaconda") {
       Seq("bash", "-c", s"$$PWD/miniconda/bin/python -m conda install -y ${pythonPackage.packageId}") ! shellLoger
@@ -92,32 +92,29 @@ class SparkRunnersProvider extends RunnersProvider with Logging {
   }
 
   private def installAnacondaOnNode(): Unit = {
-//    log.debug(s"Preparing to install Miniconda")
+    //    log.debug(s"Preparing to install Miniconda")
     Seq("bash", "-c", "sh Miniconda2-latest-Linux-x86_64.sh -b -p $PWD/miniconda") ! shellLoger
     Seq("bash", "-c", "$PWD/miniconda/bin/python -m conda install -y conda-build") ! shellLoger
-    Seq("bash", "-c", "$PWD/miniconda/bin/python -m conda update -y") ! shellLoger
+    //  Seq("bash", "-c", "$PWD/miniconda/bin/python -m conda update -y") ! shellLoger
     Seq("bash", "-c", "ln -s $PWD/spark-2.1.1-bin-hadoop2.7/python/pyspark $PWD/miniconda/pkgs/pyspark") ! shellLoger
-
   }
 
   private def loadPythonDependencies(deps: PythonDependencies, notifier: Notifier): Unit = {
-    notifier.info("loadPythonDependencies #1")
+    notifier.info("loading anaconda evn")
     installAnacondaOnNode()
-    notifier.info("loadPythonDependencies #2")
-    val py4jPackage = PythonPackage("py4j", channel=Option("conda-forge"))
-    installAnacondaPackage(py4jPackage)
-    notifier.info("loadPythonDependencies #3")
-    val codegenPackage = PythonPackage("codegen", channel=Option("auto"))
+    //notifier.info("loadPythonDependencies #2")
+    //    val py4jPackage = PythonPackage("py4j", channel=Option("conda-forge"))
+    //    installAnacondaPackage(py4jPackage)
+    //notifier.info("loadPythonDependencies #3")
+    val codegenPackage = PythonPackage("codegen", channel = Option("auto"))
     installAnacondaPackage(codegenPackage)
-    notifier.info("loadPythonDependencies #4")
+    notifier.info("load Python Dependencies")
     try {
-//        log.info(s"deps: $deps")
-      notifier.info("loadPythonDependencies #5")
+      // notifier.info("loadPythonDependencies #5")
       deps.packages.foreach(pack => {
-//          log.info(s"PyPackage: $pack, index: ${pack.index}")
         pack.index.getOrElse("anaconda").toLowerCase match {
           case "anaconda" => installAnacondaPackage(pack)
-          //            case "pypi" => installPyPiPackage(pack)
+          // case "pypi" => installPyPiPackage(pack)
         }
       })
       notifier.info("loadPythonDependencies #6")
