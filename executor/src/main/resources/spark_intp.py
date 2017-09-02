@@ -12,7 +12,7 @@ import os
 import sys
 from runtime import AmaContext, Environment
 
-os.chdir(os.getcwd() + '/build/resources/test/')
+# os.chdir(os.getcwd() + '/build/resources/test/')
 # import zipfile
 # zip = zipfile.ZipFile('pyspark.zip')
 # zip.extractall()
