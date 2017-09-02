@@ -127,7 +127,7 @@ if ! ls ${BASEDIR}/dist/spark*.tgz 1> /dev/null 2>&1; then
 fi
 if [ ! -f ./dist/Miniconda2-latest-Linux-x86_64.sh ]; then
     echo "${bold}Fetching miniconda distributable ${NC}"
-    wget -P ${BASEDIR}/dist https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh
+    wget https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh -P ${BASEDIR}/dist
 fi
 
 echo $CMD
