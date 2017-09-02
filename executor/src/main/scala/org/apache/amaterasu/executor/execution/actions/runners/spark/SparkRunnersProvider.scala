@@ -70,6 +70,7 @@ class SparkRunnersProvider extends RunnersProvider with Logging {
     val sparkAppName = s"job_${jobId}_executor_$executorId"
 
     SparkRunnerHelper.notifier = notifier
+    notifier.info(s"CREATE SPARK!")
     val spark = SparkRunnerHelper.createSpark(data.env, sparkAppName, jars, conf, executorEnv)
 
     val sparkScalaRunner = SparkScalaRunner(data.env, jobId, spark, outStream, notifier, jars)
