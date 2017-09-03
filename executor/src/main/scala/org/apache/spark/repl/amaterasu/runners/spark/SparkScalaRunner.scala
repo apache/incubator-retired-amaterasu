@@ -50,6 +50,7 @@ class SparkScalaRunner(var env: Environment,
   val holder = new ResHolder(null)
 
   override def executeSource(actionSource: String, actionName: String, exports: util.Map[String, String]): Unit = {
+    notifier.info(s"actionSource ${actionSource}, actionName ${actionName}")
     val source = Source.fromString(actionSource)
     interpretSources(source, actionName, exports.asScala.toMap)
   }
