@@ -97,21 +97,15 @@ class ActionsExecutor extends Executor with Logging {
     val status = TaskStatus.newBuilder
       .setTaskId(taskInfo.getTaskId)
       .setState(TaskState.TASK_STARTING).build()
-    notifier.info(s"launching task: ${taskInfo.getTaskId.getValue} #2")
     driver.sendStatusUpdate(status)
-    notifier.info(s"launching task: ${taskInfo.getTaskId.getValue} #3")
     val task = Future {
 
       val taskData = mapper.readValue(new ByteArrayInputStream(taskInfo.getData.toByteArray), classOf[TaskData])
-      notifier.info(s"launching task: ${taskInfo.getTaskId.getValue} #4")
       val status = TaskStatus.newBuilder
         .setTaskId(taskInfo.getTaskId)
         .setState(TaskState.TASK_RUNNING).build()
-      notifier.info(s"launching task: ${taskInfo.getTaskId.getValue} #5")
       driver.sendStatusUpdate(status)
-      notifier.info(s"launching task: ${taskInfo.getTaskId.getValue} #6")
       val runner = providersFactory.getRunner(taskData.groupId, taskData.typeId)
-      notifier.info(s"launching task: ${taskInfo.getTaskId.getValue} #7")
       runner match {
         case Some(r) => r.executeSource(taskData.src, actionName, taskData.exports.asJava)
         case None =>

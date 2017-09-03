@@ -51,8 +51,8 @@ class SparkRunnersProvider extends RunnersProvider with Logging {
 
   override def init(data: ExecData, jobId: String, outStream: ByteArrayOutputStream, notifier: Notifier, executorId: String): Unit = {
     shellLoger = ProcessLogger(
-      (o: String) => notifier.info(o),
-      (e: String) => notifier.error("", e)
+      (o: String) => log.info(o),
+      (e: String) => log.error("", e)
 
     )
     var jars = Seq.empty[String]
@@ -60,7 +60,6 @@ class SparkRunnersProvider extends RunnersProvider with Logging {
       jars ++= getDependencies(data.deps)
     }
     if (data.pyDeps != null) {
-      notifier.info(s"INIT!! PythonDeps: ${data.pyDeps}")
       loadPythonDependencies(data.pyDeps, notifier)
     }
 
@@ -70,7 +69,6 @@ class SparkRunnersProvider extends RunnersProvider with Logging {
     val sparkAppName = s"job_${jobId}_executor_$executorId"
 
     SparkRunnerHelper.notifier = notifier
-    notifier.info(s"CREATE SPARK!")
     val spark = SparkRunnerHelper.createSpark(data.env, sparkAppName, jars, conf, executorEnv)
 
     val sparkScalaRunner = SparkScalaRunner(data.env, jobId, spark, outStream, notifier, jars)
@@ -109,7 +107,6 @@ class SparkRunnersProvider extends RunnersProvider with Logging {
     //notifier.info("loadPythonDependencies #3")
     val codegenPackage = PythonPackage("codegen", channel = Option("auto"))
     installAnacondaPackage(codegenPackage)
-    notifier.info("load Python Dependencies")
     try {
       // notifier.info("loadPythonDependencies #5")
       deps.packages.foreach(pack => {
@@ -118,7 +115,6 @@ class SparkRunnersProvider extends RunnersProvider with Logging {
           // case "pypi" => installPyPiPackage(pack)
         }
       })
-      notifier.info("loadPythonDependencies #6")
     }
     catch {
 

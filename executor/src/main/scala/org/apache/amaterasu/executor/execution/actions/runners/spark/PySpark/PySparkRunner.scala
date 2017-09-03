@@ -39,14 +39,12 @@ class PySparkRunner extends AmaterasuRunner with Logging {
   override def getIdentifier: String = "pyspark"
 
   override def executeSource(actionSource: String, actionName: String, exports: util.Map[String, String]): Unit = {
-    notifier.info(s"executeSource ===> actionSource: ${actionSource}, actionName: ${actionName} ###2")
     interpretSources(actionSource, actionName, exports)
   }
 
   def interpretSources(source: String, actionName: String, exports: util.Map[String, String]): Unit = {
 
     PySparkEntryPoint.getExecutionQueue.setForExec((source, actionName, exports))
-    notifier.info(s"executeSource ===> actionSource: ${source}, actionName: ${actionName}")
     val resQueue = PySparkEntryPoint.getResultQueue(actionName)
 
     notifier.info(s"================= started action $actionName =================")
