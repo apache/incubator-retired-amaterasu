@@ -59,7 +59,9 @@ class SparkRunnersProvider extends RunnersProvider with Logging {
     if (data.deps != null) {
       jars ++= getDependencies(data.deps)
     }
-    if (data.pyDeps != null) {
+
+    if (data.pyDeps != null &&
+        data.pyDeps.packages.length > 0) {
       loadPythonDependencies(data.pyDeps, notifier)
     }
 
@@ -71,12 +73,12 @@ class SparkRunnersProvider extends RunnersProvider with Logging {
     SparkRunnerHelper.notifier = notifier
     val spark = SparkRunnerHelper.createSpark(data.env, sparkAppName, jars, conf, executorEnv)
 
-    val sparkScalaRunner = SparkScalaRunner(data.env, jobId, spark, outStream, notifier, jars)
+    lazy val sparkScalaRunner = SparkScalaRunner(data.env, jobId, spark, outStream, notifier, jars)
     sparkScalaRunner.initializeAmaContext(data.env)
 
     runners.put(sparkScalaRunner.getIdentifier, sparkScalaRunner)
 
-    val pySparkRunner = PySparkRunner(data.env, jobId, notifier, spark, "spark-2.1.1-bin-hadoop2.7/python/pyspark")
+    lazy val pySparkRunner = PySparkRunner(data.env, jobId, notifier, spark, "spark-2.1.1-bin-hadoop2.7/python/pyspark:spark-2.1.1-bin-hadoop2.7/python/pyspark/build:spark-2.1.1-bin-hadoop2.7/python/pyspark/lib/py4j-0.10.4-src.zip", data.pyDeps)
     runners.put(pySparkRunner.getIdentifier(), pySparkRunner)
   }
 

@@ -34,8 +34,8 @@ class ClusterConfig extends Logging {
   var taskMem: Int = 128
   var distLocation: String = "local"
   var workingFolder: String = ""
-  var Jar: String = null
-  var JarName: String = null
+  var Jar: String = _
+  var JarName: String = _
   // the additionalClassPath is currently for testing purposes, when amaterasu is
   // not packaged, there is a need to load the spark-assembly jar
   var additionalClassPath: String = ""
