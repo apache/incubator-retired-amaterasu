@@ -61,7 +61,7 @@ javaEnv = entry_point.getEnv()
 
 env = Environment(javaEnv.name(), javaEnv.master(), javaEnv.inputRootPath(), javaEnv.outputRootPath(), javaEnv.workingDir(), javaEnv.configuration())
 conf = SparkConf(_jvm=gateway.jvm, _jconf=jconf)
-
+conf.setExecutorEnv('PYTHONPATH', ':'.join(sys.path))
 sc = SparkContext(jsc=jsc, gateway=gateway, conf=conf)
 spark = SparkSession(sc, entry_point.getSparkSession())
 
