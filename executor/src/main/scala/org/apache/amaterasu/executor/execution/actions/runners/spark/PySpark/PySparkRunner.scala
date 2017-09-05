@@ -104,6 +104,18 @@ object PySparkRunner {
     result
   }
 
+  /**
+    * This installs the required python dependencies.
+    * We basically need 2 packages to make pyspark work with customer's scripts:
+    * 1. py4j - supplied by spark, for communication between Python and Java runtimes.
+    * 2. codegen - for dynamically parsing and converting customer's scripts into executable Python code objects.
+    * Currently we only know how to install packages using Anaconda, the reason is 3rd party OS libraries, e.g. libevent
+    * Anaconda has the capabilities to automatically resolve the required OS libraries per Python package and install them.
+    *
+    * TODO - figure out if we really want to support pip directly, or if Anaconda is enough.
+    * @param deps All of the customer's supplied Python dependencies, this currently comes from job-repo/deps/python.yml
+    * @param notifier
+    */
   private def loadPythonDependencies(deps: PythonDependencies, notifier: Notifier): Unit = {
     notifier.info("loading anaconda evn")
     installAnacondaOnNode()
@@ -135,6 +147,14 @@ object PySparkRunner {
     }
   }
 
+
+  /**
+    * Installs one python package using Anaconda.
+    * Anaconda works with multiple channels, or better called, repositories.
+    * Normally, if a channel isn't specified, Anaconda will fetch the package from the default conda channel.
+    * The reason we need to use channels, is that sometimes the required package doesn't exist on the default channel.
+    * @param pythonPackage This comes from parsing the python.yml dep file.
+    */
   private def installAnacondaPackage(pythonPackage: PythonPackage): Unit = {
     //    log.info(s"installAnacondaPackage: $pythonPackage")
     val channel = pythonPackage.channel.getOrElse("anaconda")
@@ -145,6 +165,9 @@ object PySparkRunner {
     }
   }
 
+  /**
+    * Installs Anaconda and then links it with the local spark that was installed on the executor.
+    */
   private def installAnacondaOnNode(): Unit = {
     //    log.debug(s"Preparing to install Miniconda")
     Seq("bash", "-c", "sh Miniconda2-latest-Linux-x86_64.sh -b -p $PWD/miniconda") //! shellLoger
