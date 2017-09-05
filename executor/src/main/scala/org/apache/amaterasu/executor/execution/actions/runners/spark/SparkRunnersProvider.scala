@@ -78,7 +78,7 @@ class SparkRunnersProvider extends RunnersProvider with Logging {
 
     runners.put(sparkScalaRunner.getIdentifier, sparkScalaRunner)
 
-    lazy val pySparkRunner = PySparkRunner(data.env, jobId, notifier, spark, "spark-2.1.1-bin-hadoop2.7/python/pyspark:spark-2.1.1-bin-hadoop2.7/python/pyspark/build:spark-2.1.1-bin-hadoop2.7/python/pyspark/lib/py4j-0.10.4-src.zip", data.pyDeps)
+    lazy val pySparkRunner = PySparkRunner(data.env, jobId, notifier, spark, "spark-2.1.1-bin-hadoop2.7/python:spark-2.1.1-bin-hadoop2.7/python/pyspark:spark-2.1.1-bin-hadoop2.7/python/pyspark/build:spark-2.1.1-bin-hadoop2.7/python/pyspark/lib/py4j-0.10.4-src.zip", data.pyDeps)
     runners.put(pySparkRunner.getIdentifier(), pySparkRunner)
   }
 

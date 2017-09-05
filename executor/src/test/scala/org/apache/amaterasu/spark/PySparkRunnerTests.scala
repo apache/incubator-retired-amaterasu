@@ -2,11 +2,11 @@ package io.shinto.amaterasu.spark
 
 import java.io.File
 
-import io.shinto.amaterasu.executor.execution.actions.runners.spark.PySpark.PySparkRunner
-import io.shinto.amaterasu.common.runtime.Environment
-import io.shinto.amaterasu.utilities.TestNotifier
-
+import org.apache.amaterasu.common.runtime.Environment
+import org.apache.amaterasu.executor.execution.actions.runners.spark.PySpark.PySparkRunner
+import org.apache.amaterasu.utilities.TestNotifier
 import org.apache.log4j.{Level, Logger}
+import org.apache.spark.repl.amaterasu.runners.spark.SparkRunnerHelper
 import org.apache.spark.{SparkConf, SparkContext}
 import org.scalatest.{BeforeAndAfterAll, FlatSpec, Matchers}
 
@@ -44,10 +44,9 @@ class PySparkRunnerTests extends FlatSpec with Matchers with BeforeAndAfterAll {
       .set("spark.ui.port", "4081")
       .setExecutorEnv("PYTHONPATH", resources)
 
-    sc = new SparkContext("local[*]", "job_5", conf)
 
-
-    runner = PySparkRunner(env, "job_5", notifier, sc, resources)
+    val spark = SparkRunnerHelper.createSpark(env, "job_5", null, conf, executorEnv)
+    runner = PySparkRunner(env, "job_5", notifier, sc, resources, null)
 
     super.beforeAll()
   }
