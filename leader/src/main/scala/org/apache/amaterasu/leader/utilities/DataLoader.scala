@@ -22,6 +22,7 @@ import java.nio.file.{Files, Paths}
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
+import org.apache.amaterasu.common.configuration.ClusterConfig
 import org.apache.amaterasu.common.dataobjects.{ActionData, ExecData, TaskData}
 import org.apache.amaterasu.common.execution.dependencies.{Dependencies, PythonDependencies}
 import org.apache.amaterasu.common.logging.Logging
@@ -57,11 +58,12 @@ object DataLoader extends Logging {
 
   }
 
-  def getExecutorData(env: String): ByteString = {
+  def getExecutorData(env: String, clusterConf: ClusterConfig): ByteString = {
 //    log.info("IN DATALOADER #1!!")
     // loading the job configuration
     val envValue = Source.fromFile(s"repo/env/$env/job.yml").mkString //TODO: change this to YAML
     val envData = ymlMapper.readValue(envValue, classOf[Environment])
+    envData.configuration ++ "pysparkPath" -> clusterConf.pysparkPath
 //    log.info("IN DATALOADER #2!!")
     // loading all additional configurations
     val files = new File(s"repo/env/$env/").listFiles().filter(_.isFile).filter(_.getName != "job.yml")

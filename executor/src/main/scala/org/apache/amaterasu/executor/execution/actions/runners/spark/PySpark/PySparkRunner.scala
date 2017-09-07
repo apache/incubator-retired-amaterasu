@@ -16,7 +16,7 @@
  */
 package org.apache.amaterasu.executor.execution.actions.runners.spark.PySpark
 
-import java.io.{PrintWriter, StringWriter}
+import java.io.{File, PrintWriter, StringWriter}
 import java.util
 
 import org.apache.amaterasu.common.execution.actions.Notifier
@@ -91,7 +91,7 @@ object PySparkRunner {
 
     PySparkEntryPoint.start(spark, jobId, env, SparkEnv.get)
     val port = PySparkEntryPoint.getPort
-    val proc = Process(Seq("spark-2.1.1-bin-hadoop2.7/bin/spark-submit", "spark_intp.py", port.toString), None,
+    val proc = Process(Seq(env.configuration("pysparkPath"), "spark_intp.py", port.toString), None,
       "PYTHONPATH" -> pypath,
       "PYSPARK_PYTHON" -> pysparkPython,
       "PYTHONHASHSEED" -> 0.toString) #> System.out

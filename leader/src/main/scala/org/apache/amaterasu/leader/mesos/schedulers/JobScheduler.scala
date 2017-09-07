@@ -160,7 +160,7 @@ class JobScheduler extends AmaterasuScheduler {
                 executor = slavesExecutors(slaveId)
               }
               else {
-                val execData = DataLoader.getExecutorData(env)
+                val execData = DataLoader.getExecutorData(env, config)
                 //TODO: wait for Eyal's refactoring to extract the containers params
                 //val extraJavaOps = execData...
 

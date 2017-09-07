@@ -36,17 +36,35 @@ class PySparkRunnerTests extends FlatSpec with Matchers with BeforeAndAfterAll {
     // this is an ugly hack, getClass.getResource("/").getPath should have worked but
     // stopped working when we moved to gradle :(
     val resources = new File(getClass.getResource("/spark_intp.py").getPath).getParent
-
-    val conf = new SparkConf(true)
-      .setMaster("local[1]")
-      .setAppName("job_5")
-      .set("spark.local.ip", "127.0.0.1")
-      .set("spark.ui.port", "4081")
-      .setExecutorEnv("PYTHONPATH", resources)
+    val resourceDIr = new File(new File(getClass.getResource("/spark_intp.py").getPath).getParent)
 
 
-    val spark = SparkRunnerHelper.createSpark(env, "job_5", null, conf, executorEnv)
-    runner = PySparkRunner(env, "job_5", notifier, sc, resources, null)
+//    val conf = new SparkConf(true)
+//      .setMaster("local[1]")
+//      .setAppName("job_5")
+//      .set("spark.local.ip", "127.0.0.1")
+//      .set("spark.ui.port", "4081")
+//      .setExecutorEnv("PYTHONPATH", resources)
+    val conf = Map[String, Any](
+      "spark.cassandra.connection.host" -> "127.0.0.1",
+      "sourceTable" -> "documents",
+      "spark.local.ip" -> "127.0.0.1"
+    )
+    env.master = "local[1]"
+    if (env.configuration != null) env.configuration ++ "pysparkPath" -> "/usr/bin/python" else env.configuration = Map(
+      "pysparkPath" -> "/usr/bin/python"
+    )
+    val excEnv = Map[String, Any](
+      "PYTHONPATH" -> resources
+    )
+
+
+
+
+
+    val spark = SparkRunnerHelper.createSpark(env, "job_5", List.empty[String], Option(conf), Option(excEnv))
+//    runner = PySparkRunner(env, "job_5", notifier, sc, resources, null)
+    runner = PySparkRunner(env, "job_5", notifier, spark, resources, null)
 
     super.beforeAll()
   }

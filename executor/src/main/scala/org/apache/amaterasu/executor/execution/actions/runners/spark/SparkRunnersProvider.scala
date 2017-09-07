@@ -67,7 +67,6 @@ class SparkRunnersProvider extends RunnersProvider with Logging {
 
     conf = data.configurations.get("spark")
     executorEnv = data.configurations.get("spark_exec_env")
-
     val sparkAppName = s"job_${jobId}_executor_$executorId"
 
     SparkRunnerHelper.notifier = notifier
