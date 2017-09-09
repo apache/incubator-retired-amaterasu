@@ -98,8 +98,13 @@ object PySparkRunner {
     } else {
       intpPath = s"spark_intp.py"
     }
-
-    val proc = Process(Seq(env.configuration("pysparkPath"), intpPath, port.toString), None,
+    var pysparkPath = ""
+    if (env.configuration.contains("pysparkPath")) {
+      pysparkPath = env.configuration("pysparkPath")
+    } else {
+      pysparkPath = "/usr/bin/python"
+    }
+    val proc = Process(Seq(pysparkPath, intpPath, port.toString), None,
       "PYTHONPATH" -> pypath,
       "PYSPARK_PYTHON" -> pysparkPython,
       "PYTHONHASHSEED" -> 0.toString) #> System.out

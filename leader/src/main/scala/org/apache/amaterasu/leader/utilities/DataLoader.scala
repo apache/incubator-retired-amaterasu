@@ -63,7 +63,6 @@ object DataLoader extends Logging {
     // loading the job configuration
     val envValue = Source.fromFile(s"repo/env/$env/job.yml").mkString //TODO: change this to YAML
     val envData = ymlMapper.readValue(envValue, classOf[Environment])
-    envData.configuration ++ "pysparkPath" -> "/usr/bin/python"
 //    log.info("IN DATALOADER #2!!")
     // loading all additional configurations
     val files = new File(s"repo/env/$env/").listFiles().filter(_.isFile).filter(_.getName != "job.yml")
