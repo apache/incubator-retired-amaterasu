@@ -11,6 +11,7 @@ import org.apache.spark.{SparkConf, SparkContext}
 import org.scalatest.{BeforeAndAfterAll, FlatSpec, Matchers}
 
 import scala.collection.JavaConverters._
+import scala.io.Source
 
 class PySparkRunnerTests extends FlatSpec with Matchers with BeforeAndAfterAll {
 
@@ -36,7 +37,7 @@ class PySparkRunnerTests extends FlatSpec with Matchers with BeforeAndAfterAll {
     // this is an ugly hack, getClass.getResource("/").getPath should have worked but
     // stopped working when we moved to gradle :(
     val resources = new File(getClass.getResource("/spark_intp.py").getPath).getParent
-    val resourceDIr = new File(new File(getClass.getResource("/spark_intp.py").getPath).getParent)
+//    val resourceDir = new File(new File(getClass.getResource("/spark_intp.py").getPath).getParent)
 
 
 //    val conf = new SparkConf(true)
@@ -52,7 +53,8 @@ class PySparkRunnerTests extends FlatSpec with Matchers with BeforeAndAfterAll {
     )
     env.master = "local[1]"
     if (env.configuration != null) env.configuration ++ "pysparkPath" -> "/usr/bin/python" else env.configuration = Map(
-      "pysparkPath" -> "/usr/bin/python"
+      "pysparkPath" -> "/usr/bin/python",
+      "cwd" -> resources
     )
     val excEnv = Map[String, Any](
       "PYTHONPATH" -> resources
@@ -80,21 +82,25 @@ class PySparkRunnerTests extends FlatSpec with Matchers with BeforeAndAfterAll {
 
 
   "PySparkRunner.executeSource" should "execute simple python code" in {
-    runner.executeSource(getClass.getResource("/simple-python.py").getPath, "test_action1", Map.empty[String, String].asJava)
+    val src = Source.fromFile(getClass.getResource("/simple-python.py").getPath).mkString
+    runner.executeSource(src, "test_action1", Map.empty[String, String].asJava)
   }
 
   it should "print and trows an errors" in {
     a[java.lang.Exception] should be thrownBy {
-      runner.executeSource(getClass.getResource("/simple-python-err.py").getPath, "test_action2", Map.empty[String, String].asJava)
+      val src = Source.fromFile(getClass.getResource("/simple-python-err.py").getPath).mkString
+      runner.executeSource(src, "test_action2", Map.empty[String, String].asJava)
     }
   }
 
   it should "also execute spark code written in python" in {
-    runner.executeSource(getClass.getResource("/simple-pyspark.py").getPath, "test_action3", Map("numDS" -> "parquet").asJava)
+    val src = Source.fromFile(getClass.getResource("/simple-pyspark.py").getPath).mkString
+    runner.executeSource(src, "test_action3", Map("numDS" -> "parquet").asJava)
   }
 
   it should "also execute spark code written in python with AmaContext being used" in {
-    runner.executeSource(getClass.getResource("/pyspark-with-amacontext.py").getPath, "test_action4", Map.empty[String, String].asJava)
+    val src = Source.fromFile(getClass.getResource("/pyspark-with-amacontext.py").getPath).mkString
+    runner.executeSource(src, "test_action4", Map.empty[String, String].asJava)
   }
 
 }
