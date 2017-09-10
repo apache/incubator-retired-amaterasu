@@ -53,8 +53,8 @@ jsc = entry_point.getJavaSparkContext()
 
 job_id = entry_point.getJobId()
 javaEnv = entry_point.getEnv()
-
-env = Environment(javaEnv.name(), javaEnv.master(), javaEnv.inputRootPath(), javaEnv.outputRootPath(), javaEnv.workingDir(), javaEnv.configuration())
+working_dir = javaEnv.workingDir() or os.getcwd()
+env = Environment(javaEnv.name(), javaEnv.master(), javaEnv.inputRootPath(), javaEnv.outputRootPath(), working_dir, javaEnv.configuration())
 conf = SparkConf(_jvm=gateway.jvm, _jconf=jconf)
 
 sc = SparkContext(jsc=jsc, gateway=gateway, conf=conf)
@@ -76,7 +76,6 @@ while True:
             co = compile(wrapper, "<ast>", 'exec')
             exec (co)
             resultQueue.put('success', actionData._2(), codegen.to_source(node), '')
-
             #if this node is an assignment, we need to check if it needs to be persisted
             try:
                 persistCode = ''
