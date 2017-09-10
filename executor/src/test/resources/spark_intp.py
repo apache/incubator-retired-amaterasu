@@ -53,7 +53,7 @@ jsc = entry_point.getJavaSparkContext()
 
 job_id = entry_point.getJobId()
 javaEnv = entry_point.getEnv()
-working_dir = javaEnv.workingDir() or os.getcwd()
+working_dir = javaEnv.workingDir() or '/tmp/amaterasu'
 env = Environment(javaEnv.name(), javaEnv.master(), javaEnv.inputRootPath(), javaEnv.outputRootPath(), working_dir, javaEnv.configuration())
 conf = SparkConf(_jvm=gateway.jvm, _jconf=jconf)
 
