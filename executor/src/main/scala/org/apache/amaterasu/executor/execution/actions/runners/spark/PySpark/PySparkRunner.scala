@@ -132,18 +132,13 @@ object PySparkRunner {
   private def loadPythonDependencies(deps: PythonDependencies, notifier: Notifier): Unit = {
     notifier.info("loading anaconda evn")
     installAnacondaOnNode()
-    //notifier.info("loadPythonDependencies #2")
-    //    val py4jPackage = PythonPackage("py4j", channel=Option("conda-forge"))
-    //    installAnacondaPackage(py4jPackage)
-    //notifier.info("loadPythonDependencies #3")
     val codegenPackage = PythonPackage("codegen", channel = Option("auto"))
     installAnacondaPackage(codegenPackage)
     try {
-      // notifier.info("loadPythonDependencies #5")
       deps.packages.foreach(pack => {
         pack.index.getOrElse("anaconda").toLowerCase match {
           case "anaconda" => installAnacondaPackage(pack)
-          // case "pypi" => installPyPiPackage(pack)
+          // case "pypi" => installPyPiPackage(pack) TODO: See if we can support this
         }
       })
     }
@@ -169,12 +164,11 @@ object PySparkRunner {
     * @param pythonPackage This comes from parsing the python.yml dep file.
     */
   private def installAnacondaPackage(pythonPackage: PythonPackage): Unit = {
-    //    log.info(s"installAnacondaPackage: $pythonPackage")
     val channel = pythonPackage.channel.getOrElse("anaconda")
     if (channel == "anaconda") {
-      Seq("bash", "-c", s"$$PWD/miniconda/bin/python -m conda install -y ${pythonPackage.packageId}") //! shellLoger
+      Seq("bash", "-c", s"$$PWD/miniconda/bin/python -m conda install -y ${pythonPackage.packageId}")
     } else {
-      Seq("bash", "-c", s"$$PWD/miniconda/bin/python -m conda install -y -c $channel ${pythonPackage.packageId}") //! shellLoger
+      Seq("bash", "-c", s"$$PWD/miniconda/bin/python -m conda install -y -c $channel ${pythonPackage.packageId}")
     }
   }
 
@@ -182,11 +176,9 @@ object PySparkRunner {
     * Installs Anaconda and then links it with the local spark that was installed on the executor.
     */
   private def installAnacondaOnNode(): Unit = {
-    //    log.debug(s"Preparing to install Miniconda")
-    Seq("bash", "-c", "sh Miniconda2-latest-Linux-x86_64.sh -b -p $PWD/miniconda") //! shellLoger
-    Seq("bash", "-c", "$PWD/miniconda/bin/python -m conda install -y conda-build") //! shellLoger
-    //  Seq("bash", "-c", "$PWD/miniconda/bin/python -m conda update anaconda-y") ! shellLoger
-    Seq("bash", "-c", "ln -s $PWD/spark-2.1.1-bin-hadoop2.7/python/pyspark $PWD/miniconda/pkgs/pyspark") //! shellLoger
+    Seq("bash", "-c", "sh Miniconda2-latest-Linux-x86_64.sh -b -p $PWD/miniconda")
+    Seq("bash", "-c", "$PWD/miniconda/bin/python -m conda install -y conda-build")
+    Seq("bash", "-c", "ln -s $PWD/spark-2.1.1-bin-hadoop2.7/python/pyspark $PWD/miniconda/pkgs/pyspark")
   }
 
 

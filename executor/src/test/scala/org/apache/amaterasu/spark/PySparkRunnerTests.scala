@@ -23,7 +23,6 @@ class PySparkRunnerTests extends FlatSpec with Matchers with BeforeAndAfterAll {
   Logger.getLogger("jetty").setLevel(Level.OFF)
   Logger.getRootLogger.setLevel(Level.OFF)
 
-  //var sc: SparkContext = _
   var factory: ProvidersFactory = _
 
   def delete(file: File) {
@@ -32,41 +31,7 @@ class PySparkRunnerTests extends FlatSpec with Matchers with BeforeAndAfterAll {
     file.delete
   }
 
-  override protected def beforeAll(): Unit = {
-//    val env = new Environment()
-//    val notifier = new TestNotifier()
-
-    // this is an ugly hack, getClass.getResource("/").getPath should have worked but
-    // stopped working when we moved to gradle :(
-//    val resources = new File(getClass.getResource("/spark_intp.py").getPath).getParent
-//    val resourceDir = new File(new File(getClass.getResource("/spark_intp.py").getPath).getParent)
-
-
-//    val conf = new SparkConf(true)
-//      .setMaster("local[1]")
-//      .setAppName("job_5")
-//      .set("spark.local.ip", "127.0.0.1")
-//      .set("spark.ui.port", "4081")
-//      .setExecutorEnv("PYTHONPATH", resources)
-//    val conf = Map[String, Any](
-//      "spark.cassandra.connection.host" -> "127.0.0.1",
-//      "sourceTable" -> "documents",
-//      "spark.local.ip" -> "127.0.0.1"
-//    )
-//    env.master = "local[1]"
-//    if (env.configuration != null) env.configuration ++ "pysparkPath" -> "/usr/bin/python" else env.configuration = Map(
-//      "pysparkPath" -> "/usr/bin/python",
-//      "cwd" -> resources
-//    )
-//    val excEnv = Map[String, Any](
-//      "PYTHONPATH" -> resources
-//    )
-
-    super.beforeAll()
-  }
-
   override protected def afterAll(): Unit = {
-    //sc.stop()
     val pysparkDir = new File(getClass.getResource("/pyspark").getPath)
     val py4jDir = new File(getClass.getResource("/py4j").getPath)
     delete(pysparkDir)

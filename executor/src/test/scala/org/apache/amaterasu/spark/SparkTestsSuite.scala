@@ -50,6 +50,21 @@ class SparkTestsSuite extends Suites(
 
     // I can't apologise enough for this
     val resources = new File(getClass.getResource("/spark_intp.py").getPath).getParent
+
+    val conf = Map[String, Any](
+      "spark.cassandra.connection.host" -> "127.0.0.1",
+      "sourceTable" -> "documents",
+      "spark.local.ip" -> "127.0.0.1"
+    )
+    env.master = "local[1]"
+    if (env.configuration != null) env.configuration ++ "pysparkPath" -> "/usr/bin/python" else env.configuration = Map(
+      "pysparkPath" -> "/usr/bin/python",
+      "cwd" -> resources
+    )
+    val excEnv = Map[String, Any](
+      "PYTHONPATH" -> resources
+    )
+    env.configuration ++ "spark_exec_env" -> excEnv
     factory = ProvidersFactory(ExecData(env, Dependencies(ListBuffer.empty[Repo], List.empty[Artifact]), PythonDependencies(List.empty[PythonPackage]), Map("spark" -> Map.empty[String, Any],"spark_exec_env"->Map("PYTHONPATH"->resources))), "test", new ByteArrayOutputStream(), new TestNotifier(), "test")
     spark = factory.getRunner("spark", "scala").get.asInstanceOf[SparkScalaRunner].spark
 

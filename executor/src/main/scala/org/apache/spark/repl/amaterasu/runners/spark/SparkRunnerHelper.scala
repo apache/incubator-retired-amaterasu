@@ -39,9 +39,7 @@ object SparkRunnerHelper {
   private var sparkSession: SparkSession = _
 
   var notifier: Notifier = _
-  //private var interpreter: IMain = null
 
-  //var classServerUri: String = null
   private var interpreter: IMain = _
 
   def getNode: String = sys.env.get("AMA_NODE") match {
@@ -63,10 +61,8 @@ object SparkRunnerHelper {
   private def initInterpreter(outStream: ByteArrayOutputStream, jars: Seq[String]) = {
 
     var result: IMain = null
-    //var classServerUri: String = null
     val config = new ClusterConfig()
     try {
-      //val command = new SparkCommandLine(List())
 
       val interpArguments = List(
         "-Yrepl-class-based",
@@ -83,7 +79,6 @@ object SparkRunnerHelper {
 
       settings.usejavacp.value = true
 
-      //val in: Option[BufferedReader] = null
       val out = new PrintWriter(outStream)
       val interpreter = new AmaSparkILoop(out)
       interpreter.setSttings(settings)
