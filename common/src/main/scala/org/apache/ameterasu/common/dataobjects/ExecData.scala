@@ -16,7 +16,7 @@
  */
 package org.apache.amaterasu.common.dataobjects
 
-import org.apache.amaterasu.common.execution.dependencies.Dependencies
+import org.apache.amaterasu.common.execution.dependencies.{Dependencies, PythonDependencies}
 import org.apache.amaterasu.common.runtime.Environment
 
-case class ExecData(env: Environment, deps: Dependencies, configurations: Map[String, Map[String, Any]])
+case class ExecData(env: Environment, deps: Dependencies, pyDeps: PythonDependencies, configurations: Map[String, Map[String, Any]])
