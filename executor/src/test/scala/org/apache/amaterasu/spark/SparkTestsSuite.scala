@@ -54,6 +54,8 @@ class SparkTestsSuite extends Suites(
     spark = factory.getRunner("spark", "scala").get.asInstanceOf[SparkScalaRunner].spark
 
     this.nestedSuites.filter(s => s.isInstanceOf[RunnersLoadingTests]).foreach(s => s.asInstanceOf[RunnersLoadingTests].factory = factory)
+    this.nestedSuites.filter(s => s.isInstanceOf[PySparkRunnerTests]).foreach(s => s.asInstanceOf[PySparkRunnerTests].factory = factory)
+
 
     super.beforeAll()
   }

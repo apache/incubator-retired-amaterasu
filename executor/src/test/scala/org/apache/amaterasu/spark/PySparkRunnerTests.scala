@@ -4,6 +4,7 @@ import java.io.File
 
 import org.apache.amaterasu.common.runtime.Environment
 import org.apache.amaterasu.executor.execution.actions.runners.spark.PySpark.PySparkRunner
+import org.apache.amaterasu.executor.mesos.executors.ProvidersFactory
 import org.apache.amaterasu.utilities.TestNotifier
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.repl.amaterasu.runners.spark.SparkRunnerHelper
@@ -22,7 +23,7 @@ class PySparkRunnerTests extends FlatSpec with Matchers with BeforeAndAfterAll {
   Logger.getRootLogger.setLevel(Level.OFF)
 
   var sc: SparkContext = _
-  var runner: PySparkRunner = _
+  var factory: ProvidersFactory = _
 
   def delete(file: File) {
     if (file.isDirectory)
@@ -60,14 +61,6 @@ class PySparkRunnerTests extends FlatSpec with Matchers with BeforeAndAfterAll {
       "PYTHONPATH" -> resources
     )
 
-
-
-
-
-    val spark = SparkRunnerHelper.createSpark(env, "job_5", List.empty[String], Option(conf), Option(excEnv))
-//    runner = PySparkRunner(env, "job_5", notifier, sc, resources, null)
-    runner = PySparkRunner(env, "job_5", notifier, spark, resources, null)
-
     super.beforeAll()
   }
 
@@ -83,23 +76,28 @@ class PySparkRunnerTests extends FlatSpec with Matchers with BeforeAndAfterAll {
 
   "PySparkRunner.executeSource" should "execute simple python code" in {
     val src = Source.fromFile(getClass.getResource("/simple-python.py").getPath).mkString
+    var runner = factory.getRunner("spark", "pyspark").get.asInstanceOf[PySparkRunner]
+    println("3333333333333333333333")
     runner.executeSource(src, "test_action1", Map.empty[String, String].asJava)
   }
 
   it should "print and trows an errors" in {
     a[java.lang.Exception] should be thrownBy {
       val src = Source.fromFile(getClass.getResource("/simple-python-err.py").getPath).mkString
+      var runner = factory.getRunner("spark", "pyspark").get.asInstanceOf[PySparkRunner]
       runner.executeSource(src, "test_action2", Map.empty[String, String].asJava)
     }
   }
 
   it should "also execute spark code written in python" in {
     val src = Source.fromFile(getClass.getResource("/simple-pyspark.py").getPath).mkString
+    var runner = factory.getRunner("spark", "pyspark").get.asInstanceOf[PySparkRunner]
     runner.executeSource(src, "test_action3", Map("numDS" -> "parquet").asJava)
   }
 
   it should "also execute spark code written in python with AmaContext being used" in {
     val src = Source.fromFile(getClass.getResource("/pyspark-with-amacontext.py").getPath).mkString
+    var runner = factory.getRunner("spark", "pyspark").get.asInstanceOf[PySparkRunner]
     runner.executeSource(src, "test_action4", Map.empty[String, String].asJava)
   }
 
