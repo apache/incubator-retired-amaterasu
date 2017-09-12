@@ -162,11 +162,6 @@ class JobScheduler extends AmaterasuScheduler {
               else {
                 val execData = DataLoader.getExecutorData(env, config)
                 //TODO: wait for Eyal's refactoring to extract the containers params
-                //val extraJavaOps = execData...
-
-                val execData = DataLoader.getExecutorData(env)
-                //TODO: wait for Eyal's refactoring to extract the containers params
-                //val extraJavaOps = execData...
 
                 val command = CommandInfo
                   .newBuilder

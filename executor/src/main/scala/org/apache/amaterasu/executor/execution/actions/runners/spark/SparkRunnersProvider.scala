@@ -53,6 +53,7 @@ class SparkRunnersProvider extends RunnersProvider with Logging {
     shellLoger = ProcessLogger(
       (o: String) => log.info(o),
       (e: String) => log.error("", e)
+    )
 
     var jars = Seq.empty[String]
 
