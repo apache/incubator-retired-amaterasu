@@ -101,6 +101,7 @@ class ActionsExecutor extends Executor with Logging {
     val task = Future {
 
       val taskData = mapper.readValue(new ByteArrayInputStream(taskInfo.getData.toByteArray), classOf[TaskData])
+
       val status = TaskStatus.newBuilder
         .setTaskId(taskInfo.getTaskId)
         .setState(TaskState.TASK_RUNNING).build()

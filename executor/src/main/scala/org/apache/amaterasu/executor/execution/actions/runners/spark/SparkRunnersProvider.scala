@@ -54,8 +54,8 @@ class SparkRunnersProvider extends RunnersProvider with Logging {
       (o: String) => log.info(o),
       (e: String) => log.error("", e)
 
-    )
     var jars = Seq.empty[String]
+
     if (data.deps != null) {
       jars ++= getDependencies(data.deps)
     }
