@@ -85,7 +85,6 @@ class ActionsExecutor extends Executor with Logging {
 
     notifier = new MesosNotifier(driver)
     notifier.info(s"Executor ${executorInfo.getExecutorId.getValue} registered")
-
     val outStream = new ByteArrayOutputStream()
     providersFactory = ProvidersFactory(data, jobId, outStream, notifier, executorInfo.getExecutorId.getValue)
 
@@ -98,9 +97,7 @@ class ActionsExecutor extends Executor with Logging {
     val status = TaskStatus.newBuilder
       .setTaskId(taskInfo.getTaskId)
       .setState(TaskState.TASK_STARTING).build()
-
     driver.sendStatusUpdate(status)
-
     val task = Future {
 
       val taskData = mapper.readValue(new ByteArrayInputStream(taskInfo.getData.toByteArray), classOf[TaskData])
@@ -108,9 +105,7 @@ class ActionsExecutor extends Executor with Logging {
       val status = TaskStatus.newBuilder
         .setTaskId(taskInfo.getTaskId)
         .setState(TaskState.TASK_RUNNING).build()
-
       driver.sendStatusUpdate(status)
-
       val runner = providersFactory.getRunner(taskData.groupId, taskData.typeId)
       runner match {
         case Some(r) => r.executeSource(taskData.src, actionName, taskData.exports.asJava)

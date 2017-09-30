@@ -125,7 +125,6 @@ class JobScheduler extends AmaterasuScheduler {
   }
 
   def resourceOffers(driver: SchedulerDriver, offers: util.List[Offer]): Unit = {
-
     for (offer <- offers.asScala) {
 
       if (validateOffer(offer)) {
@@ -138,9 +137,7 @@ class JobScheduler extends AmaterasuScheduler {
 
         try {
           val actionData = jobManager.getNextActionData
-
           if (actionData != null) {
-
             val taskId = Protos.TaskID.newBuilder().setValue(actionData.id).build()
 
             offersToTaskIds.put(offer.getId.getValue, taskId.getValue)
@@ -158,17 +155,13 @@ class JobScheduler extends AmaterasuScheduler {
             var executor: ExecutorInfo = null
             val slaveId = offer.getSlaveId.getValue
             slavesExecutors.synchronized {
-
               if (slavesExecutors.contains(slaveId) &&
                 offer.getExecutorIdsList.contains(slavesExecutors(slaveId).getExecutorId)) {
-
                 executor = slavesExecutors(slaveId)
               }
               else {
-
-                val execData = DataLoader.getExecutorData(env)
+                val execData = DataLoader.getExecutorData(env, config)
                 //TODO: wait for Eyal's refactoring to extract the containers params
-                //val extraJavaOps = execData...
 
                 val command = CommandInfo
                   .newBuilder
@@ -185,7 +178,26 @@ class JobScheduler extends AmaterasuScheduler {
                     .setExecutable(false)
                     .setExtract(true)
                     .build())
-
+                  .addUris(URI.newBuilder()
+                    .setValue(s"http://${sys.env("AMA_NODE")}:${config.Webserver.Port}/Miniconda2-latest-Linux-x86_64.sh")
+                    .setExecutable(false)
+                    .setExtract(false)
+                    .build())
+                  .addUris(URI.newBuilder()
+                    .setValue(s"http://${sys.env("AMA_NODE")}:${config.Webserver.Port}/spark_intp.py")
+                    .setExecutable(false)
+                    .setExtract(false)
+                    .build())
+                  .addUris(URI.newBuilder()
+                    .setValue(s"http://${sys.env("AMA_NODE")}:${config.Webserver.Port}/runtime.py")
+                    .setExecutable(false)
+                    .setExtract(false)
+                    .build())
+                  .addUris(URI.newBuilder()
+                    .setValue(s"http://${sys.env("AMA_NODE")}:${config.Webserver.Port}/codegen.py")
+                    .setExecutable(false)
+                    .setExtract(false)
+                    .build())
                 executor = ExecutorInfo
                   .newBuilder
                   .setData(execData)

@@ -10,9 +10,10 @@ import ast
 import codegen
 import os
 import sys
+import zipimport
 from runtime import AmaContext, Environment
 
-os.chdir(os.getcwd() + '/build/resources/test/')
+# os.chdir(os.getcwd() + '/build/resources/test/')
 # import zipfile
 # zip = zipfile.ZipFile('pyspark.zip')
 # zip.extractall()
@@ -20,6 +21,10 @@ os.chdir(os.getcwd() + '/build/resources/test/')
 # zip.extractall()
 # sys.path.insert(1, os.getcwd() + '/executor/src/test/resources/pyspark')
 # sys.path.insert(1, os.getcwd() + '/executor/src/test/resources/py4j')
+
+# py4j_path = 'spark-2.1.1-bin-hadoop2.7/python/lib/py4j-0.10.4-src.zip'
+# py4j_importer = zipimport.zipimporter(py4j_path)
+# py4j = py4j_importer.load_module('py4j')
 from py4j.java_gateway import JavaGateway, GatewayClient, java_import
 from py4j.protocol import Py4JJavaError
 from pyspark.conf import SparkConf
@@ -56,7 +61,7 @@ javaEnv = entry_point.getEnv()
 
 env = Environment(javaEnv.name(), javaEnv.master(), javaEnv.inputRootPath(), javaEnv.outputRootPath(), javaEnv.workingDir(), javaEnv.configuration())
 conf = SparkConf(_jvm=gateway.jvm, _jconf=jconf)
-
+conf.setExecutorEnv('PYTHONPATH', ':'.join(sys.path))
 sc = SparkContext(jsc=jsc, gateway=gateway, conf=conf)
 spark = SparkSession(sc, entry_point.getSparkSession())
 

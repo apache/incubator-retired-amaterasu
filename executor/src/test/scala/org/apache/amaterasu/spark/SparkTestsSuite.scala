@@ -18,9 +18,10 @@ package org.apache.amaterasu.spark
 
 import java.io.{ByteArrayOutputStream, File}
 
+import io.shinto.amaterasu.spark.PySparkRunnerTests
 import org.apache.amaterasu.RunnersTests.RunnersLoadingTests
 import org.apache.amaterasu.common.dataobjects.ExecData
-import org.apache.amaterasu.common.execution.dependencies.{Artifact, Dependencies, Repo}
+import org.apache.amaterasu.common.execution.dependencies._
 import org.apache.amaterasu.common.runtime.Environment
 import org.apache.amaterasu.utilities.TestNotifier
 import org.apache.amaterasu.executor.mesos.executors.ProvidersFactory
@@ -49,14 +50,27 @@ class SparkTestsSuite extends Suites(
 
     // I can't apologise enough for this
     val resources = new File(getClass.getResource("/spark_intp.py").getPath).getParent
-    factory = ProvidersFactory(ExecData(env, Dependencies(ListBuffer.empty[Repo], List.empty[Artifact]), Map("spark" -> Map.empty[String, Any],"spark_exec_env"->Map("PYTHONPATH"->resources))), "test", new ByteArrayOutputStream(), new TestNotifier(), "test")
+
+    val conf = Map[String, Any](
+      "spark.cassandra.connection.host" -> "127.0.0.1",
+      "sourceTable" -> "documents",
+      "spark.local.ip" -> "127.0.0.1"
+    )
+    env.master = "local[1]"
+    if (env.configuration != null) env.configuration ++ "pysparkPath" -> "/usr/bin/python" else env.configuration = Map(
+      "pysparkPath" -> "/usr/bin/python",
+      "cwd" -> resources
+    )
+    val excEnv = Map[String, Any](
+      "PYTHONPATH" -> resources
+    )
+    env.configuration ++ "spark_exec_env" -> excEnv
+    factory = ProvidersFactory(ExecData(env, Dependencies(ListBuffer.empty[Repo], List.empty[Artifact]), PythonDependencies(List.empty[PythonPackage]), Map("spark" -> Map.empty[String, Any],"spark_exec_env"->Map("PYTHONPATH"->resources))), "test", new ByteArrayOutputStream(), new TestNotifier(), "test")
     spark = factory.getRunner("spark", "scala").get.asInstanceOf[SparkScalaRunner].spark
 
     this.nestedSuites.filter(s => s.isInstanceOf[RunnersLoadingTests]).foreach(s => s.asInstanceOf[RunnersLoadingTests].factory = factory)
-    this.nestedSuites.filter(s => s.isInstanceOf[PySparkRunnerTests]).foreach(s => {
-      s.asInstanceOf[PySparkRunnerTests].spark = spark
-      s.asInstanceOf[PySparkRunnerTests].env = env
-    })
+    this.nestedSuites.filter(s => s.isInstanceOf[PySparkRunnerTests]).foreach(s => s.asInstanceOf[PySparkRunnerTests].factory = factory)
+
 
     super.beforeAll()
   }

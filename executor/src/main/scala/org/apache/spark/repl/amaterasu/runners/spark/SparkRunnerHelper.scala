@@ -39,9 +39,7 @@ object SparkRunnerHelper {
   private var sparkSession: SparkSession = _
 
   var notifier: Notifier = _
-  //private var interpreter: IMain = null
 
-  //var classServerUri: String = null
   private var interpreter: IMain = _
 
   def getNode: String = sys.env.get("AMA_NODE") match {
@@ -63,10 +61,8 @@ object SparkRunnerHelper {
   private def initInterpreter(outStream: ByteArrayOutputStream, jars: Seq[String]) = {
 
     var result: IMain = null
-    //var classServerUri: String = null
     val config = new ClusterConfig()
     try {
-      //val command = new SparkCommandLine(List())
 
       val interpArguments = List(
         "-Yrepl-class-based",
@@ -83,7 +79,6 @@ object SparkRunnerHelper {
 
       settings.usejavacp.value = true
 
-      //val in: Option[BufferedReader] = null
       val out = new PrintWriter(outStream)
       val interpreter = new AmaSparkILoop(out)
       interpreter.setSttings(settings)
@@ -120,6 +115,7 @@ object SparkRunnerHelper {
       .set("spark.submit.deployMode", "client")
       .set("spark.home", s"${scala.reflect.io.File(".").toCanonical.toString}/spark-2.1.1-bin-hadoop2.7")
       .set("spark.hadoop.validateOutputSpecs", "false")
+      .set("spark.submit.pyFiles", "miniconda/pkgs")
       .setJars(jars)
 
     // adding the the configurations from spark.yml
