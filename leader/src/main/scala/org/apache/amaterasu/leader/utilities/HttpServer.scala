@@ -44,6 +44,11 @@ object HttpServer extends Logging {
 
     BasicConfigurator.configure()
     initLogging()
+    log.debug(s"serverRoot $serverRoot")
+    log.info(s"serverRoot $serverRoot")
+    log.error(s"serverRoot $serverRoot")
+    log.warn(s"serverRoot $serverRoot")
+    println(s"serverRoot $serverRoot")
 
     server = new Server()
     val connector = new ServerConnector(server)

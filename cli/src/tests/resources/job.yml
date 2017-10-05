@@ -1,0 +1,8 @@
+name: default
+master: mesos://localhost:5050
+inputRootPath: hdfs://localhost:9000/user/amaterasu/input
+outputRootPath: hdfs://localhost:9000/user/amaterasu/output
+workingDir: alluxio://localhost:19998/
+configuration:
+    spark.cassandra.connection.host: 127.0.0.1,
+    sourceTable: documents

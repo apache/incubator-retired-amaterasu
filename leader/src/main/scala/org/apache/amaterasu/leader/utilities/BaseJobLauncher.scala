@@ -31,7 +31,7 @@ abstract class BaseJobLauncher extends App with Logging {
 
     case Some(arguments: Args) =>
 
-      val config = ClusterConfig(new FileInputStream(s"${arguments.home}/amaterasu.properties"))
+      val config = ClusterConfig(new FileInputStream(s"${arguments.configHome}/amaterasu.properties"))
       val resume = arguments.jobId != null
 
       run(arguments, config, resume)

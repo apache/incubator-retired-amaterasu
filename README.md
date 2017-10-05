@@ -26,36 +26,131 @@
                                                         
 
 Apache Amaterasu is an open-source, deployment tool for data pipelines. Amaterasu allows developers to write and easily deploy data pipelines, and clusters manage their configuration and dependencies.
+ 
 
-## Download
+### Supported cluster managers
 
-For this preview version, we have packaged amaterasu nicely for you to just [download](https://s3-ap-southeast-2.amazonaws.com/amaterasu/amaterasu.tgz) and extract.
-Once you do that, you are just a couple of easy steps away from running your first job.
+Currently Apache Amaterasu supports the following cluster managers:
+1. Apache Mesos
+    > Important! Does not support DC/OS at the moment! only standalone deployment of mesos.
+2. Apache Hadoop YARN
+    > Due to a bug, we do not support Micorosft Azure HDInsight at the moment.
+
+
+### Requirements
+
+Here is the list of requirements you will need to have installed on your cluster's master node.
+
+1. Java 1.8 (Oracle or OpenJDK, either is OK)
+1. Python 3.3+
+2. [pip](https://pip.pypa.io/en/stable/installing/)
+
+### Installation
+
+First, on your cluster's master node, download the latest Apache Amaterasu [distributable](https://github.com/apache/incubator-amaterasu/releases/latest).
+
+Next, unpack the tarball:
+
+```bash
+tar -xzf apache-amaterasu-<version>.tar amaterasu
+```
+
+Next install the CLI:
+
+```
+cd amaterasu
+sudo pip install ./cli
+```
+
+After installation you will need to setup Amaterasu. You can do it using the `ama setup` command.
+
+The setup phase is dictated by the cluster manager you use.
+So for example, to setup Amaterasu for a mesos cluster, you would do:
+```bash
+ama setup mesos
+```
+
+During step you will be asked to configure a few parameters, the setup will result in the following happening:
+1. The Amaterasu distributable will be downloaded and deployed. 
+2. `amaterasu.properties` file will be created in the current user's home directory. This is a configuration file that feeds the distributable.
+3. Dependencies will be downloaded (miniconda and spark for a Mesos cluster and only miniconda for a Hadoop cluster)
 
 ## Creating a dev/test Mesos cluster
 
 We have also created a Mesos cluster you can use to test Amaterasu or use for development purposes.
 For more details, visit the [amaterasu-vagrant](https://github.com/shintoio/amaterasu-vagrant) repo
 
-## Configuration
+## Creating a job repository
 
-Configuring amaterasu is very simple. Before running amaterasu, open the `amaterasu.properties` file in the top-level amaterasu directory, and verify the following properties:
+Amaterasu has a very specific definition for how an Amaterasu compliant job repository should look like. For this, we supply the `ama init` command.
 
-| property   | Description                | Default value  |
-| ---------- | -------------------------- | -------------- |
-| zk         | The ZooKeeper connection<br> string to be used by<br> amaterasu | 192.168.33.11  |
-| master     | The clusters' Mesos master | 192.168.33.11  |
-| user       | The user that will be used<br> to run amaterasu | root           |
+Here are the steps to properly create an Apache Amaterasu job repository:
+1. Start by creating a new directory, for example "ExampleJobRepo"
+2. `cd ExampleJobRepo`
+3. Run `ama init`
+
+This will create a new repository inside the ExampleJobRepo directory. The new repository will include the following structure:
+
+1. **maki.yml** - This is the job instructions file, more on this below.
+2. **src** - A directory for source files that are used as part of the job. Currently we support Spark with Scala, Python, R and SQL bindings.
+3. **env** - A directory for environment specific configuration files. You may want to have different configurations for development and production environments
+4. **deps** - A directory for files that list software dependencies that the job requires. E.g. - numpy, pandas, etc.
+
+After you've created the ExampleJobRepo, fill it in with your source code, environment configurations,  you will need to push it to a remote git host that your cluster has access to. 
+That's it, you are set to run your first job.
 
 ## Running a Job
 
-To run an amaterasu job, run the following command in the top-level amaterasu directory:
+To run a job using Amaterasu, we prepared a nifty little CLI command.
+
+```bash
+ama run
+```
+
+The ama run commands receives a mandatory job repository URL.
+
+```bash
+ama run <repository_url>
+
+# e.g.
+
+ama run https://github.com/shintoio/amaterasu-job-sample.git
+```
+
+Unless specified otherwise, we use the master branch. If you want to change this, you can add the ```-b``` flag.
+
+```bash
+ama run <repository_url> -b <your_branch>
+
+# e.g.
+
+ama run https://github.com/shintoio/amaterasu-job-sample.git -b python-support
+```
+
+
+#### Execution Environments
+
+So you are running Apache Amaterasu, that's great! But maybe, you'd want to specify some job or environment related arguments for Apache Amaterasu to pass on to the underlying cluster manager.
+For example, maybe for production you want to set the spark executor memory on HDP to 1g, you can do it by adding it to a ```env/hdp-prod/spark.yml``` file.
+Maybe during the testing phase, you'd like Spark driver to only use 2 cores, this is why you'd want to have different environment for testing.
+
+So let's assume that you ended up creating 2 environments - ```hdp-prod``` and ```hdp-test```.
+
+To use the ```hdp-prod``` environment, simply run with the ```-e``` flag like this:
 
 ```
-ama-start.sh --repo="https://github.com/shintoio/amaterasu-job-sample.git" --branch="master" --env="test" --report="code" 
+ama run <repository_url> -e <environment>
+
+# e.g. 
+ama run https://github.com/shintoio/amaterasu-job-sample.git -e hdp-prod
 ```
 
-We recommend you either fork or clone the job sample repo and use that as a starting point for creating your first job.
+> Note - If you don't specify any environment, Amaterasu will use the "default" environment.
+
+For more CLI options, use the builtin help (```ama -h```)
+
+It is highly recommended that you take a peek at our [sample job repository](https://github.com/shintoio/amaterasu-job-sample.git) before using Amaterasu.
+
 
 # Apache Amaterasu Developers Information 
 

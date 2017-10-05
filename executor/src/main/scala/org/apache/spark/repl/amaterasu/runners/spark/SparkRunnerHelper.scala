@@ -134,7 +134,7 @@ object SparkRunnerHelper extends Logging {
       env.master
     }
 
-    config.mode match {
+    config.CLUSTER.manager match {
 
       case "mesos" =>
         conf.set("spark.executor.uri", s"http://$getNode:${config.Webserver.Port}/spark-2.2.1-bin-hadoop2.7.tgz")
@@ -160,7 +160,7 @@ object SparkRunnerHelper extends Logging {
           .set("spark.history.fs.logDirectory", "hdfs:///spark2-history/")
           .set("hadoop.home.dir", config.YARN.hadoopHomeDir)
 
-      case _ => throw new Exception(s"mode ${config.mode} is not legal.")
+      case _ => throw new Exception(s"cluster manager ${config.CLUSTER.manager} is not legal.")
     }
 
     if (config.spark.opts != null && config.spark.opts.nonEmpty) {

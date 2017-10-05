@@ -30,6 +30,7 @@ public class ArgsParser {
         options.addOption("j", "new-job-id", true, "The jobId - should never be passed by a user");
         options.addOption("r", "report", true, "The level of reporting");
         options.addOption("h", "home", true, "The level of reporting");
+        options.addOption("c", "config-home", true, "Path to where the Amaterasu configuration resides. Usually it should be at ~/.amaterasu/");
 
         return options;
     }
@@ -70,6 +71,10 @@ public class ArgsParser {
 
         if (cli.hasOption("name")) {
             opts.name = cli.getOptionValue("name");
+        }
+
+        if (cli.hasOption("config-home")) {
+            opts.configHome = cli.getOptionValue("config-home");
         }
 
         return opts;

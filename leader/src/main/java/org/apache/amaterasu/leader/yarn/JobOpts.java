@@ -25,4 +25,5 @@ public class JobOpts {
     public String newJobId = null;
     public String report ="code";
     public String home ="";
+    public String configHome = "";
 }

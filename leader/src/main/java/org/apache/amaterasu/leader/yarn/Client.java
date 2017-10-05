@@ -73,7 +73,7 @@ public class Client {
 
         LogManager.resetConfiguration();
         ClusterConfig config = new ClusterConfig();
-        config.load(new FileInputStream(opts.home + "/amaterasu.properties"));
+        config.load(new FileInputStream(opts.configHome + "/amaterasu.properties"));
 
         // Create yarnClient
         YarnClient yarnClient = YarnClient.createYarnClient();
@@ -138,6 +138,7 @@ public class Client {
                 for (File f : home.listFiles()) {
                     fs.copyFromLocalFile(false, true, new Path(f.getAbsolutePath()), jarPathQualified);
                 }
+                fs.copyFromLocalFile(false, true, new Path(opts.configHome + "/amaterasu.properties"), Path.mergePaths(jarPathQualified, new Path("/amaterasu.properties")));
 
                 // setup frameworks
                 FrameworkProvidersFactory frameworkFactory = FrameworkProvidersFactory.apply(opts.env, config);
