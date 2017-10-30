@@ -46,8 +46,10 @@ dependencies {
     compile group: 'org.eclipse.jetty', name: 'jetty-io', version: '9.2.19.v20160908'
     compile group: 'org.eclipse.jetty', name: 'jetty-servlet', version: '9.2.19.v20160908'
     compile group: 'javax.servlet', name: 'javax.servlet-api', version: '2.5.0'
+    compile group: 'org.eclipse.jetty.toolchain', name: 'jetty-test-helper', version: '4.0'
     compile group: 'org.eclipse.jgit', name: 'org.eclipse.jgit', version: '4.2.0.201601211800-r'
     compile group: 'org.yaml', name: 'snakeyaml', version: '1.18'
+    compile group: 'org.jsoup', name: 'jsoup', version: '1.10.2'
 
     testCompile project(':common')
     testCompile "gradle.plugin.com.github.maiflai:gradle-scalatest:0.14"
