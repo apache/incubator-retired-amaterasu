@@ -17,11 +17,9 @@
 package org.apache.amaterasu.executor.execution.actions.runners.spark.PySpark
 
 import java.util
-import java.util.concurrent.{ TimeUnit, LinkedBlockingQueue }
+import java.util.concurrent.{LinkedBlockingQueue, TimeUnit}
 
-/**
-  * Created by roadan on 10/14/16.
-  */
+
 class PySparkExecutionQueue {
 
   val queue = new LinkedBlockingQueue[(String, String, util.Map[String, String])]()

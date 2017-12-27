@@ -18,9 +18,6 @@ package org.apache.amaterasu.executor.execution.actions.runners.spark.PySpark
 
 import org.apache.amaterasu.executor.execution.actions.runners.spark.PySpark.ResultType.ResultType
 
-/**
-  * Created by roadan on 10/17/16.
-  */
 object ResultType extends Enumeration {
   type ResultType = Value
   val success = Value("success")

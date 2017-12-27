@@ -19,9 +19,6 @@ package org.apache.amaterasu.common.execution.actions
 import org.apache.amaterasu.common.execution.actions.NotificationLevel.NotificationLevel
 import org.apache.amaterasu.common.execution.actions.NotificationType.NotificationType
 
-/**
-  * Created by roadan on 8/20/16.
-  */
 abstract class Notifier {
 
   def info(msg: String)

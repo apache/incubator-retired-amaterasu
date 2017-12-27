@@ -18,8 +18,8 @@ package org.apache.amaterasu.leader.execution.actions
 
 import java.util.concurrent.BlockingQueue
 
+import org.apache.amaterasu.common.configuration.enums.ActionStatus
 import org.apache.amaterasu.common.dataobjects.ActionData
-import org.apache.amaterasu.enums.ActionStatus
 import org.apache.curator.framework.CuratorFramework
 import org.apache.zookeeper.CreateMode
 
@@ -91,7 +91,7 @@ object SequentialAction {
 
     action.attempts = attempts
     action.jobId = jobId
-    action.data = ActionData(ActionStatus.pending, name, src, groupId, typeId, action.actionId,exports, new ListBuffer[String])
+    action.data = ActionData(ActionStatus.pending, name, src, groupId, typeId, action.actionId, exports, new ListBuffer[String])
     action.jobsQueue = queue
     action.client = zkClient
 

@@ -21,9 +21,7 @@ import java.util.UUID
 
 import org.apache.mesos.Protos._
 
-/**
-  * Created by roadan on 10/17/15.
-  */
+
 object MesosTestUtil {
   def createOffer(mem: Double, disk: Double, cpus: Int): Offer = {
 

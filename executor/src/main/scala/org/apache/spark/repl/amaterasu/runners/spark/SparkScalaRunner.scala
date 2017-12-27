@@ -22,12 +22,12 @@ import java.util
 import org.apache.amaterasu.common.execution.actions.Notifier
 import org.apache.amaterasu.common.logging.Logging
 import org.apache.amaterasu.common.runtime.Environment
-import org.apache.amaterasu.sdk.AmaterasuRunner
 import org.apache.amaterasu.executor.runtime.AmaContext
+import org.apache.amaterasu.sdk.AmaterasuRunner
 import org.apache.spark.sql.{Dataset, SparkSession}
 
-import scala.collection.mutable
 import scala.collection.JavaConverters._
+import scala.collection.mutable
 import scala.io.Source
 import scala.tools.nsc.interpreter.{IMain, Results}
 
@@ -50,7 +50,6 @@ class SparkScalaRunner(var env: Environment,
   val holder = new ResHolder(null)
 
   override def executeSource(actionSource: String, actionName: String, exports: util.Map[String, String]): Unit = {
-    //notifier.info(s"actionSource ${actionSource}, actionName ${actionName}")
     val source = Source.fromString(actionSource)
     interpretSources(source, actionName, exports.asScala.toMap)
   }

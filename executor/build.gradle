@@ -59,6 +59,10 @@ dependencies {
     }
     compile group: 'org.apache.maven', name: 'maven-core', version: '3.0.5'
     compile group: 'org.reflections', name: 'reflections', version: '0.9.10'
+    compile group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: '2.6.5'
+    compile group: 'com.fasterxml.jackson.core', name: 'jackson-annotations', version: '2.6.5'
+    compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.6.5'
+    compile group: 'com.fasterxml.jackson.module', name: 'jackson-module-scala_2.11', version: '2.6.5'
 
     compile project(':common')
     compile project(':amaterasu-sdk')

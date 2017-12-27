@@ -21,19 +21,25 @@ import java.nio.file.Paths
 import java.util.Properties
 
 import org.apache.amaterasu.common.logging.Logging
+import org.apache.commons.configuration.ConfigurationException
+
+import scala.collection.mutable
 
 class ClusterConfig extends Logging {
 
   val DEFAULT_FILE = getClass().getResourceAsStream("/src/main/scripts/amaterasu.properties")
   //val DEFAULT_FILE = getClass().getResourceAsStream("/amaterasu.properties")
+  var version: String = ""
   var user: String = ""
   var zk: String = ""
+  var mode: String = ""
   var master: String = "127.0.0.1"
   var masterPort: String = "5050"
   var timeout: Double = 600000
   var taskMem: Int = 128
   var distLocation: String = "local"
   var workingFolder: String = ""
+  // TODO: get rid of hard-coded version
   var pysparkPath: String = "spark-2.1.1-bin-hadoop2.7/bin/spark-submit"
   var Jar: String = _
   var JarName: String = _
@@ -42,6 +48,63 @@ class ClusterConfig extends Logging {
   var additionalClassPath: String = ""
 
   //this should be a filesystem path that is reachable by all executors (HDFS, S3, local)
+
+  class YARN {
+    var queue: String = "default"
+    var hdfsJarsPath: String = ""
+    var master: Master = new Master()
+    var spark: Spark = new Spark()
+
+    def load(props: Properties): Unit = {
+      if (props.containsKey("yarn.queue")) queue = props.getProperty("yarn.queue")
+      if (props.containsKey("yarn.jarspath")) hdfsJarsPath = props.getProperty("yarn.jarspath")
+
+      this.master.load(props)
+      this.spark.load(props)
+    }
+
+    class Master {
+      var cores: Int = 1
+      var memoryMB: Int = 256
+
+      def load(props: Properties): Unit = {
+        if (props.containsKey("yarn.master.cores")) this.cores = props.getProperty("yarn.master.cores").asInstanceOf[Int]
+        if (props.containsKey("yarn.master.memoryMB")) this.memoryMB = props.getProperty("yarn.master.memoryMB").asInstanceOf[Int]
+      }
+    }
+
+    val Master = new Master()
+
+    object Worker {
+      var cores: Int = 1
+      var memoryMB: Int = 256
+
+      def load(props: Properties): Unit = {
+        if (props.containsKey("yarn.worker.cores")) Master.cores = props.getProperty("yarn.worker.cores").asInstanceOf[Int]
+        if (props.containsKey("yarn.worker.memoryMB")) Master.memoryMB = props.getProperty("yarn.worker.memoryMB").asInstanceOf[Int]
+      }
+    }
+
+    class Spark {
+      var home: String = ""
+      var opts: mutable.Map[String, String] = mutable.Map()
+
+      def load(props: Properties): Unit = {
+        if (props.containsKey("yarn.spark.home")) spark.home = props.getProperty("yarn.spark.home")
+        import scala.collection.JavaConversions._
+        for (key <- props.propertyNames()) {
+          if (key.toString.startsWith("spark.opts.")) {
+            val value = props.getProperty(key.toString)
+            val newKey = key.toString.replace("spark.opts.", "")
+            opts.put(newKey, value)
+          }
+        }
+      }
+    }
+
+  }
+
+  val YARN = new YARN()
 
   object Webserver {
     var Port: String = ""
@@ -120,23 +183,26 @@ class ClusterConfig extends Logging {
     load(DEFAULT_FILE)
   }
 
+  def validationCheck(): Unit = {
+    if (!Array("yarn", "mesos").contains(mode)) {
+      throw new ConfigurationException(s"mode $mode is not legal. Options are 'yarn' or 'mesos'!")
+    }
+  }
+
   def load(file: InputStream): Unit = {
     val props: Properties = new Properties()
 
     props.load(file)
     file.close()
 
+    if (props.containsKey("version")) version = props.getProperty("version")
     if (props.containsKey("user")) user = props.getProperty("user")
     if (props.containsKey("zk")) zk = props.getProperty("zk")
     if (props.containsKey("master")) master = props.getProperty("master")
     if (props.containsKey("masterPort")) masterPort = props.getProperty("masterPort")
     if (props.containsKey("timeout")) timeout = props.getProperty("timeout").asInstanceOf[Double]
-    if (props.containsKey("workingFolder")) {
-      workingFolder = props.getProperty("workingFolder")
-    }
-    else {
-      workingFolder = s"/user/$user"
-    }
+    if (props.containsKey("mode")) mode = props.getProperty("mode")
+    if (props.containsKey("workingFolder")) workingFolder = props.getProperty("workingFolder", s"/user/$user")
 
     // TODO: rethink this
     Jar = this.getClass.getProtectionDomain.getCodeSource.getLocation.toURI.getPath
@@ -144,6 +210,7 @@ class ClusterConfig extends Logging {
 
     Jobs.load(props)
     Webserver.load(props)
+    YARN.load(props)
 
     distLocation match {
 
@@ -153,6 +220,8 @@ class ClusterConfig extends Logging {
 
     }
     AWS.load(props)
+
+    validationCheck()
   }
 
 }
@@ -164,6 +233,12 @@ object ClusterConfig {
     val config = new ClusterConfig()
     config.load(file)
 
+    config
+  }
+
+  def apply(): ClusterConfig = {
+    val config = new ClusterConfig()
+    config.load()
     config
   }
 

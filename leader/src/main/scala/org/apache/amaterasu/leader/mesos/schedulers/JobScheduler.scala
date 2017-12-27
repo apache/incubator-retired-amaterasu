@@ -23,21 +23,19 @@ import java.util.{Collections, UUID}
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
-
 import org.apache.amaterasu.common.configuration.ClusterConfig
+import org.apache.amaterasu.common.configuration.enums.ActionStatus
+import org.apache.amaterasu.common.configuration.enums.ActionStatus.ActionStatus
 import org.apache.amaterasu.common.dataobjects.ActionData
-import org.apache.amaterasu.common.execution.actions.{Notification, NotificationLevel, NotificationType}
 import org.apache.amaterasu.common.execution.actions.NotificationLevel.NotificationLevel
-import org.apache.amaterasu.enums.ActionStatus
-import org.apache.amaterasu.enums.ActionStatus.ActionStatus
+import org.apache.amaterasu.common.execution.actions.{Notification, NotificationLevel, NotificationType}
 import org.apache.amaterasu.leader.execution.{JobLoader, JobManager}
 import org.apache.amaterasu.leader.utilities.{DataLoader, HttpServer}
-
 import org.apache.curator.framework.{CuratorFramework, CuratorFrameworkFactory}
 import org.apache.curator.retry.ExponentialBackoffRetry
-
 import org.apache.mesos.Protos.CommandInfo.URI
 import org.apache.mesos.Protos._
+import org.apache.mesos.protobuf.ByteString
 import org.apache.mesos.{Protos, SchedulerDriver}
 
 import scala.collection.JavaConverters._
@@ -160,8 +158,7 @@ class JobScheduler extends AmaterasuScheduler {
                 executor = slavesExecutors(slaveId)
               }
               else {
-                val execData = DataLoader.getExecutorData(env, config)
-                //TODO: wait for Eyal's refactoring to extract the containers params
+                val execData = DataLoader.getExecutorDataBytes(env, config)
 
                 val command = CommandInfo
                   .newBuilder
@@ -200,7 +197,7 @@ class JobScheduler extends AmaterasuScheduler {
                     .build())
                 executor = ExecutorInfo
                   .newBuilder
-                  .setData(execData)
+                  .setData(ByteString.copyFrom(execData))
                   .setName(taskId.getValue)
                   .setExecutorId(ExecutorID.newBuilder().setValue(taskId.getValue + "-" + UUID.randomUUID()))
                   .setCommand(command)
@@ -217,7 +214,7 @@ class JobScheduler extends AmaterasuScheduler {
               .setSlaveId(offer.getSlaveId)
               .setExecutor(executor)
 
-              .setData(DataLoader.getTaskData(actionData, env))
+              .setData(ByteString.copyFrom(DataLoader.getTaskDataBytes(actionData, env)))
               .addResources(createScalarResource("cpus", config.Jobs.Tasks.cpus))
               .addResources(createScalarResource("mem", config.Jobs.Tasks.mem))
               .addResources(createScalarResource("disk", config.Jobs.repoSize))

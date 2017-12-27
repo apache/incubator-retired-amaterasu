@@ -20,16 +20,17 @@ import java.io.{ByteArrayOutputStream, File, PrintWriter}
 
 import org.apache.amaterasu.common.configuration.ClusterConfig
 import org.apache.amaterasu.common.execution.actions.Notifier
+import org.apache.amaterasu.common.logging.Logging
 import org.apache.amaterasu.common.runtime.Environment
 import org.apache.spark.repl.amaterasu.AmaSparkILoop
-import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.util.Utils
+import org.apache.spark.{SparkConf, SparkContext}
 
-import scala.tools.nsc.{GenericRunnerSettings, Settings}
+import scala.tools.nsc.GenericRunnerSettings
 import scala.tools.nsc.interpreter.IMain
 
-object SparkRunnerHelper {
+object SparkRunnerHelper extends Logging {
 
   private val conf = new SparkConf()
   private val rootDir = conf.getOption("spark.repl.classdir").getOrElse(Utils.getLocalDir(conf))
@@ -102,21 +103,49 @@ object SparkRunnerHelper {
     interpreter = result
   }
 
-  def createSpark(env: Environment, sparkAppName: String, jars: Seq[String], sparkConf: Option[Map[String, Any]], executorEnv: Option[Map[String, Any]]): SparkSession = {
+  def createSpark(env: Environment, sparkAppName: String, jars: Seq[String], sparkConf: Option[Map[String, Any]], executorEnv: Option[Map[String, Any]], propFile: String): SparkSession = {
 
-    val config = new ClusterConfig()
+    val config = if (propFile != null) {
+      import java.io.FileInputStream
+      ClusterConfig.apply(new FileInputStream(propFile))
+    } else {
+      new ClusterConfig()
+    }
 
     Thread.currentThread().setContextClassLoader(getClass.getClassLoader)
 
     conf.setAppName(sparkAppName)
-      .set("spark.master", env.master)
-      .set("spark.executor.uri", s"http://$getNode:${config.Webserver.Port}/spark-2.1.1-bin-hadoop2.7.tgz")
       .set("spark.driver.host", getNode)
       .set("spark.submit.deployMode", "client")
-      .set("spark.home", s"${scala.reflect.io.File(".").toCanonical.toString}/spark-2.1.1-bin-hadoop2.7")
       .set("spark.hadoop.validateOutputSpecs", "false")
+      .set("spark.logConf", "true")
       .set("spark.submit.pyFiles", "miniconda/pkgs")
       .setJars(jars)
+
+
+    config.mode match {
+      case "mesos" =>
+        conf.set("spark.executor.uri", s"http://$getNode:${config.Webserver.Port}/spark-2.1.1-bin-hadoop2.7.tgz")
+          .set("spark.master", env.master)
+          .set("spark.home", s"${scala.reflect.io.File(".").toCanonical.toString}/spark-2.1.1-bin-hadoop2.7")
+      case "yarn" =>
+        conf.set("spark.home", config.YARN.spark.home)
+          .set("spark.master", "yarn")
+          .set("spark.executor.instances", "1")
+          .set("spark.yarn.jars", s"${config.YARN.spark.home}/jars/*")
+          .set("spark.executor.memory", "512m")
+          .set("spark.dynamicAllocation.enabled", "false")
+          .set("spark.shuffle.service.enabled", "true")
+          .set("spark.eventLog.enabled", "false")
+      case _ => throw new Exception(s"mode ${config.mode} is not legal.")
+    }
+
+    if (config.YARN.spark.opts != null && config.YARN.spark.opts.nonEmpty) {
+      config.YARN.spark.opts.foreach(kv => {
+        log.info(s"Setting ${kv._1} to ${kv._2} as specified in amaterasu.properties")
+        conf.set(kv._1, kv._2)
+      })
+    }
 
     // adding the the configurations from spark.yml
     sparkConf match {

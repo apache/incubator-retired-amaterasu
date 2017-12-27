@@ -16,9 +16,6 @@
  */
 package org.apache.amaterasu.common.runtime
 
-/**
-  * Created by roadan on 8/20/16.
-  */
 case class Environment() {
 
   var name: String = ""

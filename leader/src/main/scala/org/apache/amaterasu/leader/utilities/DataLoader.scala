@@ -27,16 +27,13 @@ import org.apache.amaterasu.common.dataobjects.{ActionData, ExecData, TaskData}
 import org.apache.amaterasu.common.execution.dependencies.{Dependencies, PythonDependencies}
 import org.apache.amaterasu.common.logging.Logging
 import org.apache.amaterasu.common.runtime.Environment
-import org.apache.mesos.protobuf.ByteString
 import org.yaml.snakeyaml.Yaml
 
 import scala.collection.JavaConverters._
 import scala.collection.mutable
 import scala.io.Source
 
-/**
-  * Created by karel_alfonso on 27/06/2016.
-  */
+
 object DataLoader extends Logging {
 
   val mapper = new ObjectMapper()
@@ -45,20 +42,20 @@ object DataLoader extends Logging {
   val ymlMapper = new ObjectMapper(new YAMLFactory())
   ymlMapper.registerModule(DefaultScalaModule)
 
-  def getTaskData(actionData: ActionData, env: String): ByteString = {
-
+  def getTaskData(actionData: ActionData, env: String): TaskData = {
     val srcFile = actionData.src
     val src = Source.fromFile(s"repo/src/$srcFile").mkString
     val envValue = Source.fromFile(s"repo/env/$env/job.yml").mkString
 
     val envData = ymlMapper.readValue(envValue, classOf[Environment])
-
-    val data = mapper.writeValueAsBytes(TaskData(src, envData, actionData.groupId, actionData.typeId, actionData.exports))
-    ByteString.copyFrom(data)
-
+    TaskData(src, envData, actionData.groupId, actionData.typeId, actionData.exports)
   }
 
-  def getExecutorData(env: String, clusterConf: ClusterConfig): ByteString = {
+  def getTaskDataBytes(actionData: ActionData, env: String): Array[Byte] = {
+    mapper.writeValueAsBytes(getTaskData(actionData, env))
+  }
+
+  def getExecutorData(env: String, clusterConf: ClusterConfig): ExecData = {
 
     // loading the job configuration
     val envValue = Source.fromFile(s"repo/env/$env/job.yml").mkString //TODO: change this to YAML
@@ -78,7 +75,11 @@ object DataLoader extends Logging {
       pyDepsData = ymlMapper.readValue(pyDepsValue, classOf[PythonDependencies])
     }
     val data = mapper.writeValueAsBytes(ExecData(envData, depsData, pyDepsData, config))
-    ByteString.copyFrom(data)
+    ExecData(envData, depsData, pyDepsData, config)
+  }
+
+  def getExecutorDataBytes(env: String, clusterConf: ClusterConfig): Array[Byte] = {
+    mapper.writeValueAsBytes(getExecutorData(env, clusterConf))
   }
 
   def yamlToMap(file: File): (String, Map[String, Any]) = {

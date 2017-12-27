@@ -18,9 +18,9 @@ package org.apache.amaterasu.leader.execution
 
 import java.util.concurrent.BlockingQueue
 
+import org.apache.amaterasu.common.configuration.enums.ActionStatus
 import org.apache.amaterasu.common.dataobjects.ActionData
 import org.apache.amaterasu.common.logging.Logging
-import org.apache.amaterasu.enums.ActionStatus
 import org.apache.amaterasu.leader.execution.actions.Action
 import org.apache.curator.framework.CuratorFramework
 
@@ -164,6 +164,10 @@ class JobManager extends Logging {
     val action = registeredActions.get(actionId).get
     action.announceStart
 
+  }
+
+  def actionsCount(): Int = {
+    executionQueue.size()
   }
 }
 

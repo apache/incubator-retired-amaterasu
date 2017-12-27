@@ -33,17 +33,26 @@ repositories {
     mavenCentral()
 }
 
+configurations {
+    provided
+    compile.extendsFrom provided
+}
+
 dependencies {
     compile 'org.scala-lang:scala-library:2.11.1'
     compile group: 'com.github.nscala-time', name: 'nscala-time_2.11', version: '2.2.0'
     compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.9'
-    //compile group: 'org.slf4j', name: 'slf4j-simple', version: '1.7.9'
+    compile group: 'org.slf4j', name: 'slf4j-simple', version: '1.7.9'
 
     // currently we have to use this specific mesos version to prevent from
     // clashing with spark
     compile('org.apache.mesos:mesos:0.22.2:shaded-protobuf'){
         exclude group: 'com.google.protobuf', module: 'protobuf-java'
     }
+    provided group: 'org.apache.hadoop', name: 'hadoop-yarn-client', version: '2.7.3'
+    provided group: 'org.apache.hadoop', name: 'hadoop-common', version: '2.7.3'
+    provided group: 'org.apache.hadoop', name: 'hadoop-yarn-api', version: '2.7.3'
+    provided group: 'org.apache.hadoop', name: 'hadoop-hdfs', version: '2.7.3'
 
     testCompile "gradle.plugin.com.github.maiflai:gradle-scalatest:0.14"
     testRuntime 'org.pegdown:pegdown:1.1.0'
