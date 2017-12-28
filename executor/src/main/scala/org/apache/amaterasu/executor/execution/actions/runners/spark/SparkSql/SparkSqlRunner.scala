@@ -17,12 +17,11 @@
 package org.apache.amaterasu.executor.execution.actions.runners.spark.SparkSql
 
 import java.io.File
-
 import org.apache.amaterasu.common.execution.actions.Notifier
 import org.apache.amaterasu.common.logging.Logging
 import org.apache.amaterasu.common.runtime.Environment
 import org.apache.commons.io.FilenameUtils
-import org.apache.spark.sql.{DataFrame, SaveMode, SparkSession}
+import org.apache.spark.sql.{SparkSession, SaveMode,DataFrame}
 
 /**
   * Amaterasu currently supports JSON and PARQUET as data sources.

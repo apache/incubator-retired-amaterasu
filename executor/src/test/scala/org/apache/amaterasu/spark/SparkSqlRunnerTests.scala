@@ -20,10 +20,15 @@ import org.apache.amaterasu.common.runtime.Environment
 import org.apache.amaterasu.executor.execution.actions.runners.spark.SparkSql.SparkSqlRunner
 import org.apache.amaterasu.executor.runtime.AmaContext
 import org.apache.amaterasu.utilities.TestNotifier
-import org.apache.log4j.{Level, Logger}
-import org.apache.spark.sql.SparkSession
+import org.apache.log4j.Logger
+import org.apache.log4j.Level
+import org.apache.spark.sql.{SaveMode, SparkSession}
 import org.scalatest.{BeforeAndAfterAll, FlatSpec, Matchers}
 
+
+/**
+  * Created by kirupa on 10/12/16.
+  */
 class SparkSqlRunnerTests extends FlatSpec with Matchers with BeforeAndAfterAll {
 
   Logger.getLogger("org").setLevel(Level.OFF)
@@ -48,6 +53,7 @@ class SparkSqlRunnerTests extends FlatSpec with Matchers with BeforeAndAfterAll 
       .getOrCreate()
 
     AmaContext.init(spark, "sql_job", env)
+
     super.beforeAll()
   }
 
@@ -61,6 +67,7 @@ class SparkSqlRunnerTests extends FlatSpec with Matchers with BeforeAndAfterAll 
   Test whether the parquet data is successfully loaded and processed by SparkSQL
    */
   "SparkSql" should "load PARQUET data and persist the Data in working directory" in {
+
 
     val sparkSql: SparkSqlRunner = SparkSqlRunner(AmaContext.env, "spark-sql-parquet", "spark-sql-parquet-action", notifier, spark)
     sparkSql.executeQuery("temptable", getClass.getResource("/SparkSql/parquet").getPath, "select * from temptable")
