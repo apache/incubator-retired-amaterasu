@@ -112,6 +112,7 @@ class ApplicationMaster extends AMRMClientAsync.CallbackHandler with Logging {
 
     jarPath = new Path(config.YARN.hdfsJarsPath)
 
+    // TODO: change this to read all dist folder and add to exec path
     executorPath = Path.mergePaths(jarPath, new Path(s"/dist/executor-${config.version}-all.jar"))
     log.info("Executor jar path is {}", executorPath)
     executorJar = setLocalResourceFromPath(executorPath)
@@ -190,23 +191,28 @@ class ApplicationMaster extends AMRMClientAsync.CallbackHandler with Logging {
         val execData = DataLoader.getExecutorData(env, config)
 
         val ctx = Records.newRecord(classOf[ContainerLaunchContext])
-        val command =
-            s"java -cp executor.jar:${config.YARN.spark.home}/jars/* " +
+        val commands: List[String] = List[String](
+            "/bin/bash ./miniconda.sh -b -p $PWD/miniconda && ",
+
+          s"java -cp executor.jar:${config.YARN.spark.home}/jars/* " +
             "-Dscala.usejavacp=true " +
             "org.apache.amaterasu.executor.yarn.executors.ActionsExecutorLauncher " +
             s"'${jobManager.jobId}' '${config.master}' '${actionData.name}' '${URLEncoder.encode(gson.toJson(taskData), "UTF-8")}' '${URLEncoder.encode(gson.toJson(execData), "UTF-8")}' '${actionData.id}-${container.getId.getContainerId}' " +
             s"1> ${ApplicationConstants.LOG_DIR_EXPANSION_VAR}/stdout " +
             s"2> ${ApplicationConstants.LOG_DIR_EXPANSION_VAR}/stderr "
+        )
 
-        log.info("Running container id {} with command '{}'", container.getId.getContainerId, command)
-        ctx.setCommands(Collections.singletonList(command))
+        log.info("Running container id {}.", container.getId.getContainerId)
+        log.debug("Running container id {} with command '{}'", container.getId.getContainerId, commands.get(1))
+        ctx.setCommands(commands)
         ctx.setLocalResources(Map[String, LocalResource](
           "executor.jar" -> executorJar,
           "amaterasu.properties" -> propFile,
-          "codegen.py" -> setLocalResourceFromPath(Path.mergePaths(jarPath, new Path("/codegen.py"))),
-          "runtime.py" -> setLocalResourceFromPath(Path.mergePaths(jarPath, new Path("/runtime.py"))),
-          "spark-version-info.properties" -> setLocalResourceFromPath(Path.mergePaths(jarPath, new Path("/spark-version-info.properties"))),
-          "spark_intp.py" -> setLocalResourceFromPath(Path.mergePaths(jarPath, new Path("/spark_intp.py")))
+          "miniconda.sh" -> setLocalResourceFromPath(Path.mergePaths(jarPath, new Path("/dist/Miniconda2-latest-Linux-x86_64.sh"))),
+          "codegen.py" -> setLocalResourceFromPath(Path.mergePaths(jarPath, new Path("/dist/codegen.py"))),
+          "runtime.py" -> setLocalResourceFromPath(Path.mergePaths(jarPath, new Path("/dist/runtime.py"))),
+          "spark-version-info.properties" -> setLocalResourceFromPath(Path.mergePaths(jarPath, new Path("/dist/spark-version-info.properties"))),
+          "spark_intp.py" -> setLocalResourceFromPath(Path.mergePaths(jarPath, new Path("/dist/spark_intp.py")))
         ))
         nmClient.startContainerAsync(container, ctx)
         actionData
