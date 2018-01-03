@@ -57,6 +57,7 @@ class SparkScalaRunner(var env: Environment,
   def interpretSources(source: Source, actionName: String, exports: Map[String, String]): Unit = {
 
     notifier.info(s"================= started action $actionName =================")
+    notifier.info(s"exports is: $exports")
 
     for (line <- source.getLines()) {
 
