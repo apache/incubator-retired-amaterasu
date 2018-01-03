@@ -128,7 +128,7 @@ object SparkRunnerHelper extends Logging {
       .set("spark.submit.deployMode", "client")
       .set("spark.hadoop.validateOutputSpecs", "false")
       .set("spark.logConf", "true")
-      .set("spark.submit.pyFiles", pyfiles.mkString(" "))
+      .set("spark.submit.pyFiles", pyfiles.mkString(","))
       .setJars(jars)
 
 
