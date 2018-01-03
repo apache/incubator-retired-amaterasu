@@ -55,13 +55,15 @@ class ClusterConfig extends Logging {
     var queue: String = "default"
     var hdfsJarsPath: String = ""
     var master: Master = new Master()
-
+    var hadoopHomeDir: String = String
 
     def load(props: Properties): Unit = {
       if (props.containsKey("yarn.queue")) queue = props.getProperty("yarn.queue")
       if (props.containsKey("yarn.jarspath")) hdfsJarsPath = props.getProperty("yarn.jarspath")
+      if (props.containsKey("yarn.hadoop.home.dir")) hadoopHomeDir = props.getProperty("yarn.hadoop.home.dir")
 
       this.master.load(props)
+      this.Worker.load(props)
     }
 
     class Master {

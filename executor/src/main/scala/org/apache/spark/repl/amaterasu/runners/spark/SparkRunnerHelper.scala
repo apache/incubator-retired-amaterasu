@@ -147,6 +147,8 @@ object SparkRunnerHelper extends Logging {
           .set("spark.shuffle.service.enabled", "true")
           .set("spark.eventLog.enabled", "false")
           .set("spark.history.fs.logDirectory", "hdfs:///spark2-history/")
+          .set("hadoop.home.dir", config.YARN.hadoopHomeDir)
+
       case _ => throw new Exception(s"mode ${config.mode} is not legal.")
     }
 
