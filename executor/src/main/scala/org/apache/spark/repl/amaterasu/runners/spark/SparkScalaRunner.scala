@@ -85,6 +85,9 @@ class SparkScalaRunner(var env: Environment,
 
               val resultName = interpreter.prevRequestList.last.termNames.last
 
+              notifier.info(s" result name ${resultName.toString}")
+              notifier.info(s" exist in exports: ${exports.contains(resultName.toString)}")
+
               if (exports.contains(resultName.toString)) {
 
                 val format = exports(resultName.toString)
@@ -95,16 +98,16 @@ class SparkScalaRunner(var env: Environment,
                     case ds: Dataset[_] =>
                       log.debug(s"persisting DataFrame: $resultName")
                       interpreter.interpret(s"""$resultName.write.mode(SaveMode.Overwrite).format("$format").save("${env.workingDir}/$jobId/$actionName/$resultName")""")
-                      log.info(s"""+++> DS - $resultName.write.mode(SaveMode.Overwrite).format("$format").save("${env.workingDir}/$jobId/$actionName/$resultName")""")
+                      notifier.info(s"""+++> DS - $resultName.write.mode(SaveMode.Overwrite).format("$format").save("${env.workingDir}/$jobId/$actionName/$resultName")""")
                       log.debug(s"persisted DataFrame: $resultName")
 
                     case df: DataFrame =>
                       log.debug(s"persisting DataFrame: $resultName")
                       interpreter.interpret(s"""$resultName.write.mode(SaveMode.Overwrite).format("$format").save("${env.workingDir}/$jobId/$actionName/$resultName")""")
-                      log.info(s"""+++> DF - $resultName.write.mode(SaveMode.Overwrite).format("$format").save("${env.workingDir}/$jobId/$actionName/$resultName")""")
+                      notifier.info(s"""+++> DF - $resultName.write.mode(SaveMode.Overwrite).format("$format").save("${env.workingDir}/$jobId/$actionName/$resultName")""")
                       log.debug(s"persisted DataFrame: $resultName")
 
-                    case _ => println(result)
+                    case _ => notifier.info(s"""+++> result type ${result.getClass}""")
                   }
                 }
               }
