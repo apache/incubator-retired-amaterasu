@@ -55,6 +55,10 @@ object DataLoader extends Logging {
     mapper.writeValueAsBytes(getTaskData(actionData, env))
   }
 
+  def getTaskDataString(actionData: ActionData, env: String): String = {
+    mapper.writeValueAsString(getTaskData(actionData, env))
+  }
+
   def getExecutorData(env: String, clusterConf: ClusterConfig): ExecData = {
 
     // loading the job configuration
@@ -80,6 +84,10 @@ object DataLoader extends Logging {
 
   def getExecutorDataBytes(env: String, clusterConf: ClusterConfig): Array[Byte] = {
     mapper.writeValueAsBytes(getExecutorData(env, clusterConf))
+  }
+
+  def getExecutorDataString(env: String, clusterConf: ClusterConfig): String = {
+    mapper.writeValueAsString(getExecutorData(env, clusterConf))
   }
 
   def yamlToMap(file: File): (String, Map[String, Any]) = {
