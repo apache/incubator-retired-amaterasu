@@ -16,9 +16,10 @@
  */
 package org.apache.amaterasu.executor.execution.actions.runners.spark
 
-import java.io.{ByteArrayOutputStream, File, PrintWriter, StringWriter}
+import java.io._
 
 import com.jcabi.aether.Aether
+import org.apache.amaterasu.common.configuration.ClusterConfig
 import org.apache.amaterasu.common.dataobjects.ExecData
 import org.apache.amaterasu.common.execution.actions.Notifier
 import org.apache.amaterasu.common.execution.dependencies.{Dependencies, PythonDependencies, PythonPackage}
@@ -46,8 +47,14 @@ class SparkRunnersProvider extends RunnersProvider with Logging {
   private var conf: Option[Map[String, Any]] = _
   private var executorEnv: Option[Map[String, Any]] = _
 
-  override def init(data: ExecData, jobId: String, outStream: ByteArrayOutputStream, notifier: Notifier, executorId: String,
+  override def init(data: ExecData,
+                    jobId: String,
+                    outStream: ByteArrayOutputStream,
+                    notifier: Notifier,
+                    executorId: String,
                     propFile: String): Unit = {
+
+    val config = ClusterConfig(new FileInputStream(propFile))
     shellLoger = ProcessLogger(
       (o: String) => log.info(o),
       (e: String) => log.error("", e)
@@ -75,8 +82,9 @@ class SparkRunnersProvider extends RunnersProvider with Logging {
     sparkScalaRunner.initializeAmaContext(data.env)
 
     runners.put(sparkScalaRunner.getIdentifier, sparkScalaRunner)
+
     // TODO: get rid of hard-coded version
-    lazy val pySparkRunner = PySparkRunner(data.env, jobId, notifier, spark, "spark-2.1.1-bin-hadoop2.7/python:spark-2.1.1-bin-hadoop2.7/python/pyspark:spark-2.1.1-bin-hadoop2.7/python/pyspark/build:spark-2.1.1-bin-hadoop2.7/python/pyspark/lib/py4j-0.10.4-src.zip", data.pyDeps)
+    lazy val pySparkRunner = PySparkRunner(data.env, jobId, notifier, spark, s"${config.spark.home}/python:${config.spark.home}/python/pyspark:${config.spark.home}/python/pyspark/build:${config.spark.home}/python/pyspark/lib/py4j-0.10.4-src.zip", data.pyDeps, config)
     runners.put(pySparkRunner.getIdentifier(), pySparkRunner)
   }
 

@@ -27,7 +27,7 @@ import scala.collection.mutable
 
 class ClusterConfig extends Logging {
 
-  val DEFAULT_FILE = getClass().getResourceAsStream("/src/main/scripts/amaterasu.properties")
+  val DEFAULT_FILE: InputStream = getClass.getResourceAsStream("/src/main/scripts/amaterasu.properties")
   //val DEFAULT_FILE = getClass().getResourceAsStream("/amaterasu.properties")
   var version: String = ""
   var user: String = ""
@@ -46,21 +46,22 @@ class ClusterConfig extends Logging {
   // the additionalClassPath is currently for testing purposes, when amaterasu is
   // not packaged, there is a need to load the spark-assembly jar
   var additionalClassPath: String = ""
+  var spark: Spark = new Spark()
 
   //this should be a filesystem path that is reachable by all executors (HDFS, S3, local)
 
   class YARN {
+
     var queue: String = "default"
     var hdfsJarsPath: String = ""
     var master: Master = new Master()
-    var spark: Spark = new Spark()
+
 
     def load(props: Properties): Unit = {
       if (props.containsKey("yarn.queue")) queue = props.getProperty("yarn.queue")
       if (props.containsKey("yarn.jarspath")) hdfsJarsPath = props.getProperty("yarn.jarspath")
 
       this.master.load(props)
-      this.spark.load(props)
     }
 
     class Master {
@@ -85,26 +86,29 @@ class ClusterConfig extends Logging {
       }
     }
 
-    class Spark {
-      var home: String = ""
-      var opts: mutable.Map[String, String] = mutable.Map()
-
-      def load(props: Properties): Unit = {
-        if (props.containsKey("yarn.spark.home")) spark.home = props.getProperty("yarn.spark.home")
-        import scala.collection.JavaConversions._
-        for (key <- props.propertyNames()) {
-          if (key.toString.startsWith("spark.opts.")) {
-            val value = props.getProperty(key.toString)
-            val newKey = key.toString.replace("spark.opts.", "")
-            opts.put(newKey, value)
-          }
-        }
-      }
-    }
 
   }
 
+
   val YARN = new YARN()
+
+  class Spark {
+    var home: String = ""
+    var opts: mutable.Map[String, String] = mutable.Map()
+
+    def load(props: Properties): Unit = {
+      if (props.containsKey("spark.home")) home = props.getProperty("spark.home")
+      import scala.collection.JavaConversions._
+      for (key <- props.propertyNames()) {
+        if (key.toString.startsWith("spark.opts.")) {
+          val value = props.getProperty(key.toString)
+          val newKey = key.toString.replace("spark.opts.", "")
+          opts.put(newKey, value)
+        }
+      }
+    }
+  }
+
 
   object Webserver {
     var Port: String = ""
@@ -211,12 +215,13 @@ class ClusterConfig extends Logging {
     Jobs.load(props)
     Webserver.load(props)
     YARN.load(props)
+    spark.load(props)
 
     distLocation match {
 
-      case "AWS"   => AWS.load(props)
+      case "AWS" => AWS.load(props)
       case "local" => local.load(props)
-      case _       => log.error("The distribution location must be a valid file system: local, HDFS, or AWS for S3")
+      case _ => log.error("The distribution location must be a valid file system: local, HDFS, or AWS for S3")
 
     }
     AWS.load(props)

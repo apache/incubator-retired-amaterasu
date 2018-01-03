@@ -103,6 +103,11 @@ object SparkRunnerHelper extends Logging {
     interpreter = result
   }
 
+  def getAllFiles(dir: File): Array[File] = {
+    val these = dir.listFiles
+    these ++ these.filter(_.isDirectory).flatMap(getAllFiles)
+  }
+
   def createSpark(env: Environment, sparkAppName: String, jars: Seq[String], sparkConf: Option[Map[String, Any]], executorEnv: Option[Map[String, Any]], propFile: String): SparkSession = {
 
     val config = if (propFile != null) {
@@ -114,12 +119,13 @@ object SparkRunnerHelper extends Logging {
 
     Thread.currentThread().setContextClassLoader(getClass.getClassLoader)
 
+    val pyfiles = getAllFiles(new File("miniconda/pkgs"))
     conf.setAppName(sparkAppName)
       .set("spark.driver.host", getNode)
       .set("spark.submit.deployMode", "client")
       .set("spark.hadoop.validateOutputSpecs", "false")
       .set("spark.logConf", "true")
-      .set("spark.submit.pyFiles", "miniconda/pkgs")
+      .set("spark.submit.pyFiles", pyfiles.mkString(" "))
       .setJars(jars)
 
 
@@ -129,11 +135,11 @@ object SparkRunnerHelper extends Logging {
           .set("spark.master", env.master)
           .set("spark.home", s"${scala.reflect.io.File(".").toCanonical.toString}/spark-2.1.1-bin-hadoop2.7")
       case "yarn" =>
-        conf.set("spark.home", config.YARN.spark.home)
+        conf.set("spark.home", config.spark.home)
           .set("spark.master", "yarn")
           .set("spark.executor.instances", "1") // TODO: change this
-          .set("spark.yarn.jars", s"${config.YARN.spark.home}/jars/*")
-          .set("spark.executor.memory", "512m")
+          .set("spark.yarn.jars", s"${config.spark.home}/jars/*")
+          .set("spark.executor.memory", "1g")
           .set("spark.dynamicAllocation.enabled", "false")
           .set("spark.shuffle.service.enabled", "true")
           .set("spark.eventLog.enabled", "false")
@@ -141,8 +147,8 @@ object SparkRunnerHelper extends Logging {
       case _ => throw new Exception(s"mode ${config.mode} is not legal.")
     }
 
-    if (config.YARN.spark.opts != null && config.YARN.spark.opts.nonEmpty) {
-      config.YARN.spark.opts.foreach(kv => {
+    if (config.spark.opts != null && config.spark.opts.nonEmpty) {
+      config.spark.opts.foreach(kv => {
         log.info(s"Setting ${kv._1} to ${kv._2} as specified in amaterasu.properties")
         conf.set(kv._1, kv._2)
       })

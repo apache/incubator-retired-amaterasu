@@ -51,7 +51,7 @@ class SequentialAction extends Action {
 
   override def handleFailure(message: String): String = {
 
-    log.debug(s"Part ${data.name} of group ${data.groupId} and of type ${data.typeId} failed on attempt $attempt with message: $message")
+    println(s"Part ${data.name} of group ${data.groupId} and of type ${data.typeId} failed on attempt $attempt with message: $message")
     attempt += 1
 
     if (attempt <= attempts) {
