@@ -119,7 +119,10 @@ object SparkRunnerHelper extends Logging {
 
     Thread.currentThread().setContextClassLoader(getClass.getClassLoader)
 
-    val pyfiles = getAllFiles(new File("miniconda/pkgs"))
+    val pyfiles = getAllFiles(new File("miniconda/pkgs")).filter(f=>f.getName.endsWith(".py") ||
+                                                                    f.getName.endsWith(".egg") ||
+                                                                    f.getName.endsWith(".zip"))
+
     conf.setAppName(sparkAppName)
       .set("spark.driver.host", getNode)
       .set("spark.submit.deployMode", "client")
