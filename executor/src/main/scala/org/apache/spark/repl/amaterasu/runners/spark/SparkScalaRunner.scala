@@ -95,7 +95,7 @@ class SparkScalaRunner(var env: Environment,
                     case ds:  Dataset[_] =>
                       log.debug(s"persisting DataFrame: $resultName")
                       interpreter.interpret(s"""$resultName.write.mode(SaveMode.Overwrite).format("$format").save("${env.workingDir}/$jobId/$actionName/$resultName")""")
-
+                      log.info(s"""===> $resultName.write.mode(SaveMode.Overwrite).format("$format").save("${env.workingDir}/$jobId/$actionName/$resultName")""")
                       log.debug(s"persisted DataFrame: $resultName")
 
                     case _ => println(result)
