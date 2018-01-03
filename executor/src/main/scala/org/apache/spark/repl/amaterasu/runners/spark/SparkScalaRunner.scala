@@ -24,7 +24,7 @@ import org.apache.amaterasu.common.logging.Logging
 import org.apache.amaterasu.common.runtime.Environment
 import org.apache.amaterasu.executor.runtime.AmaContext
 import org.apache.amaterasu.sdk.AmaterasuRunner
-import org.apache.spark.sql.{Dataset, SparkSession}
+import org.apache.spark.sql.{DataFrame, Dataset, SparkSession}
 
 import scala.collection.JavaConverters._
 import scala.collection.mutable
@@ -92,10 +92,16 @@ class SparkScalaRunner(var env: Environment,
                 if (result != null) {
 
                   result match {
-                    case ds:  Dataset[_] =>
+                    case ds: Dataset[_] =>
                       log.debug(s"persisting DataFrame: $resultName")
                       interpreter.interpret(s"""$resultName.write.mode(SaveMode.Overwrite).format("$format").save("${env.workingDir}/$jobId/$actionName/$resultName")""")
-                      log.info(s"""===> $resultName.write.mode(SaveMode.Overwrite).format("$format").save("${env.workingDir}/$jobId/$actionName/$resultName")""")
+                      log.info(s"""+++> DS - $resultName.write.mode(SaveMode.Overwrite).format("$format").save("${env.workingDir}/$jobId/$actionName/$resultName")""")
+                      log.debug(s"persisted DataFrame: $resultName")
+
+                    case df: DataFrame =>
+                      log.debug(s"persisting DataFrame: $resultName")
+                      interpreter.interpret(s"""$resultName.write.mode(SaveMode.Overwrite).format("$format").save("${env.workingDir}/$jobId/$actionName/$resultName")""")
+                      log.info(s"""+++> DF - $resultName.write.mode(SaveMode.Overwrite).format("$format").save("${env.workingDir}/$jobId/$actionName/$resultName")""")
                       log.debug(s"persisted DataFrame: $resultName")
 
                     case _ => println(result)
