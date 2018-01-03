@@ -19,7 +19,6 @@ package org.apache.amaterasu.leader.yarn
 import java.io.{File, FileInputStream, InputStream}
 import java.net.URLEncoder
 import java.util
-import java.util.Collections
 import java.util.concurrent.{ConcurrentHashMap, LinkedBlockingQueue}
 
 import com.google.gson.Gson
@@ -203,7 +202,7 @@ class ApplicationMaster extends AMRMClientAsync.CallbackHandler with Logging {
         )
 
         log.info("Running container id {}.", container.getId.getContainerId)
-        log.debug("Running container id {} with command '{}'", container.getId.getContainerId, commands.get(1))
+        log.info("Running container id {} with command '{}'", container.getId.getContainerId, commands.get(1))
         ctx.setCommands(commands)
         ctx.setLocalResources(Map[String, LocalResource](
           "executor.jar" -> executorJar,
