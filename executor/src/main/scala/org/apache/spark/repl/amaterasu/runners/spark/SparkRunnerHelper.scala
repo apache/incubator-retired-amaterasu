@@ -59,7 +59,7 @@ object SparkRunnerHelper extends Logging {
     notifier.error("", msg)
   }
 
-  private def initInterpreter(outStream: ByteArrayOutputStream, jars: Seq[String]) = {
+  private def initInterpreter(outStream: ByteArrayOutputStream, jars: Seq[String]) : Unit = {
 
     var result: IMain = null
     val config = new ClusterConfig()
@@ -72,7 +72,7 @@ object SparkRunnerHelper extends Logging {
       )
 
       val settings = new GenericRunnerSettings(scalaOptionError)
-      settings.processArguments(interpArguments, true)
+      settings.processArguments(interpArguments, processAll = true)
 
       settings.classpath.append(System.getProperty("java.class.path") + java.io.File.pathSeparator +
         "spark-" + config.Webserver.sparkVersion + "/jars/*" + java.io.File.pathSeparator +
@@ -133,10 +133,12 @@ object SparkRunnerHelper extends Logging {
 
 
     config.mode match {
+
       case "mesos" =>
         conf.set("spark.executor.uri", s"http://$getNode:${config.Webserver.Port}/spark-2.1.1-bin-hadoop2.7.tgz")
           .set("spark.master", env.master)
           .set("spark.home", s"${scala.reflect.io.File(".").toCanonical.toString}/spark-2.1.1-bin-hadoop2.7")
+
       case "yarn" =>
         conf.set("spark.home", config.spark.home)
           .set("spark.master", "yarn")
@@ -192,6 +194,8 @@ object SparkRunnerHelper extends Logging {
 
     val hc = sparkSession.sparkContext.hadoopConfiguration
 
+    log.debug(s" --- current hdfs iml: ${hc.get("fs.hdfs.impl")}")
+
     sys.env.get("AWS_ACCESS_KEY_ID") match {
       case None =>
       case _ =>
@@ -199,6 +203,7 @@ object SparkRunnerHelper extends Logging {
         hc.set("fs.s3n.awsAccessKeyId", sys.env("AWS_ACCESS_KEY_ID"))
         hc.set("fs.s3n.awsSecretAccessKey", sys.env("AWS_SECRET_ACCESS_KEY"))
     }
+
     sparkSession
   }
 }

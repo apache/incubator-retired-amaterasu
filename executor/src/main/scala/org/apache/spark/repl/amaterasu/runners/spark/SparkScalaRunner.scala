@@ -102,12 +102,6 @@ class SparkScalaRunner(var env: Environment,
                       notifier.info(s"""+++> DS - $resultName.write.mode(SaveMode.Overwrite).format("$format").save("${env.workingDir}/$jobId/$actionName/$resultName")""")
                       log.debug(s"persisted DataFrame: $resultName")
 
-                    case df: DataFrame =>
-                      log.debug(s"persisting DataFrame: $resultName")
-                      interpreter.interpret(s"""$resultName.write.mode(SaveMode.Overwrite).format("$format").save("${env.workingDir}/$jobId/$actionName/$resultName")""")
-                      notifier.info(s"""+++> DF - $resultName.write.mode(SaveMode.Overwrite).format("$format").save("${env.workingDir}/$jobId/$actionName/$resultName")""")
-                      log.debug(s"persisted DataFrame: $resultName")
-
                     case _ => notifier.info(s"""+++> result type ${result.getClass}""")
                   }
                 }

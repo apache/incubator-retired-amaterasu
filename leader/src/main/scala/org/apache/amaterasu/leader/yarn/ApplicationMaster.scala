@@ -192,8 +192,9 @@ class ApplicationMaster extends AMRMClientAsync.CallbackHandler with Logging {
         val ctx = Records.newRecord(classOf[ContainerLaunchContext])
         val commands: List[String] = List[String](
             "/bin/bash ./miniconda.sh -b -p $PWD/miniconda && ",
-
-          s"java -cp executor.jar:${config.spark.home}/jars/* " +
+          //s"env HADOOP_CONF_DIR=${config.YARN.hadoopHomeDir}/conf/ ",
+          s"env YARN_CONF_DIR=${config.YARN.hadoopHomeDir}/conf/ " +
+            "java -cp executor.jar:${config.spark.home}/jars/* " +
             "-Dscala.usejavacp=true " +
             "org.apache.amaterasu.executor.yarn.executors.ActionsExecutorLauncher " +
             s"'${jobManager.jobId}' '${config.master}' '${actionData.name}' '${URLEncoder.encode(taskData, "UTF-8")}' '${URLEncoder.encode(execData, "UTF-8")}' '${actionData.id}-${container.getId.getContainerId}' " +
