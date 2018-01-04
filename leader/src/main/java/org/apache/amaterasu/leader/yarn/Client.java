@@ -112,9 +112,9 @@ public class Client {
                         " -Xmx1G" +
                         " org.apache.amaterasu.leader.yarn.ApplicationMaster " +
                         joinStrings(args) +
-                        newId //+
-//                        "1>" + ApplicationConstants.LOG_DIR_EXPANSION_VAR + "/stdout " +
-//                        "2>" + ApplicationConstants.LOG_DIR_EXPANSION_VAR + "/stderr"
+                        newId +
+                        "1>" + ApplicationConstants.LOG_DIR_EXPANSION_VAR + "/stdout " +
+                        "2>" + ApplicationConstants.LOG_DIR_EXPANSION_VAR + "/stderr"
         );
 
 

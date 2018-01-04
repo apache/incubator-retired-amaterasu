@@ -19,6 +19,7 @@ package org.apache.amaterasu.leader.yarn
 import java.io.{File, FileInputStream, InputStream}
 import java.net.URLEncoder
 import java.util
+import java.util.Collections
 import java.util.concurrent.{ConcurrentHashMap, LinkedBlockingQueue}
 
 import com.google.gson.Gson
@@ -190,11 +191,12 @@ class ApplicationMaster extends AMRMClientAsync.CallbackHandler with Logging {
         val execData = DataLoader.getExecutorDataString(env, config)
 
         val ctx = Records.newRecord(classOf[ContainerLaunchContext])
-        val commands: List[String] = List[String](
-            "/bin/bash ./miniconda.sh -b -p $PWD/miniconda && ",
+        val commands = Collections.singletonList(
+            //,
           //s"env HADOOP_CONF_DIR=${config.YARN.hadoopHomeDir}/conf/ ",
           s"env YARN_CONF_DIR=${config.YARN.hadoopHomeDir}/conf/ " +
-            "java -cp executor.jar:${config.spark.home}/jars/* " +
+            "/bin/bash ./miniconda.sh -b -p $PWD/miniconda && " +
+            s"java -cp executor.jar:${config.spark.home}/jars/* " +
             "-Dscala.usejavacp=true " +
             "org.apache.amaterasu.executor.yarn.executors.ActionsExecutorLauncher " +
             s"'${jobManager.jobId}' '${config.master}' '${actionData.name}' '${URLEncoder.encode(taskData, "UTF-8")}' '${URLEncoder.encode(execData, "UTF-8")}' '${actionData.id}-${container.getId.getContainerId}' " +
@@ -203,7 +205,7 @@ class ApplicationMaster extends AMRMClientAsync.CallbackHandler with Logging {
         )
 
         log.info("Running container id {}.", container.getId.getContainerId)
-        log.info("Running container id {} with command '{}'", container.getId.getContainerId, commands.get(1))
+        log.info("Running container id {} with command '{}'", container.getId.getContainerId, commands.get(0))
         ctx.setCommands(commands)
         ctx.setLocalResources(Map[String, LocalResource](
           "executor.jar" -> executorJar,
