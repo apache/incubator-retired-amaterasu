@@ -109,7 +109,7 @@ public class Client {
         List<String> commands = Collections.singletonList(
                 "$JAVA_HOME/bin/java" +
                         " -Dscala.usejavacp=false" +
-                        " -Xmx256M" +
+                        " -Xmx1G" +
                         " org.apache.amaterasu.leader.yarn.ApplicationMaster " +
                         joinStrings(args) +
                         newId +
