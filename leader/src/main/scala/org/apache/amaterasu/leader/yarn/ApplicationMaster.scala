@@ -193,8 +193,8 @@ class ApplicationMaster extends AMRMClientAsync.CallbackHandler with Logging {
         val ctx = Records.newRecord(classOf[ContainerLaunchContext])
         val commands = Collections.singletonList(
             //,
-          //s"env HADOOP_CONF_DIR=${config.YARN.hadoopHomeDir}/conf/ ",
-          s"env YARN_CONF_DIR=${config.YARN.hadoopHomeDir}/conf/ " +
+          s"env HADOOP_CONF_DIR=${config.YARN.hadoopHomeDir}/conf/ && " +
+            s"env YARN_CONF_DIR=${config.YARN.hadoopHomeDir}/conf/ && " +
             "/bin/bash ./miniconda.sh -b -p $PWD/miniconda && " +
             s"java -cp executor.jar:${config.spark.home}/jars/* " +
             "-Dscala.usejavacp=true " +
@@ -215,6 +215,12 @@ class ApplicationMaster extends AMRMClientAsync.CallbackHandler with Logging {
           "runtime.py" -> setLocalResourceFromPath(Path.mergePaths(jarPath, new Path("/dist/runtime.py"))),
           "spark-version-info.properties" -> setLocalResourceFromPath(Path.mergePaths(jarPath, new Path("/dist/spark-version-info.properties"))),
           "spark_intp.py" -> setLocalResourceFromPath(Path.mergePaths(jarPath, new Path("/dist/spark_intp.py")))
+        ))
+
+        ctx.setEnvironment(Map[String, String](
+          ("HADOOP_CONF_DIR", config.YARN.hadoopHomeDir + "/conf/"),
+          ("YARN_CONF_DIR", config.YARN.hadoopHomeDir + "/conf/")
+
         ))
         nmClient.startContainerAsync(container, ctx)
         actionData
