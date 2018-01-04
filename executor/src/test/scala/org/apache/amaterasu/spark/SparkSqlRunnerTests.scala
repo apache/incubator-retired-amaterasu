@@ -62,6 +62,26 @@ class SparkSqlRunnerTests extends FlatSpec with Matchers with BeforeAndAfterAll 
     super.afterAll()
   }
 
+
+  /*
+  Test whether parquet is used as default file format to load data from previous actions
+   */
+
+  "SparkSql" should "load data as parquet if no input foramt is specified" in {
+
+    val defaultParquetEnv = new Environment()
+    defaultParquetEnv.workingDir = "file:/tmp/"
+    AmaContext.init(spark, "sparkSqlDefaultParquetJob", defaultParquetEnv)
+    //Prepare test dataset
+    val inputDf = spark.read.parquet(getClass.getResource("/SparkSql/parquet").getPath)
+    inputDf.write.mode(SaveMode.Overwrite).parquet(s"${defaultParquetEnv.workingDir}/sparkSqlDefaultParquetJob/sparkSqlDefaultParquetJobAction/sparkSqlDefaultParquetJobActionTempDf")
+    val sparkSql: SparkSqlRunner = SparkSqlRunner(AmaContext.env, "sparkSqlDefaultParquetJob", "sparkSqlDefaultParquetJobAction", notifier, spark)
+    sparkSql.executeQuery("select * FROM AMACONTEXT_sparkSqlDefaultParquetJobAction_sparkSqlDefaultParquetJobActionTempDf")
+    val outputDf = spark.read.parquet(s"${defaultParquetEnv.workingDir}/sparkSqlDefaultParquetJob/sparkSqlDefaultParquetJobAction/sparkSqlDefaultParquetJobActionDf")
+    println("Output Default Parquet: "+inputDf.count + "," + outputDf.count)
+    inputDf.first().getString(1) shouldEqual(outputDf.first().getString(1))
+  }
+
   /*
   Test whether the parquet data is successfully parsed, loaded and processed by SparkSQL
    */

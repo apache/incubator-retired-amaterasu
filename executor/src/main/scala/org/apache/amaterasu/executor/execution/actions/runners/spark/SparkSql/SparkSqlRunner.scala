@@ -61,7 +61,16 @@ class SparkSqlRunner extends Logging {
           sqlPart += parser(i) + " "
         }
 
-        val fileFormat: String = parser(parser.indexOf("readas") + 1)
+        //If no read format is speicified by the user, use PARQUET as default file format to load data
+        var fileFormat: String = null
+        //if there is no index for "readas" keyword, then set PARQUET as default read format
+        if (parser.indexOf("readas") == -1) {
+          fileFormat = "parquet"
+        }
+        else
+          fileFormat = parser(parser.indexOf("readas") + 1)
+
+
         val locationPath: String = parser.filter(word => word.contains("amacontext")).mkString("")
         val directories = locationPath.split("_")
         val actionName = directories(1)
