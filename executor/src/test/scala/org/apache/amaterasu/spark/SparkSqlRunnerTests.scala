@@ -76,10 +76,10 @@ class SparkSqlRunnerTests extends FlatSpec with Matchers with BeforeAndAfterAll 
     val inputDf = spark.read.parquet(getClass.getResource("/SparkSql/parquet").getPath)
     inputDf.write.mode(SaveMode.Overwrite).parquet(s"${defaultParquetEnv.workingDir}/sparkSqlDefaultParquetJob/sparkSqlDefaultParquetJobAction/sparkSqlDefaultParquetJobActionTempDf")
     val sparkSql: SparkSqlRunner = SparkSqlRunner(AmaContext.env, "sparkSqlDefaultParquetJob", "sparkSqlDefaultParquetJobAction", notifier, spark)
-    sparkSql.executeQuery("select * FROM AMACONTEXT_sparkSqlDefaultParquetJobAction_sparkSqlDefaultParquetJobActionTempDf")
+    sparkSql.executeQuery("select * FROM AMACONTEXT_sparkSqlDefaultParquetJobAction_sparkSqlDefaultParquetJobActionTempDf where age=22")
     val outputDf = spark.read.parquet(s"${defaultParquetEnv.workingDir}/sparkSqlDefaultParquetJob/sparkSqlDefaultParquetJobAction/sparkSqlDefaultParquetJobActionDf")
-    println("Output Default Parquet: "+inputDf.count + "," + outputDf.count)
-    inputDf.first().getString(1) shouldEqual(outputDf.first().getString(1))
+    println("Output Default Parquet: "+inputDf.count + "," + outputDf.first().getString(1))
+    outputDf.first().getString(1) shouldEqual("Michael")
   }
 
   /*
@@ -115,10 +115,10 @@ class SparkSqlRunnerTests extends FlatSpec with Matchers with BeforeAndAfterAll 
     val inputDf = spark.read.json(getClass.getResource("/SparkSql/json").getPath)
     inputDf.write.mode(SaveMode.Overwrite).json(s"${tempJsonEnv.workingDir}/sparkSqlJsonJob/sparkSqlJsonJobAction/sparkSqlJsonJobActionTempDf")
     val sparkSql: SparkSqlRunner = SparkSqlRunner(AmaContext.env, "sparkSqlJsonJob", "sparkSqlJsonJobAction", notifier, spark)
-    sparkSql.executeQuery("select * FROM amacontext_sparkSqlJsonJobAction_sparkSqlJsonJobActionTempDf READAS json")
+    sparkSql.executeQuery("select * FROM amacontext_sparkSqlJsonJobAction_sparkSqlJsonJobActionTempDf  where age='30' READAS json")
     val outputDf = spark.read.json(s"${tempJsonEnv.workingDir}/sparkSqlJsonJob/sparkSqlJsonJobAction/sparkSqlJsonJobActionDf")
     println("Output JSON: "+inputDf.count + "," + outputDf.count)
-    inputDf.first().getString(1) shouldEqual(outputDf.first().getString(1))
+    outputDf.first().getString(1) shouldEqual("Kirupa")
 
   }
 

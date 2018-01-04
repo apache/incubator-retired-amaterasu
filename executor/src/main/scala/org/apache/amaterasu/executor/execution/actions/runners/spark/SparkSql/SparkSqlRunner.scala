@@ -54,11 +54,24 @@ class SparkSqlRunner extends Logging {
         notifier.info(s"================= parsing the SQL query =================")
 
         val parser: List[String] = query.toLowerCase.split(" ").toList
-        var sqlPart: String = ""
+        var sqlPart1: String = ""
+        var sqlPart2: String = ""
+        var queryTempLen: Int = 0
 
         //get only the sql part of the query
         for (i <- 0 to parser.indexOf("from")) {
-          sqlPart += parser(i) + " "
+          sqlPart1 += parser(i) + " "
+        }
+
+        if (parser.indexOf("readas") == -1) {
+          queryTempLen = parser.length - 1
+        }
+        else
+          queryTempLen = parser.length - 3
+
+        for (i <- parser.indexOf("from") + 1 to queryTempLen) {
+          if (!parser(i).contains("amacontext"))
+            sqlPart2 += " " + parser(i)
         }
 
         //If no read format is speicified by the user, use PARQUET as default file format to load data
@@ -75,14 +88,13 @@ class SparkSqlRunner extends Logging {
         val directories = locationPath.split("_")
         val actionName = directories(1)
         val dfName = directories(2)
-        val parsedQuery = sqlPart + locationPath
+        val parsedQuery = sqlPart1 + locationPath + sqlPart2
 
         //Load the dataframe from previous action
         val loadData: DataFrame = AmaContext.getDataFrame(actionName, dfName, fileFormat)
         loadData.createOrReplaceTempView(locationPath)
 
-        notifier.info(s"================= executing the SQL query =================")
-
+        notifier.info("Executing SparkSql on: "+parsedQuery)
         val sqlDf = spark.sql(parsedQuery)
         //@TODO: outputFileFormat should be read from YAML file instead of input fileformat
         writeDf(sqlDf, fileFormat, env.workingDir, jobId, actionName)
@@ -91,7 +103,7 @@ class SparkSqlRunner extends Logging {
       }
       else {
 
-        notifier.info(s"================= executing the SQL query =================")
+        notifier.info("Executing SparkSql on: "+query)
 
         val fildDf = spark.sql(query)
         //@TODO: outputFileFormat should be read from YAML file instead of output fileFormat being empty
