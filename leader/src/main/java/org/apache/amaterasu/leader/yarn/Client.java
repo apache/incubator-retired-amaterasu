@@ -69,8 +69,8 @@ public class Client {
 //        conf.addResource(new Path("/etc/hadoop/conf/core-site.xml"));
 //        conf.addResource(new Path("/etc/hadoop/conf/hdfs-site.xml"));
 //        conf.addResource(new Path("/etc/hadoop/conf/yarn-site.xml"));
-        conf.set("fs.hdfs.impl", DistributedFileSystem.class.getName());
-        conf.set("fs.file.impl", LocalFileSystem.class.getName());
+//        conf.set("fs.hdfs.impl", DistributedFileSystem.class.getName());
+//        conf.set("fs.file.impl", LocalFileSystem.class.getName());
 
         // Create yarnClient
         YarnClient yarnClient = YarnClient.createYarnClient();
