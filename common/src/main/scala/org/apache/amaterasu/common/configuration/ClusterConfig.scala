@@ -36,7 +36,7 @@ class ClusterConfig extends Logging {
   var master: String = "127.0.0.1"
   var masterPort: String = "5050"
   var timeout: Double = 600000
-  var taskMem: Int = 128
+  var taskMem: Int = 1024
   var distLocation: String = "local"
   var workingFolder: String = ""
   // TODO: get rid of hard-coded version
