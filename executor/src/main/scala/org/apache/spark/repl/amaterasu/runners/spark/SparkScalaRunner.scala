@@ -24,7 +24,7 @@ import org.apache.amaterasu.common.logging.Logging
 import org.apache.amaterasu.common.runtime.Environment
 import org.apache.amaterasu.executor.runtime.AmaContext
 import org.apache.amaterasu.sdk.AmaterasuRunner
-import org.apache.spark.sql.{DataFrame, Dataset, SparkSession}
+import org.apache.spark.sql.{Dataset, SparkSession}
 
 import scala.collection.JavaConverters._
 import scala.collection.mutable
@@ -98,8 +98,13 @@ class SparkScalaRunner(var env: Environment,
                   result match {
                     case ds: Dataset[_] =>
                       log.debug(s"persisting DataFrame: $resultName")
-                      interpreter.interpret(s"""$resultName.write.mode(SaveMode.Overwrite).format("$format").save("${env.workingDir}/$jobId/$actionName/$resultName")""")
-                      notifier.info(s"""+++> DS - $resultName.write.mode(SaveMode.Overwrite).format("$format").save("${env.workingDir}/$jobId/$actionName/$resultName")""")
+                      val writeResult = interpreter.interpret(s"""$resultName.write.mode(SaveMode.Overwrite).format("$format").save("${env.workingDir}/$jobId/$actionName/$resultName")""")
+                      notifier.info(s"""++$writeResult++> DS - $resultName.write.mode(SaveMode.Overwrite).format("$format").save("${env.workingDir}/$jobId/$actionName/$resultName")""")
+                      if (writeResult != Results.Success) {
+                        val err = outStream.toString
+                        notifier.error(line, err)
+                        throw new Exception(err)
+                      }
                       log.debug(s"persisted DataFrame: $resultName")
 
                     case _ => notifier.info(s"""+++> result type ${result.getClass}""")

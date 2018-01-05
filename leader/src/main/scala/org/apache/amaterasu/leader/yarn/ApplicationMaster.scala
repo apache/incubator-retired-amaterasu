@@ -19,7 +19,6 @@ package org.apache.amaterasu.leader.yarn
 import java.io.{File, FileInputStream, InputStream}
 import java.net.URLEncoder
 import java.util
-import java.util.Collections
 import java.util.concurrent.{ConcurrentHashMap, LinkedBlockingQueue}
 
 import com.google.gson.Gson
@@ -196,6 +195,7 @@ class ApplicationMaster extends AMRMClientAsync.CallbackHandler with Logging {
           //          s"env HADOOP_CONF_DIR=${config.YARN.hadoopHomeDir}/conf/ && " +
           //            s"env YARN_CONF_DIR=${config.YARN.hadoopHomeDir}/conf/ && " +
           "/bin/bash ./miniconda.sh -b -p $PWD/miniconda && ",
+          "/bin/bash /usr/hdp/current/spark2-client/bin/load-spark-env.sh && ",
           s"java -cp executor.jar:${config.spark.home}/jars/* " +
             "-Xmx1G " +
             "-Dscala.usejavacp=true " +
@@ -218,9 +218,11 @@ class ApplicationMaster extends AMRMClientAsync.CallbackHandler with Logging {
           "spark_intp.py" -> setLocalResourceFromPath(Path.mergePaths(jarPath, new Path("/dist/spark_intp.py")))
         ))
 
-        ctx.setEnvironment(Map[String, String]("HADOOP_CONF_DIR" -> s"${config.YARN.hadoopHomeDir}/conf/",
-          "YARN_CONF_DIR" -> s"${config.YARN.hadoopHomeDir}/conf/"))
-
+        ctx.setEnvironment(Map[String, String](
+          "HADOOP_CONF_DIR" -> s"${config.YARN.hadoopHomeDir}/conf/",
+          "YARN_CONF_DIR" -> s"${config.YARN.hadoopHomeDir}/conf/"
+        ))
+        log.info(s"hadoop conf dir is ${config.YARN.hadoopHomeDir}/conf/")
         nmClient.startContainerAsync(container, ctx)
         actionData
       }
