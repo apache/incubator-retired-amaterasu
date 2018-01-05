@@ -68,7 +68,7 @@ class ClusterConfig extends Logging {
 
     class Master {
       var cores: Int = 1
-      var memoryMB: Int = 256
+      var memoryMB: Int = 1024
 
       def load(props: Properties): Unit = {
         if (props.containsKey("yarn.master.cores")) this.cores = props.getProperty("yarn.master.cores").asInstanceOf[Int]
@@ -80,7 +80,7 @@ class ClusterConfig extends Logging {
 
     object Worker {
       var cores: Int = 1
-      var memoryMB: Int = 256
+      var memoryMB: Int = 1024
 
       def load(props: Properties): Unit = {
         if (props.containsKey("yarn.worker.cores")) Master.cores = props.getProperty("yarn.worker.cores").asInstanceOf[Int]
