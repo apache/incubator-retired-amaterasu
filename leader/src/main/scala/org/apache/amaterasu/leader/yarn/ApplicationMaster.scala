@@ -66,8 +66,8 @@ class ApplicationMaster extends AMRMClientAsync.CallbackHandler with Logging {
   private var version: String = ""
   private var executorPath: Path = _
   private var executorJar: LocalResource = _
-  private var propFile:LocalResource = _
-  private var log4jPropFile:LocalResource = _
+  private var propFile: LocalResource = _
+  private var log4jPropFile: LocalResource = _
   private var nmClient: NMClientAsync = _
   private var allocListener: YarnRMCallbackHandler = _
   private var rmClient: AMRMClientAsync[ContainerRequest] = _
@@ -148,7 +148,7 @@ class ApplicationMaster extends AMRMClientAsync.CallbackHandler with Logging {
     // Resource requirements for worker containers
     // TODO: this should be per task based on the framework config
     this.capability = Records.newRecord(classOf[Resource])
-    this.capability.setMemory(Math.min(config.taskMem, 256))
+    this.capability.setMemory(Math.min(config.taskMem, 1024))
     this.capability.setVirtualCores(1)
 
     while (!jobManager.outOfActions) {
@@ -191,12 +191,13 @@ class ApplicationMaster extends AMRMClientAsync.CallbackHandler with Logging {
         val execData = DataLoader.getExecutorDataString(env, config)
 
         val ctx = Records.newRecord(classOf[ContainerLaunchContext])
-        val commands = Collections.singletonList(
-            //,
-          s"env HADOOP_CONF_DIR=${config.YARN.hadoopHomeDir}/conf/ && " +
-            s"env YARN_CONF_DIR=${config.YARN.hadoopHomeDir}/conf/ && " +
-            "/bin/bash ./miniconda.sh -b -p $PWD/miniconda && " +
-            s"java -cp executor.jar:${config.spark.home}/jars/* " +
+        val commands: List[String] = List(
+          //,
+          //          s"env HADOOP_CONF_DIR=${config.YARN.hadoopHomeDir}/conf/ && " +
+          //            s"env YARN_CONF_DIR=${config.YARN.hadoopHomeDir}/conf/ && " +
+          "/bin/bash ./miniconda.sh -b -p $PWD/miniconda && ",
+          s"java -cp executor.jar:${config.spark.home}/jars/* " +
+            "-Xmx1G " +
             "-Dscala.usejavacp=true " +
             "org.apache.amaterasu.executor.yarn.executors.ActionsExecutorLauncher " +
             s"'${jobManager.jobId}' '${config.master}' '${actionData.name}' '${URLEncoder.encode(taskData, "UTF-8")}' '${URLEncoder.encode(execData, "UTF-8")}' '${actionData.id}-${container.getId.getContainerId}' " +
@@ -205,7 +206,7 @@ class ApplicationMaster extends AMRMClientAsync.CallbackHandler with Logging {
         )
 
         log.info("Running container id {}.", container.getId.getContainerId)
-        log.info("Running container id {} with command '{}'", container.getId.getContainerId, commands.get(0))
+        log.info("Running container id {} with command '{}'", container.getId.getContainerId, commands(1))
         ctx.setCommands(commands)
         ctx.setLocalResources(Map[String, LocalResource](
           "executor.jar" -> executorJar,
@@ -217,11 +218,9 @@ class ApplicationMaster extends AMRMClientAsync.CallbackHandler with Logging {
           "spark_intp.py" -> setLocalResourceFromPath(Path.mergePaths(jarPath, new Path("/dist/spark_intp.py")))
         ))
 
-        ctx.setEnvironment(Map[String, String](
-          ("HADOOP_CONF_DIR", config.YARN.hadoopHomeDir + "/conf/"),
-          ("YARN_CONF_DIR", config.YARN.hadoopHomeDir + "/conf/")
+        ctx.setEnvironment(Map[String, String]("HADOOP_CONF_DIR" -> s"${config.YARN.hadoopHomeDir}/conf/",
+          "YARN_CONF_DIR" -> s"${config.YARN.hadoopHomeDir}/conf/"))
 
-        ))
         nmClient.startContainerAsync(container, ctx)
         actionData
       }
@@ -274,7 +273,7 @@ class ApplicationMaster extends AMRMClientAsync.CallbackHandler with Logging {
         } else {
           // TODO: Check the getDiagnostics value and see if appropriate
           jobManager.actionFailed(task.id, status.getDiagnostics)
-          log.warn(s"Container $containerId completed with task ${task.id} with failed status code (${status.getExitStatus}).")
+          log.warn(s"Container $containerId completed with task ${task.id} with failed status code (${status.getExitStatus})")
         }
       }
     }
