@@ -82,7 +82,7 @@ object SparkRunnerHelper extends Logging {
 
       val out = new PrintWriter(outStream)
       val interpreter = new AmaSparkILoop(out)
-      interpreter.setSttings(settings)
+      interpreter.setSettings(settings)
 
       interpreter.create
 
@@ -151,6 +151,7 @@ object SparkRunnerHelper extends Logging {
           .set("spark.history.fs.logDirectory", "hdfs:///spark2-history/")
           .set("hadoop.home.dir", config.YARN.hadoopHomeDir)
 
+
       case _ => throw new Exception(s"mode ${config.mode} is not legal.")
     }
 
@@ -194,7 +195,7 @@ object SparkRunnerHelper extends Logging {
 
     val hc = sparkSession.sparkContext.hadoopConfiguration
 
-    log.debug(s" --- current hdfs iml: ${hc.get("fs.hdfs.impl")}")
+    log.info(s" --- current hdfs iml: ${hc.get("fs.hdfs.impl")}")
 
     sys.env.get("AWS_ACCESS_KEY_ID") match {
       case None =>

@@ -98,11 +98,12 @@ class SparkScalaRunner(var env: Environment,
                   result match {
                     case ds: Dataset[_] =>
                       log.debug(s"persisting DataFrame: $resultName")
-                      val writeResult = interpreter.interpret(s"""$resultName.write.mode(SaveMode.Overwrite).format("$format").save("${env.workingDir}/$jobId/$actionName/$resultName")""")
-                      notifier.info(s"""++$writeResult++> DS - $resultName.write.mode(SaveMode.Overwrite).format("$format").save("${env.workingDir}/$jobId/$actionName/$resultName")""")
+                      val writeLine = s"""$resultName.write.mode(SaveMode.Overwrite).format("$format").save("${env.workingDir}/$jobId/$actionName/$resultName")"""
+                      notifier.info(writeLine)
+                      val writeResult = interpreter.interpret(writeLine)
                       if (writeResult != Results.Success) {
                         val err = outStream.toString
-                        notifier.error(line, err)
+                        notifier.error(writeLine, err)
                         throw new Exception(err)
                       }
                       log.debug(s"persisted DataFrame: $resultName")
