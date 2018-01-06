@@ -32,7 +32,7 @@ repositories {
 }
 
 dependencies {
-    compile 'org.scala-lang:scala-library:2.11.11'
+    compile 'org.scala-lang:scala-library:2.11.8'
 
     compile project(':common')
 
@@ -63,7 +63,7 @@ dependencies {
     testRuntime 'org.pegdown:pegdown:1.1.0'
     testCompile 'junit:junit:4.11'
     testCompile 'org.scalatest:scalatest_2.11:3.0.2'
-    testCompile 'org.scala-lang:scala-library:2.11.10'
+    testCompile 'org.scala-lang:scala-library:2.11.8'
     testCompile group: 'org.apache.curator', name: 'curator-test', version: '2.9.1'
 
 }

@@ -39,7 +39,7 @@ configurations {
 }
 
 dependencies {
-    compile 'org.scala-lang:scala-library:2.11.1'
+    compile 'org.scala-lang:scala-library:2.11.8'
     compile group: 'com.github.nscala-time', name: 'nscala-time_2.11', version: '2.2.0'
     compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.9'
     compile group: 'org.slf4j', name: 'slf4j-simple', version: '1.7.9'
@@ -58,7 +58,7 @@ dependencies {
     testRuntime 'org.pegdown:pegdown:1.1.0'
     testCompile 'junit:junit:4.11'
     testCompile 'org.scalatest:scalatest_2.11:3.0.1'
-    testCompile 'org.scala-lang:scala-library:2.11.5'
+    testCompile 'org.scala-lang:scala-library:2.11.8'
 }
 
 task copyToHome() {
