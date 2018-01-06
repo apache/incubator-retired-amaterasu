@@ -18,7 +18,9 @@ package org.apache.amaterasu.leader.yarn
 
 import java.io.{File, FileInputStream, InputStream}
 import java.net.URLEncoder
+import java.nio.ByteBuffer
 import java.util
+import java.util.Iterator
 import java.util.concurrent.{ConcurrentHashMap, LinkedBlockingQueue}
 
 import com.google.gson.Gson
@@ -30,12 +32,15 @@ import org.apache.amaterasu.leader.utilities.{Args, DataLoader}
 import org.apache.curator.framework.{CuratorFramework, CuratorFrameworkFactory}
 import org.apache.curator.retry.ExponentialBackoffRetry
 import org.apache.hadoop.fs.{FileSystem, Path}
+import org.apache.hadoop.io.DataOutputBuffer
+import org.apache.hadoop.security.{Credentials, UserGroupInformation}
 import org.apache.hadoop.yarn.api.ApplicationConstants
 import org.apache.hadoop.yarn.api.records._
 import org.apache.hadoop.yarn.client.api.AMRMClient.ContainerRequest
 import org.apache.hadoop.yarn.client.api.async.impl.NMClientAsyncImpl
 import org.apache.hadoop.yarn.client.api.async.{AMRMClientAsync, NMClientAsync}
 import org.apache.hadoop.yarn.conf.YarnConfiguration
+import org.apache.hadoop.yarn.security.AMRMTokenIdentifier
 import org.apache.hadoop.yarn.util.{ConverterUtils, Records}
 
 import scala.collection.JavaConversions._
@@ -176,6 +181,20 @@ class ApplicationMaster extends AMRMClientAsync.CallbackHandler with Logging {
 
   override def onContainersAllocated(containers: util.List[Container]): Unit = {
 
+    // creating the credentials for container execution
+    val credentials = UserGroupInformation.getCurrentUser.getCredentials
+    val dob = new DataOutputBuffer
+    credentials.writeTokenStorageToStream(dob)
+
+    // removing the AM->RM token so that containers cannot access it.
+    val iter = credentials.getAllTokens.iterator
+    log.info("Executing with tokens:")
+    for (token<-iter) {
+      log.info(token.toString)
+      if (token.getKind == AMRMTokenIdentifier.KIND_NAME) iter.remove()
+    }
+    val allTokens = ByteBuffer.wrap(dob.getData, 0, dob.getLength)
+
     log.info(s"${containers.size()} Containers allocated")
     for (container <- containers.asScala) { // Launch container by create ContainerLaunchContext
       if (actionsBuffer.isEmpty) {
@@ -191,9 +210,6 @@ class ApplicationMaster extends AMRMClientAsync.CallbackHandler with Logging {
 
         val ctx = Records.newRecord(classOf[ContainerLaunchContext])
         val commands: List[String] = List(
-          //,
-          //          s"env HADOOP_CONF_DIR=${config.YARN.hadoopHomeDir}/conf/ && " +
-          //            s"env YARN_CONF_DIR=${config.YARN.hadoopHomeDir}/conf/ && " +
           "/bin/bash ./miniconda.sh -b -p $PWD/miniconda && ",
           s"java -cp ${config.YARN.hadoopHomeDir}/conf:executor.jar:${config.spark.home}/jars/* " +
             "-Xmx1G " +
@@ -206,7 +222,9 @@ class ApplicationMaster extends AMRMClientAsync.CallbackHandler with Logging {
 
         log.info("Running container id {}.", container.getId.getContainerId)
         log.info("Running container id {} with command '{}'", container.getId.getContainerId, commands(1))
+
         ctx.setCommands(commands)
+        ctx.setTokens(allTokens)
         ctx.setLocalResources(Map[String, LocalResource](
           "executor.jar" -> executorJar,
           "amaterasu.properties" -> propFile,
