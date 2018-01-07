@@ -237,8 +237,9 @@ class ApplicationMaster extends AMRMClientAsync.CallbackHandler with Logging {
 
         ctx.setEnvironment(Map[String, String](
           "HADOOP_CONF_DIR" -> s"${config.YARN.hadoopHomeDir}/conf/",
-          "YARN_CONF_DIR" -> s"${config.YARN.hadoopHomeDir}/conf/",
+          "YARN_CONF_DIR" -> s"${config.YARN.hadoopHomeDir}/conf/"//,
       //    "CLASSPATH" -> s"${config.spark.home}/jars/*:${config.YARN.hadoopHomeDir}/conf/*"
+
         ))
         log.info(s"hadoop conf dir is ${config.YARN.hadoopHomeDir}/conf/")
         nmClient.startContainerAsync(container, ctx)
