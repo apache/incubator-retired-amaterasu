@@ -2,8 +2,8 @@ package org.apache.amaterasu.executor.yarn.executors
 
 import java.io.ByteArrayOutputStream
 import java.net.URLDecoder
-import scala.collection.JavaConverters._
 
+import scala.collection.JavaConverters._
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
 import org.apache.amaterasu.common.dataobjects.{ExecData, TaskData}
@@ -11,6 +11,8 @@ import org.apache.amaterasu.common.logging.Logging
 import org.apache.amaterasu.executor.common.executors.ProvidersFactory
 import org.apache.hadoop.yarn.conf.YarnConfiguration
 import org.apache.spark.SparkContext
+
+import scala.reflect.internal.util.ScalaClassLoader.URLClassLoader
 
 
 class ActionsExecutor extends Logging {
@@ -53,6 +55,16 @@ object ActionsExecutorLauncher extends App with Logging {
   mapper.registerModule(DefaultScalaModule)
 
   log.info("Starting actions executor")
+
+  val cl = ClassLoader.getSystemClassLoader
+  val urls = cl.asInstanceOf[URLClassLoader].getURLs
+
+  log.info("Current classpath is:")
+
+  for (url <- urls) {
+    log.info(url.getFile)
+  }
+
   val jobId = this.args(0)
   val master = this.args(1)
   val actionName = this.args(2)
