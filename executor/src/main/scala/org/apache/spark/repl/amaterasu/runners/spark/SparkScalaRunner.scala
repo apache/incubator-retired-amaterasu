@@ -104,7 +104,7 @@ class SparkScalaRunner(var env: Environment,
                       if (writeResult != Results.Success) {
                         val err = outStream.toString
                         notifier.error(writeLine, err)
-                        log.error(s"error persisting dataset: $writeLine failed with: $err)
+                        log.error(s"error persisting dataset: $writeLine failed with: $err")
                         //throw new Exception(err)
                       }
                       log.debug(s"persisted DataFrame: $resultName")
