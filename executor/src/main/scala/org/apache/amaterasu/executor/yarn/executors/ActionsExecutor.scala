@@ -12,6 +12,7 @@ import org.apache.amaterasu.executor.common.executors.ProvidersFactory
 import org.apache.hadoop.yarn.conf.YarnConfiguration
 import org.apache.spark.SparkContext
 
+import scala.reflect.internal.util.ScalaClassLoader
 import scala.reflect.internal.util.ScalaClassLoader.URLClassLoader
 
 
@@ -33,8 +34,8 @@ class ActionsExecutor extends Logging {
           r.executeSource(taskData.src, actionName, taskData.exports.asJava)
           log.info("Completed action")
           System.exit(0)
-        } catch  {
-          case e:Exception => {
+        } catch {
+          case e: Exception => {
             log.error("Exception in execute source", e)
             System.exit(100)
           }
@@ -51,19 +52,22 @@ class ActionsExecutor extends Logging {
 //s"'${jobManager.jobId}' '${config.master}' '${actionData.name}' '${URLEncoder.encode(gson.toJson(taskData), "UTF-8")}' '${URLEncoder.encode(gson.toJson(execData), "UTF-8")}' '${actionData.id}-${container.getId.getContainerId}'"
 object ActionsExecutorLauncher extends App with Logging {
 
+  def urlses(cl: ClassLoader): Array[java.net.URL] = cl match {
+    case null => Array()
+    case u: java.net.URLClassLoader => u.getURLs() ++ urlses(cl.getParent)
+    case _ => urlses(cl.getParent)
+  }
+
+
   val mapper = new ObjectMapper()
   mapper.registerModule(DefaultScalaModule)
 
   log.info("Starting actions executor")
 
-  val cl = ClassLoader.getSystemClassLoader
-  val urls = cl.asInstanceOf[URLClassLoader].getURLs
+  val urls = urlses(getClass.getClassLoader)
 
   log.info("Current classpath is:")
-
-  for (url <- urls) {
-    log.info(url.getFile)
-  }
+  log.info(urls.mkString("\n"))
 
   val jobId = this.args(0)
   val master = this.args(1)
@@ -72,7 +76,7 @@ object ActionsExecutorLauncher extends App with Logging {
   val taskData = mapper.readValue(URLDecoder.decode(this.args(3), "UTF-8"), classOf[TaskData])
   log.info("parsing executor data")
   val execData = mapper.readValue(URLDecoder.decode(this.args(4), "UTF-8"), classOf[ExecData])
-  val taskIdAndContainerId =  this.args(5)
+  val taskIdAndContainerId = this.args(5)
 
   val actionsExecutor: ActionsExecutor = new ActionsExecutor
   actionsExecutor.master = master
