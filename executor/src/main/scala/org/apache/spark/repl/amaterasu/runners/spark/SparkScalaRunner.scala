@@ -104,7 +104,8 @@ class SparkScalaRunner(var env: Environment,
                       if (writeResult != Results.Success) {
                         val err = outStream.toString
                         notifier.error(writeLine, err)
-                        throw new Exception(err)
+                        log.error(err)
+                        //throw new Exception(err)
                       }
                       log.debug(s"persisted DataFrame: $resultName")
 
