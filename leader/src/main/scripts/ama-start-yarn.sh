@@ -120,6 +120,7 @@ fi
 
 eval "hdfs dfs -rm -R /apps/amaterasu"
 eval "hdfs dfs -mkdir /apps/amaterasu/"
+eval "hdfs dfs -chmod -R 777 /apps/amaterasu/"
 eval "hdfs dfs -copyFromLocal ${BASEDIR}/* /apps/amaterasu/"
 eval $CMD | grep "===>"
 kill $SERVER_PID

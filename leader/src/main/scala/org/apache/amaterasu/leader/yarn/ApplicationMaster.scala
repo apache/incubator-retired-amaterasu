@@ -151,7 +151,7 @@ class ApplicationMaster extends AMRMClientAsync.CallbackHandler with Logging {
     // Resource requirements for worker containers
     // TODO: this should be per task based on the framework config
     this.capability = Records.newRecord(classOf[Resource])
-    this.capability.setMemory(Math.min(config.taskMem, 1024))
+    this.capability.setMemory(Math.min(config.taskMem, 512))
     this.capability.setVirtualCores(1)
 
     while (!jobManager.outOfActions) {
@@ -212,7 +212,7 @@ class ApplicationMaster extends AMRMClientAsync.CallbackHandler with Logging {
           "/bin/bash ./miniconda.sh -b -p $PWD/miniconda && ",
           s"/bin/bash ${config.spark.home}/bin/load-spark-env.sh && ",
           s"java -cp executor.jar:${config.spark.home}/conf/:${config.spark.home}/jars/*:${config.YARN.hadoopHomeDir}/conf/ " +
-            "-Xmx1G " +
+            "-Xmx512M " +
             "-Dscala.usejavacp=true " +
             "-Dhdp.version=2.6.1.0-129 " +
             "org.apache.amaterasu.executor.yarn.executors.ActionsExecutorLauncher " +
@@ -222,7 +222,7 @@ class ApplicationMaster extends AMRMClientAsync.CallbackHandler with Logging {
         )
 
         log.info("Running container id {}.", container.getId.getContainerId)
-        log.info("Running container id {} with command '{}'", container.getId.getContainerId, commands(1))
+        log.info("Running container id {} with command '{}'", container.getId.getContainerId, commands.last)
 
         ctx.setCommands(commands)
         ctx.setTokens(allTokens)
