@@ -59,7 +59,7 @@ object SparkRunnerHelper extends Logging {
     notifier.error("", msg)
   }
 
-  private def initInterpreter(outStream: ByteArrayOutputStream, jars: Seq[String]) : Unit = {
+  private def initInterpreter(outStream: ByteArrayOutputStream, jars: Seq[String]): Unit = {
 
     var result: IMain = null
     val config = new ClusterConfig()
@@ -119,9 +119,9 @@ object SparkRunnerHelper extends Logging {
 
     Thread.currentThread().setContextClassLoader(getClass.getClassLoader)
 
-    val pyfiles = getAllFiles(new File("miniconda/pkgs")).filter(f=>f.getName.endsWith(".py") ||
-                                                                    f.getName.endsWith(".egg") ||
-                                                                    f.getName.endsWith(".zip"))
+    val pyfiles = getAllFiles(new File("miniconda/pkgs")).filter(f => f.getName.endsWith(".py") ||
+      f.getName.endsWith(".egg") ||
+      f.getName.endsWith(".zip"))
 
     conf.setAppName(sparkAppName)
       .set("spark.driver.host", getNode)
@@ -129,7 +129,7 @@ object SparkRunnerHelper extends Logging {
       .set("spark.hadoop.validateOutputSpecs", "false")
       .set("spark.logConf", "true")
       .set("spark.submit.pyFiles", pyfiles.mkString(","))
-      .setJars(jars)
+      .setJars("executor.jar" +: jars)
 
 
     config.mode match {
@@ -146,11 +146,11 @@ object SparkRunnerHelper extends Logging {
           .set("spark.yarn.jars", s"${config.spark.home}/jars/*")
           .set("spark.executor.memory", "1g")
           .set("spark.dynamicAllocation.enabled", "false")
-          .set("spark.shuffle.service.enabled", "true")
+          //.set("spark.shuffle.service.enabled", "true")
           .set("spark.eventLog.enabled", "false")
           .set("spark.history.fs.logDirectory", "hdfs:///spark2-history/")
           .set("hadoop.home.dir", config.YARN.hadoopHomeDir)
-
+          .set("spark.driver.extraLibraryPath", "/usr/hdp/current/hadoop-client/lib/native:/usr/hdp/current/hadoop-client/lib/native/Linux-amd64-64")
 
       case _ => throw new Exception(s"mode ${config.mode} is not legal.")
     }
@@ -194,8 +194,6 @@ object SparkRunnerHelper extends Logging {
       .config(conf).getOrCreate()
 
     val hc = sparkSession.sparkContext.hadoopConfiguration
-
-    log.info(s" --- current hdfs iml: ${hc.get("fs.hdfs.impl")}")
 
     sys.env.get("AWS_ACCESS_KEY_ID") match {
       case None =>
