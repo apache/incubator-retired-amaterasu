@@ -18,7 +18,11 @@ plugins {
     id "com.github.johnrengelman.shadow" version "1.2.4"
     id 'com.github.maiflai.scalatest' version '0.6-5-g9065d91'
     id 'scala'
+    id 'java'
 }
+
+sourceCompatibility = 1.7
+targetCompatibility = 1.7
 
 repositories {
     maven {
@@ -28,7 +32,7 @@ repositories {
 }
 
 dependencies {
-    compile 'org.scala-lang:scala-library:2.11.11'
+    compile 'org.scala-lang:scala-library:2.11.8'
 
     compile project(':common')
 
@@ -49,6 +53,9 @@ dependencies {
     compile group: 'org.eclipse.jetty.toolchain', name: 'jetty-test-helper', version: '4.0'
     compile group: 'org.eclipse.jgit', name: 'org.eclipse.jgit', version: '4.2.0.201601211800-r'
     compile group: 'org.yaml', name: 'snakeyaml', version: '1.18'
+    compile group: 'commons-cli', name: 'commons-cli', version: '1.2'
+    compile group: 'org.jsoup', name: 'jsoup', version: '1.10.2'
+    compile group: 'org.scala-lang.modules', name: 'scala-async_2.11', version: '0.9.6'
     compile group: 'org.jsoup', name: 'jsoup', version: '1.10.2'
 
     testCompile project(':common')
@@ -56,7 +63,7 @@ dependencies {
     testRuntime 'org.pegdown:pegdown:1.1.0'
     testCompile 'junit:junit:4.11'
     testCompile 'org.scalatest:scalatest_2.11:3.0.2'
-    testCompile 'org.scala-lang:scala-library:2.11.10'
+    testCompile 'org.scala-lang:scala-library:2.11.8'
     testCompile group: 'org.apache.curator', name: 'curator-test', version: '2.9.1'
 
 }

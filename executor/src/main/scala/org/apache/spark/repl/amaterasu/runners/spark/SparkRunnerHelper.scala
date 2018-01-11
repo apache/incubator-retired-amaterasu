@@ -20,16 +20,17 @@ import java.io.{ByteArrayOutputStream, File, PrintWriter}
 
 import org.apache.amaterasu.common.configuration.ClusterConfig
 import org.apache.amaterasu.common.execution.actions.Notifier
+import org.apache.amaterasu.common.logging.Logging
 import org.apache.amaterasu.common.runtime.Environment
 import org.apache.spark.repl.amaterasu.AmaSparkILoop
-import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.util.Utils
+import org.apache.spark.{SparkConf, SparkContext}
 
-import scala.tools.nsc.{GenericRunnerSettings, Settings}
+import scala.tools.nsc.GenericRunnerSettings
 import scala.tools.nsc.interpreter.IMain
 
-object SparkRunnerHelper {
+object SparkRunnerHelper extends Logging {
 
   private val conf = new SparkConf()
   private val rootDir = conf.getOption("spark.repl.classdir").getOrElse(Utils.getLocalDir(conf))
@@ -58,7 +59,7 @@ object SparkRunnerHelper {
     notifier.error("", msg)
   }
 
-  private def initInterpreter(outStream: ByteArrayOutputStream, jars: Seq[String]) = {
+  private def initInterpreter(outStream: ByteArrayOutputStream, jars: Seq[String]): Unit = {
 
     var result: IMain = null
     val config = new ClusterConfig()
@@ -71,7 +72,7 @@ object SparkRunnerHelper {
       )
 
       val settings = new GenericRunnerSettings(scalaOptionError)
-      settings.processArguments(interpArguments, true)
+      settings.processArguments(interpArguments, processAll = true)
 
       settings.classpath.append(System.getProperty("java.class.path") + java.io.File.pathSeparator +
         "spark-" + config.Webserver.sparkVersion + "/jars/*" + java.io.File.pathSeparator +
@@ -81,7 +82,7 @@ object SparkRunnerHelper {
 
       val out = new PrintWriter(outStream)
       val interpreter = new AmaSparkILoop(out)
-      interpreter.setSttings(settings)
+      interpreter.setSettings(settings)
 
       interpreter.create
 
@@ -102,21 +103,69 @@ object SparkRunnerHelper {
     interpreter = result
   }
 
-  def createSpark(env: Environment, sparkAppName: String, jars: Seq[String], sparkConf: Option[Map[String, Any]], executorEnv: Option[Map[String, Any]]): SparkSession = {
+  def getAllFiles(dir: File): Array[File] = {
+    val these = dir.listFiles
+    these ++ these.filter(_.isDirectory).flatMap(getAllFiles)
+  }
 
-    val config = new ClusterConfig()
+  def createSpark(env: Environment, sparkAppName: String, jars: Seq[String], sparkConf: Option[Map[String, Any]], executorEnv: Option[Map[String, Any]], propFile: String): SparkSession = {
+
+    val config = if (propFile != null) {
+      import java.io.FileInputStream
+      ClusterConfig.apply(new FileInputStream(propFile))
+    } else {
+      new ClusterConfig()
+    }
 
     Thread.currentThread().setContextClassLoader(getClass.getClassLoader)
 
+    val pyfiles = getAllFiles(new File("miniconda/pkgs")).filter(f => f.getName.endsWith(".py") ||
+      f.getName.endsWith(".egg") ||
+      f.getName.endsWith(".zip"))
+
     conf.setAppName(sparkAppName)
-      .set("spark.master", env.master)
-      .set("spark.executor.uri", s"http://$getNode:${config.Webserver.Port}/spark-2.1.1-bin-hadoop2.7.tgz")
       .set("spark.driver.host", getNode)
       .set("spark.submit.deployMode", "client")
-      .set("spark.home", s"${scala.reflect.io.File(".").toCanonical.toString}/spark-2.1.1-bin-hadoop2.7")
       .set("spark.hadoop.validateOutputSpecs", "false")
-      .set("spark.submit.pyFiles", "miniconda/pkgs")
-      .setJars(jars)
+      .set("spark.logConf", "true")
+      .set("spark.submit.pyFiles", pyfiles.mkString(","))
+      .setJars("executor.jar" +: jars)
+
+
+    config.mode match {
+
+      case "mesos" =>
+        conf.set("spark.executor.uri", s"http://$getNode:${config.Webserver.Port}/spark-2.1.1-bin-hadoop2.7.tgz")
+          .set("spark.master", env.master)
+          .set("spark.home", s"${scala.reflect.io.File(".").toCanonical.toString}/spark-2.1.1-bin-hadoop2.7")
+
+      case "yarn" =>
+        conf.set("spark.home", config.spark.home)
+          // TODO: parameterize those
+          .set("spark.history.kerberos.keytab", "/etc/security/keytabs/spark.headless.keytab")
+          .set("spark.driver.extraLibraryPath", "/usr/hdp/current/hadoop-client/lib/native:/usr/hdp/current/hadoop-client/lib/native/Linux-amd64-64")
+          .set("spark.yarn.queue", "default")
+          .set("spark.history.kerberos.principal", "none")
+
+          .set("spark.master", "yarn")
+          .set("spark.executor.instances", "1") // TODO: change this
+          .set("spark.yarn.jars", s"${config.spark.home}/jars/*")
+          .set("spark.executor.memory", "1g")
+          .set("spark.dynamicAllocation.enabled", "false")
+          //.set("spark.shuffle.service.enabled", "true")
+          .set("spark.eventLog.enabled", "false")
+          .set("spark.history.fs.logDirectory", "hdfs:///spark2-history/")
+          .set("hadoop.home.dir", config.YARN.hadoopHomeDir)
+
+      case _ => throw new Exception(s"mode ${config.mode} is not legal.")
+    }
+
+    if (config.spark.opts != null && config.spark.opts.nonEmpty) {
+      config.spark.opts.foreach(kv => {
+        log.info(s"Setting ${kv._1} to ${kv._2} as specified in amaterasu.properties")
+        conf.set(kv._1, kv._2)
+      })
+    }
 
     // adding the the configurations from spark.yml
     sparkConf match {
@@ -149,6 +198,9 @@ object SparkRunnerHelper {
       //.enableHiveSupport()
       .config(conf).getOrCreate()
 
+    log.info("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^")
+    sparkSession.conf.getAll.foreach(x => log.info(x.toString))
+
     val hc = sparkSession.sparkContext.hadoopConfiguration
 
     sys.env.get("AWS_ACCESS_KEY_ID") match {
@@ -158,6 +210,7 @@ object SparkRunnerHelper {
         hc.set("fs.s3n.awsAccessKeyId", sys.env("AWS_ACCESS_KEY_ID"))
         hc.set("fs.s3n.awsSecretAccessKey", sys.env("AWS_SECRET_ACCESS_KEY"))
     }
+
     sparkSession
   }
 }

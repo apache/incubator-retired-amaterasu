@@ -22,9 +22,7 @@ import org.apache.amaterasu.common.execution.actions.{Notification, Notification
 import org.apache.amaterasu.common.logging.Logging
 import org.apache.mesos.ExecutorDriver
 
-/**
-  * Created by roadan on 8/20/16.
-  */
+
 class MesosNotifier(driver: ExecutorDriver) extends Notifier with Logging {
 
   private val mapper = new ObjectMapper()

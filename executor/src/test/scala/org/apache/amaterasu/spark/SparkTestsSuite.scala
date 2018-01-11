@@ -18,22 +18,19 @@ package org.apache.amaterasu.spark
 
 import java.io.{ByteArrayOutputStream, File}
 
-import io.shinto.amaterasu.spark.PySparkRunnerTests
 import org.apache.amaterasu.RunnersTests.RunnersLoadingTests
 import org.apache.amaterasu.common.dataobjects.ExecData
 import org.apache.amaterasu.common.execution.dependencies._
 import org.apache.amaterasu.common.runtime.Environment
+import org.apache.amaterasu.executor.common.executors.ProvidersFactory
 import org.apache.amaterasu.utilities.TestNotifier
-import org.apache.amaterasu.executor.mesos.executors.ProvidersFactory
 import org.apache.spark.repl.amaterasu.runners.spark.SparkScalaRunner
 import org.apache.spark.sql.SparkSession
 import org.scalatest._
 
 import scala.collection.mutable.ListBuffer
 
-/**
-  * Created by roadan on 22/6/17.
-  */
+
 class SparkTestsSuite extends Suites(
   new PySparkRunnerTests(),
   new RunnersLoadingTests()) with BeforeAndAfterAll {
@@ -65,7 +62,17 @@ class SparkTestsSuite extends Suites(
       "PYTHONPATH" -> resources
     )
     env.configuration ++ "spark_exec_env" -> excEnv
-    factory = ProvidersFactory(ExecData(env, Dependencies(ListBuffer.empty[Repo], List.empty[Artifact]), PythonDependencies(List.empty[PythonPackage]), Map("spark" -> Map.empty[String, Any],"spark_exec_env"->Map("PYTHONPATH"->resources))), "test", new ByteArrayOutputStream(), new TestNotifier(), "test")
+    factory = ProvidersFactory(ExecData(env,
+      Dependencies(ListBuffer.empty[Repo], List.empty[Artifact]),
+      PythonDependencies(List.empty[PythonPackage]),
+      Map(
+        "spark" -> Map.empty[String, Any],
+        "spark_exec_env" -> Map("PYTHONPATH" -> resources))),
+      "test",
+      new ByteArrayOutputStream(),
+      new TestNotifier(),
+      "test",
+      getClass.getResource("/amaterasu.properties").getPath)
     spark = factory.getRunner("spark", "scala").get.asInstanceOf[SparkScalaRunner].spark
 
     this.nestedSuites.filter(s => s.isInstanceOf[RunnersLoadingTests]).foreach(s => s.asInstanceOf[RunnersLoadingTests].factory = factory)

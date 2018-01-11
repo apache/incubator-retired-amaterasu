@@ -18,16 +18,13 @@ package org.apache.amaterasu.common.execution
 
 import java.util.concurrent.LinkedBlockingQueue
 
+import org.apache.amaterasu.common.configuration.enums.ActionStatus
 import org.apache.amaterasu.common.dataobjects.ActionData
-import org.apache.amaterasu.enums.ActionStatus
 import org.apache.amaterasu.leader.execution.actions.SequentialAction
-
 import org.apache.curator.framework.CuratorFrameworkFactory
-import org.apache.curator.test.TestingServer
 import org.apache.curator.retry.ExponentialBackoffRetry
-
+import org.apache.curator.test.TestingServer
 import org.apache.zookeeper.CreateMode
-
 import org.scalatest.{FlatSpec, Matchers}
 
 class ActionTests extends FlatSpec with Matchers {

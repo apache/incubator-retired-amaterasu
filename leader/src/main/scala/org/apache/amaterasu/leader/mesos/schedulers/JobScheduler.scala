@@ -23,21 +23,19 @@ import java.util.{Collections, UUID}
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
-
 import org.apache.amaterasu.common.configuration.ClusterConfig
+import org.apache.amaterasu.common.configuration.enums.ActionStatus
+import org.apache.amaterasu.common.configuration.enums.ActionStatus.ActionStatus
 import org.apache.amaterasu.common.dataobjects.ActionData
-import org.apache.amaterasu.common.execution.actions.{Notification, NotificationLevel, NotificationType}
 import org.apache.amaterasu.common.execution.actions.NotificationLevel.NotificationLevel
-import org.apache.amaterasu.enums.ActionStatus
-import org.apache.amaterasu.enums.ActionStatus.ActionStatus
+import org.apache.amaterasu.common.execution.actions.{Notification, NotificationLevel, NotificationType}
 import org.apache.amaterasu.leader.execution.{JobLoader, JobManager}
 import org.apache.amaterasu.leader.utilities.{DataLoader, HttpServer}
-
 import org.apache.curator.framework.{CuratorFramework, CuratorFrameworkFactory}
 import org.apache.curator.retry.ExponentialBackoffRetry
-
 import org.apache.mesos.Protos.CommandInfo.URI
 import org.apache.mesos.Protos._
+import org.apache.mesos.protobuf.ByteString
 import org.apache.mesos.{Protos, SchedulerDriver}
 
 import scala.collection.JavaConverters._
@@ -160,14 +158,15 @@ class JobScheduler extends AmaterasuScheduler {
                 executor = slavesExecutors(slaveId)
               }
               else {
-                val execData = DataLoader.getExecutorData(env, config)
-                //TODO: wait for Eyal's refactoring to extract the containers params
+                val execData = DataLoader.getExecutorDataBytes(env, config)
 
                 val command = CommandInfo
                   .newBuilder
                   .setValue(
                     s"""$awsEnv env AMA_NODE=${sys.env("AMA_NODE")} env MESOS_NATIVE_JAVA_LIBRARY=/usr/lib/libmesos.so env SPARK_EXECUTOR_URI=http://${sys.env("AMA_NODE")}:${config.Webserver.Port}/dist/spark-${config.Webserver.sparkVersion}.tgz java -cp executor-0.2.0-incubating-all.jar:spark-${config.Webserver.sparkVersion}/jars/* -Dscala.usejavacp=true -Djava.library.path=/usr/lib org.apache.amaterasu.executor.mesos.executors.ActionsExecutorLauncher ${jobManager.jobId} ${config.master} ${actionData.name}""".stripMargin
                   )
+//                  HttpServer.getFilesInDirectory(sys.env("AMA_NODE"), config.Webserver.Port).foreach(f=>
+//                  )
                   .addUris(URI.newBuilder
                     .setValue(s"http://${sys.env("AMA_NODE")}:${config.Webserver.Port}/executor-0.2.0-incubating-all.jar")
                     .setExecutable(false)
@@ -200,7 +199,7 @@ class JobScheduler extends AmaterasuScheduler {
                     .build())
                 executor = ExecutorInfo
                   .newBuilder
-                  .setData(execData)
+                  .setData(ByteString.copyFrom(execData))
                   .setName(taskId.getValue)
                   .setExecutorId(ExecutorID.newBuilder().setValue(taskId.getValue + "-" + UUID.randomUUID()))
                   .setCommand(command)
@@ -217,7 +216,7 @@ class JobScheduler extends AmaterasuScheduler {
               .setSlaveId(offer.getSlaveId)
               .setExecutor(executor)
 
-              .setData(DataLoader.getTaskData(actionData, env))
+              .setData(ByteString.copyFrom(DataLoader.getTaskDataBytes(actionData, env)))
               .addResources(createScalarResource("cpus", config.Jobs.Tasks.cpus))
               .addResources(createScalarResource("mem", config.Jobs.Tasks.mem))
               .addResources(createScalarResource("disk", config.Jobs.repoSize))

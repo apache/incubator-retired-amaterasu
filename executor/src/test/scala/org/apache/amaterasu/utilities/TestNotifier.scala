@@ -19,9 +19,7 @@ package org.apache.amaterasu.utilities
 import org.apache.amaterasu.common.execution.actions.Notifier
 import org.apache.amaterasu.common.logging.Logging
 
-/**
-  * Created by roadan on 10/18/16.
-  */
+
 class TestNotifier extends Notifier with Logging {
 
   override def info(msg: String): Unit = {

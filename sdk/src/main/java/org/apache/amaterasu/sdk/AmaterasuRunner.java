@@ -18,9 +18,6 @@ package org.apache.amaterasu.sdk;
 
 import java.util.Map;
 
-/**
-  * Created by eyalbenivri on 07/09/2016.
-  */
 public interface AmaterasuRunner {
 
   String getIdentifier();

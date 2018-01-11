@@ -29,7 +29,7 @@ class AmaSparkILoop(writer: PrintWriter) extends SparkILoop(None, writer) {
     this.createInterpreter
   }
 
-  def setSttings(settings: Settings) = {
+  def setSettings(settings: Settings) = {
     this.settings = settings
   }
 

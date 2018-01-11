@@ -16,9 +16,9 @@
  */
 package org.apache.amaterasu.leader.execution.actions
 
+import org.apache.amaterasu.common.configuration.enums.ActionStatus
 import org.apache.amaterasu.common.dataobjects.ActionData
 import org.apache.amaterasu.common.logging.Logging
-import org.apache.amaterasu.enums.ActionStatus
 import org.apache.curator.framework.CuratorFramework
 
 trait Action extends Logging {

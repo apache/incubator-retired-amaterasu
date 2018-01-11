@@ -19,6 +19,7 @@ package org.apache.amaterasu.executor.execution.actions.runners.spark.PySpark
 import java.io.{File, PrintWriter, StringWriter}
 import java.util
 
+import org.apache.amaterasu.common.configuration.ClusterConfig
 import org.apache.amaterasu.common.execution.actions.Notifier
 import org.apache.amaterasu.common.execution.dependencies.{PythonDependencies, PythonPackage}
 import org.apache.amaterasu.common.logging.Logging
@@ -28,11 +29,8 @@ import org.apache.spark.SparkEnv
 import org.apache.spark.sql.SparkSession
 
 import scala.sys.process.Process
-import scala.io.Source
 
-/**
-  * Created by roadan on 9/2/16.
-  */
+
 class PySparkRunner extends AmaterasuRunner with Logging {
 
   var proc: Process = _
@@ -76,7 +74,8 @@ object PySparkRunner {
             notifier: Notifier,
             spark: SparkSession,
             pypath: String,
-            pyDeps: PythonDependencies): PySparkRunner = {
+            pyDeps: PythonDependencies,
+            config: ClusterConfig): PySparkRunner = {
 
     //TODO: can we make this less ugly?
     var pysparkPython = "/usr/bin/python"
@@ -102,7 +101,7 @@ object PySparkRunner {
     if (env.configuration.contains("pysparkPath")) {
       pysparkPath = env.configuration("pysparkPath")
     } else {
-      pysparkPath = "spark-2.1.1-bin-hadoop2.7/bin/spark-submit"
+      pysparkPath = s"${config.spark.home}/bin/spark-submit"
     }
     val proc = Process(Seq(pysparkPath, intpPath, port.toString), None,
       "PYTHONPATH" -> pypath,

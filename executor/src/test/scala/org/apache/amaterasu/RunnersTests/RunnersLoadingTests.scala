@@ -17,7 +17,7 @@
 package org.apache.amaterasu.RunnersTests
 
 import org.apache.amaterasu.common.runtime.Environment
-import org.apache.amaterasu.executor.mesos.executors.ProvidersFactory
+import org.apache.amaterasu.executor.common.executors.ProvidersFactory
 import org.scalatest._
 
 @DoNotDiscover

@@ -15,6 +15,7 @@
  * limitations under the License.
  */
 package org.apache.amaterasu.spark
+
 import org.apache.amaterasu.common.runtime.Environment
 import org.apache.amaterasu.executor.execution.actions.runners.spark.SparkSql.SparkSqlRunner
 import org.apache.amaterasu.executor.runtime.AmaContext
@@ -24,7 +25,6 @@ import org.apache.log4j.Level
 import org.apache.spark.sql.{SaveMode, SparkSession}
 import org.scalatest.{BeforeAndAfterAll, FlatSpec, Matchers}
 
-import scala.io.Source
 
 /**
   * Created by kirupa on 10/12/16.
@@ -52,7 +52,8 @@ class SparkSqlRunnerTests extends FlatSpec with Matchers with BeforeAndAfterAll 
       .config("spark.local.ip", "127.0.0.1")
       .getOrCreate()
 
-    AmaContext.init(spark,"sql_job",env)
+    AmaContext.init(spark, "sql_job", env)
+
     super.beforeAll()
   }
 
@@ -67,7 +68,8 @@ class SparkSqlRunnerTests extends FlatSpec with Matchers with BeforeAndAfterAll 
    */
   "SparkSql" should "load PARQUET data and persist the Data in working directory" in {
 
-    val sparkSql:SparkSqlRunner = SparkSqlRunner(AmaContext.env, "spark-sql-parquet", "spark-sql-parquet-action", notifier, spark)
+
+    val sparkSql: SparkSqlRunner = SparkSqlRunner(AmaContext.env, "spark-sql-parquet", "spark-sql-parquet-action", notifier, spark)
     sparkSql.executeQuery("temptable", getClass.getResource("/SparkSql/parquet").getPath, "select * from temptable")
 
   }

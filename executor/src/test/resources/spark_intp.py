@@ -10,16 +10,15 @@ import ast
 import codegen
 import os
 import sys
-from runtime import AmaContext, Environment
-
+from runtime import AmaContext
 os.chdir(os.getcwd() + '/build/resources/test/')
 import zipfile
 zip = zipfile.ZipFile('pyspark.zip')
 zip.extractall()
 zip = zipfile.ZipFile('py4j-0.10.4-src.zip', 'r')
 zip.extractall()
-sys.path.insert(1, os.getcwd() + '/executor/src/test/resources/pyspark')
-sys.path.insert(1, os.getcwd() + '/executor/src/test/resources/py4j')
+# sys.path.insert(1, os.getcwd() + '/executor/src/test/resources/pyspark')
+# sys.path.insert(1, os.getcwd() + '/executor/src/test/resources/py4j')
 from py4j.java_gateway import JavaGateway, GatewayClient, java_import
 from py4j.protocol import Py4JJavaError
 from pyspark.conf import SparkConf
@@ -32,10 +31,9 @@ from pyspark.accumulators import Accumulator, AccumulatorParam
 from pyspark.broadcast import Broadcast
 from pyspark.serializers import MarshalSerializer, PickleSerializer
 from pyspark.sql import SparkSession
-from pyspark.sql import Row
 
 client = GatewayClient(port=int(sys.argv[1]))
-gateway = JavaGateway(client, auto_convert=True)
+gateway = JavaGateway(client, auto_convert = True)
 entry_point = gateway.entry_point
 queue = entry_point.getExecutionQueue()
 
@@ -51,43 +49,28 @@ java_import(gateway.jvm, "scala.Tuple2")
 jconf = entry_point.getSparkConf()
 jsc = entry_point.getJavaSparkContext()
 
-job_id = entry_point.getJobId()
-javaEnv = entry_point.getEnv()
-working_dir = javaEnv.workingDir() or '/tmp/amaterasu'
-env = Environment(javaEnv.name(), javaEnv.master(), javaEnv.inputRootPath(), javaEnv.outputRootPath(), working_dir, javaEnv.configuration())
-conf = SparkConf(_jvm=gateway.jvm, _jconf=jconf)
+conf = SparkConf(_jvm = gateway.jvm, _jconf = jconf)
 
 sc = SparkContext(jsc=jsc, gateway=gateway, conf=conf)
-spark = SparkSession(sc, entry_point.getSparkSession())
 
-ama_context = AmaContext(sc, spark, job_id, env)
+spark = SparkSession(sc, entry_point.getSparkSession())
+sqlc = spark._wrapped
+
+ama_context = AmaContext(sc, sqlc)
 
 while True:
     actionData = queue.getNext()
     resultQueue = entry_point.getResultQueue(actionData._2())
     actionSource = actionData._1()
     tree = ast.parse(actionSource)
-    exports = actionData._3()
 
     for node in tree.body:
 
         wrapper = ast.Module(body=[node])
         try:
-            co = compile(wrapper, "<ast>", 'exec')
-            exec (co)
+            co  = compile(wrapper, "<ast>", 'exec')
+            exec(co)
             resultQueue.put('success', actionData._2(), codegen.to_source(node), '')
-            #if this node is an assignment, we need to check if it needs to be persisted
-            try:
-                persistCode = ''
-                if(isinstance(node,ast.Assign)):
-                    varName = node.targets[0].id
-                    if(exports.containsKey(varName)):
-                        persistCode = varName + ".write.save(\"" + env.working_dir + "/" + job_id + "/" + actionData._2() + "/" + varName + "\", format=\"" + exports[varName] + "\", mode='overwrite')"
-                        persist = compile(persistCode, '<stdin>', 'exec')
-                        exec(persist)
-
-            except:
-                resultQueue.put('error', actionData._2(), persistCode, str(sys.exc_info()[1]))
         except:
             resultQueue.put('error', actionData._2(), codegen.to_source(node), str(sys.exc_info()[1]))
     resultQueue.put('completion', '', '', '')
