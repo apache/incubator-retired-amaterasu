@@ -118,7 +118,7 @@ if [ ! -f ${BASEDIR}/dist/Miniconda2-latest-Linux-x86_64.sh ]; then
     wget https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh -P ${BASEDIR}/dist
 fi
 
-eval "hdfs dfs -rm -R /apps/amaterasu"
+eval "hdfs dfs -rm -R -skipTrash /apps/amaterasu"
 eval "hdfs dfs -mkdir /apps/amaterasu/"
 eval "hdfs dfs -chmod -R 777 /apps/amaterasu/"
 eval "hdfs dfs -copyFromLocal ${BASEDIR}/* /apps/amaterasu/"

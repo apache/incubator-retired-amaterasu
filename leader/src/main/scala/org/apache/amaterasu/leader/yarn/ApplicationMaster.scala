@@ -188,7 +188,7 @@ class ApplicationMaster extends AMRMClientAsync.CallbackHandler with Logging {
     // removing the AM->RM token so that containers cannot access it.
     val iter = credentials.getAllTokens.iterator
     log.info("Executing with tokens:")
-    for (token<-iter) {
+    for (token <- iter) {
       log.info(token.toString)
       if (token.getKind == AMRMTokenIdentifier.KIND_NAME) iter.remove()
     }
@@ -211,7 +211,7 @@ class ApplicationMaster extends AMRMClientAsync.CallbackHandler with Logging {
         val commands: List[String] = List(
           "/bin/bash ./miniconda.sh -b -p $PWD/miniconda && ",
           s"/bin/bash ${config.spark.home}/bin/load-spark-env.sh && ",
-          s"java -cp executor.jar:${config.spark.home}/conf/:${config.spark.home}/jars/*:${config.YARN.hadoopHomeDir}/conf/ " +
+          s"java -cp ${config.spark.home}/jars/*:executor.jar:${config.spark.home}/conf/:${config.YARN.hadoopHomeDir}/conf/ " +
             "-Xmx512M " +
             "-Dscala.usejavacp=true " +
             "-Dhdp.version=2.6.1.0-129 " +
@@ -238,10 +238,10 @@ class ApplicationMaster extends AMRMClientAsync.CallbackHandler with Logging {
 
         ctx.setEnvironment(Map[String, String](
           "HADOOP_CONF_DIR" -> s"${config.YARN.hadoopHomeDir}/conf/",
-          "YARN_CONF_DIR" -> s"${config.YARN.hadoopHomeDir}/conf/"//,
-      //    "CLASSPATH" -> s"${config.spark.home}/jars/*:${config.YARN.hadoopHomeDir}/conf/*"
-
+          "YARN_CONF_DIR" -> s"${config.YARN.hadoopHomeDir}/conf/",
+          "AMA_NODE" -> sys.env("AMA_NODE")
         ))
+
         log.info(s"hadoop conf dir is ${config.YARN.hadoopHomeDir}/conf/")
         nmClient.startContainerAsync(container, ctx)
         actionData

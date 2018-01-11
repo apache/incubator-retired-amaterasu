@@ -107,6 +107,7 @@ public class Client {
         }
 
         List<String> commands = Collections.singletonList(
+                "env AMA_NODE=" + System.getenv("AMA_NODE") + " " +
                 "$JAVA_HOME/bin/java" +
                         " -Dscala.usejavacp=false" +
                         " -Xmx1G" +

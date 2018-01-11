@@ -141,6 +141,12 @@ object SparkRunnerHelper extends Logging {
 
       case "yarn" =>
         conf.set("spark.home", config.spark.home)
+          // TODO: parameterize those
+          .set("spark.history.kerberos.keytab", "/etc/security/keytabs/spark.headless.keytab")
+          .set("spark.driver.extraLibraryPath", "/usr/hdp/current/hadoop-client/lib/native:/usr/hdp/current/hadoop-client/lib/native/Linux-amd64-64")
+          .set("spark.yarn.queue", "default")
+          .set("spark.history.kerberos.principal", "none")
+
           .set("spark.master", "yarn")
           .set("spark.executor.instances", "1") // TODO: change this
           .set("spark.yarn.jars", s"${config.spark.home}/jars/*")
@@ -150,7 +156,6 @@ object SparkRunnerHelper extends Logging {
           .set("spark.eventLog.enabled", "false")
           .set("spark.history.fs.logDirectory", "hdfs:///spark2-history/")
           .set("hadoop.home.dir", config.YARN.hadoopHomeDir)
-          .set("spark.driver.extraLibraryPath", "/usr/hdp/current/hadoop-client/lib/native:/usr/hdp/current/hadoop-client/lib/native/Linux-amd64-64")
 
       case _ => throw new Exception(s"mode ${config.mode} is not legal.")
     }
@@ -192,6 +197,9 @@ object SparkRunnerHelper extends Logging {
 
       //.enableHiveSupport()
       .config(conf).getOrCreate()
+
+    log.info("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^")
+    sparkSession.conf.getAll.foreach(x => log.info(x.toString))
 
     val hc = sparkSession.sparkContext.hadoopConfiguration
 
