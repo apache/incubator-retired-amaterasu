@@ -16,28 +16,26 @@
  */
 package org.apache.amaterasu.executor.execution.actions.runners.spark
 
-import java.io.{ByteArrayOutputStream, File, PrintWriter, StringWriter}
+import java.io._
 
+import com.jcabi.aether.Aether
+import org.apache.amaterasu.common.configuration.ClusterConfig
 import org.apache.amaterasu.common.dataobjects.ExecData
 import org.apache.amaterasu.common.execution.actions.Notifier
 import org.apache.amaterasu.common.execution.dependencies.{Dependencies, PythonDependencies, PythonPackage}
+import org.apache.amaterasu.common.logging.Logging
+import org.apache.amaterasu.executor.execution.actions.runners.spark.PySpark.PySparkRunner
 import org.apache.amaterasu.sdk.{AmaterasuRunner, RunnersProvider}
 import org.apache.spark.repl.amaterasu.runners.spark.{SparkRunnerHelper, SparkScalaRunner}
 import org.eclipse.aether.util.artifact.JavaScopes
 import org.sonatype.aether.repository.RemoteRepository
 import org.sonatype.aether.util.artifact.DefaultArtifact
-import com.jcabi.aether.Aether
-import org.apache.amaterasu.common.logging.Logging
-import org.apache.amaterasu.executor.execution.actions.runners.spark.PySpark.PySparkRunner
 
 import scala.collection.JavaConversions._
 import scala.collection.JavaConverters._
 import scala.collection.concurrent.TrieMap
-import sys.process._
+import scala.sys.process._
 
-/**
-  * Created by roadan on 2/9/17.
-  */
 class SparkRunnersProvider extends RunnersProvider with Logging {
 
   private val runners = new TrieMap[String, AmaterasuRunner]
@@ -49,7 +47,14 @@ class SparkRunnersProvider extends RunnersProvider with Logging {
   private var conf: Option[Map[String, Any]] = _
   private var executorEnv: Option[Map[String, Any]] = _
 
-  override def init(data: ExecData, jobId: String, outStream: ByteArrayOutputStream, notifier: Notifier, executorId: String): Unit = {
+  override def init(data: ExecData,
+                    jobId: String,
+                    outStream: ByteArrayOutputStream,
+                    notifier: Notifier,
+                    executorId: String,
+                    propFile: String): Unit = {
+
+    val config = ClusterConfig(new FileInputStream(propFile))
     shellLoger = ProcessLogger(
       (o: String) => log.info(o),
       (e: String) => log.error("", e)
@@ -71,14 +76,15 @@ class SparkRunnersProvider extends RunnersProvider with Logging {
     val sparkAppName = s"job_${jobId}_executor_$executorId"
 
     SparkRunnerHelper.notifier = notifier
-    val spark = SparkRunnerHelper.createSpark(data.env, sparkAppName, jars, conf, executorEnv)
+    val spark = SparkRunnerHelper.createSpark(data.env, sparkAppName, jars, conf, executorEnv, propFile)
 
     lazy val sparkScalaRunner = SparkScalaRunner(data.env, jobId, spark, outStream, notifier, jars)
     sparkScalaRunner.initializeAmaContext(data.env)
 
     runners.put(sparkScalaRunner.getIdentifier, sparkScalaRunner)
 
-    lazy val pySparkRunner = PySparkRunner(data.env, jobId, notifier, spark, "spark-2.1.1-bin-hadoop2.7/python:spark-2.1.1-bin-hadoop2.7/python/pyspark:spark-2.1.1-bin-hadoop2.7/python/pyspark/build:spark-2.1.1-bin-hadoop2.7/python/pyspark/lib/py4j-0.10.4-src.zip", data.pyDeps)
+    // TODO: get rid of hard-coded version
+    lazy val pySparkRunner = PySparkRunner(data.env, jobId, notifier, spark, s"${config.spark.home}/python:${config.spark.home}/python/pyspark:${config.spark.home}/python/pyspark/build:${config.spark.home}/python/pyspark/lib/py4j-0.10.4-src.zip", data.pyDeps, config)
     runners.put(pySparkRunner.getIdentifier(), pySparkRunner)
   }
 
@@ -92,6 +98,7 @@ class SparkRunnersProvider extends RunnersProvider with Logging {
   }
 
   private def installAnacondaOnNode(): Unit = {
+    // TODO: get rid of hard-coded version
     Seq("bash", "-c", "sh Miniconda2-latest-Linux-x86_64.sh -b -p $PWD/miniconda") ! shellLoger
     Seq("bash", "-c", "$PWD/miniconda/bin/python -m conda install -y conda-build") ! shellLoger
     Seq("bash", "-c", "ln -s $PWD/spark-2.1.1-bin-hadoop2.7/python/pyspark $PWD/miniconda/pkgs/pyspark") ! shellLoger

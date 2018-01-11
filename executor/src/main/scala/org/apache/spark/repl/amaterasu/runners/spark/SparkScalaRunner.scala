@@ -22,12 +22,12 @@ import java.util
 import org.apache.amaterasu.common.execution.actions.Notifier
 import org.apache.amaterasu.common.logging.Logging
 import org.apache.amaterasu.common.runtime.Environment
-import org.apache.amaterasu.sdk.AmaterasuRunner
 import org.apache.amaterasu.executor.runtime.AmaContext
+import org.apache.amaterasu.sdk.AmaterasuRunner
 import org.apache.spark.sql.{Dataset, SparkSession}
 
-import scala.collection.mutable
 import scala.collection.JavaConverters._
+import scala.collection.mutable
 import scala.io.Source
 import scala.tools.nsc.interpreter.{IMain, Results}
 
@@ -50,7 +50,6 @@ class SparkScalaRunner(var env: Environment,
   val holder = new ResHolder(null)
 
   override def executeSource(actionSource: String, actionName: String, exports: util.Map[String, String]): Unit = {
-    //notifier.info(s"actionSource ${actionSource}, actionName ${actionName}")
     val source = Source.fromString(actionSource)
     interpretSources(source, actionName, exports.asScala.toMap)
   }
@@ -58,6 +57,7 @@ class SparkScalaRunner(var env: Environment,
   def interpretSources(source: Source, actionName: String, exports: Map[String, String]): Unit = {
 
     notifier.info(s"================= started action $actionName =================")
+    notifier.info(s"exports is: $exports")
 
     for (line <- source.getLines()) {
 
@@ -86,6 +86,9 @@ class SparkScalaRunner(var env: Environment,
 
               val resultName = interpreter.prevRequestList.last.termNames.last
 
+              notifier.info(s" result name ${resultName.toString}")
+              notifier.info(s" exist in exports: ${exports.contains(resultName.toString)}")
+
               if (exports.contains(resultName.toString)) {
 
                 val format = exports(resultName.toString)
@@ -93,13 +96,20 @@ class SparkScalaRunner(var env: Environment,
                 if (result != null) {
 
                   result match {
-                    case ds:  Dataset[_] =>
+                    case ds: Dataset[_] =>
                       log.debug(s"persisting DataFrame: $resultName")
-                      interpreter.interpret(s"""$resultName.write.mode(SaveMode.Overwrite).format("$format").save("${env.workingDir}/$jobId/$actionName/$resultName")""")
-
+                      val writeLine = s"""$resultName.write.mode(SaveMode.Overwrite).format("$format").save("${env.workingDir}/$jobId/$actionName/$resultName")"""
+                      notifier.info(writeLine)
+                      val writeResult = interpreter.interpret(writeLine)
+                      if (writeResult != Results.Success) {
+                        val err = outStream.toString
+                        notifier.error(writeLine, err)
+                        log.error(s"error persisting dataset: $writeLine failed with: $err")
+                        //throw new Exception(err)
+                      }
                       log.debug(s"persisted DataFrame: $resultName")
 
-                    case _ => println(result)
+                    case _ => notifier.info(s"""+++> result type ${result.getClass}""")
                   }
                 }
               }

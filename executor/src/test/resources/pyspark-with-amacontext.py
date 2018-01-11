@@ -1,2 +1,3 @@
-numDS = ama_context.get_dataframe("test_action3", 'numDS')
-odd = numDS.filter(numDS['_1'] % 2 != 0)
+data = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+rdd = ama_context.sc.parallelize(data)
+odd = rdd.filter(lambda num: num % 2 != 0)

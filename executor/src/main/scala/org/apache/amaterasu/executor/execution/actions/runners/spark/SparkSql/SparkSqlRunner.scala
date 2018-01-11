@@ -26,7 +26,6 @@ import org.apache.commons.io.FilenameUtils
 import org.apache.spark.sql.{DataFrame, SaveMode, SparkSession}
 
 /**
-  * Created by kirupa on 11/12/16.
   * Amaterasu currently supports JSON and PARQUET as data sources.
   * CSV data source support will be provided in later versions.
   */

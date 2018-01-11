@@ -18,10 +18,8 @@ package org.apache.amaterasu.sdk;
 
 import org.apache.amaterasu.common.dataobjects.ExecData;
 import org.apache.amaterasu.common.execution.actions.Notifier;
-import org.apache.amaterasu.common.runtime.Environment;
 
 import java.io.ByteArrayOutputStream;
-import java.util.List;
 
 /**
  * RunnersProvider an interface representing a factory that creates a group of related
@@ -34,7 +32,8 @@ public interface RunnersProvider {
               String jobId,
               ByteArrayOutputStream outStream,
               Notifier notifier,
-              String executorId);
+              String executorId,
+              String propFile);
 
     String getGroupIdentifier();
 

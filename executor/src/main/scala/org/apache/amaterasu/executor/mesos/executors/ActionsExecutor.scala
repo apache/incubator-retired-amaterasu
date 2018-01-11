@@ -16,28 +16,23 @@
  */
 package org.apache.amaterasu.executor.mesos.executors
 
-import java.io.{ByteArrayInputStream, ByteArrayOutputStream, File}
+import java.io.{ByteArrayInputStream, ByteArrayOutputStream}
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
-
 import org.apache.amaterasu.common.dataobjects.{ExecData, TaskData}
 import org.apache.amaterasu.common.logging.Logging
-
+import org.apache.amaterasu.executor.common.executors.ProvidersFactory
 import org.apache.mesos.Protos._
 import org.apache.mesos.protobuf.ByteString
 import org.apache.mesos.{Executor, ExecutorDriver, MesosExecutorDriver}
 import org.apache.spark.SparkContext
 
+import scala.collection.JavaConverters._
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.util.{Failure, Success}
 
-import collection.JavaConverters._
-
-/**
-  * Created by roadan on 1/1/16.
-  */
 class ActionsExecutor extends Executor with Logging {
 
   var master: String = _

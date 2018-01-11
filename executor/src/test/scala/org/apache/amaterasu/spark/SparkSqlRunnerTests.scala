@@ -25,7 +25,6 @@ import org.apache.log4j.Level
 import org.apache.spark.sql.{SaveMode, SparkSession}
 import org.scalatest.{BeforeAndAfterAll, FlatSpec, Matchers}
 
-import scala.io.Source
 
 /**
   * Created by kirupa on 10/12/16.
@@ -54,6 +53,7 @@ class SparkSqlRunnerTests extends FlatSpec with Matchers with BeforeAndAfterAll 
       .getOrCreate()
 
     AmaContext.init(spark, "sql-job", env)
+
     super.beforeAll()
   }
 
