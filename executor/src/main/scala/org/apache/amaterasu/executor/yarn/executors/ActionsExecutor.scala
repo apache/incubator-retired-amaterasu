@@ -1,7 +1,7 @@
 package org.apache.amaterasu.executor.yarn.executors
 
 import java.io.ByteArrayOutputStream
-import java.net.URLDecoder
+import java.net.{InetAddress, URLDecoder}
 
 import scala.collection.JavaConverters._
 import com.fasterxml.jackson.databind.ObjectMapper
@@ -9,6 +9,7 @@ import com.fasterxml.jackson.module.scala.DefaultScalaModule
 import org.apache.amaterasu.common.dataobjects.{ExecData, TaskData}
 import org.apache.amaterasu.common.logging.Logging
 import org.apache.amaterasu.executor.common.executors.ProvidersFactory
+import org.apache.hadoop.net.NetUtils
 import org.apache.hadoop.yarn.conf.YarnConfiguration
 import org.apache.spark.SparkContext
 
@@ -58,7 +59,9 @@ object ActionsExecutorLauncher extends App with Logging {
     case _ => urlses(cl.getParent)
   }
 
+  val hostName = InetAddress.getLocalHost.getHostName
 
+  log.info(s"Hostname resolved to: $hostName")
   val mapper = new ObjectMapper()
   mapper.registerModule(DefaultScalaModule)
 
@@ -89,6 +92,6 @@ object ActionsExecutorLauncher extends App with Logging {
   val notifier = new YarnNotifier(new YarnConfiguration())
 
   log.info("Setup notifier")
-  actionsExecutor.providersFactory = ProvidersFactory(execData, jobId, baos, notifier, taskIdAndContainerId, propFile = "./amaterasu.properties")
+  actionsExecutor.providersFactory = ProvidersFactory(execData, jobId, baos, notifier, taskIdAndContainerId, hostName, propFile = "./amaterasu.properties")
   actionsExecutor.execute()
 }

@@ -33,7 +33,8 @@ public interface RunnersProvider {
               ByteArrayOutputStream outStream,
               Notifier notifier,
               String executorId,
-              String propFile);
+              String propFile,
+              String hostName);
 
     String getGroupIdentifier();
 
