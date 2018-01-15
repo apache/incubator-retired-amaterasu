@@ -46,7 +46,8 @@ object ProvidersFactory {
             outStream: ByteArrayOutputStream,
             notifier: Notifier,
             executorId: String,
-            propFile:String = null): ProvidersFactory = {
+            hostName: String,
+            propFile: String = null): ProvidersFactory = {
 
     val result = new ProvidersFactory()
     val reflections = new Reflections(getClass.getClassLoader)
@@ -56,7 +57,7 @@ object ProvidersFactory {
 
       val provider = Manifest.classType(r).runtimeClass.newInstance.asInstanceOf[RunnersProvider]
 
-      provider.init(data, jobId, outStream, notifier, executorId, propFile)
+      provider.init(data, jobId, outStream, notifier, executorId, propFile, hostName)
       notifier.info(s"a provider for group ${provider.getGroupIdentifier} was created")
       (provider.getGroupIdentifier, provider)
     }).toMap

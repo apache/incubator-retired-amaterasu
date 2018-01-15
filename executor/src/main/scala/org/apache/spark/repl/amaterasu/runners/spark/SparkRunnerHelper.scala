@@ -108,7 +108,13 @@ object SparkRunnerHelper extends Logging {
     these ++ these.filter(_.isDirectory).flatMap(getAllFiles)
   }
 
-  def createSpark(env: Environment, sparkAppName: String, jars: Seq[String], sparkConf: Option[Map[String, Any]], executorEnv: Option[Map[String, Any]], propFile: String): SparkSession = {
+  def createSpark(env: Environment,
+                  sparkAppName: String,
+                  jars: Seq[String],
+                  sparkConf: Option[Map[String, Any]],
+                  executorEnv: Option[Map[String, Any]],
+                  propFile: String,
+                  hostName: String): SparkSession = {
 
     val config = if (propFile != null) {
       import java.io.FileInputStream
@@ -124,7 +130,7 @@ object SparkRunnerHelper extends Logging {
       f.getName.endsWith(".zip"))
 
     conf.setAppName(sparkAppName)
-      .set("spark.driver.host", getNode)
+      .set("spark.driver.host", hostName)
       .set("spark.submit.deployMode", "client")
       .set("spark.hadoop.validateOutputSpecs", "false")
       .set("spark.logConf", "true")
