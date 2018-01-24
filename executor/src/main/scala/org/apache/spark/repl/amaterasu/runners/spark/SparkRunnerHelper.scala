@@ -146,7 +146,7 @@ object SparkRunnerHelper extends Logging {
 
           .set("spark.master", "yarn")
           .set("spark.executor.instances", "1") // TODO: change this
-          .set("spark.yarn.jars", s"${config.spark.home}/jars/*")
+          .set("spark.yarn.jars", s"spark/jars/*")
           .set("spark.executor.memory", "1g")
           .set("spark.dynamicAllocation.enabled", "false")
           //.set("spark.shuffle.service.enabled", "true")
