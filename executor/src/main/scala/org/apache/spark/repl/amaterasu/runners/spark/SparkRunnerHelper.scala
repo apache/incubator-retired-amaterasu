@@ -22,6 +22,7 @@ import org.apache.amaterasu.common.configuration.ClusterConfig
 import org.apache.amaterasu.common.execution.actions.Notifier
 import org.apache.amaterasu.common.logging.Logging
 import org.apache.amaterasu.common.runtime.Environment
+import org.apache.amaterasu.common.utils.FileUtils
 import org.apache.spark.repl.amaterasu.AmaSparkILoop
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.util.Utils
@@ -103,10 +104,6 @@ object SparkRunnerHelper extends Logging {
     interpreter = result
   }
 
-  def getAllFiles(dir: File): Array[File] = {
-    val these = dir.listFiles
-    these ++ these.filter(_.isDirectory).flatMap(getAllFiles)
-  }
 
   def createSpark(env: Environment, sparkAppName: String, jars: Seq[String], sparkConf: Option[Map[String, Any]], executorEnv: Option[Map[String, Any]], propFile: String): SparkSession = {
 
@@ -119,7 +116,7 @@ object SparkRunnerHelper extends Logging {
 
     Thread.currentThread().setContextClassLoader(getClass.getClassLoader)
 
-    val pyfiles = getAllFiles(new File("miniconda/pkgs")).filter(f => f.getName.endsWith(".py") ||
+    val pyfiles = FileUtils.getAllFiles(new File("miniconda/pkgs")).filter(f => f.getName.endsWith(".py") ||
       f.getName.endsWith(".egg") ||
       f.getName.endsWith(".zip"))
 

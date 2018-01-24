@@ -21,8 +21,8 @@ plugins {
     id 'java'
 }
 
-sourceCompatibility = 1.7
-targetCompatibility = 1.7
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
 
 repositories {
     maven {
@@ -33,8 +33,11 @@ repositories {
 
 dependencies {
     compile 'org.scala-lang:scala-library:2.11.8'
+    compile group: 'org.scala-lang', name: 'scala-reflect', version: '2.11.8'
+//    compile group: 'org.scala-lang', name: 'scala-compiler', version: '2.11.8'
 
     compile project(':common')
+    compile project(':amaterasu-sdk')
 
     compile group: 'com.github.scopt', name: 'scopt_2.11', version: '3.3.0'
     compile group: 'com.github.nscala-time', name: 'nscala-time_2.11', version: '2.2.0'
@@ -57,6 +60,7 @@ dependencies {
     compile group: 'org.jsoup', name: 'jsoup', version: '1.10.2'
     compile group: 'org.scala-lang.modules', name: 'scala-async_2.11', version: '0.9.6'
     compile group: 'org.jsoup', name: 'jsoup', version: '1.10.2'
+    compile group: 'org.reflections', name: 'reflections', version: '0.9.11'
 
     testCompile project(':common')
     testCompile "gradle.plugin.com.github.maiflai:gradle-scalatest:0.14"
