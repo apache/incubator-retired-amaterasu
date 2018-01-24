@@ -152,7 +152,7 @@ class ApplicationMaster extends AMRMClientAsync.CallbackHandler with Logging {
     // Resource requirements for worker containers
     // TODO: this should be per task based on the framework config
     this.capability = Records.newRecord(classOf[Resource])
-    this.capability.setMemory(Math.min(config.taskMem, 512))
+    this.capability.setMemory(Math.min(config.taskMem, 1024))
     this.capability.setVirtualCores(1)
 
     while (!jobManager.outOfActions) {
@@ -211,9 +211,9 @@ class ApplicationMaster extends AMRMClientAsync.CallbackHandler with Logging {
         val ctx = Records.newRecord(classOf[ContainerLaunchContext])
         val commands: List[String] = List(
           "/bin/bash ./miniconda.sh -b -p $PWD/miniconda && ",
-          s"/bin/bash ${config.spark.home}/bin/load-spark-env.sh && ",
+          s"/bin/bash spark/bin/load-spark-env.sh && ",
           s"java -cp spark/jars/*:executor.jar:${config.spark.home}/conf/:${config.YARN.hadoopHomeDir}/conf/ " +
-            "-Xmx512M " +
+            "-Xmx1G " +
             "-Dscala.usejavacp=true " +
             "-Dhdp.version=2.6.1.0-129 " +
             "org.apache.amaterasu.executor.yarn.executors.ActionsExecutorLauncher " +
@@ -231,6 +231,7 @@ class ApplicationMaster extends AMRMClientAsync.CallbackHandler with Logging {
         var resources = mutable.Map[String, LocalResource](
           "executor.jar" -> executorJar,
           "amaterasu.properties" -> propFile,
+          // TODO: Nadav/Eyal all of these should move to the executor resource setup
           "miniconda.sh" -> setLocalResourceFromPath(Path.mergePaths(jarPath, new Path("/dist/Miniconda2-latest-Linux-x86_64.sh"))),
           "codegen.py" -> setLocalResourceFromPath(Path.mergePaths(jarPath, new Path("/dist/codegen.py"))),
           "runtime.py" -> setLocalResourceFromPath(Path.mergePaths(jarPath, new Path("/dist/runtime.py"))),
@@ -282,9 +283,6 @@ class ApplicationMaster extends AMRMClientAsync.CallbackHandler with Logging {
       while (files.hasNext) {
         val res = files.next()
         val containerPath = res.getPath.toUri.getPath.replace("/apps/amaterasu/", "")
-        log.info("container path:")
-        log.info("+++++++++++++++")
-        log.info(containerPath)
         countainerResources.put(containerPath, setLocalResourceFromPath(res.getPath))
       }
     }
