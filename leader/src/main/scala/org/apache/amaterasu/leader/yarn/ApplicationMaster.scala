@@ -26,11 +26,12 @@ import com.google.gson.Gson
 import org.apache.amaterasu.common.configuration.ClusterConfig
 import org.apache.amaterasu.common.dataobjects.ActionData
 import org.apache.amaterasu.common.logging.Logging
+import org.apache.amaterasu.leader.execution.frameworks.FrameworkProvidersFactory
 import org.apache.amaterasu.leader.execution.{JobLoader, JobManager}
 import org.apache.amaterasu.leader.utilities.{Args, DataLoader}
 import org.apache.curator.framework.{CuratorFramework, CuratorFrameworkFactory}
 import org.apache.curator.retry.ExponentialBackoffRetry
-import org.apache.hadoop.fs.{FileSystem, Path}
+import org.apache.hadoop.fs.{FileSystem, LocatedFileStatus, Path}
 import org.apache.hadoop.io.DataOutputBuffer
 import org.apache.hadoop.security.UserGroupInformation
 import org.apache.hadoop.yarn.api.ApplicationConstants
@@ -44,7 +45,7 @@ import org.apache.hadoop.yarn.util.{ConverterUtils, Records}
 
 import scala.collection.JavaConversions._
 import scala.collection.JavaConverters._
-import scala.collection.concurrent
+import scala.collection.{concurrent, mutable}
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.util.{Failure, Success}
@@ -211,7 +212,7 @@ class ApplicationMaster extends AMRMClientAsync.CallbackHandler with Logging {
         val commands: List[String] = List(
           "/bin/bash ./miniconda.sh -b -p $PWD/miniconda && ",
           s"/bin/bash ${config.spark.home}/bin/load-spark-env.sh && ",
-          s"java -cp ${config.spark.home}/jars/*:executor.jar:${config.spark.home}/conf/:${config.YARN.hadoopHomeDir}/conf/ " +
+          s"java -cp spark/jars/*:executor.jar:${config.spark.home}/conf/:${config.YARN.hadoopHomeDir}/conf/ " +
             "-Xmx512M " +
             "-Dscala.usejavacp=true " +
             "-Dhdp.version=2.6.1.0-129 " +
@@ -226,15 +227,24 @@ class ApplicationMaster extends AMRMClientAsync.CallbackHandler with Logging {
 
         ctx.setCommands(commands)
         ctx.setTokens(allTokens)
-        ctx.setLocalResources(Map[String, LocalResource](
+
+        var resources = mutable.Map[String, LocalResource](
           "executor.jar" -> executorJar,
           "amaterasu.properties" -> propFile,
           "miniconda.sh" -> setLocalResourceFromPath(Path.mergePaths(jarPath, new Path("/dist/Miniconda2-latest-Linux-x86_64.sh"))),
           "codegen.py" -> setLocalResourceFromPath(Path.mergePaths(jarPath, new Path("/dist/codegen.py"))),
           "runtime.py" -> setLocalResourceFromPath(Path.mergePaths(jarPath, new Path("/dist/runtime.py"))),
           "spark-version-info.properties" -> setLocalResourceFromPath(Path.mergePaths(jarPath, new Path("/dist/spark-version-info.properties"))),
-          "spark_intp.py" -> setLocalResourceFromPath(Path.mergePaths(jarPath, new Path("/dist/spark_intp.py")))
-        ))
+          "spark_intp.py" -> setLocalResourceFromPath(Path.mergePaths(jarPath, new Path("/dist/spark_intp.py"))))
+
+        val frameworkFactory = FrameworkProvidersFactory(config)
+        val framework = frameworkFactory.getFramework(actionData.groupId)
+
+        //adding the framework and executor resources
+        setupResources(framework.getGroupIdentifier, resources, framework.getGroupIdentifier)
+        setupResources(s"${framework.getGroupIdentifier}/${actionData.typeId}", resources, s"${framework.getGroupIdentifier}-${actionData.typeId}")
+
+        ctx.setLocalResources(resources)
 
         ctx.setEnvironment(Map[String, String](
           "HADOOP_CONF_DIR" -> s"${config.YARN.hadoopHomeDir}/conf/",
@@ -257,6 +267,25 @@ class ApplicationMaster extends AMRMClientAsync.CallbackHandler with Logging {
           containersIdsToTask.put(container.getId.getContainerId, requestedActionData)
           log.info(s"launching container succeeded: ${container.getId.getContainerId}; task: ${requestedActionData.id}")
 
+      }
+    }
+  }
+
+  private def setupResources(frameworkPath: String, countainerResources: mutable.Map[String, LocalResource], resourcesPath: String): Unit = {
+
+    val sourcePath = Path.mergePaths(jarPath, new Path(s"/$resourcesPath"))
+
+    if (fs.exists(sourcePath)) {
+
+      val files = fs.listFiles(sourcePath, true)
+
+      while (files.hasNext) {
+        val res = files.next()
+        val containerPath = res.getPath.toUri.getPath.replace("/apps/amaterasu/", "")
+        log.info("container path:")
+        log.info("+++++++++++++++")
+        log.info(containerPath)
+        countainerResources.put(containerPath, setLocalResourceFromPath(res.getPath))
       }
     }
   }
