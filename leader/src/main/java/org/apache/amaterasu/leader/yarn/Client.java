@@ -18,6 +18,8 @@ package org.apache.amaterasu.leader.yarn;
 
 import org.apache.amaterasu.common.configuration.ClusterConfig;
 
+import org.apache.amaterasu.leader.execution.frameworks.FrameworkProvidersFactory;
+import org.apache.amaterasu.sdk.FrameworkSetupProvider;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -108,7 +110,7 @@ public class Client {
 
         List<String> commands = Collections.singletonList(
                 "env AMA_NODE=" + System.getenv("AMA_NODE") + " " +
-                "$JAVA_HOME/bin/java" +
+                        "$JAVA_HOME/bin/java" +
                         " -Dscala.usejavacp=false" +
                         " -Xmx1G" +
                         " org.apache.amaterasu.leader.yarn.ApplicationMaster " +
@@ -127,15 +129,32 @@ public class Client {
         try {
             if (!fs.exists(jarPathQualified)) {
                 File home = new File(opts.home);
+                fs.mkdirs(jarPathQualified);
                 for (File f : home.listFiles()) {
-                    fs.mkdirs(jarPathQualified);
                     fs.copyFromLocalFile(false, true, new Path(f.getAbsolutePath()), jarPathQualified);
+                }
+
+                // setup frameworks
+                FrameworkProvidersFactory frameworkFactory = FrameworkProvidersFactory.apply(config);
+                for (String group : frameworkFactory.groups()) {
+                    FrameworkSetupProvider framework = frameworkFactory.getFramework(group);
+
+                    //creating a group folder
+                    Path frameworkPath = Path.mergePaths(jarPathQualified, new Path("/" + framework.getGroupIdentifier()));
+                    System.out.println("===> " + frameworkPath.toString());
+
+                    fs.mkdirs(frameworkPath);
+                    for (File file : framework.getGroupResources()) {
+                        if (file.exists())
+                            fs.copyFromLocalFile(false, true, new Path(file.getAbsolutePath()), frameworkPath);
+                    }
                 }
             }
         } catch (IOException e) {
             LOGGER.error("Error uploading ama folder to HDFS.", e);
             System.exit(3);
         }
+
 
         // get version of build
         String version = config.version();
@@ -226,6 +245,10 @@ public class Client {
         } while (!isAppFinished(appState));
 
         LOGGER.info("Application {} finished with state {}-{} at {}", appId, appState, appReport.getFinalApplicationStatus(), appReport.getFinishTime());
+    }
+
+    private static void copyDirRecursive(){
+
     }
 
     private boolean isAppFinished(YarnApplicationState appState) {

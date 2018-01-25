@@ -27,6 +27,7 @@ import org.apache.amaterasu.leader.execution.JobManager
 import org.apache.curator.framework.CuratorFramework
 
 import scala.collection.JavaConverters._
+import scala.collection.mutable
 import scala.io.Source
 
 /**
@@ -103,6 +104,12 @@ object JobParser {
       attempts
     )
 
+    //updating the list of frameworks setup
+    manager.frameworks.getOrElseUpdate(action.data.groupId,
+                                       new mutable.HashSet[String]())
+                                       .add(action.data.typeId)
+
+
     if (manager.head == null)
       manager.head = action
 
@@ -125,6 +132,11 @@ object JobParser {
 
       action.data.errorActionId = errorAction.data.id
       manager.registerAction(errorAction)
+
+      //updating the list of frameworks setup
+      manager.frameworks.getOrElseUpdate(errorAction.data.groupId,
+        new mutable.HashSet[String]())
+        .add(errorAction.data.typeId)
     }
 
     parseActions(actions.tail, manager, actionsQueue, attempts, action)
@@ -150,7 +162,6 @@ object JobParser {
       client,
       attempts
     )
-
   }
 
   def parseErrorAction(

@@ -25,6 +25,7 @@ import org.apache.amaterasu.leader.execution.actions.Action
 import org.apache.curator.framework.CuratorFramework
 
 import scala.collection.concurrent.TrieMap
+import scala.collection.mutable
 
 /**
   * The JobManager manages the lifecycle of a job. It queues new actions for execution,
@@ -33,16 +34,15 @@ import scala.collection.concurrent.TrieMap
   */
 class JobManager extends Logging {
 
-  var name: String = null
-  var jobId: String = null
-  var client: CuratorFramework = null
-  var head: Action = null
-
-  val jobReport = new StringBuilder
+  var name: String = _
+  var jobId: String = _
+  var client: CuratorFramework = _
+  var head: Action = _
 
   // TODO: this is not private due to tests, fix this!!!
   val registeredActions = new TrieMap[String, Action]
-  private var executionQueue: BlockingQueue[ActionData] = null
+  val frameworks = new TrieMap[String, mutable.HashSet[String]]
+  private var executionQueue: BlockingQueue[ActionData] = _
 
   /**
     * The start method initiates the job execution by executing the first action.
@@ -50,15 +50,6 @@ class JobManager extends Logging {
     */
   def start(): Unit = {
 
-    jobReport.append(
-      s"""
-         | ******************************************************************
-         | * started job with id: $jobId *
-         | ******************************************************************
-         | *                                                                *
-       """.stripMargin
-    )
-    jobReport.append("\n")
     head.execute()
 
   }
@@ -77,7 +68,7 @@ class JobManager extends Logging {
     val nextAction: ActionData = executionQueue.poll()
 
     if (nextAction != null) {
-      registeredActions.get(nextAction.id).get.announceStart
+      registeredActions(nextAction.id).announceStart
     }
 
     nextAction
@@ -85,10 +76,9 @@ class JobManager extends Logging {
 
   def reQueueAction(actionId: String): Unit = {
 
-    jobReport.append(s" *+-> action: $actionId re-queued for execution                          *\n")
-    val action = registeredActions.get(actionId).get
+    val action = registeredActions(actionId)
     executionQueue.put(action.data)
-    registeredActions.get(actionId).get.announceQueued
+    registeredActions(actionId).announceQueued
 
   }
 
@@ -110,7 +100,6 @@ class JobManager extends Logging {
     */
   def actionComplete(actionId: String): Unit = {
 
-    jobReport.append(s" *+-> action: $actionId completed                                *\n")
     val action = registeredActions.get(actionId).get
     action.announceComplete
     action.data.nextActionIds.foreach(id =>
@@ -130,12 +119,6 @@ class JobManager extends Logging {
   def actionFailed(actionId: String, message: String): Unit = {
 
     log.warn(message)
-    jobReport.append(
-      s""" *+-> action: $actionId failed with message:                     *
-           |  $message
-       """.stripMargin
-    )
-    jobReport.append("\n")
 
     val action = registeredActions.get(actionId).get
     val id = action.handleFailure(message)
@@ -160,7 +143,6 @@ class JobManager extends Logging {
     */
   def actionStarted(actionId: String): Unit = {
 
-    jobReport.append(s" *+-> action: $actionId started                                  *\n")
     val action = registeredActions.get(actionId).get
     action.announceStart
 

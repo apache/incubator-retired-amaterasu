@@ -52,7 +52,8 @@ class SparkRunnersProvider extends RunnersProvider with Logging {
                     outStream: ByteArrayOutputStream,
                     notifier: Notifier,
                     executorId: String,
-                    propFile: String): Unit = {
+                    propFile: String,
+                    hostName: String): Unit = {
 
     val config = ClusterConfig(new FileInputStream(propFile))
     shellLoger = ProcessLogger(
@@ -76,7 +77,7 @@ class SparkRunnersProvider extends RunnersProvider with Logging {
     val sparkAppName = s"job_${jobId}_executor_$executorId"
 
     SparkRunnerHelper.notifier = notifier
-    val spark = SparkRunnerHelper.createSpark(data.env, sparkAppName, jars, conf, executorEnv, propFile)
+    val spark = SparkRunnerHelper.createSpark(data.env, sparkAppName, jars, conf, executorEnv, propFile, hostName)
 
     lazy val sparkScalaRunner = SparkScalaRunner(data.env, jobId, spark, outStream, notifier, jars)
     sparkScalaRunner.initializeAmaContext(data.env)

@@ -78,14 +78,17 @@ class ActionsExecutor extends Executor with Logging {
     this.executorDriver = driver
     val data = mapper.readValue(new ByteArrayInputStream(executorInfo.getData.toByteArray), classOf[ExecData])
 
+    // this is used to resolve the spark drier address
+    val hostName = slaveInfo.getHostname
     notifier = new MesosNotifier(driver)
     notifier.info(s"Executor ${executorInfo.getExecutorId.getValue} registered")
     val outStream = new ByteArrayOutputStream()
-    providersFactory = ProvidersFactory(data, jobId, outStream, notifier, executorInfo.getExecutorId.getValue)
+    providersFactory = ProvidersFactory(data, jobId, outStream, notifier, executorInfo.getExecutorId.getValue, hostName)
 
   }
 
   override def launchTask(driver: ExecutorDriver, taskInfo: TaskInfo): Unit = {
+
 
     notifier.info(s"launching task: ${taskInfo.getTaskId.getValue}")
     log.debug(s"launching task: $taskInfo")
