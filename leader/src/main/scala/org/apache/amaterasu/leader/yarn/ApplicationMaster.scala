@@ -16,13 +16,14 @@
  */
 package org.apache.amaterasu.leader.yarn
 
-import java.io.{File, FileInputStream, InputStream}
-import java.net.URLEncoder
+import java.io.{File, FileInputStream, IOException, InputStream}
+import java.net.{InetAddress, ServerSocket, URLEncoder}
 import java.nio.ByteBuffer
 import java.util
 import java.util.concurrent.{ConcurrentHashMap, LinkedBlockingQueue}
 
 import com.google.gson.Gson
+import org.apache.activemq.broker.BrokerService
 import org.apache.amaterasu.common.configuration.ClusterConfig
 import org.apache.amaterasu.common.dataobjects.ActionData
 import org.apache.amaterasu.common.logging.Logging
@@ -31,7 +32,7 @@ import org.apache.amaterasu.leader.execution.{JobLoader, JobManager}
 import org.apache.amaterasu.leader.utilities.{Args, DataLoader}
 import org.apache.curator.framework.{CuratorFramework, CuratorFrameworkFactory}
 import org.apache.curator.retry.ExponentialBackoffRetry
-import org.apache.hadoop.fs.{FileSystem, LocatedFileStatus, Path}
+import org.apache.hadoop.fs.{FileSystem, Path}
 import org.apache.hadoop.io.DataOutputBuffer
 import org.apache.hadoop.security.UserGroupInformation
 import org.apache.hadoop.yarn.api.ApplicationConstants
@@ -67,7 +68,6 @@ class ApplicationMaster extends AMRMClientAsync.CallbackHandler with Logging {
   private var propPath: String = ""
   private var props: InputStream = _
   private var jarPath: Path = _
-  private var version: String = ""
   private var executorPath: Path = _
   private var executorJar: LocalResource = _
   private var propFile: LocalResource = _
@@ -75,11 +75,14 @@ class ApplicationMaster extends AMRMClientAsync.CallbackHandler with Logging {
   private var nmClient: NMClientAsync = _
   private var allocListener: YarnRMCallbackHandler = _
   private var rmClient: AMRMClientAsync[ContainerRequest] = _
+  private var address: String = _
 
   private val containersIdsToTask: concurrent.Map[Long, ActionData] = new ConcurrentHashMap[Long, ActionData].asScala
   private val completedContainersAndTaskIds: concurrent.Map[Long, String] = new ConcurrentHashMap[Long, String].asScala
   private val actionsBuffer: java.util.concurrent.ConcurrentLinkedQueue[ActionData] = new java.util.concurrent.ConcurrentLinkedQueue[ActionData]()
   private val gson: Gson = new Gson()
+  private val host: String = InetAddress.getLocalHost.getHostName
+  private val broker: BrokerService = new BrokerService()
 
   def setLocalResourceFromPath(path: Path): LocalResource = {
     val stat = fs.getFileStatus(path)
@@ -406,9 +409,19 @@ object ApplicationMaster extends App {
     case Some(arguments: Args) =>
       val appMaster = new ApplicationMaster()
 
+      appMaster.address = s"tcp://${appMaster.host}:$generatePort"
+      appMaster.broker.addConnector(appMaster.address)
+      appMaster.broker.start()
+
       appMaster.execute(arguments)
 
     case None =>
   }
 
+  private def generatePort: Int = {
+    val socket = new ServerSocket(0)
+    val port = socket.getLocalPort
+    socket.close()
+    port
+  }
 }
