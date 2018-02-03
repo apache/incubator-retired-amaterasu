@@ -210,6 +210,7 @@ public class Client {
         LOGGER.info("Submitting application {}", appId);
         try {
             yarnClient.submitApplication(appContext);
+
         } catch (YarnException e) {
             LOGGER.error("Error submitting application.", e);
             System.exit(6);
