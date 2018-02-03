@@ -62,6 +62,7 @@ dependencies {
     compile group: 'org.jsoup', name: 'jsoup', version: '1.10.2'
     compile group: 'org.reflections', name: 'reflections', version: '0.9.11'
     compile group: 'org.apache.activemq', name: 'activemq-broker', version: '5.15.2'
+    runtime group: 'org.apache.activemq', name: 'activemq-kahadb-store', version: '5.15.2'
 
     testCompile project(':common')
     testCompile "gradle.plugin.com.github.maiflai:gradle-scalatest:0.14"

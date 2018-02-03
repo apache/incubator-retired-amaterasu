@@ -8,7 +8,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
 import org.apache.amaterasu.common.dataobjects.{ExecData, TaskData}
 import org.apache.amaterasu.common.logging.Logging
-import org.apache.amaterasu.executor.common.executors.ProvidersFactory
+import org.apache.amaterasu.executor.common.executors.{ActiveNotifier, ProvidersFactory}
 import org.apache.hadoop.net.NetUtils
 import org.apache.hadoop.yarn.conf.YarnConfiguration
 import org.apache.spark.SparkContext
@@ -53,12 +53,6 @@ class ActionsExecutor extends Logging {
 //s"'${jobManager.jobId}' '${config.master}' '${actionData.name}' '${URLEncoder.encode(gson.toJson(taskData), "UTF-8")}' '${URLEncoder.encode(gson.toJson(execData), "UTF-8")}' '${actionData.id}-${container.getId.getContainerId}'"
 object ActionsExecutorLauncher extends App with Logging {
 
-  def urlses(cl: ClassLoader): Array[java.net.URL] = cl match {
-    case null => Array()
-    case u: java.net.URLClassLoader => u.getURLs() ++ urlses(cl.getParent)
-    case _ => urlses(cl.getParent)
-  }
-
   val hostName = InetAddress.getLocalHost.getHostName
 
   log.info(s"Hostname resolved to: $hostName")
@@ -67,14 +61,12 @@ object ActionsExecutorLauncher extends App with Logging {
 
   log.info("Starting actions executor")
 
-  val urls = urlses(getClass.getClassLoader)
-
-  log.info("Current classpath is:")
-  log.info(urls.mkString("\n"))
-
   val jobId = this.args(0)
   val master = this.args(1)
   val actionName = this.args(2)
+  val notificationsAddress = this.args(6)
+
+  log.info(s"------>>>> $notificationsAddress")
   log.info("parsing task data")
   val taskData = mapper.readValue(URLDecoder.decode(this.args(3), "UTF-8"), classOf[TaskData])
   log.info("parsing executor data")
@@ -89,7 +81,7 @@ object ActionsExecutorLauncher extends App with Logging {
 
   log.info("Setup executor")
   val baos = new ByteArrayOutputStream()
-  val notifier = new YarnNotifier(new YarnConfiguration())
+  val notifier = ActiveNotifier(notificationsAddress)
 
   log.info("Setup notifier")
   actionsExecutor.providersFactory = ProvidersFactory(execData, jobId, baos, notifier, taskIdAndContainerId, hostName, propFile = "./amaterasu.properties")

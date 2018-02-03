@@ -44,6 +44,7 @@ import org.apache.hadoop.yarn.client.api.async.{AMRMClientAsync, NMClientAsync}
 import org.apache.hadoop.yarn.conf.YarnConfiguration
 import org.apache.hadoop.yarn.security.AMRMTokenIdentifier
 import org.apache.hadoop.yarn.util.{ConverterUtils, Records}
+import org.apache.zookeeper.CreateMode
 
 import scala.collection.JavaConversions._
 import scala.collection.JavaConverters._
@@ -119,7 +120,8 @@ class ApplicationMaster extends AMRMClientAsync.CallbackHandler with Logging {
 
     // now that the job was initiated, the curator client is started and we can
     // register the broker's address
-    client.setData().forPath(s"${jobManager.jobId}/broker", address.getBytes)
+    client.create().withMode(CreateMode.PERSISTENT).forPath(s"/${jobManager.jobId}/broker")
+    client.setData().forPath(s"/${jobManager.jobId}/broker", address.getBytes)
     setupMessaging(jobManager.jobId)
 
     log.info(s"Job ${jobManager.jobId} initiated with ${jobManager.registeredActions.size} actions")
@@ -248,7 +250,7 @@ class ApplicationMaster extends AMRMClientAsync.CallbackHandler with Logging {
             "-Dscala.usejavacp=true " +
             "-Dhdp.version=2.6.1.0-129 " +
             "org.apache.amaterasu.executor.yarn.executors.ActionsExecutorLauncher " +
-            s"'${jobManager.jobId}' '${config.master}' '${actionData.name}' '${URLEncoder.encode(taskData, "UTF-8")}' '${URLEncoder.encode(execData, "UTF-8")}' '${actionData.id}-${container.getId.getContainerId}' " +
+            s"'${jobManager.jobId}' '${config.master}' '${actionData.name}' '${URLEncoder.encode(taskData, "UTF-8")}' '${URLEncoder.encode(execData, "UTF-8")}' '${actionData.id}-${container.getId.getContainerId}' '$address' " +
             s"1> ${ApplicationConstants.LOG_DIR_EXPANSION_VAR}/stdout " +
             s"2> ${ApplicationConstants.LOG_DIR_EXPANSION_VAR}/stderr "
         )

@@ -248,10 +248,6 @@ public class Client {
         LOGGER.info("Application {} finished with state {}-{} at {}", appId, appState, appReport.getFinalApplicationStatus(), appReport.getFinishTime());
     }
 
-    private static void copyDirRecursive(){
-
-    }
-
     private boolean isAppFinished(YarnApplicationState appState) {
         return appState == YarnApplicationState.FINISHED ||
                 appState == YarnApplicationState.KILLED ||
