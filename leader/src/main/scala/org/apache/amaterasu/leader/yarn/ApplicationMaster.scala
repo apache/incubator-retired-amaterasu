@@ -193,18 +193,6 @@ class ApplicationMaster extends AMRMClientAsync.CallbackHandler with Logging {
 
     log.info("Waiting for some msgs")
 
-    //    while (true) {
-    //      val message = consumer.receive(1000)
-    //
-    //      message match {
-    //        case t: TextMessage =>
-    //          val msg = t.getText
-    //          if(!msg.isEmpty){
-    //
-    //          }
-    //      }
-    //    }
-
   }
 
 
