@@ -45,7 +45,6 @@ class ActiveNotifier extends Notifier with Logging {
 object ActiveNotifier extends Logging {
   def apply(address: String) : ActiveNotifier = {
 
-    log.info(s"---->> $address")
     // setting up activeMQ connection
     val connectionFactory = new ActiveMQConnectionFactory(address)
     val connection = connectionFactory.createConnection()

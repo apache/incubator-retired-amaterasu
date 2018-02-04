@@ -66,7 +66,6 @@ object ActionsExecutorLauncher extends App with Logging {
   val actionName = this.args(2)
   val notificationsAddress = this.args(6)
 
-  log.info(s"------>>>> $notificationsAddress")
   log.info("parsing task data")
   val taskData = mapper.readValue(URLDecoder.decode(this.args(3), "UTF-8"), classOf[TaskData])
   log.info("parsing executor data")

@@ -16,17 +16,18 @@
  */
 package org.apache.amaterasu.leader.yarn;
 
+import org.apache.activemq.ActiveMQConnectionFactory;
 import org.apache.amaterasu.common.configuration.ClusterConfig;
 
 import org.apache.amaterasu.leader.execution.frameworks.FrameworkProvidersFactory;
+import org.apache.amaterasu.leader.utilities.ActiveReportListener;
 import org.apache.amaterasu.sdk.FrameworkSetupProvider;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.LocalFileSystem;
 import org.apache.hadoop.fs.Path;
 
-import org.apache.hadoop.hdfs.DistributedFileSystem;
 import org.apache.hadoop.yarn.api.ApplicationConstants;
 import org.apache.hadoop.yarn.api.records.*;
 import org.apache.hadoop.yarn.client.api.YarnClient;
@@ -37,9 +38,16 @@ import org.apache.hadoop.yarn.util.Apps;
 import org.apache.hadoop.yarn.util.ConverterUtils;
 import org.apache.hadoop.yarn.util.Records;
 
+import org.apache.curator.framework.CuratorFramework;
+import org.apache.curator.framework.CuratorFrameworkFactory;
+import org.apache.curator.framework.recipes.barriers.DistributedBarrier;
+import org.apache.curator.retry.ExponentialBackoffRetry;
+
+import org.apache.log4j.LogManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.jms.*;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -63,16 +71,11 @@ public class Client {
         return fileResource;
     }
 
-    public void run(JobOpts opts, String[] args) throws Exception {
+    private void run(JobOpts opts, String[] args) throws Exception {
 
+        LogManager.resetConfiguration();
         ClusterConfig config = new ClusterConfig();
         config.load(new FileInputStream(opts.home + "/amaterasu.properties"));
-
-//        conf.addResource(new Path("/etc/hadoop/conf/core-site.xml"));
-//        conf.addResource(new Path("/etc/hadoop/conf/hdfs-site.xml"));
-//        conf.addResource(new Path("/etc/hadoop/conf/yarn-site.xml"));
-//        conf.set("fs.hdfs.impl", DistributedFileSystem.class.getName());
-//        conf.set("fs.file.impl", LocalFileSystem.class.getName());
 
         // Create yarnClient
         YarnClient yarnClient = YarnClient.createYarnClient();
@@ -108,6 +111,7 @@ public class Client {
             newId = "--new-job-id " + appContext.getApplicationId().toString() + "-" + UUID.randomUUID().toString();
         }
 
+
         List<String> commands = Collections.singletonList(
                 "env AMA_NODE=" + System.getenv("AMA_NODE") + " " +
                         "$JAVA_HOME/bin/java" +
@@ -116,8 +120,8 @@ public class Client {
                         " org.apache.amaterasu.leader.yarn.ApplicationMaster " +
                         joinStrings(args) +
                         newId +
-                        "1>" + ApplicationConstants.LOG_DIR_EXPANSION_VAR + "/stdout " +
-                        "2>" + ApplicationConstants.LOG_DIR_EXPANSION_VAR + "/stderr"
+                        " 1>" + ApplicationConstants.LOG_DIR_EXPANSION_VAR + "/stdout" +
+                        " 2>" + ApplicationConstants.LOG_DIR_EXPANSION_VAR + "/stderr"
         );
 
 
@@ -130,6 +134,7 @@ public class Client {
             if (!fs.exists(jarPathQualified)) {
                 File home = new File(opts.home);
                 fs.mkdirs(jarPathQualified);
+
                 for (File f : home.listFiles()) {
                     fs.copyFromLocalFile(false, true, new Path(f.getAbsolutePath()), jarPathQualified);
                 }
@@ -153,6 +158,9 @@ public class Client {
         } catch (IOException e) {
             LOGGER.error("Error uploading ama folder to HDFS.", e);
             System.exit(3);
+        } catch (NullPointerException ne) {
+            LOGGER.error("No files in home dir.", ne);
+            System.exit(4);
         }
 
 
@@ -219,6 +227,20 @@ public class Client {
             System.exit(7);
         }
 
+        CuratorFramework client = CuratorFrameworkFactory.newClient(config.zk(),
+                new ExponentialBackoffRetry(1000, 3));
+        client.start();
+
+        String newJobId = newId.replace("--new-job-id ", "");
+        System.out.println("===> /" + newJobId + "-report-barrier");
+        DistributedBarrier reportBarrier = new DistributedBarrier(client, "/" + newJobId + "-report-barrier");
+        reportBarrier.setBarrier();
+        reportBarrier.waitOnBarrier();
+
+        String address = new String( client.getData().forPath("/" + newJobId + "/broker"));
+        System.out.println("===> " + address);
+        setupReportListener(address);
+
         ApplicationReport appReport = null;
         YarnApplicationState appState;
 
@@ -273,16 +295,32 @@ public class Client {
 
     }
 
+    private void setupReportListener(String address) throws JMSException {
+
+        ActiveMQConnectionFactory cf = new ActiveMQConnectionFactory(address);
+        Connection conn = cf.createConnection();
+        conn.start();
+
+        Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+        //TODO: move to a const in common
+        Topic destination = session.createTopic("JOB.REPORT");
+
+        MessageConsumer consumer = session.createConsumer(destination);
+        consumer.setMessageListener(new ActiveReportListener());
+
+    }
+
     private void setupAppMasterEnv(Map<String, String> appMasterEnv) {
         Apps.addToEnvironment(appMasterEnv,
                 ApplicationConstants.Environment.CLASSPATH.name(),
-                ApplicationConstants.Environment.PWD.$() + File.separator + "*");
+                ApplicationConstants.Environment.PWD.$() + File.separator + "*", File.pathSeparator);
 
         for (String c : conf.getStrings(
                 YarnConfiguration.YARN_APPLICATION_CLASSPATH,
                 YarnConfiguration.DEFAULT_YARN_APPLICATION_CLASSPATH)) {
             Apps.addToEnvironment(appMasterEnv, ApplicationConstants.Environment.CLASSPATH.name(),
-                    c.trim());
+                    c.trim(), File.pathSeparator);
         }
     }
 }

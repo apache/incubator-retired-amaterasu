@@ -31,6 +31,7 @@ import org.apache.amaterasu.common.logging.Logging
 import org.apache.amaterasu.leader.execution.frameworks.FrameworkProvidersFactory
 import org.apache.amaterasu.leader.execution.{JobLoader, JobManager}
 import org.apache.amaterasu.leader.utilities.{Args, DataLoader}
+import org.apache.curator.framework.recipes.barriers.DistributedBarrier
 import org.apache.curator.framework.{CuratorFramework, CuratorFrameworkFactory}
 import org.apache.curator.retry.ExponentialBackoffRetry
 import org.apache.hadoop.fs.{FileSystem, Path}
@@ -115,13 +116,19 @@ class ApplicationMaster extends AMRMClientAsync.CallbackHandler with Logging {
     try {
       initJob(arguments)
     } catch {
-      case e: Exception => log.error("error initielzing ", e.getMessage)
+      case e: Exception => log.error("error initializing ", e.getMessage)
     }
 
     // now that the job was initiated, the curator client is started and we can
     // register the broker's address
     client.create().withMode(CreateMode.PERSISTENT).forPath(s"/${jobManager.jobId}/broker")
     client.setData().forPath(s"/${jobManager.jobId}/broker", address.getBytes)
+
+    // once the broker is registered, we can remove the barrier so clients can connect
+    log.info(s"/${jobManager.jobId}-report-barrier")
+    val barrier = new DistributedBarrier(client, s"/${jobManager.jobId}-report-barrier")
+    barrier.removeBarrier()
+
     setupMessaging(jobManager.jobId)
 
     log.info(s"Job ${jobManager.jobId} initiated with ${jobManager.registeredActions.size} actions")
@@ -433,6 +440,7 @@ class ApplicationMaster extends AMRMClientAsync.CallbackHandler with Logging {
 }
 
 object ApplicationMaster extends App {
+
 
   val parser = Args.getParser
   parser.parse(args, Args()) match {
