@@ -16,8 +16,9 @@
  */
 package org.apache.amaterasu.common.execution.actions
 
-import org.apache.amaterasu.common.execution.actions.NotificationLevel.NotificationLevel
-import org.apache.amaterasu.common.execution.actions.NotificationType.NotificationType
+import NotificationLevel.NotificationLevel
+import NotificationType.NotificationType
+import com.fasterxml.jackson.annotation.JsonProperty
 
 abstract class Notifier {
 
@@ -33,22 +34,22 @@ abstract class Notifier {
 object NotificationType extends Enumeration {
 
   type NotificationType = Value
-  val success = Value("success")
-  val error = Value("error")
-  val info = Value("info")
+  val success: NotificationType.Value = Value("success")
+  val error: NotificationType.Value = Value("error")
+  val info: NotificationType.Value = Value("info")
 
 }
 
 object NotificationLevel extends Enumeration {
 
   type NotificationLevel = Value
-  val execution = Value("execution")
-  val code = Value("code")
-  val none = Value("none")
+  val execution: NotificationLevel.Value = Value("execution")
+  val code: NotificationLevel.Value = Value("code")
+  val none: NotificationLevel.Value = Value("none")
 
 }
 
-case class Notification(line: String,
-                        msg: String,
-                        notType: NotificationType,
-                        notLevel: NotificationLevel)
+case class Notification(@JsonProperty("line") line: String,
+                        @JsonProperty("msg") msg: String,
+                        @JsonProperty("notType") notType: NotificationType,
+                        @JsonProperty("notLevel") notLevel: NotificationLevel)

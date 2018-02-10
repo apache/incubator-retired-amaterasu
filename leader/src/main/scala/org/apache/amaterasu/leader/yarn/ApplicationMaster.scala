@@ -21,7 +21,7 @@ import java.net.{InetAddress, ServerSocket, URLEncoder}
 import java.nio.ByteBuffer
 import java.util
 import java.util.concurrent.{ConcurrentHashMap, LinkedBlockingQueue}
-import javax.jms.{DeliveryMode, Session}
+import javax.jms.Session
 
 import org.apache.activemq.broker.BrokerService
 import org.apache.activemq.ActiveMQConnectionFactory
@@ -30,7 +30,7 @@ import org.apache.amaterasu.common.dataobjects.ActionData
 import org.apache.amaterasu.common.logging.Logging
 import org.apache.amaterasu.leader.execution.frameworks.FrameworkProvidersFactory
 import org.apache.amaterasu.leader.execution.{JobLoader, JobManager}
-import org.apache.amaterasu.leader.utilities.{Args, DataLoader}
+import org.apache.amaterasu.leader.utilities.{ActiveReportListener, Args, DataLoader}
 import org.apache.curator.framework.recipes.barriers.DistributedBarrier
 import org.apache.curator.framework.{CuratorFramework, CuratorFrameworkFactory}
 import org.apache.curator.retry.ExponentialBackoffRetry
@@ -194,13 +194,9 @@ class ApplicationMaster extends AMRMClientAsync.CallbackHandler with Logging {
     val session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE)
     //TODO: move to a const in common
     val destination = session.createTopic("JOB.REPORT")
-    val producer = session.createProducer(destination)
-    producer.setDeliveryMode(DeliveryMode.NON_PERSISTENT)
 
-    val message = session.createTextMessage(s"===> initialized job: $jobId")
-    producer.send(message)
-
-    log.info("Waiting for some msgs")
+    val consumer = session.createConsumer(destination)
+    consumer.setMessageListener(new ActiveReportListener)
 
   }
 
@@ -439,7 +435,7 @@ class ApplicationMaster extends AMRMClientAsync.CallbackHandler with Logging {
   }
 }
 
-object ApplicationMaster extends App {
+object ApplicationMaster extends App with Logging {
 
 
   val parser = Args.getParser
@@ -452,6 +448,7 @@ object ApplicationMaster extends App {
       appMaster.broker.addConnector(appMaster.address)
       appMaster.broker.start()
 
+      log.info(s"broker started with address ${appMaster.address}")
       appMaster.execute(arguments)
 
     case None =>

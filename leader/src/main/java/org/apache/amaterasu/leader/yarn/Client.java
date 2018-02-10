@@ -53,6 +53,8 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.*;
 
+import static java.lang.System.exit;
+
 public class Client {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(Client.class);
@@ -88,10 +90,10 @@ public class Client {
             app = yarnClient.createApplication();
         } catch (YarnException e) {
             LOGGER.error("Error initializing yarn application with yarn client.", e);
-            System.exit(1);
+            exit(1);
         } catch (IOException e) {
             LOGGER.error("Error initializing yarn application with yarn client.", e);
-            System.exit(2);
+            exit(2);
         }
 
         // Setup jars on hdfs
@@ -99,7 +101,7 @@ public class Client {
             fs = FileSystem.get(conf);
         } catch (IOException e) {
             LOGGER.error("Eror creating HDFS client isntance.", e);
-            System.exit(3);
+            exit(3);
         }
         Path jarPath = new Path(config.YARN().hdfsJarsPath());
         Path jarPathQualified = fs.makeQualified(jarPath);
@@ -157,10 +159,10 @@ public class Client {
             }
         } catch (IOException e) {
             LOGGER.error("Error uploading ama folder to HDFS.", e);
-            System.exit(3);
+            exit(3);
         } catch (NullPointerException ne) {
             LOGGER.error("No files in home dir.", ne);
-            System.exit(4);
+            exit(4);
         }
 
 
@@ -185,7 +187,7 @@ public class Client {
             log4jPropFile = setLocalResourceFromPath(Path.mergePaths(jarPath, new Path("/log4j.properties")));
         } catch (IOException e) {
             LOGGER.error("Error initializing yarn local resources.", e);
-            System.exit(4);
+            exit(4);
         }
 
         // set local resource on master container
@@ -221,10 +223,10 @@ public class Client {
 
         } catch (YarnException e) {
             LOGGER.error("Error submitting application.", e);
-            System.exit(6);
+            exit(6);
         } catch (IOException e) {
             LOGGER.error("Error submitting application.", e);
-            System.exit(7);
+            exit(7);
         }
 
         CuratorFramework client = CuratorFrameworkFactory.newClient(config.zk(),
@@ -249,13 +251,14 @@ public class Client {
                 appReport = yarnClient.getApplicationReport(appId);
             } catch (YarnException e) {
                 LOGGER.error("Error getting application report.", e);
-                System.exit(8);
+                exit(8);
             } catch (IOException e) {
                 LOGGER.error("Error getting application report.", e);
-                System.exit(9);
+                exit(9);
             }
             appState = appReport.getYarnApplicationState();
             if (isAppFinished(appState)) {
+                exit(0);
                 break;
             }
             //LOGGER.info("Application not finished ({})", appReport.getProgress());
@@ -263,7 +266,7 @@ public class Client {
                 Thread.sleep(100);
             } catch (InterruptedException e) {
                 LOGGER.error("Interrupted while waiting for job completion.", e);
-                System.exit(137);
+                exit(137);
             }
         } while (!isAppFinished(appState));
 

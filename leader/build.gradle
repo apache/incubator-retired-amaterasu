@@ -41,12 +41,12 @@ dependencies {
 
     compile group: 'com.github.scopt', name: 'scopt_2.11', version: '3.3.0'
     compile group: 'com.github.nscala-time', name: 'nscala-time_2.11', version: '2.2.0'
-    compile group: 'org.apache.curator', name: 'curator-framework', version: '2.9.1'
+    compile group: 'org.apache.curator', name:'curator-test', version:'2.9.1'
     compile group: 'com.fasterxml.jackson.module', name: 'jackson-module-scala_2.11', version: '2.6.3'
-    compile group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: '2.6.4'
-    compile group: 'com.fasterxml.jackson.core', name: 'jackson-annotations', version: '2.6.4'
-    compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.6.4'
-    compile group: 'com.fasterxml.jackson.dataformat', name: 'jackson-dataformat-yaml', version: '2.6.4'
+    compile group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: '2.6.3'
+    compile group: 'com.fasterxml.jackson.core', name: 'jackson-annotations', version: '2.6.3'
+    compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.6.3'
+    compile group: 'com.fasterxml.jackson.dataformat', name: 'jackson-dataformat-yaml', version: '2.6.3'
     compile group: 'org.eclipse.jetty', name: 'jetty-plus', version: '9.2.19.v20160908'
     compile group: 'org.eclipse.jetty', name: 'jetty-server', version: '9.2.19.v20160908'
     compile group: 'org.eclipse.jetty', name: 'jetty-http', version: '9.2.19.v20160908'
@@ -61,8 +61,9 @@ dependencies {
     compile group: 'org.scala-lang.modules', name: 'scala-async_2.11', version: '0.9.6'
     compile group: 'org.jsoup', name: 'jsoup', version: '1.10.2'
     compile group: 'org.reflections', name: 'reflections', version: '0.9.11'
-    compile group: 'org.apache.activemq', name: 'activemq-broker', version: '5.15.2'
-    runtime group: 'org.apache.activemq', name: 'activemq-kahadb-store', version: '5.15.2'
+    compile group: 'org.apache.activemq', name: 'activemq-broker', version: '5.15.3'
+    compile group: 'net.liftweb', name: 'lift-json_2.11', version: '3.2.0'
+    runtime group: 'org.apache.activemq', name: 'activemq-kahadb-store', version: '5.15.3'
 
     testCompile project(':common')
     testCompile "gradle.plugin.com.github.maiflai:gradle-scalatest:0.14"
@@ -70,7 +71,9 @@ dependencies {
     testCompile 'junit:junit:4.11'
     testCompile 'org.scalatest:scalatest_2.11:3.0.2'
     testCompile 'org.scala-lang:scala-library:2.11.8'
-    testCompile group: 'org.apache.curator', name: 'curator-test', version: '2.9.1'
+    testCompile( 'org.apache.curator:curator-test:2.9.1'){
+        exclude group: 'com.fasterxml.jackson.core', module: 'jackson-databind'
+    }
 
 }
 

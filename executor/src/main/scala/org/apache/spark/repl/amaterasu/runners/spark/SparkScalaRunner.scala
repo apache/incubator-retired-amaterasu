@@ -57,7 +57,7 @@ class SparkScalaRunner(var env: Environment,
   def interpretSources(source: Source, actionName: String, exports: Map[String, String]): Unit = {
 
     notifier.info(s"================= started action $actionName =================")
-    notifier.info(s"exports is: $exports")
+    //notifier.info(s"exports is: $exports")
 
     for (line <- source.getLines()) {
 
@@ -86,8 +86,8 @@ class SparkScalaRunner(var env: Environment,
 
               val resultName = interpreter.prevRequestList.last.termNames.last
 
-              notifier.info(s" result name ${resultName.toString}")
-              notifier.info(s" exist in exports: ${exports.contains(resultName.toString)}")
+              //notifier.info(s" result name ${resultName.toString}")
+              //notifier.info(s" exist in exports: ${exports.contains(resultName.toString)}")
 
               if (exports.contains(resultName.toString)) {
 
@@ -99,7 +99,7 @@ class SparkScalaRunner(var env: Environment,
                     case ds: Dataset[_] =>
                       log.debug(s"persisting DataFrame: $resultName")
                       val writeLine = s"""$resultName.write.mode(SaveMode.Overwrite).format("$format").save("${env.workingDir}/$jobId/$actionName/$resultName")"""
-                      notifier.info(writeLine)
+                      //notifier.info(writeLine)
                       val writeResult = interpreter.interpret(writeLine)
                       if (writeResult != Results.Success) {
                         val err = outStream.toString

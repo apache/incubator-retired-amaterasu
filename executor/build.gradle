@@ -66,6 +66,7 @@ dependencies {
     compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.6.5'
     compile group: 'com.fasterxml.jackson.module', name: 'jackson-module-scala_2.11', version: '2.6.5'
     compile group: 'org.apache.activemq', name: 'activemq-client', version: '5.15.2'
+    compile group: 'net.liftweb', name: 'lift-json_2.11', version: '3.2.0'
 
     compile project(':common')
     compile project(':amaterasu-sdk')

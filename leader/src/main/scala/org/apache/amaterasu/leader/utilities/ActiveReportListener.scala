@@ -1,20 +1,38 @@
 package org.apache.amaterasu.leader.utilities
 
-import javax.jms.{Message, MessageListener, ObjectMessage}
+import javax.jms.{Message, MessageListener, TextMessage}
 
-import org.apache.amaterasu.common.execution.actions.{Notification, NotificationType}
+import net.liftweb.json._
+import net.liftweb.json.JsonDSL._
+import org.apache.amaterasu.common.execution.actions.{Notification, NotificationLevel, NotificationType}
 
 class ActiveReportListener extends MessageListener {
 
+  implicit val formats = DefaultFormats
+
   override def onMessage(message: Message): Unit = {
     message match {
-      case om: ObjectMessage =>
-        val notification = om.getObject.asInstanceOf[Notification]
-        printNotification(notification)
+      case tm: TextMessage =>
+        try {
+          val notification = parseNot(parse(tm.getText))
+          printNotification(notification)
+
+        } catch {
+          case e: Exception => println(e.getMessage)
+        }
+      case _ => println("===> Unknown message")
     }
   }
 
-  private  def printNotification(notification: Notification): Unit = {
+  private def parseNot(json: JValue): Notification = Notification(
+    (json \ "line").asInstanceOf[JString].values,
+    (json \ "msg").asInstanceOf[JString].values,
+    NotificationType.withName((json \ "notType" \ "name").asInstanceOf[JString].values),
+    NotificationLevel.withName((json \ "notLevel" \ "name").asInstanceOf[JString].values)
+  )
+
+
+  private def printNotification(notification: Notification): Unit = {
 
     var color = Console.WHITE
 
@@ -35,3 +53,4 @@ class ActiveReportListener extends MessageListener {
 
   }
 }
+
