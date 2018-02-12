@@ -32,8 +32,9 @@ import scala.collection.mutable.ListBuffer
 
 
 class SparkTestsSuite extends Suites(
-  new PySparkRunnerTests(),
-  new RunnersLoadingTests()) with BeforeAndAfterAll {
+  new PySparkRunnerTests,
+  new RunnersLoadingTests,
+  new SparkSqlRunnerTests) with BeforeAndAfterAll {
 
   var env: Environment = _
   var factory: ProvidersFactory = _
@@ -48,11 +49,6 @@ class SparkTestsSuite extends Suites(
     // I can't apologise enough for this
     val resources = new File(getClass.getResource("/spark_intp.py").getPath).getParent
 
-    val conf = Map[String, Any](
-      "spark.cassandra.connection.host" -> "127.0.0.1",
-      "sourceTable" -> "documents",
-      "spark.local.ip" -> "127.0.0.1"
-    )
     env.master = "local[1]"
     if (env.configuration != null) env.configuration ++ "pysparkPath" -> "/usr/bin/python" else env.configuration = Map(
       "pysparkPath" -> "/usr/bin/python",

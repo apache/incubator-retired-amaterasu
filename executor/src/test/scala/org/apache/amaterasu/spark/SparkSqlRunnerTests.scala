@@ -23,12 +23,13 @@ import org.apache.amaterasu.utilities.TestNotifier
 import org.apache.log4j.Logger
 import org.apache.log4j.Level
 import org.apache.spark.sql.{SaveMode, SparkSession}
-import org.scalatest.{BeforeAndAfterAll, FlatSpec, Matchers}
+import org.scalatest.{BeforeAndAfterAll, DoNotDiscover, FlatSpec, Matchers}
 
 
 /**
   * Created by kirupa on 10/12/16.
   */
+@DoNotDiscover
 class SparkSqlRunnerTests extends FlatSpec with Matchers with BeforeAndAfterAll {
 
   Logger.getLogger("org").setLevel(Level.OFF)
@@ -44,7 +45,7 @@ class SparkSqlRunnerTests extends FlatSpec with Matchers with BeforeAndAfterAll 
 
   override protected def beforeAll(): Unit = {
 
-    val env = new Environment()
+    val env = Environment()
     env.workingDir = "file:/tmp/"
     spark = SparkSession.builder()
       .appName("sql-job")
@@ -69,17 +70,18 @@ class SparkSqlRunnerTests extends FlatSpec with Matchers with BeforeAndAfterAll 
 
   "SparkSql" should "load data as parquet if no input foramt is specified" in {
 
-    val defaultParquetEnv = new Environment()
+    val defaultParquetEnv = Environment()
     defaultParquetEnv.workingDir = "file:/tmp/"
     AmaContext.init(spark, "sparkSqlDefaultParquetJob", defaultParquetEnv)
+
     //Prepare test dataset
     val inputDf = spark.read.parquet(getClass.getResource("/SparkSql/parquet").getPath)
     inputDf.write.mode(SaveMode.Overwrite).parquet(s"${defaultParquetEnv.workingDir}/sparkSqlDefaultParquetJob/sparkSqlDefaultParquetJobAction/sparkSqlDefaultParquetJobActionTempDf")
-    val sparkSql: SparkSqlRunner = SparkSqlRunner(AmaContext.env, "sparkSqlDefaultParquetJob", "sparkSqlDefaultParquetJobAction", notifier, spark)
-    sparkSql.executeQuery("select * FROM AMACONTEXT_sparkSqlDefaultParquetJobAction_sparkSqlDefaultParquetJobActionTempDf where age=22")
-    val outputDf = spark.read.parquet(s"${defaultParquetEnv.workingDir}/sparkSqlDefaultParquetJob/sparkSqlDefaultParquetJobAction/sparkSqlDefaultParquetJobActionDf")
-    println("Output Default Parquet: "+inputDf.count + "," + outputDf.first().getString(1))
-    outputDf.first().getString(1) shouldEqual("Michael")
+    val sparkSql: SparkSqlRunner = SparkSqlRunner(AmaContext.env, "sparkSqlDefaultParquetJob", notifier, spark)
+    sparkSql.executeQuery("select * FROM AMACONTEXT_sparkSqlDefaultParquetJobAction_sparkSqlDefaultParquetJobActionTempDf where age=22", "sql_parquet_test", Map("result" -> "parquet"))
+    val outputDf = spark.read.parquet(s"${defaultParquetEnv.workingDir}/sparkSqlDefaultParquetJob/sql_parquet_test/result")
+    println("Output Default Parquet: " + inputDf.count + "," + outputDf.first().getString(1))
+    outputDf.first().getString(1) shouldEqual "Michael"
   }
 
   /*
@@ -88,17 +90,18 @@ class SparkSqlRunnerTests extends FlatSpec with Matchers with BeforeAndAfterAll 
 
   "SparkSql" should "load PARQUET data directly from previous action's dataframe and persist the Data in working directory" in {
 
-    val tempParquetEnv = new Environment()
+    val tempParquetEnv = Environment()
     tempParquetEnv.workingDir = "file:/tmp/"
     AmaContext.init(spark, "sparkSqlParquetJob", tempParquetEnv)
+
     //Prepare test dataset
     val inputDf = spark.read.parquet(getClass.getResource("/SparkSql/parquet").getPath)
     inputDf.write.mode(SaveMode.Overwrite).parquet(s"${tempParquetEnv.workingDir}/sparkSqlParquetJob/sparkSqlParquetJobAction/sparkSqlParquetJobActionTempDf")
-    val sparkSql: SparkSqlRunner = SparkSqlRunner(AmaContext.env, "sparkSqlParquetJob", "sparkSqlParquetJobAction", notifier, spark)
-    sparkSql.executeQuery("select * FROM AMACONTEXT_sparkSqlParquetJobAction_sparkSqlParquetJobActionTempDf READAS parquet")
-    val outputDf = spark.read.parquet(s"${tempParquetEnv.workingDir}/sparkSqlParquetJob/sparkSqlParquetJobAction/sparkSqlParquetJobActionDf")
-    println("Output Parquet: "+inputDf.count + "," + outputDf.count)
-    inputDf.first().getString(1) shouldEqual(outputDf.first().getString(1))
+    val sparkSql: SparkSqlRunner = SparkSqlRunner(AmaContext.env, "sparkSqlParquetJob", notifier, spark)
+    sparkSql.executeQuery("select * FROM AMACONTEXT_sparkSqlParquetJobAction_sparkSqlParquetJobActionTempDf READAS parquet", "sql_parquet_test", Map("result2" -> "parquet"))
+    val outputDf = spark.read.parquet(s"${tempParquetEnv.workingDir}/sparkSqlParquetJob/sql_parquet_test/result2")
+    println("Output Parquet: " + inputDf.count + "," + outputDf.count)
+    inputDf.first().getString(1) shouldEqual outputDf.first().getString(1)
   }
 
 
@@ -108,17 +111,18 @@ class SparkSqlRunnerTests extends FlatSpec with Matchers with BeforeAndAfterAll 
 
   "SparkSql" should "load JSON data directly from previous action's dataframe and persist the Data in working directory" in {
 
-    val tempJsonEnv = new Environment()
+    val tempJsonEnv = Environment()
     tempJsonEnv.workingDir = "file:/tmp/"
     AmaContext.init(spark, "sparkSqlJsonJob", tempJsonEnv)
     //Prepare test dataset
+
     val inputDf = spark.read.json(getClass.getResource("/SparkSql/json").getPath)
     inputDf.write.mode(SaveMode.Overwrite).json(s"${tempJsonEnv.workingDir}/sparkSqlJsonJob/sparkSqlJsonJobAction/sparkSqlJsonJobActionTempDf")
-    val sparkSql: SparkSqlRunner = SparkSqlRunner(AmaContext.env, "sparkSqlJsonJob", "sparkSqlJsonJobAction", notifier, spark)
-    sparkSql.executeQuery("select * FROM amacontext_sparkSqlJsonJobAction_sparkSqlJsonJobActionTempDf  where age='30' READAS json")
-    val outputDf = spark.read.json(s"${tempJsonEnv.workingDir}/sparkSqlJsonJob/sparkSqlJsonJobAction/sparkSqlJsonJobActionDf")
-    println("Output JSON: "+inputDf.count + "," + outputDf.count)
-    outputDf.first().getString(1) shouldEqual("Kirupa")
+    val sparkSql: SparkSqlRunner = SparkSqlRunner(AmaContext.env, "sparkSqlJsonJob", notifier, spark)
+    sparkSql.executeQuery("select * FROM amacontext_sparkSqlJsonJobAction_sparkSqlJsonJobActionTempDf  where age='30' READAS json", "sql_json_test", Map("result" -> "json"))
+    val outputDf = spark.read.json(s"${tempJsonEnv.workingDir}/sparkSqlJsonJob/sql_json_test/result")
+    println("Output JSON: " + inputDf.count + "," + outputDf.count)
+    outputDf.first().getString(1) shouldEqual "Kirupa"
 
   }
 
@@ -128,38 +132,40 @@ class SparkSqlRunnerTests extends FlatSpec with Matchers with BeforeAndAfterAll 
 
   "SparkSql" should "load CSV data directly from previous action's dataframe and persist the Data in working directory" in {
 
-    val tempCsvEnv = new Environment()
+    val tempCsvEnv = Environment()
     tempCsvEnv.workingDir = "file:/tmp/"
     AmaContext.init(spark, "sparkSqlCsvJob", tempCsvEnv)
+
     //Prepare test dataset
     val inputDf = spark.read.csv(getClass.getResource("/SparkSql/csv").getPath)
     inputDf.write.mode(SaveMode.Overwrite).csv(s"${tempCsvEnv.workingDir}/sparkSqlCsvJob/sparkSqlCsvJobAction/sparkSqlCsvJobActionTempDf")
-    val sparkSql: SparkSqlRunner = SparkSqlRunner(AmaContext.env, "sparkSqlCsvJob", "sparkSqlCsvJobAction", notifier, spark)
-    sparkSql.executeQuery("select * FROM amacontext_sparkSqlCsvJobAction_sparkSqlCsvJobActionTempDf READAS csv")
-    val outputDf = spark.read.csv(s"${tempCsvEnv.workingDir}/sparkSqlCsvJob/sparkSqlCsvJobAction/sparkSqlCsvJobActionDf")
-    println("Output CSV: "+inputDf.count + "," + outputDf.count)
-    inputDf.first().getString(1) shouldEqual(outputDf.first().getString(1))
+    val sparkSql: SparkSqlRunner = SparkSqlRunner(AmaContext.env, "sparkSqlCsvJob", notifier, spark)
+    sparkSql.executeQuery("select * FROM amacontext_sparkSqlCsvJobAction_sparkSqlCsvJobActionTempDf READAS csv", "sql_csv_test", Map("result" -> "csv"))
+
+    val outputDf = spark.read.csv(s"${tempCsvEnv.workingDir}/sparkSqlCsvJob/sql_csv_test/result")
+    println("Output CSV: " + inputDf.count + "," + outputDf.count)
+    inputDf.first().getString(1) shouldEqual outputDf.first().getString(1)
   }
+
   /*
   Test whether the data can be directly read from a file and executed by sparkSql
   */
-
   "SparkSql" should "load data directly from a file and persist the Data in working directory" in {
 
-    val tempFileEnv = new Environment()
+    val tempFileEnv = Environment()
     tempFileEnv.workingDir = "file:/tmp/"
     AmaContext.init(spark, "sparkSqlFileJob", tempFileEnv)
 
-    val sparkSql: SparkSqlRunner = SparkSqlRunner(AmaContext.env, "sparkSqlFileJob", "sparkSqlFileJobAction", notifier, spark)
-    sparkSql.executeQuery("SELECT * FROM parquet.`"+getClass.getResource("/SparkSql/parquet").getPath+"`")
-    val outputParquetDf = spark.read.parquet(s"${tempFileEnv.workingDir}/sparkSqlFileJob/sparkSqlFileJobAction/sparkSqlFileJobActionDf")
-    println("Output Parquet dataframe: "+ outputParquetDf.show)
-    outputParquetDf.first().getString(1) shouldEqual("Michael")
-    sparkSql.executeQuery("SELECT * FROM json.`"+getClass.getResource("/SparkSql/json").getPath+"`")
-    //@TODO: change the below read.parquet to read.outputFileFormat specified in the yaml file
-    val outputJsonDf = spark.read.parquet(s"${tempFileEnv.workingDir}/sparkSqlFileJob/sparkSqlFileJobAction/sparkSqlFileJobActionDf")
-    println("Output Json dataframe: "+ outputJsonDf.show)
-    outputJsonDf.first().getString(1) shouldEqual("Sampath")
+    val sparkSql: SparkSqlRunner = SparkSqlRunner(AmaContext.env, "sparkSqlFileJob", notifier, spark)
+    sparkSql.executeQuery("SELECT * FROM parquet.`" + getClass.getResource("/SparkSql/parquet").getPath + "`", "sql_parquet_file_test", Map("result" -> "parquet"))
+    val outputParquetDf = spark.read.parquet(s"${tempFileEnv.workingDir}/sparkSqlFileJob/sql_parquet_file_test/result")
+    println("Output Parquet dataframe: " + outputParquetDf.show)
+    outputParquetDf.first().getString(1) shouldEqual "Michael"
+    sparkSql.executeQuery("SELECT * FROM json.`" + getClass.getResource("/SparkSql/json").getPath + "`","sql_parquet_file_test", Map("result" -> "json"))
+
+    val outputJsonDf = spark.read.parquet(s"${tempFileEnv.workingDir}/sparkSqlFileJob/sql_parquet_file_test/result")
+    println("Output Json dataframe: " + outputJsonDf.show)
+    outputJsonDf.first().getString(1) shouldEqual "Sampath"
 
   }
 

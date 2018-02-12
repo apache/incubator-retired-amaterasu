@@ -110,15 +110,8 @@ object SparkRunnerHelper extends Logging {
                   jars: Seq[String],
                   sparkConf: Option[Map[String, Any]],
                   executorEnv: Option[Map[String, Any]],
-                  propFile: String,
+                  config: ClusterConfig,
                   hostName: String): SparkSession = {
-
-    val config = if (propFile != null) {
-      import java.io.FileInputStream
-      ClusterConfig.apply(new FileInputStream(propFile))
-    } else {
-      new ClusterConfig()
-    }
 
     Thread.currentThread().setContextClassLoader(getClass.getClassLoader)
 

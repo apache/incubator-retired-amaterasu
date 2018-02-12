@@ -33,7 +33,7 @@ class SparkSqlRunner extends Logging {
   var env: Environment = _
   var notifier: Notifier = _
   var jobId: String = _
-  var actionName: String = _
+  //var actionName: String = _
   var spark: SparkSession = _
 
   /*
@@ -42,11 +42,12 @@ class SparkSqlRunner extends Logging {
                If not in Amaterasu format, then directly executes the query
   @Params: query string
    */
-  def executeQuery(query: String): Unit = {
+  def executeQuery(query: String, actionName: String, exports: Map[String, String]): Unit = {
 
     notifier.info(s"================= executing the SQL query =================")
     if (!query.isEmpty) {
 
+      var result: DataFrame = null
       if (query.toLowerCase.contains("amacontext")) {
 
         //Parse the incoming query
@@ -94,25 +95,25 @@ class SparkSqlRunner extends Logging {
         loadData.createOrReplaceTempView(locationPath)
 
         notifier.info("Executing SparkSql on: "+parsedQuery)
-        val sqlDf = spark.sql(parsedQuery)
-        //@TODO: outputFileFormat should be read from YAML file instead of input fileformat
-        writeDf(sqlDf, fileFormat, env.workingDir, jobId, actionName)
+        result = spark.sql(parsedQuery)
 
-        notifier.info(s"================= finished action $actionName =================")
+
       }
       else {
 
         notifier.info("Executing SparkSql on: "+query)
 
-        val fildDf = spark.sql(query)
-        //@TODO: outputFileFormat should be read from YAML file instead of output fileFormat being empty
-        writeDf(fildDf, "", env.workingDir, jobId, actionName)
-
-        notifier.info(s"================= finished action $actionName =================")
+        result = spark.sql(query)
       }
+      val exportsBuff = exports.toBuffer
+      if(exportsBuff.nonEmpty){
+        val exportName = exportsBuff.head._1
+        val exportFormat = exportsBuff.head._2
+        notifier.info(s"exporting to -> ${env.workingDir}/$jobId/$actionName/$exportName")
+        result.write.mode(SaveMode.Overwrite).format(exportFormat).save(s"${env.workingDir}/$jobId/$actionName/$exportName")
+      }
+      notifier.info(s"================= finished action $actionName =================")
     }
-
-    notifier.info(s"================= finished action $actionName =================")
   }
 
   /*
@@ -154,7 +155,7 @@ object SparkSqlRunner {
 
   def apply(env: Environment,
             jobId: String,
-            actionName: String,
+           // actionName: String,
             notifier: Notifier,
             spark: SparkSession): SparkSqlRunner = {
 
@@ -162,7 +163,7 @@ object SparkSqlRunner {
 
     sparkSqlRunnerObj.env = env
     sparkSqlRunnerObj.jobId = jobId
-    sparkSqlRunnerObj.actionName = actionName
+    //sparkSqlRunnerObj.actionName = actionName
     sparkSqlRunnerObj.notifier = notifier
     sparkSqlRunnerObj.spark = spark
     sparkSqlRunnerObj
