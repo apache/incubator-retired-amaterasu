@@ -17,21 +17,24 @@
 package org.apache.amaterasu.leader.yarn
 
 import java.io.{File, FileInputStream, InputStream}
-import java.net.URLEncoder
+import java.net.{InetAddress, ServerSocket, URLEncoder}
 import java.nio.ByteBuffer
 import java.util
 import java.util.concurrent.{ConcurrentHashMap, LinkedBlockingQueue}
+import javax.jms.Session
 
-import com.google.gson.Gson
+import org.apache.activemq.broker.BrokerService
+import org.apache.activemq.ActiveMQConnectionFactory
 import org.apache.amaterasu.common.configuration.ClusterConfig
 import org.apache.amaterasu.common.dataobjects.ActionData
 import org.apache.amaterasu.common.logging.Logging
 import org.apache.amaterasu.leader.execution.frameworks.FrameworkProvidersFactory
 import org.apache.amaterasu.leader.execution.{JobLoader, JobManager}
-import org.apache.amaterasu.leader.utilities.{Args, DataLoader}
+import org.apache.amaterasu.leader.utilities.{ActiveReportListener, Args, DataLoader}
+import org.apache.curator.framework.recipes.barriers.DistributedBarrier
 import org.apache.curator.framework.{CuratorFramework, CuratorFrameworkFactory}
 import org.apache.curator.retry.ExponentialBackoffRetry
-import org.apache.hadoop.fs.{FileSystem, LocatedFileStatus, Path}
+import org.apache.hadoop.fs.{FileSystem, Path}
 import org.apache.hadoop.io.DataOutputBuffer
 import org.apache.hadoop.security.UserGroupInformation
 import org.apache.hadoop.yarn.api.ApplicationConstants
@@ -42,6 +45,7 @@ import org.apache.hadoop.yarn.client.api.async.{AMRMClientAsync, NMClientAsync}
 import org.apache.hadoop.yarn.conf.YarnConfiguration
 import org.apache.hadoop.yarn.security.AMRMTokenIdentifier
 import org.apache.hadoop.yarn.util.{ConverterUtils, Records}
+import org.apache.zookeeper.CreateMode
 
 import scala.collection.JavaConversions._
 import scala.collection.JavaConverters._
@@ -54,7 +58,6 @@ class ApplicationMaster extends AMRMClientAsync.CallbackHandler with Logging {
 
   var capability: Resource = _
 
-  private val MAX_ATTEMPTS_PER_TASK = 3
   log.info("ApplicationMaster start")
 
   private var jobManager: JobManager = _
@@ -67,7 +70,6 @@ class ApplicationMaster extends AMRMClientAsync.CallbackHandler with Logging {
   private var propPath: String = ""
   private var props: InputStream = _
   private var jarPath: Path = _
-  private var version: String = ""
   private var executorPath: Path = _
   private var executorJar: LocalResource = _
   private var propFile: LocalResource = _
@@ -75,24 +77,30 @@ class ApplicationMaster extends AMRMClientAsync.CallbackHandler with Logging {
   private var nmClient: NMClientAsync = _
   private var allocListener: YarnRMCallbackHandler = _
   private var rmClient: AMRMClientAsync[ContainerRequest] = _
+  private var address: String = _
 
   private val containersIdsToTask: concurrent.Map[Long, ActionData] = new ConcurrentHashMap[Long, ActionData].asScala
   private val completedContainersAndTaskIds: concurrent.Map[Long, String] = new ConcurrentHashMap[Long, String].asScala
   private val actionsBuffer: java.util.concurrent.ConcurrentLinkedQueue[ActionData] = new java.util.concurrent.ConcurrentLinkedQueue[ActionData]()
-  private val gson: Gson = new Gson()
+  private val host: String = InetAddress.getLocalHost.getHostName
+  private val broker: BrokerService = new BrokerService()
 
   def setLocalResourceFromPath(path: Path): LocalResource = {
+
     val stat = fs.getFileStatus(path)
     val fileResource = Records.newRecord(classOf[LocalResource])
+
     fileResource.setResource(ConverterUtils.getYarnUrlFromPath(path))
     fileResource.setSize(stat.getLen)
     fileResource.setTimestamp(stat.getModificationTime)
     fileResource.setType(LocalResourceType.FILE)
     fileResource.setVisibility(LocalResourceVisibility.PUBLIC)
     fileResource
+
   }
 
   def execute(arguments: Args): Unit = {
+
     log.info(s"started AM with args $arguments")
 
     propPath = System.getenv("PWD") + "/amaterasu.properties"
@@ -105,12 +113,23 @@ class ApplicationMaster extends AMRMClientAsync.CallbackHandler with Logging {
 
     config = ClusterConfig(props)
 
-
     try {
       initJob(arguments)
     } catch {
-      case e: Exception => log.error("error initielzing ", e.getMessage)
+      case e: Exception => log.error("error initializing ", e.getMessage)
     }
+
+    // now that the job was initiated, the curator client is started and we can
+    // register the broker's address
+    client.create().withMode(CreateMode.PERSISTENT).forPath(s"/${jobManager.jobId}/broker")
+    client.setData().forPath(s"/${jobManager.jobId}/broker", address.getBytes)
+
+    // once the broker is registered, we can remove the barrier so clients can connect
+    log.info(s"/${jobManager.jobId}-report-barrier")
+    val barrier = new DistributedBarrier(client, s"/${jobManager.jobId}-report-barrier")
+    barrier.removeBarrier()
+
+    setupMessaging(jobManager.jobId)
 
     log.info(s"Job ${jobManager.jobId} initiated with ${jobManager.registeredActions.size} actions")
 
@@ -155,6 +174,7 @@ class ApplicationMaster extends AMRMClientAsync.CallbackHandler with Logging {
     this.capability.setMemory(Math.min(config.taskMem, 1024))
     this.capability.setVirtualCores(1)
 
+
     while (!jobManager.outOfActions) {
       val actionData = jobManager.getNextActionData
       if (actionData != null) {
@@ -164,6 +184,22 @@ class ApplicationMaster extends AMRMClientAsync.CallbackHandler with Logging {
 
     log.info("Finished asking for containers")
   }
+
+  private def setupMessaging(jobId: String): Unit = {
+
+    val cf = new ActiveMQConnectionFactory(address)
+    val conn = cf.createConnection()
+    conn.start()
+
+    val session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE)
+    //TODO: move to a const in common
+    val destination = session.createTopic("JOB.REPORT")
+
+    val consumer = session.createConsumer(destination)
+    consumer.setMessageListener(new ActiveReportListener)
+
+  }
+
 
   private def askContainer(actionData: ActionData): Unit = {
 
@@ -217,7 +253,7 @@ class ApplicationMaster extends AMRMClientAsync.CallbackHandler with Logging {
             "-Dscala.usejavacp=true " +
             "-Dhdp.version=2.6.1.0-129 " +
             "org.apache.amaterasu.executor.yarn.executors.ActionsExecutorLauncher " +
-            s"'${jobManager.jobId}' '${config.master}' '${actionData.name}' '${URLEncoder.encode(taskData, "UTF-8")}' '${URLEncoder.encode(execData, "UTF-8")}' '${actionData.id}-${container.getId.getContainerId}' " +
+            s"'${jobManager.jobId}' '${config.master}' '${actionData.name}' '${URLEncoder.encode(taskData, "UTF-8")}' '${URLEncoder.encode(execData, "UTF-8")}' '${actionData.id}-${container.getId.getContainerId}' '$address' " +
             s"1> ${ApplicationConstants.LOG_DIR_EXPANSION_VAR}/stdout " +
             s"2> ${ApplicationConstants.LOG_DIR_EXPANSION_VAR}/stderr "
         )
@@ -228,7 +264,7 @@ class ApplicationMaster extends AMRMClientAsync.CallbackHandler with Logging {
         ctx.setCommands(commands)
         ctx.setTokens(allTokens)
 
-        var resources = mutable.Map[String, LocalResource](
+        val resources = mutable.Map[String, LocalResource](
           "executor.jar" -> executorJar,
           "amaterasu.properties" -> propFile,
           // TODO: Nadav/Eyal all of these should move to the executor resource setup
@@ -355,6 +391,7 @@ class ApplicationMaster extends AMRMClientAsync.CallbackHandler with Logging {
   }
 
   def initJob(args: Args): Unit = {
+
     this.env = args.env
     this.branch = args.branch
     try {
@@ -398,7 +435,8 @@ class ApplicationMaster extends AMRMClientAsync.CallbackHandler with Logging {
   }
 }
 
-object ApplicationMaster extends App {
+object ApplicationMaster extends App with Logging {
+
 
   val parser = Args.getParser
   parser.parse(args, Args()) match {
@@ -406,9 +444,20 @@ object ApplicationMaster extends App {
     case Some(arguments: Args) =>
       val appMaster = new ApplicationMaster()
 
+      appMaster.address = s"tcp://${appMaster.host}:$generatePort"
+      appMaster.broker.addConnector(appMaster.address)
+      appMaster.broker.start()
+
+      log.info(s"broker started with address ${appMaster.address}")
       appMaster.execute(arguments)
 
     case None =>
   }
 
+  private def generatePort: Int = {
+    val socket = new ServerSocket(0)
+    val port = socket.getLocalPort
+    socket.close()
+    port
+  }
 }

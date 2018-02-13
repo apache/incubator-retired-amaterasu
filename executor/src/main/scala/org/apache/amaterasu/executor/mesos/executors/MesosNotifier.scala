@@ -28,33 +28,33 @@ class MesosNotifier(driver: ExecutorDriver) extends Notifier with Logging {
   private val mapper = new ObjectMapper()
   mapper.registerModule(DefaultScalaModule)
 
-  override def success(line: String) = {
+  override def success(line: String): Unit = {
 
     log.info(s"successfully executed line: $line")
 
-    val notification = new Notification(line, "", NotificationType.success, NotificationLevel.code)
+    val notification = Notification(line, "", NotificationType.success, NotificationLevel.code)
     val msg = mapper.writeValueAsBytes(notification)
 
     driver.sendFrameworkMessage(msg)
 
   }
 
-  override def error(line: String, message: String) = {
+  override def error(line: String, message: String): Unit = {
 
     log.error(s"Error executing line: $line message: $message")
 
-    val notification = new Notification(line, message, NotificationType.error, NotificationLevel.code)
+    val notification = Notification(line, message, NotificationType.error, NotificationLevel.code)
     val msg = mapper.writeValueAsBytes(notification)
 
     driver.sendFrameworkMessage(msg)
 
   }
 
-  override def info(message: String) = {
+  override def info(message: String): Unit = {
 
     log.info(message)
 
-    val notification = new Notification("", message, NotificationType.info, NotificationLevel.execution)
+    val notification = Notification("", message, NotificationType.info, NotificationLevel.execution)
     val msg = mapper.writeValueAsBytes(notification)
 
     driver.sendFrameworkMessage(msg)

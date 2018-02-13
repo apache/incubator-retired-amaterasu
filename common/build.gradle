@@ -43,6 +43,7 @@ dependencies {
     compile group: 'com.github.nscala-time', name: 'nscala-time_2.11', version: '2.2.0'
     compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.9'
     compile group: 'org.slf4j', name: 'slf4j-simple', version: '1.7.9'
+    compile group: 'com.fasterxml.jackson.core', name: 'jackson-annotations', version: '2.9.4'
 
     // currently we have to use this specific mesos version to prevent from
     // clashing with spark

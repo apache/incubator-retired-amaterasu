@@ -27,8 +27,8 @@ trait Action extends Logging {
   var actionPath: String = _
   var actionId: String = _
 
-  var data: ActionData = null
-  var client: CuratorFramework = null
+  var data: ActionData = _
+  var client: CuratorFramework = _
 
   def execute(): Unit
 
