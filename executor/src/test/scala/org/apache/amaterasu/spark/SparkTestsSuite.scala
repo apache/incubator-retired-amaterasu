@@ -28,6 +28,8 @@ import org.apache.spark.repl.amaterasu.runners.spark.SparkScalaRunner
 import org.apache.spark.sql.SparkSession
 import org.scalatest._
 
+
+
 import scala.collection.mutable.ListBuffer
 
 
@@ -39,6 +41,11 @@ class SparkTestsSuite extends Suites(
   var env: Environment = _
   var factory: ProvidersFactory = _
   var spark: SparkSession = _
+
+  private def createTestMiniconda(): Unit = {
+    println(s"PATH: ${new File(".").getAbsolutePath}")
+    new File("miniconda/pkgs").mkdirs()
+  }
 
   override def beforeAll(): Unit = {
 
@@ -57,6 +64,7 @@ class SparkTestsSuite extends Suites(
     val excEnv = Map[String, Any](
       "PYTHONPATH" -> resources
     )
+    createTestMiniconda()
     env.configuration ++ "spark_exec_env" -> excEnv
     factory = ProvidersFactory(ExecData(env,
       Dependencies(ListBuffer.empty[Repo], List.empty[Artifact]),
@@ -68,7 +76,8 @@ class SparkTestsSuite extends Suites(
       new ByteArrayOutputStream(),
       new TestNotifier(),
       "test",
-      getClass.getResource("/amaterasu.properties").getPath)
+      "localhost",
+      getClass.getClassLoader.getResource("amaterasu.properties").getPath)
     spark = factory.getRunner("spark", "scala").get.asInstanceOf[SparkScalaRunner].spark
 
     this.nestedSuites.filter(s => s.isInstanceOf[RunnersLoadingTests]).foreach(s => s.asInstanceOf[RunnersLoadingTests].factory = factory)
@@ -79,6 +88,7 @@ class SparkTestsSuite extends Suites(
   }
 
   override def afterAll(): Unit = {
+    new File("miniconda").delete()
     spark.stop()
 
     super.afterAll()
