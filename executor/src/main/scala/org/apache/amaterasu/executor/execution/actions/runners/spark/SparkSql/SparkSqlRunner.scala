@@ -17,19 +17,22 @@
 package org.apache.amaterasu.executor.execution.actions.runners.spark.SparkSql
 
 import java.io.File
+import java.util
 
 import org.apache.amaterasu.common.execution.actions.Notifier
 import org.apache.amaterasu.common.logging.Logging
 import org.apache.amaterasu.common.runtime.Environment
 import org.apache.amaterasu.executor.runtime.AmaContext
+import org.apache.amaterasu.sdk.AmaterasuRunner
 import org.apache.commons.io.FilenameUtils
 import org.apache.spark.sql.{DataFrame, SaveMode, SparkSession}
+import scala.collection.JavaConverters._
 
 /**
   * Amaterasu currently supports JSON and PARQUET as data sources.
   * CSV data source support will be provided in later versions.
   */
-class SparkSqlRunner extends Logging {
+class SparkSqlRunner extends Logging with AmaterasuRunner {
   var env: Environment = _
   var notifier: Notifier = _
   var jobId: String = _
@@ -42,18 +45,18 @@ class SparkSqlRunner extends Logging {
                If not in Amaterasu format, then directly executes the query
   @Params: query string
    */
-  def executeQuery(query: String, actionName: String, exports: Map[String, String]): Unit = {
+  override def executeSource(actionSource: String, actionName: String, exports: util.Map[String, String]): Unit = {
 
     notifier.info(s"================= executing the SQL query =================")
-    if (!query.isEmpty) {
+    if (!actionSource.isEmpty) {
 
       var result: DataFrame = null
-      if (query.toLowerCase.contains("amacontext")) {
+      if (actionSource.toLowerCase.contains("amacontext")) {
 
         //Parse the incoming query
         notifier.info(s"================= parsing the SQL query =================")
 
-        val parser: List[String] = query.toLowerCase.split(" ").toList
+        val parser: List[String] = actionSource.toLowerCase.split(" ").toList
         var sqlPart1: String = ""
         var sqlPart2: String = ""
         var queryTempLen: Int = 0
@@ -94,19 +97,19 @@ class SparkSqlRunner extends Logging {
         val loadData: DataFrame = AmaContext.getDataFrame(actionName, dfName, fileFormat)
         loadData.createOrReplaceTempView(locationPath)
 
-        notifier.info("Executing SparkSql on: "+parsedQuery)
+        notifier.info("Executing SparkSql on: " + parsedQuery)
         result = spark.sql(parsedQuery)
 
 
       }
       else {
 
-        notifier.info("Executing SparkSql on: "+query)
+        notifier.info("Executing SparkSql on: " + actionSource)
 
-        result = spark.sql(query)
+        result = spark.sql(actionSource)
       }
-      val exportsBuff = exports.toBuffer
-      if(exportsBuff.nonEmpty){
+      val exportsBuff = exports.asScala.toBuffer
+      if (exportsBuff.nonEmpty) {
         val exportName = exportsBuff.head._1
         val exportFormat = exportsBuff.head._2
         notifier.info(s"exporting to -> ${env.workingDir}/$jobId/$actionName/$exportName")
@@ -129,25 +132,7 @@ class SparkSqlRunner extends Logging {
     extensions
   }
 
-  /*
-  Method to write dataframes to a specified format
-  @Params
-  df: Dataframe to be written
-  fileFormat: same as input file format
-  workingDir: temp directory
-  jobId, actionName: As specified by the user
-  */
-  def writeDf(df: DataFrame, outputFileFormat: String, workingDir: String, jobId: String, actionName: String): Unit = {
-    outputFileFormat.toLowerCase match {
-      case "parquet" => df.write.mode(SaveMode.Overwrite).parquet(s"$workingDir/$jobId/$actionName/" + actionName + "Df")
-      case "json" => df.write.mode(SaveMode.Overwrite).json(s"$workingDir/$jobId/$actionName/" + actionName + "Df")
-      case "csv" => df.write.mode(SaveMode.Overwrite).csv(s"$workingDir/$jobId/$actionName/" + actionName + "Df")
-      case "orc" => df.write.mode(SaveMode.Overwrite).orc(s"$workingDir/$jobId/$actionName/" + actionName + "Df")
-      case "text" => df.write.mode(SaveMode.Overwrite).text(s"$workingDir/$jobId/$actionName/" + actionName + "Df")
-      //case "jdbc" => df.write.mode(SaveMode.Overwrite).jdbc(s"$workingDir/$jobId/$actionName/" + actionName + "Df")
-      case _ => df.write.mode(SaveMode.Overwrite).parquet(s"$workingDir/$jobId/$actionName/" + actionName + "Df")
-    }
-  }
+  override def getIdentifier: String = "sql"
 
 }
 
@@ -155,7 +140,7 @@ object SparkSqlRunner {
 
   def apply(env: Environment,
             jobId: String,
-           // actionName: String,
+            // actionName: String,
             notifier: Notifier,
             spark: SparkSession): SparkSqlRunner = {
 

@@ -95,7 +95,7 @@ esac
 done
 
 echo "repo: ${REPO} "
-CMD="java -cp ${BASEDIR}/bin/*-all.jar -Djava.library.path=/usr/lib org.apache.amaterasu.leader.mesos.JobLauncher --home ${BASEDIR}"
+CMD="java -cp ${BASEDIR}/bin/*-all.jar -Djava.library.path=/usr/lib org.apache.amaterasu.leader.mesos.MesosJobLauncher --home ${BASEDIR}"
 
 if [ -n "$REPO" ]; then
     CMD+=" --repo ${REPO}"

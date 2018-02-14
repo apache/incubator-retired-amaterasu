@@ -148,7 +148,6 @@ object SparkRunnerHelper extends Logging {
           .set("spark.yarn.jars", s"spark/jars/*")
           .set("spark.executor.memory", "1g")
           .set("spark.dynamicAllocation.enabled", "false")
-          //.set("spark.shuffle.service.enabled", "true")
           .set("spark.eventLog.enabled", "false")
           .set("spark.history.fs.logDirectory", "hdfs:///spark2-history/")
           .set("hadoop.home.dir", config.YARN.hadoopHomeDir)
