@@ -71,6 +71,7 @@ object HttpServer extends Logging {
     contexts.setHandlers(Array(context0, context))
     server.setHandler(contexts)
     server.start()
+
   }
 
   def stop() {
@@ -93,11 +94,12 @@ object HttpServer extends Logging {
   Note: Should the files in URL root be fetched, provide an empty value to directory.
    */
   def getFilesInDirectory(amaNode: String, port: String, directory: String = ""): Array[String] = {
+    println("http://" + amaNode + ":" + port + "/" + directory)
     val html: BufferedSource = Source.fromURL("http://" + amaNode + ":" + port + "/" + directory)
     val htmlDoc = Jsoup.parse(html.mkString)
     val htmlElement: Elements = htmlDoc.body().select("a")
     val files = htmlElement.asScala
-    val fileNames = files.map(url => url.attr("href")).filter(file => (!file.contains(".."))).map(name => name.replace("/", "")).toArray
+    val fileNames = files.map(url => url.attr("href")).filter(file => !file.contains("..")).map(name => name.replace("/", "")).toArray
     fileNames
   }
 }
