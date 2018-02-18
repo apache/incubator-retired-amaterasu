@@ -16,7 +16,6 @@
  */
 package org.apache.amaterasu.leader.utilities
 
-//import org.apache.amaterasu.Logging
 import org.apache.amaterasu.common.logging.Logging
 import org.apache.log4j.{BasicConfigurator, Level, Logger}
 import org.eclipse.jetty.server.{Server, ServerConnector}
@@ -38,8 +37,8 @@ import scala.text.Document
   * Implementation of Jetty Web server to server Amaterasu libraries and other distribution files
   */
 object HttpServer extends Logging {
-  val logger = Logger.getLogger(HttpServer.getClass)
-  var server: Server = null
+  //val logger = Logger.getLogger(HttpServer.getClass)
+  var server: Server = _
 
   def start(port: String, serverRoot: String): Unit = {
 
