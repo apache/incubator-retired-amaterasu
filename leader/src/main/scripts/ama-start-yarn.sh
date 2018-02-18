@@ -36,6 +36,8 @@ echo "    Version 0.2.0"
 echo "${NC}"
 echo ""
 
+FORCE_BIN=false
+
 for i in "$@"
 do
 case $i in
@@ -67,6 +69,10 @@ case $i in
     JARPATH="${i#*=}"
     shift # past argument=value
     ;;
+    -f=*|--force-bin)
+    FORCE_BIN=true
+    shift # past argument with no value
+    ;;
     --default)
     DEFAULT=YES
     shift # past argument with no value
@@ -78,6 +84,7 @@ esac
 done
 
 echo "repo: ${REPO} "
+echo "force-bin: ${FORCE_BIN}"
 export HADOOP_USER_CLASSPATH_FIRST=true
 CMD="yarn jar ${BASEDIR}/bin/leader-0.2.0-incubating-all.jar org.apache.amaterasu.leader.yarn.Client --home ${BASEDIR}"
 
@@ -118,10 +125,15 @@ if [ ! -f ${BASEDIR}/dist/Miniconda2-latest-Linux-x86_64.sh ]; then
     wget https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh -P ${BASEDIR}/dist
 fi
 
-eval "hdfs dfs -rm -R -skipTrash /apps/amaterasu"
-#eval "hdfs dfs -mkdir /apps/amaterasu/"
-#eval "hdfs dfs -chmod -R 777 /apps/amaterasu/"
-#eval "hdfs dfs -copyFromLocal ${BASEDIR}/* /apps/amaterasu/"
+
+if [ "$FORCE_BIN" = true ] ; then
+    echo "FORCE: Deleting and re-creating /apps/amaterasu folder"
+    eval "hdfs dfs -rm -R -skipTrash /apps/amaterasu"
+    eval "hdfs dfs -mkdir /apps/amaterasu/"
+    eval "hdfs dfs -chmod -R 777 /apps/amaterasu/"
+    eval "hdfs dfs -copyFromLocal ${BASEDIR}/* /apps/amaterasu/"
+fi
+
 eval $CMD | grep "===>"
 kill $SERVER_PID
 
