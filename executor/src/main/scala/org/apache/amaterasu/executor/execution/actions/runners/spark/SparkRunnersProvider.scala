@@ -25,6 +25,7 @@ import org.apache.amaterasu.common.execution.actions.Notifier
 import org.apache.amaterasu.common.execution.dependencies.{Dependencies, PythonDependencies, PythonPackage}
 import org.apache.amaterasu.common.logging.Logging
 import org.apache.amaterasu.executor.execution.actions.runners.spark.PySpark.PySparkRunner
+import org.apache.amaterasu.executor.execution.actions.runners.spark.SparkSql.SparkSqlRunner
 import org.apache.amaterasu.sdk.{AmaterasuRunner, RunnersProvider}
 import org.apache.spark.repl.amaterasu.runners.spark.{SparkRunnerHelper, SparkScalaRunner}
 import org.eclipse.aether.util.artifact.JavaScopes
@@ -85,7 +86,10 @@ class SparkRunnersProvider extends RunnersProvider with Logging {
 
     // TODO: get rid of hard-coded version
     lazy val pySparkRunner = PySparkRunner(data.env, jobId, notifier, spark, s"${config.spark.home}/python:${config.spark.home}/python/pyspark:${config.spark.home}/python/pyspark/build:${config.spark.home}/python/pyspark/lib/py4j-0.10.4-src.zip", data.pyDeps, config)
-    runners.put(pySparkRunner.getIdentifier(), pySparkRunner)
+    runners.put(pySparkRunner.getIdentifier, pySparkRunner)
+
+    lazy val sparkSqlRunner = SparkSqlRunner(data.env, jobId, notifier, spark)
+    runners.put(sparkSqlRunner.getIdentifier, sparkSqlRunner)
   }
 
   private def installAnacondaPackage(pythonPackage: PythonPackage): Unit = {

@@ -26,7 +26,7 @@ import org.apache.amaterasu.common.utils.FileUtils
 import org.apache.spark.repl.amaterasu.AmaSparkILoop
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.util.Utils
-import org.apache.spark.{SparkConf, SparkContext}
+import org.apache.spark.SparkConf
 
 import scala.tools.nsc.GenericRunnerSettings
 import scala.tools.nsc.interpreter.IMain
@@ -37,7 +37,6 @@ object SparkRunnerHelper extends Logging {
   private val rootDir = conf.getOption("spark.repl.classdir").getOrElse(Utils.getLocalDir(conf))
   private val outputDir = Utils.createTempDir(root = rootDir, namePrefix = "repl")
 
-  private var sparkContext: SparkContext = _
   private var sparkSession: SparkSession = _
 
   var notifier: Notifier = _
@@ -97,7 +96,7 @@ object SparkRunnerHelper extends Logging {
     }
     catch {
       case e: Exception =>
-        println("+++++++>" + new Predef.String(outStream.toByteArray))
+        println(new Predef.String(outStream.toByteArray))
 
     }
 
@@ -193,7 +192,6 @@ object SparkRunnerHelper extends Logging {
       //.enableHiveSupport()
       .config(conf).getOrCreate()
 
-    log.info("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^")
     sparkSession.conf.getAll.foreach(x => log.info(x.toString))
 
     val hc = sparkSession.sparkContext.hadoopConfiguration
