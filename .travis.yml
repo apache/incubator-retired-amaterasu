@@ -1,3 +1,6 @@
 language: scala
 install:
   - ./gradlew buildDistribution
+notifications:
+  email:
+    - yaniv@shinto.io
