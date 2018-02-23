@@ -113,8 +113,10 @@ object SparkRunnerHelper extends Logging {
                   hostName: String): SparkSession = {
 
     Thread.currentThread().setContextClassLoader(getClass.getClassLoader)
-
-    val pyfiles = FileUtils.getAllFiles(new File("miniconda/pkgs")).filter(f => f.getName.endsWith(".py") ||
+    val minicondaPkgsPath = "miniconda/pkgs"
+    val executorMinicondaDirRef = new File(minicondaPkgsPath)
+    val minicondaFiles = if (executorMinicondaDirRef.exists) FileUtils.getAllFiles(executorMinicondaDirRef) else new Array[File](0)
+    val pyfiles = minicondaFiles.filter(f => f.getName.endsWith(".py") ||
       f.getName.endsWith(".egg") ||
       f.getName.endsWith(".zip"))
 
@@ -124,19 +126,21 @@ object SparkRunnerHelper extends Logging {
       .set("spark.hadoop.validateOutputSpecs", "false")
       .set("spark.logConf", "true")
       .set("spark.submit.pyFiles", pyfiles.mkString(","))
-      .setJars("executor.jar" +: jars)
+
 
 
     config.mode match {
 
       case "mesos" =>
         conf.set("spark.executor.uri", s"http://$getNode:${config.Webserver.Port}/spark-2.1.1-bin-hadoop2.7.tgz")
+          .setJars("executor-0.2.0-incubating-all.jar" +: jars)
           .set("spark.master", env.master)
           .set("spark.home", s"${scala.reflect.io.File(".").toCanonical.toString}/spark-2.1.1-bin-hadoop2.7")
 
       case "yarn" =>
         conf.set("spark.home", config.spark.home)
           // TODO: parameterize those
+          .setJars("executor.jar" +: jars)
           .set("spark.history.kerberos.keytab", "/etc/security/keytabs/spark.headless.keytab")
           .set("spark.driver.extraLibraryPath", "/usr/hdp/current/hadoop-client/lib/native:/usr/hdp/current/hadoop-client/lib/native/Linux-amd64-64")
           .set("spark.yarn.queue", "default")
