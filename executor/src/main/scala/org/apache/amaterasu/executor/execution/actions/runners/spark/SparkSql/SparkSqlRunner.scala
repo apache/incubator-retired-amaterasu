@@ -47,14 +47,15 @@ class SparkSqlRunner extends Logging with AmaterasuRunner {
    */
   override def executeSource(actionSource: String, actionName: String, exports: util.Map[String, String]): Unit = {
 
-    notifier.info(s"================= executing the SQL query =================")
+    notifier.info(s"================= started action $actionName =================")
+
     if (!actionSource.isEmpty) {
 
       var result: DataFrame = null
       if (actionSource.toLowerCase.contains("amacontext")) {
 
         //Parse the incoming query
-        notifier.info(s"================= parsing the SQL query =================")
+        //notifier.info(s"================= parsing the SQL query =================")
 
         val parser: List[String] = actionSource.toLowerCase.split(" ").toList
         var sqlPart1: String = ""
@@ -97,9 +98,14 @@ class SparkSqlRunner extends Logging with AmaterasuRunner {
         val loadData: DataFrame = AmaContext.getDataFrame(actionName, dfName, fileFormat)
         loadData.createOrReplaceTempView(locationPath)
 
-        notifier.info("Executing SparkSql on: " + parsedQuery)
-        result = spark.sql(parsedQuery)
 
+        try{
+
+        result = spark.sql(parsedQuery)
+        notifier.success(parsedQuery)
+        } catch {
+          case e: Exception => notifier.error(parsedQuery, e.getMessage)
+        }
 
       }
       else {
@@ -112,7 +118,7 @@ class SparkSqlRunner extends Logging with AmaterasuRunner {
       if (exportsBuff.nonEmpty) {
         val exportName = exportsBuff.head._1
         val exportFormat = exportsBuff.head._2
-        notifier.info(s"exporting to -> ${env.workingDir}/$jobId/$actionName/$exportName")
+        //notifier.info(s"exporting to -> ${env.workingDir}/$jobId/$actionName/$exportName")
         result.write.mode(SaveMode.Overwrite).format(exportFormat).save(s"${env.workingDir}/$jobId/$actionName/$exportName")
       }
       notifier.info(s"================= finished action $actionName =================")
