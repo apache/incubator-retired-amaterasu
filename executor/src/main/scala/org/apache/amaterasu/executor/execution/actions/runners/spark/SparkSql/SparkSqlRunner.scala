@@ -67,7 +67,7 @@ class SparkSqlRunner extends Logging with AmaterasuRunner {
           sqlPart1 += parser(i) + " "
         }
 
-        if (parser.indexOf("readas") == -1) {
+        if (parser.indexOf("reads") == -1) {
           queryTempLen = parser.length - 1
         }
         else
@@ -80,12 +80,12 @@ class SparkSqlRunner extends Logging with AmaterasuRunner {
 
         //If no read format is speicified by the user, use PARQUET as default file format to load data
         var fileFormat: String = null
-        //if there is no index for "readas" keyword, then set PARQUET as default read format
-        if (parser.indexOf("readas") == -1) {
+        //if there is no index for "reads" keyword, then set PARQUET as default read format
+        if (parser.indexOf("reads") == -1) {
           fileFormat = "parquet"
         }
         else
-          fileFormat = parser(parser.indexOf("readas") + 1)
+          fileFormat = parser(parser.indexOf("reads") + 1)
 
 
         val locationPath: String = parser.filter(word => word.contains("amacontext")).mkString("")
