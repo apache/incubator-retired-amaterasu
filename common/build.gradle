@@ -47,7 +47,7 @@ dependencies {
 
     // currently we have to use this specific mesos version to prevent from
     // clashing with spark
-    compile('org.apache.mesos:mesos:0.22.2:shaded-protobuf'){
+    compile('org.apache.mesos:mesos:0.22.2:shaded-protobuf') {
         exclude group: 'com.google.protobuf', module: 'protobuf-java'
     }
     provided group: 'org.apache.hadoop', name: 'hadoop-yarn-client', version: '2.7.3'

@@ -18,7 +18,7 @@ package org.apache.amaterasu.leader.utilities
 
 import org.apache.amaterasu.common.logging.Logging
 import org.apache.log4j.{BasicConfigurator, Level, Logger}
-import org.eclipse.jetty.server.{Server, ServerConnector}
+import org.eclipse.jetty.server.{Handler, Server, ServerConnector}
 import org.eclipse.jetty.server.handler._
 import org.eclipse.jetty.servlet.{DefaultServlet, ServletContextHandler, ServletHolder}
 import org.eclipse.jetty.toolchain.test.MavenTestingUtils
@@ -46,29 +46,19 @@ object HttpServer extends Logging {
     threadPool.setName("Jetty")*/
     BasicConfigurator.configure()
     initLogging()
+
     server = new Server()
     val connector = new ServerConnector(server)
     connector.setPort(port.toInt)
     server.addConnector(connector)
-    val rh0 = new ResourceHandler()
-    rh0.setDirectoriesListed(true)
-    rh0.setResourceBase(serverRoot)
-    val context0 = new ContextHandler()
-    context0.setContextPath("/*")
-    //context0.setContextPath("/")
-    //val dir0 = MavenTestingUtils.getTestResourceDir("dist")
-    //context0.setBaseResource(Resource.newResource(dir0))
-    context0.setHandler(rh0)
-    val context = new ServletContextHandler(ServletContextHandler.SESSIONS)
-    context.setResourceBase(serverRoot)
-    context.setContextPath("/")
-    context.setErrorHandler(new ErrorHandler())
-    context.setInitParameter("dirAllowed", "true")
-    context.setInitParameter("pathInfoOnly", "true")
-    context.addServlet(new ServletHolder(new DefaultServlet()), "/")
-    val contexts = new ContextHandlerCollection()
-    contexts.setHandlers(Array(context0, context))
-    server.setHandler(contexts)
+
+    val handler = new ResourceHandler()
+    handler.setDirectoriesListed(true)
+    handler.setResourceBase(serverRoot)
+    val handlers = new HandlerList()
+    handlers.setHandlers(Array(handler, new DefaultHandler()))
+
+    server.setHandler(handlers)
     server.start()
 
   }

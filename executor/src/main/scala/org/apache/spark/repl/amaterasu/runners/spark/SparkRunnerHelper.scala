@@ -128,25 +128,30 @@ object SparkRunnerHelper extends Logging {
       .set("spark.submit.pyFiles", pyfiles.mkString(","))
 
 
+    val master: String = if (env.master.isEmpty) {
+      "yarn"
+    } else {
+      env.master
+    }
 
     config.mode match {
 
       case "mesos" =>
-        conf.set("spark.executor.uri", s"http://$getNode:${config.Webserver.Port}/spark-2.1.1-bin-hadoop2.7.tgz")
-          .setJars("executor-0.2.0-incubating-all.jar" +: jars)
+        conf.set("spark.executor.uri", s"http://$getNode:${config.Webserver.Port}/spark-2.2.1-bin-hadoop2.7.tgz")
+          .setJars(jars)
           .set("spark.master", env.master)
-          .set("spark.home", s"${scala.reflect.io.File(".").toCanonical.toString}/spark-2.1.1-bin-hadoop2.7")
+          .set("spark.home", s"${scala.reflect.io.File(".").toCanonical.toString}/spark-2.2.1-bin-hadoop2.7")
 
       case "yarn" =>
         conf.set("spark.home", config.spark.home)
           // TODO: parameterize those
-          .setJars("executor.jar" +: jars)
+          .setJars(s"executor-${config.version}-all.jar" +: jars)
           .set("spark.history.kerberos.keytab", "/etc/security/keytabs/spark.headless.keytab")
           .set("spark.driver.extraLibraryPath", "/usr/hdp/current/hadoop-client/lib/native:/usr/hdp/current/hadoop-client/lib/native/Linux-amd64-64")
           .set("spark.yarn.queue", "default")
           .set("spark.history.kerberos.principal", "none")
 
-          .set("spark.master", "yarn")
+          .set("spark.master", master)
           .set("spark.executor.instances", "1") // TODO: change this
           .set("spark.yarn.jars", s"spark/jars/*")
           .set("spark.executor.memory", "1g")
@@ -196,7 +201,7 @@ object SparkRunnerHelper extends Logging {
       //.enableHiveSupport()
       .config(conf).getOrCreate()
 
-    sparkSession.conf.getAll.foreach(x => log.info(x.toString))
+    sparkSession.conf.getAll.foreach(x => log.info(s" -----> ${x.toString}"))
 
     val hc = sparkSession.sparkContext.hadoopConfiguration
 
