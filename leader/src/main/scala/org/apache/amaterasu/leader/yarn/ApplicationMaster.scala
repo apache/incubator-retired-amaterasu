@@ -23,8 +23,8 @@ import java.util
 import java.util.concurrent.{ConcurrentHashMap, LinkedBlockingQueue}
 import javax.jms.Session
 
-import org.apache.activemq.broker.BrokerService
 import org.apache.activemq.ActiveMQConnectionFactory
+import org.apache.activemq.broker.BrokerService
 import org.apache.amaterasu.common.configuration.ClusterConfig
 import org.apache.amaterasu.common.dataobjects.ActionData
 import org.apache.amaterasu.common.logging.Logging
@@ -157,7 +157,6 @@ class ApplicationMaster extends AMRMClientAsync.CallbackHandler with Logging {
     rmClient.init(conf)
     rmClient.start()
 
-
     // Register with ResourceManager
     log.info("Registering application")
     val registrationResponse = rmClient.registerApplicationMaster("", 0, "")
@@ -169,11 +168,34 @@ class ApplicationMaster extends AMRMClientAsync.CallbackHandler with Logging {
     log.info(s"Created jobManager. jobManager.registeredActions.size: ${jobManager.registeredActions.size}")
 
     // Resource requirements for worker containers
-    // TODO: this should be per task based on the framework config
     this.capability = Records.newRecord(classOf[Resource])
-    this.capability.setMemory(Math.min(config.taskMem, 1024))
-    this.capability.setVirtualCores(1)
+    var mem: Int = _
+    if (config.spark.opts.contains("yarn.am.memory")) {
+      mem = config.spark.opts("yarn.am.memory").toInt
+    } else if (config.spark.opts.contains("driver.memory")) {
+      mem = config.spark.opts("driver.memory").toInt
+    } else if (config.YARN.Worker.memoryMB > 0) {
+      mem = config.YARN.Worker.memoryMB
+    } else if (config.taskMem > 0) {
+      mem = config.taskMem
+    } else {
+      mem = 1024
+    }
+    mem = Math.min(mem, maxMem)
+    this.capability.setMemory(mem)
 
+    var cpu: Int = _
+    if (config.spark.opts.contains("yarn.am.cores")) {
+      cpu = config.spark.opts("yarn.am.cores").toInt
+    } else if (config.spark.opts.contains("driver.cores")) {
+      cpu = config.spark.opts("driver.cores").toInt
+    } else if (config.YARN.Worker.cores > 0) {
+      cpu = config.YARN.Worker.cores
+    } else {
+      cpu = 1
+    }
+    cpu = Math.min(cpu, maxVCores)
+    this.capability.setVirtualCores(cpu)
 
     while (!jobManager.outOfActions) {
       val actionData = jobManager.getNextActionData
@@ -199,7 +221,6 @@ class ApplicationMaster extends AMRMClientAsync.CallbackHandler with Logging {
     consumer.setMessageListener(new ActiveReportListener)
 
   }
-
 
   private def askContainer(actionData: ActionData): Unit = {
 
