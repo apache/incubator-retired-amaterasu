@@ -95,7 +95,7 @@ esac
 done
 
 echo "repo: ${REPO} "
-CMD="java -cp ${BASEDIR}/bin/*-all.jar -Djava.library.path=/usr/lib org.apache.amaterasu.leader.mesos.JobLauncher --home ${BASEDIR}"
+CMD="java -cp ${BASEDIR}/bin/*-all.jar -Djava.library.path=/usr/lib org.apache.amaterasu.leader.mesos.MesosJobLauncher --home ${BASEDIR}"
 
 if [ -n "$REPO" ]; then
     CMD+=" --repo ${REPO}"
@@ -123,13 +123,14 @@ fi
 
 if ! ls ${BASEDIR}/dist/spark*.tgz 1> /dev/null 2>&1; then
     echo "${bold} Fetching spark distributable ${NC}"
-    wget https://d3kbcqa49mib13.cloudfront.net/spark-2.1.1-bin-hadoop2.7.tgz -P ${BASEDIR}/dist
+    #wget https://d3kbcqa49mib13.cloudfront.net/spark-2.2.1-bin-hadoop2.7.tgz -P ${BASEDIR}/dist
+    wget http://apache.mirror.digitalpacific.com.au/spark/spark-2.2.1/spark-2.2.1-bin-hadoop2.7.tgz -P ${BASEDIR}/dist
 fi
 if [ ! -f ${BASEDIR}/dist/Miniconda2-latest-Linux-x86_64.sh ]; then
     echo "${bold}Fetching miniconda distributable ${NC}"
     wget https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh -P ${BASEDIR}/dist
 fi
-
+cp ${BASEDIR}/amaterasu.properties ${BASEDIR}/dist
 eval $CMD | grep "===>"
 
 echo ""

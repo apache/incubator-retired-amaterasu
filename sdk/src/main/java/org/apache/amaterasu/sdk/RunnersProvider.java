@@ -16,6 +16,7 @@
  */
 package org.apache.amaterasu.sdk;
 
+import org.apache.amaterasu.common.configuration.ClusterConfig;
 import org.apache.amaterasu.common.dataobjects.ExecData;
 import org.apache.amaterasu.common.execution.actions.Notifier;
 
@@ -33,7 +34,7 @@ public interface RunnersProvider {
               ByteArrayOutputStream outStream,
               Notifier notifier,
               String executorId,
-              String propFile,
+              ClusterConfig config,
               String hostName);
 
     String getGroupIdentifier();

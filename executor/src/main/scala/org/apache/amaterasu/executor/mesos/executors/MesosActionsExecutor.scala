@@ -33,7 +33,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.util.{Failure, Success}
 
-class ActionsExecutor extends Executor with Logging {
+class MesosActionsExecutor extends Executor with Logging {
 
   var master: String = _
   var executorDriver: ExecutorDriver = _
@@ -83,7 +83,7 @@ class ActionsExecutor extends Executor with Logging {
     notifier = new MesosNotifier(driver)
     notifier.info(s"Executor ${executorInfo.getExecutorId.getValue} registered")
     val outStream = new ByteArrayOutputStream()
-    providersFactory = ProvidersFactory(data, jobId, outStream, notifier, executorInfo.getExecutorId.getValue, hostName)
+    providersFactory = ProvidersFactory(data, jobId, outStream, notifier, executorInfo.getExecutorId.getValue, hostName, propFile = "./amaterasu.properties")
 
   }
 
@@ -133,13 +133,13 @@ class ActionsExecutor extends Executor with Logging {
 
 }
 
-object ActionsExecutorLauncher extends Logging {
+object MesosActionsExecutor extends Logging {
 
   def main(args: Array[String]) {
     System.loadLibrary("mesos")
     log.debug("Starting a new ActionExecutor")
 
-    val executor = new ActionsExecutor
+    val executor = new MesosActionsExecutor
     executor.jobId = args(0)
     executor.master = args(1)
     executor.actionName = args(2)

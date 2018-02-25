@@ -3,6 +3,7 @@ package org.apache.amaterasu.leader.mesos
 import org.apache.amaterasu.common.configuration.ClusterConfig
 import org.apache.amaterasu.leader.mesos.schedulers.JobScheduler
 import org.apache.amaterasu.leader.utilities.{Args, BaseJobLauncher}
+import org.apache.log4j.LogManager
 import org.apache.mesos.Protos.FrameworkID
 import org.apache.mesos.{MesosSchedulerDriver, Protos}
 
@@ -13,6 +14,8 @@ import org.apache.mesos.{MesosSchedulerDriver, Protos}
 object MesosJobLauncher extends BaseJobLauncher {
 
   override def run(arguments: Args, config: ClusterConfig, resume: Boolean): Unit = {
+    LogManager.resetConfiguration()
+
     val frameworkBuilder = Protos.FrameworkInfo.newBuilder()
       .setName(s"${arguments.name} - Amaterasu Job")
       .setFailoverTimeout(config.timeout)

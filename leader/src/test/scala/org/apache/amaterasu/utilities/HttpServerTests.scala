@@ -32,46 +32,47 @@ class HttpServerTests extends FlatSpec with Matchers {
 
   // this is an ugly hack, getClass.getResource("/").getPath should have worked but
   // stopped working when we moved to gradle :(
+  val resources = new File(getClass.getResource("/simple-maki.yml").getPath).getParent
 
-
-//  "Jetty Web server" should "start HTTP server, serve content and stop successfully" in {
-//    val resources = new File(getClass.getResource("/simple-maki.yml").getPath).getParent
-//    var data = ""
-//    try {
-//      HttpServer.start("8000", resources)
-//      val html = Source.fromURL("http://localhost:8000/jetty-test-data.txt")
-//      data = html.mkString
-//    }
-//    finally {
-//      HttpServer.stop()
-//    }
-//    data should equal("This is a test file to download from Jetty webserver")
-//  }
+  //  "Jetty Web server" should "start HTTP server, serve content and stop successfully" in {
+  //
+  //    var data = ""
+  //    try {
+  //      HttpServer.start("8000", resources)
+  //      val html = Source.fromURL("http://localhost:8000/jetty-test-data.txt")
+  //      data = html.mkString
+  //    }
+  //    finally {
+  //      HttpServer.stop()
+  //    }
+  //    data should equal("This is a test file to download from Jetty webserver")
+  //  }
 
   "Jetty File server with '/' as root" should "start HTTP server, serve content and stop successfully" in {
-    var data = ""
-    val resources = new File(getClass.getResource("/dist").getPath).getParent
-    var urlCount:Int = 0
-    println("resource location"+resources)
+
+    var urlCount: Int = 0
+    println("resource location" + resources)
     try {
-      HttpServer.start("8000",resources)
-      val urls = HttpServer.getFilesInDirectory("localhost","8000","dist")
+      HttpServer.start("8000", resources)
+      val urls = HttpServer.getFilesInDirectory("127.0.0.1", "8000", "dist")
       urls.foreach(println)
       urlCount = urls.length
+    } catch {
+      case e: Exception => println(s"++++>> ${e.getMessage}")
     }
     finally {
       HttpServer.stop()
     }
     urlCount should equal(2)
   }
+
   "Jetty File server with 'dist' as root" should "start HTTP server, serve content and stop successfully" in {
     var data = ""
-    val resources = new File(getClass.getResource("/dist").getPath).getParent
-    var urlCount:Int = 0
-    println("resource location"+resources)
+    var urlCount: Int = 0
+    println("resource location" + resources)
     try {
-      HttpServer.start("8000",resources+"/dist")
-      val urls = HttpServer.getFilesInDirectory("localhost","8000","")
+      HttpServer.start("8000", resources + "/dist")
+      val urls = HttpServer.getFilesInDirectory("localhost", "8000", "")
       urls.foreach(println)
       urlCount = urls.length
     }

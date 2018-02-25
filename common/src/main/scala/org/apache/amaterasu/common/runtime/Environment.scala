@@ -25,6 +25,6 @@ case class Environment() {
   var outputRootPath: String = ""
   var workingDir: String = ""
 
-  var configuration: Map[String, String] = null
+  var configuration: Map[String, String] = _
 
 }

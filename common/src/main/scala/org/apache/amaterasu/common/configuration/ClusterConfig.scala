@@ -40,7 +40,7 @@ class ClusterConfig extends Logging {
   var distLocation: String = "local"
   var workingFolder: String = ""
   // TODO: get rid of hard-coded version
-  var pysparkPath: String = "spark-2.1.1-bin-hadoop2.7/bin/spark-submit"
+  var pysparkPath: String = "spark-2.2.1-bin-hadoop2.7/bin/spark-submit"
   var Jar: String = _
   var JarName: String = _
   // the additionalClassPath is currently for testing purposes, when amaterasu is
