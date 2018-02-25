@@ -16,10 +16,9 @@
  */
 package org.apache.amaterasu.leader.utilities
 
-//import org.apache.amaterasu.Logging
 import org.apache.amaterasu.common.logging.Logging
 import org.apache.log4j.{BasicConfigurator, Level, Logger}
-import org.eclipse.jetty.server.{Server, ServerConnector}
+import org.eclipse.jetty.server.{Handler, Server, ServerConnector}
 import org.eclipse.jetty.server.handler._
 import org.eclipse.jetty.servlet.{DefaultServlet, ServletContextHandler, ServletHolder}
 import org.eclipse.jetty.toolchain.test.MavenTestingUtils
@@ -38,39 +37,29 @@ import scala.text.Document
   * Implementation of Jetty Web server to server Amaterasu libraries and other distribution files
   */
 object HttpServer extends Logging {
-  val logger = Logger.getLogger(HttpServer.getClass)
-  var server: Server = null
+
+  var server: Server = _
 
   def start(port: String, serverRoot: String): Unit = {
 
-    /*val threadPool = new QueuedThreadPool(Runtime.getRuntime.availableProcessors() * 16)
-    threadPool.setName("Jetty")*/
     BasicConfigurator.configure()
     initLogging()
+
     server = new Server()
     val connector = new ServerConnector(server)
     connector.setPort(port.toInt)
     server.addConnector(connector)
-    val rh0 = new ResourceHandler()
-    rh0.setDirectoriesListed(true)
-    rh0.setResourceBase(serverRoot)
-    val context0 = new ContextHandler()
-    context0.setContextPath("/*")
-    //context0.setContextPath("/")
-    //val dir0 = MavenTestingUtils.getTestResourceDir("dist")
-    //context0.setBaseResource(Resource.newResource(dir0))
-    context0.setHandler(rh0)
-    val context = new ServletContextHandler(ServletContextHandler.SESSIONS)
-    context.setResourceBase(serverRoot)
-    context.setContextPath("/")
-    context.setErrorHandler(new ErrorHandler())
-    context.setInitParameter("dirAllowed", "true")
-    context.setInitParameter("pathInfoOnly", "true")
-    context.addServlet(new ServletHolder(new DefaultServlet()), "/")
-    val contexts = new ContextHandlerCollection()
-    contexts.setHandlers(Array(context0, context))
-    server.setHandler(contexts)
+
+    val handler = new ResourceHandler()
+    handler.setDirectoriesListed(true)
+    handler.setWelcomeFiles(Array[String]("index.html"))
+    handler.setResourceBase(serverRoot)
+    val handlers = new HandlerList()
+    handlers.setHandlers(Array(handler, new DefaultHandler()))
+
+    server.setHandler(handlers)
     server.start()
+
   }
 
   def stop() {
@@ -93,11 +82,13 @@ object HttpServer extends Logging {
   Note: Should the files in URL root be fetched, provide an empty value to directory.
    */
   def getFilesInDirectory(amaNode: String, port: String, directory: String = ""): Array[String] = {
+    println("http://" + amaNode + ":" + port + "/" + directory)
     val html: BufferedSource = Source.fromURL("http://" + amaNode + ":" + port + "/" + directory)
+    println(html)
     val htmlDoc = Jsoup.parse(html.mkString)
     val htmlElement: Elements = htmlDoc.body().select("a")
     val files = htmlElement.asScala
-    val fileNames = files.map(url => url.attr("href")).filter(file => (!file.contains(".."))).map(name => name.replace("/", "")).toArray
+    val fileNames = files.map(url => url.attr("href")).filter(file => !file.contains("..")).map(name => name.replace("/", "")).toArray
     fileNames
   }
 }

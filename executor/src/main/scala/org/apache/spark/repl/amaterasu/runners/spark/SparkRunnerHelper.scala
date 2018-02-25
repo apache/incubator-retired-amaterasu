@@ -26,7 +26,7 @@ import org.apache.amaterasu.common.utils.FileUtils
 import org.apache.spark.repl.amaterasu.AmaSparkILoop
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.util.Utils
-import org.apache.spark.{SparkConf, SparkContext}
+import org.apache.spark.SparkConf
 
 import scala.tools.nsc.GenericRunnerSettings
 import scala.tools.nsc.interpreter.IMain
@@ -37,7 +37,6 @@ object SparkRunnerHelper extends Logging {
   private val rootDir = conf.getOption("spark.repl.classdir").getOrElse(Utils.getLocalDir(conf))
   private val outputDir = Utils.createTempDir(root = rootDir, namePrefix = "repl")
 
-  private var sparkContext: SparkContext = _
   private var sparkSession: SparkSession = _
 
   var notifier: Notifier = _
@@ -97,7 +96,7 @@ object SparkRunnerHelper extends Logging {
     }
     catch {
       case e: Exception =>
-        println("+++++++>" + new Predef.String(outStream.toByteArray))
+        println(new Predef.String(outStream.toByteArray))
 
     }
 
@@ -110,19 +109,14 @@ object SparkRunnerHelper extends Logging {
                   jars: Seq[String],
                   sparkConf: Option[Map[String, Any]],
                   executorEnv: Option[Map[String, Any]],
-                  propFile: String,
+                  config: ClusterConfig,
                   hostName: String): SparkSession = {
 
-    val config = if (propFile != null) {
-      import java.io.FileInputStream
-      ClusterConfig.apply(new FileInputStream(propFile))
-    } else {
-      new ClusterConfig()
-    }
-
     Thread.currentThread().setContextClassLoader(getClass.getClassLoader)
-
-    val pyfiles = FileUtils.getAllFiles(new File("miniconda/pkgs")).filter(f => f.getName.endsWith(".py") ||
+    val minicondaPkgsPath = "miniconda/pkgs"
+    val executorMinicondaDirRef = new File(minicondaPkgsPath)
+    val minicondaFiles = if (executorMinicondaDirRef.exists) FileUtils.getAllFiles(executorMinicondaDirRef) else new Array[File](0)
+    val pyfiles = minicondaFiles.filter(f => f.getName.endsWith(".py") ||
       f.getName.endsWith(".egg") ||
       f.getName.endsWith(".zip"))
 
@@ -132,30 +126,36 @@ object SparkRunnerHelper extends Logging {
       .set("spark.hadoop.validateOutputSpecs", "false")
       .set("spark.logConf", "true")
       .set("spark.submit.pyFiles", pyfiles.mkString(","))
-      .setJars("executor.jar" +: jars)
 
+
+    val master: String = if (env.master.isEmpty) {
+      "yarn"
+    } else {
+      env.master
+    }
 
     config.mode match {
 
       case "mesos" =>
-        conf.set("spark.executor.uri", s"http://$getNode:${config.Webserver.Port}/spark-2.1.1-bin-hadoop2.7.tgz")
+        conf.set("spark.executor.uri", s"http://$getNode:${config.Webserver.Port}/spark-2.2.1-bin-hadoop2.7.tgz")
+          .setJars(jars)
           .set("spark.master", env.master)
-          .set("spark.home", s"${scala.reflect.io.File(".").toCanonical.toString}/spark-2.1.1-bin-hadoop2.7")
+          .set("spark.home", s"${scala.reflect.io.File(".").toCanonical.toString}/spark-2.2.1-bin-hadoop2.7")
 
       case "yarn" =>
         conf.set("spark.home", config.spark.home)
           // TODO: parameterize those
+          .setJars(s"executor-${config.version}-all.jar" +: jars)
           .set("spark.history.kerberos.keytab", "/etc/security/keytabs/spark.headless.keytab")
           .set("spark.driver.extraLibraryPath", "/usr/hdp/current/hadoop-client/lib/native:/usr/hdp/current/hadoop-client/lib/native/Linux-amd64-64")
           .set("spark.yarn.queue", "default")
           .set("spark.history.kerberos.principal", "none")
 
-          .set("spark.master", "yarn")
+          .set("spark.master", master)
           .set("spark.executor.instances", "1") // TODO: change this
           .set("spark.yarn.jars", s"spark/jars/*")
           .set("spark.executor.memory", "1g")
           .set("spark.dynamicAllocation.enabled", "false")
-          //.set("spark.shuffle.service.enabled", "true")
           .set("spark.eventLog.enabled", "false")
           .set("spark.history.fs.logDirectory", "hdfs:///spark2-history/")
           .set("hadoop.home.dir", config.YARN.hadoopHomeDir)
@@ -201,7 +201,6 @@ object SparkRunnerHelper extends Logging {
       //.enableHiveSupport()
       .config(conf).getOrCreate()
 
-    log.info("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^")
     sparkSession.conf.getAll.foreach(x => log.info(x.toString))
 
     val hc = sparkSession.sparkContext.hadoopConfiguration
