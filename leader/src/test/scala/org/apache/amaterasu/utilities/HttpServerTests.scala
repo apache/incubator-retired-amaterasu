@@ -53,7 +53,7 @@ class HttpServerTests extends FlatSpec with Matchers {
     var urlCount: Int = 0
     println("resource location" + resources)
     try {
-      HttpServer.start("8000", s"$resources")
+      HttpServer.start("8000", resources)
       val urls = HttpServer.getFilesInDirectory("127.0.0.1", "8000", "dist")
       urls.foreach(println)
       urlCount = urls.length

@@ -37,13 +37,11 @@ import scala.text.Document
   * Implementation of Jetty Web server to server Amaterasu libraries and other distribution files
   */
 object HttpServer extends Logging {
-  //val logger = Logger.getLogger(HttpServer.getClass)
+
   var server: Server = _
 
   def start(port: String, serverRoot: String): Unit = {
 
-    /*val threadPool = new QueuedThreadPool(Runtime.getRuntime.availableProcessors() * 16)
-    threadPool.setName("Jetty")*/
     BasicConfigurator.configure()
     initLogging()
 
@@ -54,6 +52,7 @@ object HttpServer extends Logging {
 
     val handler = new ResourceHandler()
     handler.setDirectoriesListed(true)
+    handler.setWelcomeFiles(Array[String]("index.html"))
     handler.setResourceBase(serverRoot)
     val handlers = new HandlerList()
     handlers.setHandlers(Array(handler, new DefaultHandler()))
@@ -85,6 +84,7 @@ object HttpServer extends Logging {
   def getFilesInDirectory(amaNode: String, port: String, directory: String = ""): Array[String] = {
     println("http://" + amaNode + ":" + port + "/" + directory)
     val html: BufferedSource = Source.fromURL("http://" + amaNode + ":" + port + "/" + directory)
+    println(html)
     val htmlDoc = Jsoup.parse(html.mkString)
     val htmlElement: Elements = htmlDoc.body().select("a")
     val files = htmlElement.asScala

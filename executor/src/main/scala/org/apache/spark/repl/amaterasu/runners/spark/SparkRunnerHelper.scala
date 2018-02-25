@@ -201,7 +201,7 @@ object SparkRunnerHelper extends Logging {
       //.enableHiveSupport()
       .config(conf).getOrCreate()
 
-    sparkSession.conf.getAll.foreach(x => log.info(s" -----> ${x.toString}"))
+    sparkSession.conf.getAll.foreach(x => log.info(x.toString))
 
     val hc = sparkSession.sparkContext.hadoopConfiguration
 
