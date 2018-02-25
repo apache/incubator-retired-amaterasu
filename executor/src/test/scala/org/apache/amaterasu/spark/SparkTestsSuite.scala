@@ -28,16 +28,24 @@ import org.apache.spark.repl.amaterasu.runners.spark.SparkScalaRunner
 import org.apache.spark.sql.SparkSession
 import org.scalatest._
 
+
+
 import scala.collection.mutable.ListBuffer
 
 
 class SparkTestsSuite extends Suites(
-  new PySparkRunnerTests(),
-  new RunnersLoadingTests()) with BeforeAndAfterAll {
+  new PySparkRunnerTests,
+  new RunnersLoadingTests,
+  new SparkSqlRunnerTests) with BeforeAndAfterAll {
 
   var env: Environment = _
   var factory: ProvidersFactory = _
   var spark: SparkSession = _
+
+  private def createTestMiniconda(): Unit = {
+    println(s"PATH: ${new File(".").getAbsolutePath}")
+    new File("miniconda/pkgs").mkdirs()
+  }
 
   override def beforeAll(): Unit = {
 
@@ -48,11 +56,6 @@ class SparkTestsSuite extends Suites(
     // I can't apologise enough for this
     val resources = new File(getClass.getResource("/spark_intp.py").getPath).getParent
 
-    val conf = Map[String, Any](
-      "spark.cassandra.connection.host" -> "127.0.0.1",
-      "sourceTable" -> "documents",
-      "spark.local.ip" -> "127.0.0.1"
-    )
     env.master = "local[1]"
     if (env.configuration != null) env.configuration ++ "pysparkPath" -> "/usr/bin/python" else env.configuration = Map(
       "pysparkPath" -> "/usr/bin/python",
@@ -61,6 +64,7 @@ class SparkTestsSuite extends Suites(
     val excEnv = Map[String, Any](
       "PYTHONPATH" -> resources
     )
+    createTestMiniconda()
     env.configuration ++ "spark_exec_env" -> excEnv
     factory = ProvidersFactory(ExecData(env,
       Dependencies(ListBuffer.empty[Repo], List.empty[Artifact]),
@@ -72,7 +76,8 @@ class SparkTestsSuite extends Suites(
       new ByteArrayOutputStream(),
       new TestNotifier(),
       "test",
-      getClass.getResource("/amaterasu.properties").getPath)
+      "localhost",
+      getClass.getClassLoader.getResource("amaterasu.properties").getPath)
     spark = factory.getRunner("spark", "scala").get.asInstanceOf[SparkScalaRunner].spark
 
     this.nestedSuites.filter(s => s.isInstanceOf[RunnersLoadingTests]).foreach(s => s.asInstanceOf[RunnersLoadingTests].factory = factory)
@@ -83,6 +88,7 @@ class SparkTestsSuite extends Suites(
   }
 
   override def afterAll(): Unit = {
+    new File("miniconda").delete()
     spark.stop()
 
     super.afterAll()

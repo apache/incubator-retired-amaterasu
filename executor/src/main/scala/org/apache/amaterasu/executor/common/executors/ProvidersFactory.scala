@@ -18,6 +18,7 @@ package org.apache.amaterasu.executor.common.executors
 
 import java.io.ByteArrayOutputStream
 
+import org.apache.amaterasu.common.configuration.ClusterConfig
 import org.apache.amaterasu.common.dataobjects.ExecData
 import org.apache.amaterasu.common.execution.actions.Notifier
 import org.apache.amaterasu.sdk.{AmaterasuRunner, RunnersProvider}
@@ -52,12 +53,18 @@ object ProvidersFactory {
     val result = new ProvidersFactory()
     val reflections = new Reflections(getClass.getClassLoader)
     val runnerTypes = reflections.getSubTypesOf(classOf[RunnersProvider]).toSet
+    val config = if (propFile != null) {
+      import java.io.FileInputStream
+      ClusterConfig.apply(new FileInputStream(propFile))
+    } else {
+      new ClusterConfig()
+    }
 
     result.providers = runnerTypes.map(r => {
 
       val provider = Manifest.classType(r).runtimeClass.newInstance.asInstanceOf[RunnersProvider]
 
-      provider.init(data, jobId, outStream, notifier, executorId, propFile, hostName)
+      provider.init(data, jobId, outStream, notifier, executorId, config, hostName)
       notifier.info(s"a provider for group ${provider.getGroupIdentifier} was created")
       (provider.getGroupIdentifier, provider)
     }).toMap
