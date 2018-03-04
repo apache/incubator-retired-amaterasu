@@ -7,7 +7,7 @@ import java.io.File;
 
 public interface FrameworkSetupProvider {
 
-    void init(ClusterConfig conf);
+    void init(String env, ClusterConfig conf);
 
     String getGroupIdentifier();
 

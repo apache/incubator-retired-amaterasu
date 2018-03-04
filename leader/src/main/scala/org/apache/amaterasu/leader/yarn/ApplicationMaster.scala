@@ -26,7 +26,7 @@ import javax.jms.Session
 import org.apache.activemq.ActiveMQConnectionFactory
 import org.apache.activemq.broker.BrokerService
 import org.apache.amaterasu.common.configuration.ClusterConfig
-import org.apache.amaterasu.common.dataobjects.{ActionData, ExecData}
+import org.apache.amaterasu.common.dataobjects.ActionData
 import org.apache.amaterasu.common.logging.Logging
 import org.apache.amaterasu.leader.execution.frameworks.FrameworkProvidersFactory
 import org.apache.amaterasu.leader.execution.{JobLoader, JobManager}
@@ -170,45 +170,17 @@ class ApplicationMaster extends AMRMClientAsync.CallbackHandler with Logging {
 
     // Resource requirements for worker containers
     this.capability = Records.newRecord(classOf[Resource])
-    var mem: Int = 0
-    val execData: ExecData = DataLoader.getExecutorData(env, config)
-    val sparkConfig = execData.configurations.get("spark")
-    if (sparkConfig.isEmpty) {
-      throw new RuntimeException("Could not find spark configuration file for execution")
-    }
+    val frameworkFactory = FrameworkProvidersFactory.apply(env, config)
 
-    if (sparkConfig.get.get("spark.yarn.am.memory").isDefined) {
-      mem = sparkConfig.get("spark.yarn.am.memory").toString.toInt
-    } else if (sparkConfig.get.get("spark.driver.memeory").isDefined) {
-      mem = sparkConfig.get("spark.yarn.am.memory").toString.toInt
-    } else if (config.spark.opts.contains("yarn.am.memory")) {
-      mem = config.spark.opts("yarn.am.memory").toInt
-    } else if (config.spark.opts.contains("driver.memory")) {
-      mem = config.spark.opts("driver.memory").toInt
-    } else if (config.YARN.Worker.memoryMB > 0) {
-      mem = config.YARN.Worker.memoryMB
-    } else if (config.taskMem > 0) {
-      mem = config.taskMem
-    } else {
-      mem = 1024
-    }
+    // TODO: This is coupled with spark. should move on a per-task basis
+    val sparkFrameworkProvider = frameworkFactory.providers("spark")
+    val sparkDriverConfiguration = sparkFrameworkProvider.getDriverConfiguration
+
+    var mem: Int = sparkDriverConfiguration.getMemory
     mem = Math.min(mem, maxMem)
     this.capability.setMemory(mem)
 
-    var cpu: Int = 0
-    if (sparkConfig.get.get("spark.yarn.am.cores").isDefined) {
-      cpu = sparkConfig.get("spark.yarn.am.cores").toString.toInt
-    } else if (sparkConfig.get.get("spark.driver.cores").isDefined) {
-      cpu = sparkConfig.get("spark.yarn.am.cores").toString.toInt
-    } else if (config.spark.opts.contains("yarn.am.cores")) {
-      cpu = config.spark.opts("yarn.am.cores").toInt
-    } else if (config.spark.opts.contains("driver.cores")) {
-      cpu = config.spark.opts("driver.cores").toInt
-    } else if (config.YARN.Worker.cores > 0) {
-      cpu = config.YARN.Worker.cores
-    } else {
-      cpu = 1
-    }
+    var cpu = sparkDriverConfiguration.getCPUs
     cpu = Math.min(cpu, maxVCores)
     this.capability.setVirtualCores(cpu)
 
@@ -310,7 +282,7 @@ class ApplicationMaster extends AMRMClientAsync.CallbackHandler with Logging {
           "spark-version-info.properties" -> setLocalResourceFromPath(Path.mergePaths(jarPath, new Path("/dist/spark-version-info.properties"))),
           "spark_intp.py" -> setLocalResourceFromPath(Path.mergePaths(jarPath, new Path("/dist/spark_intp.py"))))
 
-        val frameworkFactory = FrameworkProvidersFactory(config)
+        val frameworkFactory = FrameworkProvidersFactory(env, config)
         val framework = frameworkFactory.getFramework(actionData.groupId)
 
         //adding the framework and executor resources

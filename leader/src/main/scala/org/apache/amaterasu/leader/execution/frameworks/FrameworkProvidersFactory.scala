@@ -1,7 +1,5 @@
 package org.apache.amaterasu.leader.execution.frameworks
 
-import java.net.{URL, URLClassLoader}
-
 import org.apache.amaterasu.common.configuration.ClusterConfig
 import org.apache.amaterasu.common.logging.Logging
 import org.apache.amaterasu.sdk.frameworks.FrameworkSetupProvider
@@ -23,7 +21,7 @@ class FrameworkProvidersFactory {
 
 object FrameworkProvidersFactory extends Logging {
 
-  def apply(config: ClusterConfig): FrameworkProvidersFactory = {
+  def apply(env: String, config: ClusterConfig): FrameworkProvidersFactory = {
 
     val result = new FrameworkProvidersFactory()
 
@@ -34,7 +32,7 @@ object FrameworkProvidersFactory extends Logging {
 
       val provider = Manifest.classType(r).runtimeClass.newInstance.asInstanceOf[FrameworkSetupProvider]
 
-      provider.init(config)
+      provider.init(env, config)
       log.info(s"a provider for group ${provider.getGroupIdentifier} was created")
       (provider.getGroupIdentifier, provider)
 
