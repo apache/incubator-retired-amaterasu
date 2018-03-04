@@ -16,6 +16,6 @@ public class DriverConfiguration {
     }
 
     public int getCPUs() {
-        return memory;
+        return cpus;
     }
 }
