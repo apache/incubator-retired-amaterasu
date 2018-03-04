@@ -21,7 +21,7 @@ import org.apache.amaterasu.common.configuration.ClusterConfig;
 
 import org.apache.amaterasu.leader.execution.frameworks.FrameworkProvidersFactory;
 import org.apache.amaterasu.leader.utilities.ActiveReportListener;
-import org.apache.amaterasu.sdk.FrameworkSetupProvider;
+import org.apache.amaterasu.sdk.frameworks.FrameworkSetupProvider;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;

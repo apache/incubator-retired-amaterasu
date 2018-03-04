@@ -4,7 +4,7 @@ import java.io.File
 
 import org.apache.amaterasu.common.configuration.ClusterConfig
 import org.apache.amaterasu.common.utils.FileUtils
-import org.apache.amaterasu.sdk.FrameworkSetupProvider
+import org.apache.amaterasu.sdk.frameworks.FrameworkSetupProvider
 
 import scala.collection.mutable
 

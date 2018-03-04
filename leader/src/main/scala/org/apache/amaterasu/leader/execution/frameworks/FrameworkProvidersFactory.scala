@@ -4,7 +4,7 @@ import java.net.{URL, URLClassLoader}
 
 import org.apache.amaterasu.common.configuration.ClusterConfig
 import org.apache.amaterasu.common.logging.Logging
-import org.apache.amaterasu.sdk.FrameworkSetupProvider
+import org.apache.amaterasu.sdk.frameworks.FrameworkSetupProvider
 import org.reflections.Reflections
 
 import scala.collection.JavaConversions._

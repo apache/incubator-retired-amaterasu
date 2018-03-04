@@ -169,7 +169,7 @@ class ApplicationMaster extends AMRMClientAsync.CallbackHandler with Logging {
 
     // Resource requirements for worker containers
     this.capability = Records.newRecord(classOf[Resource])
-    var mem: Int = _
+    var mem: Int = 0
     if (config.spark.opts.contains("yarn.am.memory")) {
       mem = config.spark.opts("yarn.am.memory").toInt
     } else if (config.spark.opts.contains("driver.memory")) {
@@ -184,7 +184,7 @@ class ApplicationMaster extends AMRMClientAsync.CallbackHandler with Logging {
     mem = Math.min(mem, maxMem)
     this.capability.setMemory(mem)
 
-    var cpu: Int = _
+    var cpu: Int = 0
     if (config.spark.opts.contains("yarn.am.cores")) {
       cpu = config.spark.opts("yarn.am.cores").toInt
     } else if (config.spark.opts.contains("driver.cores")) {
