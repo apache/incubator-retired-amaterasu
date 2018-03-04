@@ -172,21 +172,21 @@ class ApplicationMaster extends AMRMClientAsync.CallbackHandler with Logging {
     this.capability = Records.newRecord(classOf[Resource])
     val frameworkFactory = FrameworkProvidersFactory.apply(env, config)
 
-    // TODO: This is coupled with spark. should move on a per-task basis
-    val sparkFrameworkProvider = frameworkFactory.providers("spark")
-    val sparkDriverConfiguration = sparkFrameworkProvider.getDriverConfiguration
-
-    var mem: Int = sparkDriverConfiguration.getMemory
-    mem = Math.min(mem, maxMem)
-    this.capability.setMemory(mem)
-
-    var cpu = sparkDriverConfiguration.getCPUs
-    cpu = Math.min(cpu, maxVCores)
-    this.capability.setVirtualCores(cpu)
-
     while (!jobManager.outOfActions) {
       val actionData = jobManager.getNextActionData
       if (actionData != null) {
+
+        val frameworkProvider = frameworkFactory.providers(actionData.groupId)
+        val driverConfiguration = frameworkProvider.getDriverConfiguration
+
+        var mem: Int = driverConfiguration.getMemory
+        mem = Math.min(mem, maxMem)
+        this.capability.setMemory(mem)
+
+        var cpu = driverConfiguration.getCPUs
+        cpu = Math.min(cpu, maxVCores)
+        this.capability.setVirtualCores(cpu)
+
         askContainer(actionData)
       }
     }
