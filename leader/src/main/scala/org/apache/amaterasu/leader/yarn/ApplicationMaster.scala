@@ -26,7 +26,7 @@ import javax.jms.Session
 import org.apache.activemq.ActiveMQConnectionFactory
 import org.apache.activemq.broker.BrokerService
 import org.apache.amaterasu.common.configuration.ClusterConfig
-import org.apache.amaterasu.common.dataobjects.ActionData
+import org.apache.amaterasu.common.dataobjects.{ActionData, ExecData}
 import org.apache.amaterasu.common.logging.Logging
 import org.apache.amaterasu.leader.execution.frameworks.FrameworkProvidersFactory
 import org.apache.amaterasu.leader.execution.{JobLoader, JobManager}
@@ -167,10 +167,21 @@ class ApplicationMaster extends AMRMClientAsync.CallbackHandler with Logging {
     log.info("Max vcores capability of resources in this cluster " + maxVCores)
     log.info(s"Created jobManager. jobManager.registeredActions.size: ${jobManager.registeredActions.size}")
 
+
     // Resource requirements for worker containers
     this.capability = Records.newRecord(classOf[Resource])
     var mem: Int = 0
-    if (config.spark.opts.contains("yarn.am.memory")) {
+    val execData: ExecData = DataLoader.getExecutorData(env, config)
+    val sparkConfig = execData.configurations.get("spark")
+    if (sparkConfig.isEmpty) {
+      throw new RuntimeException("Could not find spark configuration file for execution")
+    }
+
+    if (sparkConfig.get.get("spark.yarn.am.memory").isDefined) {
+      mem = sparkConfig.get("spark.yarn.am.memory").toString.toInt
+    } else if (sparkConfig.get.get("spark.driver.memeory").isDefined) {
+      mem = sparkConfig.get("spark.yarn.am.memory").toString.toInt
+    } else if (config.spark.opts.contains("yarn.am.memory")) {
       mem = config.spark.opts("yarn.am.memory").toInt
     } else if (config.spark.opts.contains("driver.memory")) {
       mem = config.spark.opts("driver.memory").toInt
@@ -185,7 +196,11 @@ class ApplicationMaster extends AMRMClientAsync.CallbackHandler with Logging {
     this.capability.setMemory(mem)
 
     var cpu: Int = 0
-    if (config.spark.opts.contains("yarn.am.cores")) {
+    if (sparkConfig.get.get("spark.yarn.am.cores").isDefined) {
+      cpu = sparkConfig.get("spark.yarn.am.cores").toString.toInt
+    } else if (sparkConfig.get.get("spark.driver.cores").isDefined) {
+      cpu = sparkConfig.get("spark.yarn.am.cores").toString.toInt
+    } else if (config.spark.opts.contains("yarn.am.cores")) {
       cpu = config.spark.opts("yarn.am.cores").toInt
     } else if (config.spark.opts.contains("driver.cores")) {
       cpu = config.spark.opts("driver.cores").toInt

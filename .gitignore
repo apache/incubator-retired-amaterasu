@@ -30,6 +30,6 @@ bin/
 
 #General
 .DS_Store
-/.gitignore
 amaterasu-executor/
 project/project/
+executor/spark-warehouse/
