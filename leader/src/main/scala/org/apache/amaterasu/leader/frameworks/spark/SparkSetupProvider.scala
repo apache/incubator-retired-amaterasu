@@ -4,7 +4,7 @@ import java.io.File
 
 import org.apache.amaterasu.common.configuration.ClusterConfig
 import org.apache.amaterasu.common.dataobjects.ExecData
-import org.apache.amaterasu.leader.utilities.DataLoader
+import org.apache.amaterasu.leader.utilities.{DataLoader, MemoryFormatParser}
 import org.apache.amaterasu.sdk.frameworks.FrameworkSetupProvider
 import org.apache.amaterasu.sdk.frameworks.configuration.DriverConfiguration
 
@@ -48,9 +48,9 @@ class SparkSetupProvider extends FrameworkSetupProvider {
   override def getDriverConfiguration: DriverConfiguration = {
     var cpu: Int = 0
     if (sparkExecConfigurations.get("spark.yarn.am.cores").isDefined) {
-      cpu = sparkExecConfigurations.get("spark.yarn.am.cores").toString.toInt
+      cpu = sparkExecConfigurations("spark.yarn.am.cores").toString.toInt
     } else if (sparkExecConfigurations.get("spark.driver.cores").isDefined) {
-      cpu = sparkExecConfigurations.get("spark.yarn.am.cores").toString.toInt
+      cpu = sparkExecConfigurations("spark.driver.cores").toString.toInt
     } else if (conf.spark.opts.contains("yarn.am.cores")) {
       cpu = conf.spark.opts("yarn.am.cores").toInt
     } else if (conf.spark.opts.contains("driver.cores")) {
@@ -62,13 +62,13 @@ class SparkSetupProvider extends FrameworkSetupProvider {
     }
     var mem: Int = 0
     if (sparkExecConfigurations.get("spark.yarn.am.memory").isDefined) {
-      mem = sparkExecConfigurations.get("spark.yarn.am.memory").toString.toInt
+      mem = MemoryFormatParser.extractMegabytes(sparkExecConfigurations("spark.yarn.am.memory").toString)
     } else if (sparkExecConfigurations.get("spark.driver.memeory").isDefined) {
-      mem = sparkExecConfigurations.get("spark.yarn.am.memory").toString.toInt
+      mem = MemoryFormatParser.extractMegabytes(sparkExecConfigurations("spark.driver.memeory").toString)
     } else if (conf.spark.opts.contains("yarn.am.memory")) {
-      mem = conf.spark.opts("yarn.am.memory").toInt
+      mem = MemoryFormatParser.extractMegabytes(conf.spark.opts("yarn.am.memory"))
     } else if (conf.spark.opts.contains("driver.memory")) {
-      mem = conf.spark.opts("driver.memory").toInt
+      mem = MemoryFormatParser.extractMegabytes(conf.spark.opts("driver.memory"))
     } else if (conf.YARN.Worker.memoryMB > 0) {
       mem = conf.YARN.Worker.memoryMB
     } else if (conf.taskMem > 0) {
