@@ -49,12 +49,13 @@ class SparkTestsSuite extends Suites(
 
   override def beforeAll(): Unit = {
 
-    env = Environment()
-    env.workingDir = "file:///tmp/"
-    env.master = "local[*]"
-
     // I can't apologise enough for this
     val resources = new File(getClass.getResource("/spark_intp.py").getPath).getParent
+    val workDir = new File(resources).getParentFile.getParentFile.getParentFile.getParent
+
+    env = Environment()
+    env.workingDir = workDir
+    env.master = "local[*]"
 
     env.master = "local[1]"
     if (env.configuration != null) env.configuration ++ "pysparkPath" -> "/usr/bin/python" else env.configuration = Map(
@@ -82,6 +83,8 @@ class SparkTestsSuite extends Suites(
 
     this.nestedSuites.filter(s => s.isInstanceOf[RunnersLoadingTests]).foreach(s => s.asInstanceOf[RunnersLoadingTests].factory = factory)
     this.nestedSuites.filter(s => s.isInstanceOf[PySparkRunnerTests]).foreach(s => s.asInstanceOf[PySparkRunnerTests].factory = factory)
+    this.nestedSuites.filter(s => s.isInstanceOf[SparkSqlRunnerTests]).foreach(s => s.asInstanceOf[SparkSqlRunnerTests].factory = factory)
+    this.nestedSuites.filter(s => s.isInstanceOf[SparkSqlRunnerTests]).foreach(s => s.asInstanceOf[SparkSqlRunnerTests].env = env)
 
 
     super.beforeAll()
