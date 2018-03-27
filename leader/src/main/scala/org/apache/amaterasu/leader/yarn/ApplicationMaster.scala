@@ -23,8 +23,8 @@ import java.util
 import java.util.concurrent.{ConcurrentHashMap, LinkedBlockingQueue}
 import javax.jms.Session
 
-import org.apache.activemq.broker.BrokerService
 import org.apache.activemq.ActiveMQConnectionFactory
+import org.apache.activemq.broker.BrokerService
 import org.apache.amaterasu.common.configuration.ClusterConfig
 import org.apache.amaterasu.common.dataobjects.ActionData
 import org.apache.amaterasu.common.logging.Logging
@@ -157,7 +157,6 @@ class ApplicationMaster extends AMRMClientAsync.CallbackHandler with Logging {
     rmClient.init(conf)
     rmClient.start()
 
-
     // Register with ResourceManager
     log.info("Registering application")
     val registrationResponse = rmClient.registerApplicationMaster("", 0, "")
@@ -168,16 +167,26 @@ class ApplicationMaster extends AMRMClientAsync.CallbackHandler with Logging {
     log.info("Max vcores capability of resources in this cluster " + maxVCores)
     log.info(s"Created jobManager. jobManager.registeredActions.size: ${jobManager.registeredActions.size}")
 
-    // Resource requirements for worker containers
-    // TODO: this should be per task based on the framework config
-    this.capability = Records.newRecord(classOf[Resource])
-    this.capability.setMemory(Math.min(config.taskMem, 1024))
-    this.capability.setVirtualCores(1)
 
+    // Resource requirements for worker containers
+    this.capability = Records.newRecord(classOf[Resource])
+    val frameworkFactory = FrameworkProvidersFactory.apply(env, config)
 
     while (!jobManager.outOfActions) {
       val actionData = jobManager.getNextActionData
       if (actionData != null) {
+
+        val frameworkProvider = frameworkFactory.providers(actionData.groupId)
+        val driverConfiguration = frameworkProvider.getDriverConfiguration
+
+        var mem: Int = driverConfiguration.getMemory
+        mem = Math.min(mem, maxMem)
+        this.capability.setMemory(mem)
+
+        var cpu = driverConfiguration.getCPUs
+        cpu = Math.min(cpu, maxVCores)
+        this.capability.setVirtualCores(cpu)
+
         askContainer(actionData)
       }
     }
@@ -199,7 +208,6 @@ class ApplicationMaster extends AMRMClientAsync.CallbackHandler with Logging {
     consumer.setMessageListener(new ActiveReportListener)
 
   }
-
 
   private def askContainer(actionData: ActionData): Unit = {
 
@@ -247,8 +255,8 @@ class ApplicationMaster extends AMRMClientAsync.CallbackHandler with Logging {
         val ctx = Records.newRecord(classOf[ContainerLaunchContext])
         val commands: List[String] = List(
           "/bin/bash ./miniconda.sh -b -p $PWD/miniconda && ",
-          s"/bin/bash spark/bin/load-spark-env.sh && ",
-          s"java -cp spark/jars/*:executor.jar:${config.spark.home}/conf/:${config.YARN.hadoopHomeDir}/conf/ " +
+          s"/bin/bash ${config.spark.home}/bin/load-spark-env.sh && ",
+          s"java -cp ${config.spark.home}/jars/*:executor.jar:${config.spark.home}/conf/:${config.YARN.hadoopHomeDir}/conf/ " +
             "-Xmx1G " +
             "-Dscala.usejavacp=true " +
             "-Dhdp.version=2.6.1.0-129 " +
@@ -274,7 +282,7 @@ class ApplicationMaster extends AMRMClientAsync.CallbackHandler with Logging {
           "spark-version-info.properties" -> setLocalResourceFromPath(Path.mergePaths(jarPath, new Path("/dist/spark-version-info.properties"))),
           "spark_intp.py" -> setLocalResourceFromPath(Path.mergePaths(jarPath, new Path("/dist/spark_intp.py"))))
 
-        val frameworkFactory = FrameworkProvidersFactory(config)
+        val frameworkFactory = FrameworkProvidersFactory(env, config)
         val framework = frameworkFactory.getFramework(actionData.groupId)
 
         //adding the framework and executor resources

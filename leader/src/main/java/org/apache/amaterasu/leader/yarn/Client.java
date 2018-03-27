@@ -18,16 +18,17 @@ package org.apache.amaterasu.leader.yarn;
 
 import org.apache.activemq.ActiveMQConnectionFactory;
 import org.apache.amaterasu.common.configuration.ClusterConfig;
-
 import org.apache.amaterasu.leader.execution.frameworks.FrameworkProvidersFactory;
 import org.apache.amaterasu.leader.utilities.ActiveReportListener;
-import org.apache.amaterasu.sdk.FrameworkSetupProvider;
-
+import org.apache.amaterasu.sdk.frameworks.FrameworkSetupProvider;
+import org.apache.curator.framework.CuratorFramework;
+import org.apache.curator.framework.CuratorFrameworkFactory;
+import org.apache.curator.framework.recipes.barriers.DistributedBarrier;
+import org.apache.curator.retry.ExponentialBackoffRetry;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-
 import org.apache.hadoop.yarn.api.ApplicationConstants;
 import org.apache.hadoop.yarn.api.records.*;
 import org.apache.hadoop.yarn.client.api.YarnClient;
@@ -37,12 +38,6 @@ import org.apache.hadoop.yarn.exceptions.YarnException;
 import org.apache.hadoop.yarn.util.Apps;
 import org.apache.hadoop.yarn.util.ConverterUtils;
 import org.apache.hadoop.yarn.util.Records;
-
-import org.apache.curator.framework.CuratorFramework;
-import org.apache.curator.framework.CuratorFrameworkFactory;
-import org.apache.curator.framework.recipes.barriers.DistributedBarrier;
-import org.apache.curator.retry.ExponentialBackoffRetry;
-
 import org.apache.log4j.LogManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -142,7 +137,7 @@ public class Client {
                 }
 
                 // setup frameworks
-                FrameworkProvidersFactory frameworkFactory = FrameworkProvidersFactory.apply(config);
+                FrameworkProvidersFactory frameworkFactory = FrameworkProvidersFactory.apply(opts.env, config);
                 for (String group : frameworkFactory.groups()) {
                     FrameworkSetupProvider framework = frameworkFactory.getFramework(group);
 

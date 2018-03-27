@@ -29,6 +29,7 @@ import org.apache.amaterasu.common.configuration.enums.ActionStatus.ActionStatus
 import org.apache.amaterasu.common.dataobjects.ActionData
 import org.apache.amaterasu.common.execution.actions.NotificationLevel.NotificationLevel
 import org.apache.amaterasu.common.execution.actions.{Notification, NotificationLevel, NotificationType}
+import org.apache.amaterasu.leader.execution.frameworks.FrameworkProvidersFactory
 import org.apache.amaterasu.leader.execution.{JobLoader, JobManager}
 import org.apache.amaterasu.leader.utilities.{DataLoader, HttpServer}
 import org.apache.curator.framework.{CuratorFramework, CuratorFrameworkFactory}
@@ -216,6 +217,10 @@ class JobScheduler extends AmaterasuScheduler {
               }
             }
 
+            val frameworkFactory = FrameworkProvidersFactory.apply(env, config)
+            val frameworkProvider = frameworkFactory.providers(actionData.groupId)
+            val driverConfiguration = frameworkProvider.getDriverConfiguration
+
             val actionTask = TaskInfo
               .newBuilder
               .setName(taskId.getValue)
@@ -224,8 +229,8 @@ class JobScheduler extends AmaterasuScheduler {
               .setExecutor(executor)
 
               .setData(ByteString.copyFrom(DataLoader.getTaskDataBytes(actionData, env)))
-              .addResources(createScalarResource("cpus", config.Jobs.Tasks.cpus))
-              .addResources(createScalarResource("mem", config.Jobs.Tasks.mem))
+              .addResources(createScalarResource("cpus", driverConfiguration.getCPUs))
+              .addResources(createScalarResource("mem", driverConfiguration.getMemory))
               .addResources(createScalarResource("disk", config.Jobs.repoSize))
               .build()
 
