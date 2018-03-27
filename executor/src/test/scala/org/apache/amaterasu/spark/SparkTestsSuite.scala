@@ -51,7 +51,7 @@ class SparkTestsSuite extends Suites(
 
     // I can't apologise enough for this
     val resources = new File(getClass.getResource("/spark_intp.py").getPath).getParent
-    val workDir = new File(resources).getParentFile.getParentFile.getParentFile.getParent
+    val workDir = new File(resources).getParentFile.getParent
 
     env = Environment()
     env.workingDir = workDir

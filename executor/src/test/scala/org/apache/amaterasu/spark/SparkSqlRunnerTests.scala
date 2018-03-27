@@ -118,6 +118,9 @@ class SparkSqlRunnerTests extends FlatSpec with Matchers with BeforeAndAfterAll 
     inputDf.write.mode(SaveMode.Overwrite).json(s"${env.workingDir}/${sparkSql.jobId}/sparkSqlJsonJobAction/sparkSqlJsonJobActionTempDf")
     sparkSql.executeSource("select * FROM amacontext_sparkSqlJsonJobAction_sparkSqlJsonJobActionTempDf  where age='30' READAS json", "sql_json_test", Map("result" -> "json").asJava)
     val outputDf = spark.read.json(s"${env.workingDir}/${sparkSql.jobId}/sql_json_test/result")
+    println("===============================")
+    println(s"${env.workingDir}/${sparkSql.jobId}/sql_json_test/result")
+    println("===============================")
     println("Output JSON: " + inputDf.count + "," + outputDf.count)
     outputDf.first().getString(1) shouldEqual "Kirupa"
 
