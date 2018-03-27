@@ -19,7 +19,6 @@ package org.apache.amaterasu.spark
 import org.apache.amaterasu.common.runtime.Environment
 import org.apache.amaterasu.executor.common.executors.ProvidersFactory
 import org.apache.amaterasu.executor.execution.actions.runners.spark.SparkSql.SparkSqlRunner
-import org.apache.amaterasu.executor.runtime.AmaContext
 import org.apache.amaterasu.utilities.TestNotifier
 import org.apache.log4j.Logger
 import org.apache.log4j.Level
