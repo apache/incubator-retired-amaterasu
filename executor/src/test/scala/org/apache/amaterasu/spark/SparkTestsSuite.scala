@@ -55,7 +55,6 @@ class SparkTestsSuite extends Suites(
 
     env = Environment()
     env.workingDir = s"file://$workDir"
-    env.master = "local[*]"
 
     env.master = "local[1]"
     if (env.configuration != null) env.configuration ++ "pysparkPath" -> "/usr/bin/python" else env.configuration = Map(
