@@ -54,7 +54,7 @@ class SparkTestsSuite extends Suites(
     val workDir = new File(resources).getParentFile.getParent
 
     env = Environment()
-    env.workingDir = workDir
+    env.workingDir = s"file://$workDir"
     env.master = "local[*]"
 
     env.master = "local[1]"
