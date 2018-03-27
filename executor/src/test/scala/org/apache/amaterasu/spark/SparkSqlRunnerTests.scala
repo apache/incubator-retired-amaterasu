@@ -19,7 +19,6 @@ package org.apache.amaterasu.spark
 import org.apache.amaterasu.common.runtime.Environment
 import org.apache.amaterasu.executor.common.executors.ProvidersFactory
 import org.apache.amaterasu.executor.execution.actions.runners.spark.SparkSql.SparkSqlRunner
-import org.apache.amaterasu.executor.runtime.AmaContext
 import org.apache.amaterasu.utilities.TestNotifier
 import org.apache.log4j.Logger
 import org.apache.log4j.Level
@@ -79,7 +78,7 @@ class SparkSqlRunnerTests extends FlatSpec with Matchers with BeforeAndAfterAll 
 
     //Prepare test dataset
     val inputDf = spark.read.parquet(getClass.getResource("/SparkSql/parquet").getPath)
-    inputDf.write.mode(SaveMode.Overwrite).parquet(s"${env.workingDir}/${sparkSql.jobId}/sparkSqlDefaultParquetJobAction/sparkSqlDefaultParquetJobActionTempDf")
+    inputDf.write.mode(SaveMode.Overwrite).parquet(s"${env.workingDir}/${sparkSql.jobId}/sparkSqlDefaultParquetJobAction/sparkSqlDefaultParquetJobActionTempDf".toLowerCase)
     sparkSql.executeSource("select * FROM AMACONTEXT_sparkSqlDefaultParquetJobAction_sparkSqlDefaultParquetJobActionTempDf where age=22", "sql_parquet_test", Map("result" -> "parquet").asJava)
     val outputDf = spark.read.parquet(s"${env.workingDir}/${sparkSql.jobId}/sql_parquet_test/result")
     println("Output Default Parquet: " + inputDf.count + "," + outputDf.first().getString(1))
@@ -97,7 +96,7 @@ class SparkSqlRunnerTests extends FlatSpec with Matchers with BeforeAndAfterAll 
 
     //Prepare test dataset
     val inputDf = spark.read.parquet(getClass.getResource("/SparkSql/parquet").getPath)
-    inputDf.write.mode(SaveMode.Overwrite).parquet(s"${env.workingDir}/${sparkSql.jobId}/sparkSqlParquetJobAction/sparkSqlParquetJobActionTempDf")
+    inputDf.write.mode(SaveMode.Overwrite).parquet(s"${env.workingDir}/${sparkSql.jobId}/sparkSqlParquetJobAction/sparkSqlParquetJobActionTempDf".toLowerCase)
     sparkSql.executeSource("select * FROM AMACONTEXT_sparkSqlParquetJobAction_sparkSqlParquetJobActionTempDf READAS parquet", "sql_parquet_test", Map("result2" -> "parquet").asJava)
     val outputDf = spark.read.parquet(s"${env.workingDir}/${sparkSql.jobId}/sql_parquet_test/result2")
     println("Output Parquet: " + inputDf.count + "," + outputDf.count)
@@ -116,9 +115,12 @@ class SparkSqlRunnerTests extends FlatSpec with Matchers with BeforeAndAfterAll 
 
     //Prepare test dataset
     val inputDf = spark.read.json(getClass.getResource("/SparkSql/json").getPath)
-    inputDf.write.mode(SaveMode.Overwrite).json(s"${env.workingDir}/${sparkSql.jobId}/sparkSqlJsonJobAction/sparkSqlJsonJobActionTempDf")
+    inputDf.write.mode(SaveMode.Overwrite).json(s"${env.workingDir}/${sparkSql.jobId}/sparkSqlJsonJobAction/sparkSqlJsonJobActionTempDf".toLowerCase)
     sparkSql.executeSource("select * FROM amacontext_sparkSqlJsonJobAction_sparkSqlJsonJobActionTempDf  where age='30' READAS json", "sql_json_test", Map("result" -> "json").asJava)
     val outputDf = spark.read.json(s"${env.workingDir}/${sparkSql.jobId}/sql_json_test/result")
+    println("===============================")
+    println(s"${env.workingDir}/${sparkSql.jobId}/sql_json_test/result")
+    println("===============================")
     println("Output JSON: " + inputDf.count + "," + outputDf.count)
     outputDf.first().getString(1) shouldEqual "Kirupa"
 
@@ -135,7 +137,7 @@ class SparkSqlRunnerTests extends FlatSpec with Matchers with BeforeAndAfterAll 
 
     //Prepare test dataset
     val inputDf = spark.read.csv(getClass.getResource("/SparkSql/csv").getPath)
-    inputDf.write.mode(SaveMode.Overwrite).csv(s"${env.workingDir}/${sparkSql.jobId}/sparkSqlCsvJobAction/sparkSqlCsvJobActionTempDf")
+    inputDf.write.mode(SaveMode.Overwrite).csv(s"${env.workingDir}/${sparkSql.jobId}/sparkSqlCsvJobAction/sparkSqlCsvJobActionTempDf".toLowerCase)
     sparkSql.executeSource("select * FROM amacontext_sparkSqlCsvJobAction_sparkSqlCsvJobActionTempDf READAS csv", "sql_csv_test", Map("result" -> "csv").asJava)
 
     val outputDf = spark.read.csv(s"${env.workingDir}/${sparkSql.jobId}/sql_csv_test/result")
