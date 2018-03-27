@@ -78,10 +78,7 @@ class SparkSqlRunnerTests extends FlatSpec with Matchers with BeforeAndAfterAll 
 
     //Prepare test dataset
     val inputDf = spark.read.parquet(getClass.getResource("/SparkSql/parquet").getPath)
-    inputDf.write.mode(SaveMode.Overwrite).parquet(s"${env.workingDir}/${sparkSql.jobId}/sparkSqlDefaultParquetJobAction/sparkSqlDefaultParquetJobActionTempDf")
-    println("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$")
-    println(s"${env.workingDir}/${sparkSql.jobId}/sparkSqlDefaultParquetJobAction/sparkSqlDefaultParquetJobActionTempDf".toLowerCase)
-    println("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$")
+    inputDf.write.mode(SaveMode.Overwrite).parquet(s"${env.workingDir}/${sparkSql.jobId}/sparkSqlDefaultParquetJobAction/sparkSqlDefaultParquetJobActionTempDf".toLowerCase)
     sparkSql.executeSource("select * FROM AMACONTEXT_sparkSqlDefaultParquetJobAction_sparkSqlDefaultParquetJobActionTempDf where age=22", "sql_parquet_test", Map("result" -> "parquet").asJava)
     val outputDf = spark.read.parquet(s"${env.workingDir}/${sparkSql.jobId}/sql_parquet_test/result")
     println("Output Default Parquet: " + inputDf.count + "," + outputDf.first().getString(1))

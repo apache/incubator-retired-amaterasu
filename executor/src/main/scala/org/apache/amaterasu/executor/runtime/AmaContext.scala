@@ -41,9 +41,6 @@ object AmaContext extends Logging {
 
   def getDataFrame(actionName: String, dfName: String, format: String = "parquet"): DataFrame = {
 
-    println("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
-    println(s"${env.workingDir}/$jobId/$actionName/$dfName")
-    println("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
     spark.read.format(format).load(s"${env.workingDir}/$jobId/$actionName/$dfName")
 
   }
