@@ -78,7 +78,7 @@ class SparkSqlRunnerTests extends FlatSpec with Matchers with BeforeAndAfterAll 
 
     //Prepare test dataset
     val inputDf = spark.read.parquet(getClass.getResource("/SparkSql/parquet").getPath)
-    inputDf.write.mode(SaveMode.Overwrite).parquet(s"${env.workingDir}/${sparkSql.jobId}/sparkSqlDefaultParquetJobAction/sparkSqlDefaultParquetJobActionTempDf".toLowerCase)
+    inputDf.write.mode(SaveMode.Overwrite).parquet(s"${env.workingDir.toLowerCase}/${sparkSql.jobId}/sparkSqlDefaultParquetJobAction/sparkSqlDefaultParquetJobActionTempDf".toLowerCase)
     sparkSql.executeSource("select * FROM AMACONTEXT_sparkSqlDefaultParquetJobAction_sparkSqlDefaultParquetJobActionTempDf where age=22", "sql_parquet_test", Map("result" -> "parquet").asJava)
     val outputDf = spark.read.parquet(s"${env.workingDir}/${sparkSql.jobId}/sql_parquet_test/result")
     println("Output Default Parquet: " + inputDf.count + "," + outputDf.first().getString(1))
@@ -96,7 +96,7 @@ class SparkSqlRunnerTests extends FlatSpec with Matchers with BeforeAndAfterAll 
 
     //Prepare test dataset
     val inputDf = spark.read.parquet(getClass.getResource("/SparkSql/parquet").getPath)
-    inputDf.write.mode(SaveMode.Overwrite).parquet(s"${env.workingDir}/${sparkSql.jobId}/sparkSqlParquetJobAction/sparkSqlParquetJobActionTempDf".toLowerCase)
+    inputDf.write.mode(SaveMode.Overwrite).parquet(s"${env.workingDir.toLowerCase}/${sparkSql.jobId}/sparkSqlParquetJobAction/sparkSqlParquetJobActionTempDf".toLowerCase)
     sparkSql.executeSource("select * FROM AMACONTEXT_sparkSqlParquetJobAction_sparkSqlParquetJobActionTempDf READAS parquet", "sql_parquet_test", Map("result2" -> "parquet").asJava)
     val outputDf = spark.read.parquet(s"${env.workingDir}/${sparkSql.jobId}/sql_parquet_test/result2")
     println("Output Parquet: " + inputDf.count + "," + outputDf.count)
@@ -115,7 +115,7 @@ class SparkSqlRunnerTests extends FlatSpec with Matchers with BeforeAndAfterAll 
 
     //Prepare test dataset
     val inputDf = spark.read.json(getClass.getResource("/SparkSql/json").getPath)
-    inputDf.write.mode(SaveMode.Overwrite).json(s"${env.workingDir}/${sparkSql.jobId}/sparkSqlJsonJobAction/sparkSqlJsonJobActionTempDf".toLowerCase)
+    inputDf.write.mode(SaveMode.Overwrite).json(s"${env.workingDir.toLowerCase}/${sparkSql.jobId}/sparkSqlJsonJobAction/sparkSqlJsonJobActionTempDf".toLowerCase)
     sparkSql.executeSource("select * FROM amacontext_sparkSqlJsonJobAction_sparkSqlJsonJobActionTempDf  where age='30' READAS json", "sql_json_test", Map("result" -> "json").asJava)
     val outputDf = spark.read.json(s"${env.workingDir}/${sparkSql.jobId}/sql_json_test/result")
     println("===============================")
@@ -137,7 +137,7 @@ class SparkSqlRunnerTests extends FlatSpec with Matchers with BeforeAndAfterAll 
 
     //Prepare test dataset
     val inputDf = spark.read.csv(getClass.getResource("/SparkSql/csv").getPath)
-    inputDf.write.mode(SaveMode.Overwrite).csv(s"${env.workingDir}/${sparkSql.jobId}/sparkSqlCsvJobAction/sparkSqlCsvJobActionTempDf".toLowerCase)
+    inputDf.write.mode(SaveMode.Overwrite).csv(s"${env.workingDir.toLowerCase}/${sparkSql.jobId}/sparkSqlCsvJobAction/sparkSqlCsvJobActionTempDf".toLowerCase)
     sparkSql.executeSource("select * FROM amacontext_sparkSqlCsvJobAction_sparkSqlCsvJobActionTempDf READAS csv", "sql_csv_test", Map("result" -> "csv").asJava)
 
     val outputDf = spark.read.csv(s"${env.workingDir}/${sparkSql.jobId}/sql_csv_test/result")
