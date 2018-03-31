@@ -61,6 +61,7 @@ class SparkTestsSuite extends Suites(
       "pysparkPath" -> "/usr/bin/python",
       "cwd" -> resources
     )
+
     val excEnv = Map[String, Any](
       "PYTHONPATH" -> resources
     )
