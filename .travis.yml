@@ -1,4 +1,8 @@
 language: scala
+
+cache:
+  directories:
+  - $HOME/.m2
 install:
   - ./gradlew buildDistribution
 notifications:
