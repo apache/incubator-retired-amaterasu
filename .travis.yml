@@ -3,6 +3,7 @@ language: scala
 cache:
   directories:
   - $HOME/.m2
+  - $HOME/.gradle
 install:
   - ./gradlew buildDistribution
 deploy:
