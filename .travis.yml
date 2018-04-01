@@ -15,7 +15,6 @@ deploy:
  file: "sdk/build/libs/*"
  on:
    repo: annoymousGiraf/incubator-amaterasu
-   tags: true
    
 notifications:
   email:
