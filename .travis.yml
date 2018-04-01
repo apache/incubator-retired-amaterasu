@@ -5,6 +5,16 @@ cache:
   - $HOME/.m2
 install:
   - ./gradlew buildDistribution
+deploy:
+-
+ provider: releases
+ skip_cleanup: true
+ file_glob: true
+ file: "sdk/build/libs/*"
+ on:
+   repo: annoymousGiraf/incubator-amaterasu
+   tags: true
+   
 notifications:
   email:
     - yaniv@apache.org
