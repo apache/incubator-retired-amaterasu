@@ -17,6 +17,7 @@ deploy:
   skip_cleanup: true
   on:
     repo: annoymousGiraf/incubator-amaterasu
+    all_branches: true
 notifications:
   email:
   - yaniv@apache.org
