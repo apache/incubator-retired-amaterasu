@@ -4,8 +4,11 @@ cache:
   - "$HOME/.m2"
   - "$HOME/.gradle"
   - "~/.gradle"
-install:
-- "./gradlew buildDistribution"
+before_install:
+ - chmod +x gradlew
+
+script:
+  - "./gradlew buildDistribution"
 deploy:
   provider: releases
   api_key:
