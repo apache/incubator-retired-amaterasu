@@ -13,7 +13,7 @@ deploy:
   provider: releases
   api_key:
     secure: BhvyTHJB/XVdrzTTApci6jhkToloM8QqPjhx7Be69x6EZdb5vJHk0gKIANq2j/yM26kSH/1owUGZ5AptR9Qi9EBX7+8f/90/1f/y1XNfGvEzhsaKSXK3IzFVU5N97MpJyhhkcjYwDS3XuXKJWIxCBWLl7VvSXXXdqxewZQ9dDadkf7yy2gylISuLintvn8x41t6hVr14XwQnEDOgJ0t2iZPujvIBr4cZI4bIvpTrJsK6YtRSaQfzYJbvyRlFPD7TdHO3E3elWz2OaltxeuEPtkyqW229V96hvXZAjdkrAiVldZsFwTGXBNi+iHTJwA+p2tRXnaQUKRqEdGOZsLimnVaYgBKhEP6oiqARqDJlvGyY5KJMwINBPTz2TOpDN/acoPvce2iGFiMlaN7cAdeEbTlwHnmpGYatg7Rh1kovd2RUOaWLkByPZ3/MW9l/kypHTpTsCmpMMYsOvQU+P4mJ/B23DqvTrSRfwKOpnz6E0OEV0uzjwKinN9Y3qz7WbYhARh4o3X9WzQ9weAZIzXs6Qt+VbGTdNWB5lo01HTUepFmRTS887stZa7GThR/LflvcQE3SHNvGBrZ1UCBSY5bpt+c28OpYPT4G78TMpFkBDCwMunKbanSuSsF0zg+GGVSU3++SnEvcOig4TgYT0PGIKFZjEdALAA1CKeVx6Lr6XsE=
-  file: "$TRAVIS_BUILD_DIR/build/distributions/apache-amaterasu-0.2.0-incubating.tar"
+  file: "build/distributions/apache-amaterasu-0.2.0-incubating.tar"
   on:
     repo: annoymousGiraf/incubator-amaterasu
 notifications:
