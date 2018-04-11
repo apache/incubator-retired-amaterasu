@@ -14,7 +14,7 @@
   ~ See the License for the specific language governing permissions and
   ~ limitations under the License.
   -->
-# Apache Amaterasu [![Build Status](https://travis-ci.org/annoymousGiraf/incubator-amaterasu.svg?branch=master)](https://travis-ci.org/annoymousGiraf/incubator-amaterasu)
+# Apache Amaterasu [![Build Status](https://travis-ci.org/apache/incubator-amaterasu.svg?branch=master)](https://travis-ci.org/apache/incubator-amaterasu)
 
                                                /\
                                               /  \ /\
