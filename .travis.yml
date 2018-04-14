@@ -9,6 +9,7 @@ before_install:
 script:
 - export TRAVIS_BRANCH=$(git symbolic-ref --short -q HEAD)
 - echo $TRAVIS_BRANCH  
+- echo test
 - "./gradlew buildDistribution"
 deploy:
   provider: releases
