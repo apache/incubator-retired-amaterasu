@@ -5,19 +5,19 @@ cache:
   - "$HOME/.gradle"
   - "~/.gradle"
 before_install:
- - chmod +x gradlew
-
+- chmod +x gradlew
 script:
-  - "./gradlew buildDistribution"
+- "./gradlew buildDistribution"
 deploy:
   provider: releases
   api_key:
-    secure: BhvyTHJB/XVdrzTTApci6jhkToloM8QqPjhx7Be69x6EZdb5vJHk0gKIANq2j/yM26kSH/1owUGZ5AptR9Qi9EBX7+8f/90/1f/y1XNfGvEzhsaKSXK3IzFVU5N97MpJyhhkcjYwDS3XuXKJWIxCBWLl7VvSXXXdqxewZQ9dDadkf7yy2gylISuLintvn8x41t6hVr14XwQnEDOgJ0t2iZPujvIBr4cZI4bIvpTrJsK6YtRSaQfzYJbvyRlFPD7TdHO3E3elWz2OaltxeuEPtkyqW229V96hvXZAjdkrAiVldZsFwTGXBNi+iHTJwA+p2tRXnaQUKRqEdGOZsLimnVaYgBKhEP6oiqARqDJlvGyY5KJMwINBPTz2TOpDN/acoPvce2iGFiMlaN7cAdeEbTlwHnmpGYatg7Rh1kovd2RUOaWLkByPZ3/MW9l/kypHTpTsCmpMMYsOvQU+P4mJ/B23DqvTrSRfwKOpnz6E0OEV0uzjwKinN9Y3qz7WbYhARh4o3X9WzQ9weAZIzXs6Qt+VbGTdNWB5lo01HTUepFmRTS887stZa7GThR/LflvcQE3SHNvGBrZ1UCBSY5bpt+c28OpYPT4G78TMpFkBDCwMunKbanSuSsF0zg+GGVSU3++SnEvcOig4TgYT0PGIKFZjEdALAA1CKeVx6Lr6XsE=
-  file: "build/distributions/apache-amaterasu-0.2.0-incubating.tar"
+    secure: LgUGiVEjuFmAepc1XDIEPovYTh6zqn+/q/HXW0AZfwv4RoxROuoXFS8AgG6y1PY3QnbfoxCa2FsvVBwP3MupJyWlMKzZBWp9I1bFEbf4Zmn7Lb5hBJieWrgwvMN/R31YybiA9wBlhL32uN1JN3dvNQIIqwGjRzBS4Hm6db+RtnKiZFTn8p5eB5loyEu32QIlx9PWTLPSVZ/ZEqJlxFE7B5XBRCiy4+JQavFZ9fgg2DmuH5erqBGpv5W/Bn0ekKnj9NA4QaoksNnQSFx+MtL+mvJN/jACZpHF2ACjtMr01KoAUIKC2G8cnX2HVp/CBw2qG5UtTNnlh/ECpG/dtZfKaRmbZhoIxy9clf/PgiBQFdGHJKLrdN2Jpc8wG4aLDM2rRQ0k7oVp0AMWXAB1oZJ7MQcZeiwyAOo/HcU298iGuETRWMghlwEHy66iDzB+3xvxzROC2mVx0cvZE7095PkxJeddKBSpYXRQcdONkNj+b46IenpEj611UqvDilmCikhpIxqFxop24/eeTFOpmREf6JRo1dhMg0e8LwuxU5d4ZiwWx2xwlrZs2wKxrHygx/R8UD08FyntK4vaY6mTfEhcFkPuGb4kUnyrLv4fFq7oH96QXzhTtfftutxMTyLL+Y2+aJTbTeQPo6wpJo3Qn5vEsodzU9ytNV1+yvuqFfPgHtw=
+  file: 'build/distributions/apache-amaterasu-0.2.0-incubating.tar'
   skip_cleanup: true
   on:
-    repo: annoymousGiraf/incubator-amaterasu
+    repo: apache/incubator-amaterasu
     all_branches: true
+    condition: $TRAVIS_BRANCH =~ ^(?i:version)-.*$
 notifications:
   email:
-  - yaniv@apache.org
+  - dev@amaterasu.incubator.apache.org
