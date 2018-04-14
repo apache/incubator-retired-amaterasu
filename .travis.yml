@@ -8,6 +8,8 @@ before_install:
 - chmod +x gradlew
 script:
 - "./gradlew buildDistribution"
+before_deploy:
+- TRAVIS_BRANCH=$(git symbolic-ref --short -q HEAD)
 deploy:
   provider: releases
   api_key:
@@ -17,7 +19,7 @@ deploy:
   on:
     repo: apache/incubator-amaterasu
     all_branches: true
-    condition: $TRAVIS_BRANCH =~ ^(?i:version)-.*$
+    condition: $TRAVIS_BRANCH =~ ^(?i:amaterasu-version)-.*$
 notifications:
   email:
   - dev@amaterasu.incubator.apache.org
