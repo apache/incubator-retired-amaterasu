@@ -6,10 +6,9 @@ cache:
   - "~/.gradle"
 before_install:
 - chmod +x gradlew
+- TRAVIS_BRANCH=$(git symbolic-ref --short -q HEAD)
 script:
 - "./gradlew buildDistribution"
-before_deploy:
-- TRAVIS_BRANCH=$(git symbolic-ref --short -q HEAD)
 deploy:
   provider: releases
   api_key:
