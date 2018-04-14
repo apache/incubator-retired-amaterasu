@@ -7,9 +7,6 @@ cache:
 before_install:
 - chmod +x gradlew
 script:
-- export TRAVIS_BRANCH=$(git symbolic-ref --short -q HEAD)
-- echo $TRAVIS_BRANCH  
-- echo test
 - "./gradlew buildDistribution"
 deploy:
   provider: releases
@@ -20,7 +17,7 @@ deploy:
   on:
     repo: apache/incubator-amaterasu
     all_branches: true
-    condition: $TRAVIS_BRANCH =~ ^(?i:version)-.*$
+    condition: "$TRAVIS_BRANCH =~ ^(?i:version)-.*$"
 notifications:
   email:
   - dev@amaterasu.incubator.apache.org
