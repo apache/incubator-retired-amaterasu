@@ -17,7 +17,7 @@ deploy:
   on:
     repo: apache/incubator-amaterasu
     all_branches: true
-    condition: "$TRAVIS_BRANCH =~ ^(?i:version)-.*$"
+    condition: $TRAVIS_BRANCH =~ ^version-.*
 notifications:
   email:
   - dev@amaterasu.incubator.apache.org
