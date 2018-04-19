@@ -7,7 +7,7 @@ cache:
 before_install:
 - chmod +x gradlew
 script:
-- "./gradlew buildDistribution"
+- "./gradlew clean test buildDistribution"
 deploy:
   provider: releases
   api_key:
