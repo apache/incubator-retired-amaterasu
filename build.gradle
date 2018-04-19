@@ -26,7 +26,6 @@ project(':common')
 project(':executor')
 
 task buildHomeDir() {
-    dependsOn subprojects.collect { getTasksByName('shadowJar', true) }
     dependsOn subprojects.collect { getTasksByName('copyToHome', true) }
 }
 

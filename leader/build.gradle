@@ -102,6 +102,7 @@ task copyToHomeRoot(type: Copy) {
 }
 
 task copyToHomeBin(type: Copy) {
+    dependsOn shadowJar
     from 'build/libs'
     into '../build/amaterasu/bin'
 }
