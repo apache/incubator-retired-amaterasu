@@ -18,7 +18,7 @@ apply plugin: 'distribution'
 
 allprojects {
     group 'org.apache.amaterasu'
-    version '0.2.0-incubating-rc1'
+    version '0.2.0-incubating-rc2'
 }
 
 project(':leader')
@@ -26,7 +26,6 @@ project(':common')
 project(':executor')
 
 task buildHomeDir() {
-    dependsOn subprojects.collect { getTasksByName('shadowJar', true) }
     dependsOn subprojects.collect { getTasksByName('copyToHome', true) }
 }
 
