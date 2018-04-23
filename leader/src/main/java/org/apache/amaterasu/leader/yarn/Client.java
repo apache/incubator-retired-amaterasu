@@ -128,6 +128,7 @@ public class Client {
 
         // Setup local ama folder on hdfs.
         try {
+
             if (!fs.exists(jarPathQualified)) {
                 File home = new File(opts.home);
                 fs.mkdirs(jarPathQualified);
@@ -139,6 +140,7 @@ public class Client {
                 // setup frameworks
                 FrameworkProvidersFactory frameworkFactory = FrameworkProvidersFactory.apply(opts.env, config);
                 for (String group : frameworkFactory.groups()) {
+                    System.out.println("===> setting up " + group);
                     FrameworkSetupProvider framework = frameworkFactory.getFramework(group);
 
                     //creating a group folder
@@ -153,9 +155,11 @@ public class Client {
                 }
             }
         } catch (IOException e) {
+            System.out.println("===>" + e.getMessage());
             LOGGER.error("Error uploading ama folder to HDFS.", e);
             exit(3);
         } catch (NullPointerException ne) {
+            System.out.println("===>" + ne.getMessage());
             LOGGER.error("No files in home dir.", ne);
             exit(4);
         }
@@ -234,7 +238,7 @@ public class Client {
         reportBarrier.setBarrier();
         reportBarrier.waitOnBarrier();
 
-        String address = new String( client.getData().forPath("/" + newJobId + "/broker"));
+        String address = new String(client.getData().forPath("/" + newJobId + "/broker"));
         System.out.println("===> " + address);
         setupReportListener(address);
 

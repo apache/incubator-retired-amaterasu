@@ -129,9 +129,9 @@ fi
 if [ "$FORCE_BIN" = true ] ; then
     echo "FORCE: Deleting and re-creating /apps/amaterasu folder"
     eval "hdfs dfs -rm -R -skipTrash /apps/amaterasu"
-    eval "hdfs dfs -mkdir /apps/amaterasu/"
-    eval "hdfs dfs -chmod -R 777 /apps/amaterasu/"
-    eval "hdfs dfs -copyFromLocal ${BASEDIR}/* /apps/amaterasu/"
+    #eval "hdfs dfs -mkdir /apps/amaterasu/"
+    #eval "hdfs dfs -chmod -R 777 /apps/amaterasu/"
+    #eval "hdfs dfs -copyFromLocal ${BASEDIR}/* /apps/amaterasu/"
 fi
 
 eval $CMD | grep "===>"

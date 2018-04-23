@@ -15,19 +15,22 @@ class SparkSetupProvider extends FrameworkSetupProvider {
 
   private var env: String = _
   private var conf: ClusterConfig = _
-  private val runnersResources = mutable.Map[String,Array[File]]()
-  private var execData: ExecData = _
-  private var sparkExecConfigurations = mutable.Map[String, Any]()
+  private val runnersResources = mutable.Map[String, Array[File]]()
+  //private var execData: ExecData = _
+  private lazy val sparkExecConfigurations: mutable.Map[String, Any] = loadSparkConfig
 
-  override def init(env: String, conf: ClusterConfig): Unit = {
-    this.env = env
-    this.conf = conf
-    this.execData = DataLoader.getExecutorData(env, conf)
+  private def loadSparkConfig: mutable.Map[String, Any] = {
+    val execData = DataLoader.getExecutorData(env, conf)
     val sparkExecConfigurationsurations = execData.configurations.get("spark")
     if (sparkExecConfigurationsurations.isEmpty) {
       throw new Exception(s"Spark configuration files could not be loaded for the environment ${env}")
     }
-    this.sparkExecConfigurations = sparkExecConfigurations ++ sparkExecConfigurationsurations.get
+    collection.mutable.Map(sparkExecConfigurationsurations.get.toSeq: _*)
+  }
+
+  override def init(env: String, conf: ClusterConfig): Unit = {
+    this.env = env
+    this.conf = conf
 
     runnersResources += "scala" -> Array.empty[File]
     runnersResources += "sql" -> Array.empty[File]
