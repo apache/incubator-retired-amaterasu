@@ -14,6 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+plugins {
+    id "org.nosphere.apache.rat" version "0.3.1"
+}
+
 apply plugin: 'distribution'
 
 allprojects {
@@ -51,7 +55,11 @@ task buildDistribution() {
     dependsOn customDistTar
 }
 
+rat {
+    // List of exclude directives, defaults to ['**/.gradle/**']
+    excludes = ["**/build/**", '**/.gradle/**', '**/gradle/**', '**/.idea/**', '**/.ruby-version/**', '**/repo/**', '**/resources/**']
+}
 
-tasks.withType(Test)  {
+tasks.withType(Test) {
     maxParallelForks = 1
 }
