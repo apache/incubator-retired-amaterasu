@@ -164,7 +164,6 @@ public class Client {
             exit(4);
         }
 
-        System.out.println("===> 1");
         // get version of build
         String version = config.version();
 
@@ -174,18 +173,15 @@ public class Client {
         Path mergedPath = Path.mergePaths(jarPath, new Path(leaderJarPath));
 
         // System.out.println("===> path: " + jarPathQualified);
-        System.out.println("===> 2");
         LOGGER.info("Leader merged jar path is: {}", mergedPath);
         LocalResource leaderJar = null;
         LocalResource propFile = null;
         LocalResource log4jPropFile = null;
 
         try {
-            System.out.println("===> 3");
             leaderJar = setLocalResourceFromPath(mergedPath);
             propFile = setLocalResourceFromPath(Path.mergePaths(jarPath, new Path("/amaterasu.properties")));
             log4jPropFile = setLocalResourceFromPath(Path.mergePaths(jarPath, new Path("/log4j.properties")));
-            System.out.println("===> 4");
         } catch (IOException e) {
             LOGGER.error("Error initializing yarn local resources.", e);
             exit(4);
