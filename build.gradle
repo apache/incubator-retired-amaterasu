@@ -57,7 +57,7 @@ task buildDistribution() {
 
 rat {
     // List of exclude directives, defaults to ['**/.gradle/**']
-    excludes = ["**/build/**", '**/.gradle/**', '**/gradle/**', '**/.idea/**', '**/.ruby-version/**', '**/repo/**', '**/resources/**']
+    excludes = ["**/build/**", '**/.gradle/**', '**/gradle/**', '**/.idea/**', '**/.ruby-version/**', '**/repo/**', '**/resources/**',  '**/*.iml/**']
 }
 
 tasks.withType(Test) {
