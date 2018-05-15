@@ -48,7 +48,7 @@ class SparkRunnersProvider extends RunnersProvider with Logging {
   private var conf: Option[Map[String, Any]] = _
   private var executorEnv: Option[Map[String, Any]] = _
 
-  override def init(data: ExecData,
+  override def init(execData: ExecData,
                     jobId: String,
                     outStream: ByteArrayOutputStream,
                     notifier: Notifier,
@@ -63,32 +63,32 @@ class SparkRunnersProvider extends RunnersProvider with Logging {
 
     var jars = Seq.empty[String]
 
-    if (data.deps != null) {
-      jars ++= getDependencies(data.deps)
+    if (execData.deps != null) {
+      jars ++= getDependencies(execData.deps)
     }
 
-    if (data.pyDeps != null &&
-        data.pyDeps.packages.nonEmpty) {
-      loadPythonDependencies(data.pyDeps, notifier)
+    if (execData.pyDeps != null &&
+      execData.pyDeps.packages.nonEmpty) {
+      loadPythonDependencies(execData.pyDeps, notifier)
     }
 
-    conf = data.configurations.get("spark")
-    executorEnv = data.configurations.get("spark_exec_env")
+    conf = execData.configurations.get("spark")
+    executorEnv = execData.configurations.get("spark_exec_env")
     val sparkAppName = s"job_${jobId}_executor_$executorId"
 
     SparkRunnerHelper.notifier = notifier
-    val spark = SparkRunnerHelper.createSpark(data.env, sparkAppName, jars, conf, executorEnv, config, hostName)
+    val spark = SparkRunnerHelper.createSpark(execData.env, sparkAppName, jars, conf, executorEnv, config, hostName)
 
-    lazy val sparkScalaRunner = SparkScalaRunner(data.env, jobId, spark, outStream, notifier, jars)
-    sparkScalaRunner.initializeAmaContext(data.env)
+    lazy val sparkScalaRunner = SparkScalaRunner(execData.env, jobId, spark, outStream, notifier, jars)
+    sparkScalaRunner.initializeAmaContext(execData.env)
 
     runners.put(sparkScalaRunner.getIdentifier, sparkScalaRunner)
 
     // TODO: get rid of hard-coded version
-    lazy val pySparkRunner = PySparkRunner(data.env, jobId, notifier, spark, s"${config.spark.home}/python:${config.spark.home}/python/pyspark:${config.spark.home}/python/pyspark/build:${config.spark.home}/python/pyspark/lib/py4j-0.10.4-src.zip", data.pyDeps, config)
+    lazy val pySparkRunner = PySparkRunner(execData.env, jobId, notifier, spark, s"${config.spark.home}/python:${config.spark.home}/python/pyspark:${config.spark.home}/python/pyspark/build:${config.spark.home}/python/pyspark/lib/py4j-0.10.4-src.zip", execData.pyDeps, config)
     runners.put(pySparkRunner.getIdentifier, pySparkRunner)
 
-    lazy val sparkSqlRunner = SparkSqlRunner(data.env, jobId, notifier, spark)
+    lazy val sparkSqlRunner = SparkSqlRunner(execData.env, jobId, notifier, spark)
     runners.put(sparkSqlRunner.getIdentifier, sparkSqlRunner)
   }
 

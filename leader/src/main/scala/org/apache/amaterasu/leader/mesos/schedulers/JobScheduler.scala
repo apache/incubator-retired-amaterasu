@@ -16,10 +16,11 @@
  */
 package org.apache.amaterasu.leader.mesos.schedulers
 
+import java.io.File
 import java.util
 import java.util.concurrent.locks.ReentrantLock
 import java.util.concurrent.{ConcurrentHashMap, LinkedBlockingQueue}
-import java.util.{Collections, UUID}
+import java.util.{Collections, Properties, UUID}
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
@@ -29,6 +30,7 @@ import org.apache.amaterasu.common.configuration.enums.ActionStatus.ActionStatus
 import org.apache.amaterasu.common.dataobjects.ActionData
 import org.apache.amaterasu.common.execution.actions.NotificationLevel.NotificationLevel
 import org.apache.amaterasu.common.execution.actions.{Notification, NotificationLevel, NotificationType}
+import org.apache.amaterasu.leader.execution.frameworks.FrameworkProvidersFactory
 import org.apache.amaterasu.leader.execution.{JobLoader, JobManager}
 import org.apache.amaterasu.leader.utilities.{DataLoader, HttpServer}
 import org.apache.curator.framework.{CuratorFramework, CuratorFrameworkFactory}
@@ -49,6 +51,9 @@ import scala.collection.concurrent.TrieMap
   */
 class JobScheduler extends AmaterasuScheduler {
 
+  /*private val props: Properties = new Properties(new File(""))
+  private val version = props.getProperty("version")
+  println(s"===> version  $version")*/
   LogManager.resetConfiguration()
   private var jobManager: JobManager = _
   private var client: CuratorFramework = _
@@ -165,15 +170,15 @@ class JobScheduler extends AmaterasuScheduler {
                 val command = CommandInfo
                   .newBuilder
                   .setValue(
-                    s"""$awsEnv env AMA_NODE=${sys.env("AMA_NODE")} env MESOS_NATIVE_JAVA_LIBRARY=/usr/lib/libmesos.so env SPARK_EXECUTOR_URI=http://${sys.env("AMA_NODE")}:${config.Webserver.Port}/dist/spark-${config.Webserver.sparkVersion}.tgz java -cp executor-0.2.0-incubating-all.jar:spark-${config.Webserver.sparkVersion}/jars/* -Dscala.usejavacp=true -Djava.library.path=/usr/lib org.apache.amaterasu.executor.mesos.executors.MesosActionsExecutor ${jobManager.jobId} ${config.master} ${actionData.name}""".stripMargin
+                    s"""$awsEnv env AMA_NODE=${sys.env("AMA_NODE")} env MESOS_NATIVE_JAVA_LIBRARY=/usr/lib/libmesos.so env SPARK_EXECUTOR_URI=http://${sys.env("AMA_NODE")}:${config.Webserver.Port}/dist/spark-${config.Webserver.sparkVersion}.tgz java -cp executor-${config.version}-all.jar:spark-${config.Webserver.sparkVersion}/jars/* -Dscala.usejavacp=true -Djava.library.path=/usr/lib org.apache.amaterasu.executor.mesos.executors.MesosActionsExecutor ${jobManager.jobId} ${config.master} ${actionData.name}""".stripMargin
                   )
-//                  HttpServer.getFilesInDirectory(sys.env("AMA_NODE"), config.Webserver.Port).foreach(f=>
-//                  )
+                  //                  HttpServer.getFilesInDirectory(sys.env("AMA_NODE"), config.Webserver.Port).foreach(f=>
+                  //                  )
                   .addUris(URI.newBuilder
-                    .setValue(s"http://${sys.env("AMA_NODE")}:${config.Webserver.Port}/executor-0.2.0-incubating-all.jar")
-                    .setExecutable(false)
-                    .setExtract(false)
-                    .build())
+                  .setValue(s"http://${sys.env("AMA_NODE")}:${config.Webserver.Port}/executor-${config.version}-all.jar")
+                  .setExecutable(false)
+                  .setExtract(false)
+                  .build())
                   .addUris(URI.newBuilder()
                     .setValue(s"http://${sys.env("AMA_NODE")}:${config.Webserver.Port}/spark-2.2.1-bin-hadoop2.7.tgz")
                     .setExecutable(false)
@@ -200,10 +205,10 @@ class JobScheduler extends AmaterasuScheduler {
                     .setExtract(false)
                     .build())
                   .addUris(URI.newBuilder()
-                      .setValue(s"http://${sys.env("AMA_NODE")}:${config.Webserver.Port}/amaterasu.properties")
-                      .setExecutable(false)
-                      .setExtract(false)
-                      .build())
+                    .setValue(s"http://${sys.env("AMA_NODE")}:${config.Webserver.Port}/amaterasu.properties")
+                    .setExecutable(false)
+                    .setExtract(false)
+                    .build())
                 executor = ExecutorInfo
                   .newBuilder
                   .setData(ByteString.copyFrom(execData))
@@ -216,6 +221,10 @@ class JobScheduler extends AmaterasuScheduler {
               }
             }
 
+            val frameworkFactory = FrameworkProvidersFactory.apply(env, config)
+            val frameworkProvider = frameworkFactory.providers(actionData.groupId)
+            val driverConfiguration = frameworkProvider.getDriverConfiguration
+
             val actionTask = TaskInfo
               .newBuilder
               .setName(taskId.getValue)
@@ -224,8 +233,8 @@ class JobScheduler extends AmaterasuScheduler {
               .setExecutor(executor)
 
               .setData(ByteString.copyFrom(DataLoader.getTaskDataBytes(actionData, env)))
-              .addResources(createScalarResource("cpus", config.Jobs.Tasks.cpus))
-              .addResources(createScalarResource("mem", config.Jobs.Tasks.mem))
+              .addResources(createScalarResource("cpus", driverConfiguration.getCPUs))
+              .addResources(createScalarResource("mem", driverConfiguration.getMemory))
               .addResources(createScalarResource("disk", config.Jobs.repoSize))
               .build()
 
