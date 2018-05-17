@@ -21,20 +21,10 @@ import codegen
 import os
 import sys
 import zipimport
+sys.path.append(os.getcwd())
 from runtime import AmaContext, Environment
 
-# os.chdir(os.getcwd() + '/build/resources/test/')
-# import zipfile
-# zip = zipfile.ZipFile('pyspark.zip')
-# zip.extractall()
-# zip = zipfile.ZipFile('py4j-0.10.4-src.zip', 'r')
-# zip.extractall()
-# sys.path.insert(1, os.getcwd() + '/executor/src/test/resources/pyspark')
-# sys.path.insert(1, os.getcwd() + '/executor/src/test/resources/py4j')
 
-# py4j_path = 'spark-2.2.1-bin-hadoop2.7/python/lib/py4j-0.10.4-src.zip'
-# py4j_importer = zipimport.zipimporter(py4j_path)
-# py4j = py4j_importer.load_module('py4j')
 from py4j.java_gateway import JavaGateway, GatewayClient, java_import
 from py4j.protocol import Py4JJavaError
 from pyspark.conf import SparkConf
