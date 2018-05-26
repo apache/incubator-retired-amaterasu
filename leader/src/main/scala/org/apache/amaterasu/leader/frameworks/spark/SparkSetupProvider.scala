@@ -82,8 +82,8 @@ class SparkSetupProvider extends FrameworkSetupProvider {
     var mem: Int = 0
     if (sparkExecConfigurations.get("spark.yarn.am.memory").isDefined) {
       mem = MemoryFormatParser.extractMegabytes(sparkExecConfigurations("spark.yarn.am.memory").toString)
-    } else if (sparkExecConfigurations.get("spark.driver.memeory").isDefined) {
-      mem = MemoryFormatParser.extractMegabytes(sparkExecConfigurations("spark.driver.memeory").toString)
+    } else if (sparkExecConfigurations.get("spark.driver.memory").isDefined) {
+      mem = MemoryFormatParser.extractMegabytes(sparkExecConfigurations("spark.driver.memory").toString)
     } else if (conf.spark.opts.contains("yarn.am.memory")) {
       mem = MemoryFormatParser.extractMegabytes(conf.spark.opts("yarn.am.memory"))
     } else if (conf.spark.opts.contains("driver.memory")) {

@@ -236,7 +236,7 @@ class ApplicationMaster extends AMRMClientAsync.CallbackHandler with Logging {
     log.info(s"${containers.size()} Containers allocated")
     for (container <- containers.asScala) { // Launch container by create ContainerLaunchContext
       if (actionsBuffer.isEmpty) {
-        log.warn(s"Why actionBuffer empty and i was called?. Container ids: ${containers.map(c => c.getId.getContainerId)}")
+        log.warn(s"Why actionBuffer empty and I was called?. Container ids: ${containers.map(c => c.getId.getContainerId)}")
         return
       }
 
@@ -248,7 +248,7 @@ class ApplicationMaster extends AMRMClientAsync.CallbackHandler with Logging {
 
         val ctx = Records.newRecord(classOf[ContainerLaunchContext])
         val commands: List[String] = List(
-          "/bin/bash ./miniconda.sh -b -p $PWD/miniconda && ",
+          "/bin/bash ./miniconda-install.sh -b -p $PWD/miniconda && ",
           s"/bin/bash spark/bin/load-spark-env.sh && ",
           s"java -cp spark/jars/*:executor.jar:spark/conf/:${config.YARN.hadoopHomeDir}/conf/ " +
             "-Xmx1G " +
@@ -270,7 +270,7 @@ class ApplicationMaster extends AMRMClientAsync.CallbackHandler with Logging {
           "executor.jar" -> executorJar,
           "amaterasu.properties" -> propFile,
           // TODO: Nadav/Eyal all of these should move to the executor resource setup
-          "miniconda.sh" -> setLocalResourceFromPath(Path.mergePaths(jarPath, new Path("/dist/Miniconda2-latest-Linux-x86_64.sh"))),
+          "miniconda-install.sh" -> setLocalResourceFromPath(Path.mergePaths(jarPath, new Path("/dist/miniconda-install.sh"))),
           "codegen.py" -> setLocalResourceFromPath(Path.mergePaths(jarPath, new Path("/dist/codegen.py"))),
           "runtime.py" -> setLocalResourceFromPath(Path.mergePaths(jarPath, new Path("/dist/runtime.py"))),
           "spark-version-info.properties" -> setLocalResourceFromPath(Path.mergePaths(jarPath, new Path("/dist/spark-version-info.properties"))),
