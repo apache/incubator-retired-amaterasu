@@ -6,6 +6,9 @@
 # full list see the documentation:
 # http://www.sphinx-doc.org/en/master/config
 
+from recommonmark.parser import CommonMarkParser
+
+
 # -- Path setup --------------------------------------------------------------
 
 # If extensions (or modules to document with autodoc) are in another directory,
@@ -20,8 +23,8 @@
 # -- Project information -----------------------------------------------------
 
 project = 'Apache Amaterasu (incubating)'
-copyright = '2018, Apache Amaterasu'
-author = 'Apache Amaterasu'
+copyright = '2018, Apache Amaterasu (incubating)'
+author = 'Apache Amaterasu (incubating)'
 
 # The short X.Y version
 version = ''
@@ -41,14 +44,20 @@ release = '0.2.0'
 extensions = [
 ]
 
+
+source_parsers = {
+    '.md': CommonMarkParser,
+}
+
+
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
 
 # The suffix(es) of source filenames.
 # You can specify multiple suffix as a list of string:
 #
-# source_suffix = ['.rst', '.md']
-source_suffix = '.rst'
+source_suffix = ['.rst', '.md']
+# source_suffix = '.rst'
 
 # The master toctree document.
 master_doc = 'index'
@@ -129,7 +138,7 @@ latex_elements = {
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
     (master_doc, 'ApacheAmaterasuincubating.tex', 'Apache Amaterasu (incubating) Documentation',
-     'Apache Amaterasu', 'manual'),
+     'Apache Amaterasu (incubating)', 'manual'),
 ]
 
 
@@ -153,24 +162,3 @@ texinfo_documents = [
      author, 'ApacheAmaterasuincubating', 'One line description of project.',
      'Miscellaneous'),
 ]
-
-
-# -- Options for Epub output -------------------------------------------------
-
-# Bibliographic Dublin Core info.
-epub_title = project
-epub_author = author
-epub_publisher = author
-epub_copyright = copyright
-
-# The unique identifier of the text. This can be a ISBN number
-# or the project homepage.
-#
-# epub_identifier = ''
-
-# A unique identification for the text.
-#
-# epub_uid = ''
-
-# A list of files that should not be packed into the epub file.
-epub_exclude_files = ['search.html']
