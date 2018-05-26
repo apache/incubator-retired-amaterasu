@@ -67,11 +67,6 @@ class SparkRunnersProvider extends RunnersProvider with Logging {
       jars ++= getDependencies(execData.deps)
     }
 
-    if (execData.pyDeps != null &&
-      execData.pyDeps.packages.nonEmpty) {
-      loadPythonDependencies(execData.pyDeps, notifier)
-    }
-
     conf = execData.configurations.get("spark")
     executorEnv = execData.configurations.get("spark_exec_env")
     val sparkAppName = s"job_${jobId}_executor_$executorId"
@@ -85,54 +80,19 @@ class SparkRunnersProvider extends RunnersProvider with Logging {
     runners.put(sparkScalaRunner.getIdentifier, sparkScalaRunner)
 
     // TODO: get rid of hard-coded version
-    lazy val pySparkRunner = PySparkRunner(execData.env, jobId, notifier, spark, s"${config.spark.home}/python:${config.spark.home}/python/pyspark:${config.spark.home}/python/pyspark/build:${config.spark.home}/python/pyspark/lib/py4j-0.10.4-src.zip", execData.pyDeps, config)
+    lazy val pySparkRunner =
+      PySparkRunner(
+        execData.env,
+        jobId,
+        notifier,
+        spark,
+        s"${config.spark.home}/python:${config.spark.home}/python/pyspark",
+        execData.pyDeps,
+        config)
     runners.put(pySparkRunner.getIdentifier, pySparkRunner)
 
     lazy val sparkSqlRunner = SparkSqlRunner(execData.env, jobId, notifier, spark)
     runners.put(sparkSqlRunner.getIdentifier, sparkSqlRunner)
-  }
-
-  private def installAnacondaPackage(pythonPackage: PythonPackage): Unit = {
-    val channel = pythonPackage.channel.getOrElse("anaconda")
-    if (channel == "anaconda") {
-      Seq("bash", "-c", s"$$PWD/miniconda/bin/python -m conda install -y ${pythonPackage.packageId}") ! shellLoger
-    } else {
-      Seq("bash", "-c", s"$$PWD/miniconda/bin/python -m conda install -y -c $channel ${pythonPackage.packageId}") ! shellLoger
-    }
-  }
-
-  private def installAnacondaOnNode(): Unit = {
-    // TODO: get rid of hard-coded version
-    Seq("bash", "-c", "sh Miniconda2-latest-Linux-x86_64.sh -b -p $PWD/miniconda") ! shellLoger
-    Seq("bash", "-c", "$PWD/miniconda/bin/python -m conda install -y conda-build") ! shellLoger
-    Seq("bash", "-c", "ln -s $PWD/spark-2.2.1-bin-hadoop2.7/python/pyspark $PWD/miniconda/pkgs/pyspark") ! shellLoger
-  }
-
-  private def loadPythonDependencies(deps: PythonDependencies, notifier: Notifier): Unit = {
-    notifier.info("loading anaconda evn")
-    installAnacondaOnNode()
-    val codegenPackage = PythonPackage("codegen", channel = Option("auto"))
-    installAnacondaPackage(codegenPackage)
-    try {
-      // notifier.info("loadPythonDependencies #5")
-      deps.packages.foreach(pack => {
-        pack.index.getOrElse("anaconda").toLowerCase match {
-          case "anaconda" => installAnacondaPackage(pack)
-          // case "pypi" => installPyPiPackage(pack)
-        }
-      })
-    }
-    catch {
-
-      case rte: RuntimeException =>
-        val sw = new StringWriter
-        rte.printStackTrace(new PrintWriter(sw))
-        notifier.error("", s"Failed to activate environment (runtime) - cause: ${rte.getCause}, message: ${rte.getMessage}, Stack: \n${sw.toString}")
-      case e: Exception =>
-        val sw = new StringWriter
-        e.printStackTrace(new PrintWriter(sw))
-        notifier.error("", s"Failed to activate environment (other) - type: ${e.getClass.getName}, cause: ${e.getCause}, message: ${e.getMessage}, Stack: \n${sw.toString}")
-    }
   }
 
   override def getGroupIdentifier: String = "spark"

@@ -175,7 +175,7 @@ object PySparkRunner {
     * Installs Anaconda and then links it with the local spark that was installed on the executor.
     */
   private def installAnacondaOnNode(): Unit = {
-    Seq("bash", "-c", "sh Miniconda2-latest-Linux-x86_64.sh -b -p $PWD/miniconda")
+    Seq("bash", "-c", "sh miniconda-install.sh -b -p $PWD/miniconda")
     Seq("bash", "-c", "$PWD/miniconda/bin/python -m conda install -y conda-build")
     Seq("bash", "-c", "ln -s $PWD/spark-2.2.1-bin-hadoop2.7/python/pyspark $PWD/miniconda/pkgs/pyspark")
   }
