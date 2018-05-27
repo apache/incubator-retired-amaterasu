@@ -19,24 +19,18 @@ package org.apache.amaterasu.executor.yarn.executors
 import java.io.ByteArrayOutputStream
 import java.net.{InetAddress, URLDecoder}
 
-import scala.collection.JavaConverters._
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
 import org.apache.amaterasu.common.dataobjects.{ExecData, TaskData}
 import org.apache.amaterasu.common.logging.Logging
 import org.apache.amaterasu.executor.common.executors.{ActiveNotifier, ProvidersFactory}
-import org.apache.hadoop.net.NetUtils
-import org.apache.hadoop.yarn.conf.YarnConfiguration
-import org.apache.spark.SparkContext
 
-import scala.reflect.internal.util.ScalaClassLoader
-import scala.reflect.internal.util.ScalaClassLoader.URLClassLoader
+import scala.collection.JavaConverters._
 
 
 class ActionsExecutor extends Logging {
 
   var master: String = _
-  var sc: SparkContext = _
   var jobId: String = _
   var actionName: String = _
   var taskData: TaskData = _
