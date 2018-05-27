@@ -88,7 +88,7 @@ class SparkRunnersProvider extends RunnersProvider with Logging {
     // TODO: get rid of hard-coded version
     config.mode match {
       case "yarn" =>
-        pypath = s"$$PYTHONPATH:$$SPARK_HOME/python:$$SPARK_HOME/python/build:${config.spark.home}/python:${config.spark.home}/python/pyspark:${config.spark.home}/python/pyspark/build:${config.spark.home}/python/pyspark/lib/py4j-0.10.4-src.zip:${new File(".").getAbsolutePath}"
+        pypath = s"$$PYTHONPATH:$$SPARK_HOME/python:$$SPARK_HOME/python/build:${new File(".").getAbsolutePath}"
       case "mesos" =>
         pypath = s"${new File(".").getAbsolutePath}/miniconda/pkgs:${new File(".").getAbsolutePath}"
     }
