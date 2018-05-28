@@ -152,9 +152,9 @@ object SparkRunnerHelper extends Logging {
           .set("spark.history.kerberos.principal", "none")
 
           .set("spark.master", master)
-          .set("spark.executor.instances", "1") // TODO: change this
+          .set("spark.executor.instances", config.spark.opts.getOrElse("executor.instances", "1"))
           .set("spark.yarn.jars", s"spark/jars/*")
-          .set("spark.executor.memory", "1g")
+          .set("spark.executor.memory", config.spark.opts.getOrElse("executor.memory", "1g"))
           .set("spark.dynamicAllocation.enabled", "false")
           .set("spark.eventLog.enabled", "false")
           .set("spark.history.fs.logDirectory", "hdfs:///spark2-history/")

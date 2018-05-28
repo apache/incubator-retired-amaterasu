@@ -21,6 +21,7 @@ import codegen
 import os
 import sys
 import zipimport
+sys.path.append(os.getcwd())
 from runtime import AmaContext, Environment
 
 # os.chdir(os.getcwd() + '/build/resources/test/')
