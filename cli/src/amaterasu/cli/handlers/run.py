@@ -17,10 +17,8 @@ Options:
 """
 from .. import common, consts, compat
 from .base import MakiMixin, ValidateRepositoryMixin, BaseHandler, HandlerError, \
-    PropertiesFile
+    ConfigurationFile
 from . import setup as config_handlers
-from string import Template
-import netifaces
 import abc
 import os
 import socket
@@ -37,7 +35,7 @@ class BaseRunPipelineHandler(BaseHandler, MakiMixin):
 
     def __init__(self, **args):
         super(BaseRunPipelineHandler, self).__init__(**args)
-        self.props = PropertiesFile('~/.amaterasu/amaterasu.properties')
+        self.props = ConfigurationFile('~/.amaterasu/amaterasu.properties')
         self.base_dir = '/tmp/amaterasu/repos'
         self.dir_path = '{}/{}'.format(self.base_dir, uuid.uuid4())
         self.amaterasu_root = self.props['amaterasu.home']
@@ -159,7 +157,7 @@ def _check_amaterasu_properties():
 
 def get_handler(**kwargs):
     try:
-        props = PropertiesFile('~/.amaterasu/amaterasu.properties')
+        props = ConfigurationFile('~/.amaterasu/amaterasu.properties')
         cluster_manager = props['cluster.manager']
         if cluster_manager == 'mesos':
             return RunMesosPipelineHandler

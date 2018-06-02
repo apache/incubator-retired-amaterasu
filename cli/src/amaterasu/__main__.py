@@ -1,7 +1,7 @@
 """
 {amaterasu_logo}
 
-Usage: ama <command> [<args>...]
+Usage: ama [--verbose] <command> [<args>...]
 
 Builtin commands:
     init        Start a new Amaterasu compliant repository
@@ -9,7 +9,8 @@ Builtin commands:
     update      Update an existing Amaterasu repository based on a maki file
     run         Run an Amaterasu job
 
-{additional_commands}
+Options:
+    -V --verbose    Enable verbose output.
 
 See 'ama <command> --help' for more detailed information.
 """
@@ -18,8 +19,19 @@ __version__ = '0.2.0-incubating-rc3'
 import colorama
 import pkgutil
 import importlib
+import logging
+import logging.config
+import os
+import yaml
 from .cli import common, consts, handlers
 from docopt import docopt
+
+ama_package_path = os.path.abspath(os.path.dirname(__file__))
+logging_config_path = '{}/logging.yml'.format(ama_package_path)
+with open(logging_config_path) as fp:
+    logging_cfg = yaml.load(fp)
+logging.config.dictConfig(logging_cfg)
+logger = logging.getLogger(__name__)
 
 
 colorama.init()
@@ -83,12 +95,17 @@ def main():
     root_args = docopt(doc, version=__version__, options_first=True)
     handler_modules = load_handlers()
     command = root_args['<command>']
+    if root_args['--verbose']:
+        logging.basicConfig(level=logging.DEBUG)
+
+    logger.debug('CLI Started. Received the following arguments: {}'.format(root_args))
     if command in handler_modules:
         handler_vars = vars(handler_modules[command])
         cmd_args = docopt(handler_vars['__doc__'], version=handler_vars.get('__version__', __version__))
         handler = find_handler(handler_modules[command], **cmd_args)
         handler(**extract_args(cmd_args)).handle()
     else:
+        logger.debug("Unrecognized command received: {}".format(command))
         print(doc)
 
 if __name__ == '__main__':

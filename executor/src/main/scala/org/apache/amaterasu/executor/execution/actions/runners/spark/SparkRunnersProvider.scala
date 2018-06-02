@@ -86,7 +86,7 @@ class SparkRunnersProvider extends RunnersProvider with Logging {
     runners.put(sparkScalaRunner.getIdentifier, sparkScalaRunner)
     var pypath = ""
     // TODO: get rid of hard-coded version
-    config.mode match {
+    config.CLUSTER.manager match {
       case "yarn" =>
         pypath = s"$$PYTHONPATH:$$SPARK_HOME/python:$$SPARK_HOME/python/build:${config.spark.home}/python:${config.spark.home}/python/pyspark:${config.spark.home}/python/pyspark/build:${config.spark.home}/python/pyspark/lib/py4j-0.10.4-src.zip:${new File(".").getAbsolutePath}"
       case "mesos" =>
@@ -111,7 +111,7 @@ class SparkRunnersProvider extends RunnersProvider with Logging {
   private def installAnacondaOnNode(): Unit = {
     // TODO: get rid of hard-coded version
 
-    this.clusterConfig.mode match {
+    this.clusterConfig.CLUSTER.manager match {
       case "yarn" => Seq("sh", "-c", "export HOME=$PWD && ./miniconda.sh -b -p miniconda") ! shellLoger
       case "mesos" => Seq("sh", "Miniconda2-latest-Linux-x86_64.sh", "-b", "-p", "miniconda") ! shellLoger
     }

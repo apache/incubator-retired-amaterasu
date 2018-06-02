@@ -2,13 +2,15 @@ import abc
 import os
 import sys
 import yaml
+import logging
 from six.moves import configparser
+from typing import List, Tuple, Any
 
 __version__ = '0.2.0-incubating-rc3'
 
 git_parser = configparser.ConfigParser()
 git_parser.read(os.path.expanduser('~/.gitconfig'))
-
+logger = logging.getLogger(__name__)
 
 class HandlerError(Exception):
     def __init__(self, *args, **kwargs):
@@ -105,8 +107,7 @@ class MakiMixin(object):
         """
 
         def str_ok(x):
-            str_type = str if sys.version_info[0] > 2 else unicode
-            return type(x) == str_type and len(x) > 0
+            return type(x) == str and len(x) > 0
 
         VALID_GROUPS = ['spark']
         VALID_TYPES = ['scala', 'sql', 'python', 'r']
@@ -186,22 +187,38 @@ class ValidateRepositoryMixin(object):
             raise HandlerError(inner_errors=errors)
 
 
-class PropertiesFile(dict):
+class ConfigurationFile(dict):
 
     def __init__(self, path, **kwargs) -> None:
         abs_path = os.path.expanduser(path) if path.startswith('~') else os.path.abspath(path)
         self.path = abs_path
-        with open(abs_path, 'r') as f:
-            for i, line in enumerate(f.read().splitlines()):
-                try:
-                    parts = line.split('=')
-                    if len(parts) > 2:
-                        var = parts[0]
-                        value = '='.join(parts[1:])
-                    else:
-                        var, value = parts
-                    self[var.strip()] = value.strip()
-                except ValueError:
-                    print('Improperly Configured: bad form of line {} in amaterasu.properties'.format(i))
+        try:
+            with open(abs_path, 'r') as f:
+                logger.debug(
+                    "Opened an existing configuration file at {}".format(self.path))
+                for i, line in enumerate(f.read().splitlines()):
+                    try:
+                        parts = line.split('=')
+                        if len(parts) > 2:
+                            var = parts[0]
+                            value = '='.join(parts[1:])
+                        else:
+                            var, value = parts
+                        self[var.strip()] = value.strip()
+                    except ValueError:
+                        logger.warning('Improperly Configured: bad form of line {} in "{}"'.format(i, self.path))
+
+        except FileNotFoundError:
+            logger.info("No previous configuration file found at {}".format(self.path))
 
         super().__init__(**kwargs)
+
+    def startswith(self, prefix:str) -> List[Tuple[str, Any]]:
+        return [(k, v) for k, v in self.items() if k.startswith(prefix)]
+
+    def save(self):
+        configuration_root = os.path.dirname(self.path)
+        os.makedirs(configuration_root, exist_ok=True)
+        with open(self.path, 'w') as f:
+            for k, v in self.items():
+                f.write('{}={}'.format(k, v))

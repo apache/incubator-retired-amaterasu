@@ -2,26 +2,30 @@
 Create or change Amaterasu's configuration.
 
 Usage:
-    ama setup ( mesos | yarn )
+    ama [-V] setup ( mesos | yarn )
 
 """
-import netifaces
 from string import Template
 from typing import Any
 
 from ..utils.input import default_input
-from .base import BaseHandler, PropertiesFile
+from .base import BaseHandler, ConfigurationFile
+import netifaces
 import os
 import abc
 import socket
 import getpass
 import wget
 import colorama
-import shutil
+import logging
+import pyarrow
+
+logger = logging.getLogger(__name__)
 
 __version__ = '0.2.0-incubating-rc3'
 
 def get_current_ip():
+    logger.debug("Trying to get the current IP")
     default_gateway = netifaces.gateways()['default']
     if default_gateway:
         netface_name = default_gateway[netifaces.AF_INET][1]
@@ -29,8 +33,22 @@ def get_current_ip():
             'addr']
     else:
         ip = '127.0.0.1'
+    logging.debug("Resulting IP is: {}".format(ip))
     return ip
 
+def get_zookeeper_ip():
+    logger.debug('Trying to retrieve the cluster\'s ZK instance IP')
+    try:
+        zoo_cfg = ConfigurationFile('/etc/zookeeper/conf/zoo.conf')
+    except IOError:
+        zoo_cfg = ConfigurationFile('/usr/local/etc/zookeeper/zoo.cfg') ### Mac OSX
+    finally:
+        logger.debug('ZK configuration: {}'.format(zoo_cfg.items()))
+        try:
+            server_addr = zoo_cfg.startswith('server')[0][1] ## Because we may have multiple, we will take the first one
+            return server_addr.split(':')[0]
+        except IndexError:
+            return 'localhost'
 
 class ValidationError(Exception):
     pass
@@ -44,17 +62,35 @@ class ConfigurationField(metaclass=abc.ABCMeta):
         self._default = default
         self.name = name
         self._handler = None
+        self._varname = None
 
-    def clean(self, value):
+    def _find_field_name_on_handler(self):
+        if self._varname:
+            return self._varname
+        else:
+            for k, v in self._handler._fields.items():
+                if v == self:
+                    self._varname = k
+                    return k
+
+    def clean(self, value: Any) -> Any:
+        logger.debug('Field: \'{}\' received value of {}'.format(self._find_field_name_on_handler(), value))
+        cleaned_value = None
         if not value and value != 0 and self._default is not None:
             try:
                 default_func = getattr(self._handler, str(self.default))
-                return default_func()
+                cleaned_value = default_func()
             except AttributeError:
-                return self.default
-        if self.required and value is None:
+                cleaned_value = self.default
+                logger.debug('Field: \'{}\' used default value'.format(
+                    self._find_field_name_on_handler()))
+        if self.required and cleaned_value is None:
+            logger.error('\'{}\' is a required field and no value could be determined'.format(self._find_field_name_on_handler()))
             raise ValidationError('This field is required')
-        return value
+        cleaned_value = cleaned_value or value
+        logger.debug('Field: \'{}\' cleaned value is {}'.format(
+            self._find_field_name_on_handler(), cleaned_value))
+        return cleaned_value
 
     @property
     def default(self):
@@ -106,18 +142,25 @@ class IPField(TextField):
 
 class PathField(TextField):
 
+
+
+    def __init__(self, required=False, input_text=None, default=None,
+                 name=None, auto_create=False) -> None:
+        self.auto_create = auto_create
+        super().__init__(required, input_text, default, name)
+
     def clean(self, value):
         cleaned_value = super().clean(value)
         if not os.path.isabs(cleaned_value):
             cleaned_value = os.path.expanduser(cleaned_value) if cleaned_value.startswith('~') else os.path.abspath(cleaned_value)
         if os.path.exists(cleaned_value):
             return cleaned_value
+        elif self.auto_create:
+            os.makedirs(os.path.abspath(os.path.expanduser(cleaned_value)))
+            return cleaned_value
         else:
-            if value == cleaned_value:
-                raise ValidationError('Path "{}" does not exist'.format(cleaned_value))
-            else:
-                raise ValidationError(
-                    'Path "{}" does not exist'.format(value))
+            raise ValidationError(
+                'Path "{}" does not exist'.format(cleaned_value))
 
 
 class ConfigurationMeta(abc.ABCMeta):
@@ -144,9 +187,11 @@ class ConfigurationMeta(abc.ABCMeta):
 
 class BaseConfigurationHandler(BaseHandler, metaclass=ConfigurationMeta):
 
+    CONFIGURATION_PATH = '/etc/amaterasu/amaterasu.conf'
+
     cluster_manager = None
-    amaterasu_home = PathField(input_text='Amaterasu home directory', default='/ama', name='amaterasu.home')
-    zk = TextField(required=True, input_text='Zookeeper IP', default=get_current_ip)
+    amaterasu_home = PathField(input_text='Amaterasu home directory', default='/ama', name='amaterasu.home', auto_create=True)
+    zk = TextField(required=True, input_text='Zookeeper IP', default=get_zookeeper_ip)
 
     user = TextField(required=True, default=getpass.getuser())
     spark_version = TextField(default='2.2.1-bin-hadoop2.7',
@@ -165,8 +210,8 @@ class BaseConfigurationHandler(BaseHandler, metaclass=ConfigurationMeta):
         return instance
 
     def __init__(self, **args):
-        if os.path.exists(os.path.expanduser('~/.amaterasu/amaterasu.properties')):
-            prop_file = PropertiesFile('~/.amaterasu/amaterasu.properties')
+        if os.path.exists(self.CONFIGURATION_PATH):
+            prop_file = ConfigurationFile(self.CONFIGURATION_PATH)
             for var_name, field in self._fields.items():
                 field_name = field.name if field.name else var_name
                 setattr(self, var_name, prop_file.get(field_name))
@@ -207,23 +252,20 @@ class BaseConfigurationHandler(BaseHandler, metaclass=ConfigurationMeta):
             value = self._get_user_input_for_field(var_name, field)
             setattr(self, var_name, value)
 
-    def _render_properties_file(self):
-        field_tpl = '{var}={value}\n'
-        os.makedirs(os.path.expanduser('~/.amaterasu'), exist_ok=True)
-        props_home_path = os.path.expanduser('~/.amaterasu/amaterasu.properties')
-        props_dist_path = os.path.join(self.amaterasu_home, 'dist', 'amaterasu.properties')
-        with open(props_home_path, 'w') as f:
-            f.write(field_tpl.format(var='cluster.manager', value=self.cluster_manager))
-            f.write(field_tpl.format(var='version', value=__version__))
-            for var_name, field_cls in self._fields.items():
-                field_name = field_cls.name if field_cls.name else var_name
-                value = str(getattr(self, var_name)).strip('"')
-                if '=' in value:
-                    value = '"{}"'.format(value)
-                f.write(field_tpl.format(var=field_name, value=value))
-        shutil.copy(props_home_path, props_dist_path)
+    def _render_configuration_file(self):
+        config_file = ConfigurationFile(self.CONFIGURATION_PATH)
+        config_file['cluster.manager'] = self.cluster_manager
+        config_file['version'] = __version__
+        for var_name, field_cls in self._fields.items():
+            field_name = field_cls.name if field_cls.name else var_name
+            value = str(getattr(self, var_name)).strip('"')
+            if '=' in value:
+                value = '"{}"'.format(value)
+            config_file[field_name] = value
+        config_file.save()
+        logger.info("Successfully created Apache Amaterasu configuration file")
 
-    def _install_dependencies(self):
+    def _download_dependencies(self):
         miniconda_dist_path = os.path.join(self.amaterasu_home, 'dist', 'Miniconda2-latest-Linux-x86_64.sh')
         if not os.path.exists(miniconda_dist_path):
             print('\n', colorama.Style.BRIGHT, 'Fetching Miniconda distributable', colorama.Style.RESET_ALL)
@@ -235,8 +277,8 @@ class BaseConfigurationHandler(BaseHandler, metaclass=ConfigurationMeta):
 
     def handle(self):
         self._collect_user_input()
-        self._render_properties_file()
-        self._install_dependencies()
+        self._render_configuration_file()
+        self._download_dependencies()
 
 
 class MesosConfigurationHandler(BaseConfigurationHandler):
@@ -249,8 +291,8 @@ class MesosConfigurationHandler(BaseConfigurationHandler):
     def spark_home_default(self):
         return './spark-{}'.format(self.spark_version)
 
-    def _install_dependencies(self):
-        super()._install_dependencies()
+    def _download_dependencies(self):
+        super()._download_dependencies()
         spark_dist_path = os.path.join(self.amaterasu_home, 'dist',
                                        'spark-{}.tgz'.format(
                                            self.spark_version))
@@ -266,7 +308,7 @@ class MesosConfigurationHandler(BaseConfigurationHandler):
 class YarnConfigurationHandler(BaseConfigurationHandler):
 
     yarn_queue = TextField(default='default', input_text='YARN queue name', name='yarn.queue')
-    yarn_jarspath = TextField(default='hdfs:///apps/amaterasu', name='yarn.jarspath')
+    yarn_jarspath = TextField(default='/apps/amaterasu', name='yarn.jarspath')
     spark_home = TextField(default='/usr/hdp/current/spark2-client', name='spark.home')
     yarn_homedir = TextField(default='/etc/hadoop', name='yarn.hadoop.home.dir')
     spark_yarn_java_opts = TextField(default='-Dhdp.version=2.6.1.0-129', name='spark.opts.spark.yarn.am.extraJavaOptions')
@@ -279,6 +321,34 @@ class YarnConfigurationHandler(BaseConfigurationHandler):
             return '/usr/hdp/current/spark2-client'
         else:
             return '/usr/lib/spark'
+
+    def _copy_to_HDFS(self):
+        fs = pyarrow.hdfs.connect()
+        logger.info('Uploading Amaterasu executor to HDFS')
+        with open('{}/dist/executor-{}-all.jar'.format(self.amaterasu_home, __version__), 'rb') as f:
+            fs.upload('{}/executor.jar'.format(self.yarn_jarspath), f)
+        with open('/etc/amaterasu/amaterasu.conf', 'rb') as f:
+            fs.upload('{}/amaterasu.conf'.format(self.yarn_jarspath), f)
+        logger.info('Uploading Miniconda to HDFS')
+        miniconda_dist_path = os.path.join(self.amaterasu_home, 'dist',
+                                           'Miniconda2-latest-Linux-x86_64.sh')
+        with open(miniconda_dist_path) as f:
+            fs.upload("{}/{}".format(self.yarn_jarspath, 'miniconda.sh'), f)
+        logger.info('Uploading Spark-Client to HDFS')
+        for root, _, files in os.walk(self.spark_home):
+            remote_path_dir = root.split(self.spark_home)[1]
+            for file_name in files:
+                logger.debug('Uploading: "{}" to HDFS at: {}'.format(local_path, remote_path))
+                local_path = '{}/{}'.format(root, file_name)
+                remote_path = '{}/{}/{}'.format(self.yarn_jarspath, remote_path_dir, file_name)
+                with open(local_path, 'rb') as f:
+                    fs.upload(remote_path, f)
+
+
+
+    def handle(self):
+        super().handle()
+        self._copy_to_HDFS()
 
 
 def get_handler(**kwargs):

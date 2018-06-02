@@ -1,0 +1,30 @@
+version: 1
+formatters:
+  simple:
+    format: '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+handlers:
+  console:
+    class: logging.StreamHandler
+    level: ERROR
+    formatter: simple
+    stream: ext://sys.stdout
+  logFile:
+    class: logging.handlers.TimedRotatingFileHandler
+    level: INFO
+    filename: /var/log/amaterasu/amaterasu.log
+    formatter: simple
+    when: midnight
+  debugLog:
+    class: logging.handlers.TimedRotatingFileHandler
+    level: DEBUG
+    filename: /var/log/amaterasu/amaterasu-debug.log
+    when: midnight
+    formatter: simple
+loggers:
+  amaterasu:
+    level: DEBUG
+    handlers: [console, logFile, debugLog]
+    propagate: no
+root:
+  level: ERROR
+  handlers: [console, logFile]
