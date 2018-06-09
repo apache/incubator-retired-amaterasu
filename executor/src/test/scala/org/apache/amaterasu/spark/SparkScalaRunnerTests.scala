@@ -33,7 +33,6 @@ class SparkScalaRunnerTests extends FlatSpec with Matchers with BeforeAndAfterAl
 
   "SparkScalaRunner" should "execute the simple-spark.scala" in {
 
-
     val sparkRunner =factory.getRunner("spark", "scala").get.asInstanceOf[SparkScalaRunner]
     val script = getClass.getResource("/simple-spark.scala").getPath
     val sourceCode = Source.fromFile(script).getLines().mkString("\n")
