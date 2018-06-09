@@ -61,7 +61,8 @@ class SparkScalaRunner(var env: Environment,
 
     for (line <- source.getLines()) {
 
-      if (!line.isEmpty) {
+      // ignoring empty or commented lines
+      if (!line.isEmpty && !line.trim.startsWith("*") && !line.startsWith("/")) {
 
         outStream.reset()
         log.debug(line)
