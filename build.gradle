@@ -25,10 +25,6 @@ allprojects {
     version '0.2.0-incubating-rc3'
 }
 
-project(':leader')
-project(':common')
-project(':executor')
-
 task copyLeagalFiles(type: Copy) {
     from "./DISCLAIMER", "./LICENSE", "./NOTICE"
     into "${buildDir}/amaterasu"

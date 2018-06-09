@@ -14,21 +14,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-include 'leader'
-project(':leader')
+package org.apache.amaterasu.executor.runner.spark.repl
 
-include 'common'
-project(':common')
+import java.io.PrintWriter
 
-include 'executor'
-project(':executor')
+import org.apache.spark.repl.SparkILoop
 
-include 'sdk'
-findProject(':sdk')?.name = 'amaterasu-sdk'
+import scala.tools.nsc.Settings
+import scala.tools.nsc.interpreter.IMain
 
-//Spark
-include 'spark-runner'
-project(':spark-runner').projectDir=file("frameworks/spark/runner")
-include 'spark-runtime'
-project(':spark-runtime').projectDir=file("frameworks/spark/runtime")
+class AmaSparkILoop(writer: PrintWriter) extends SparkILoop(None, writer) {
 
+  def create = {
+    this.createInterpreter
+  }
+
+  def setSettings(settings: Settings) = {
+    this.settings = settings
+  }
+
+  def getIntp: IMain = {
+    this.intp
+  }
+
+}

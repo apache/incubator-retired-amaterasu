@@ -14,21 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-include 'leader'
-project(':leader')
+package org.apache.amaterasu.executor.runner.spark.pyspark
 
-include 'common'
-project(':common')
+import org.apache.amaterasu.executor.runner.spark.pyspark.ResultType.ResultType
 
-include 'executor'
-project(':executor')
+object ResultType extends Enumeration {
+  type ResultType = Value
+  val success = Value("success")
+  val error = Value("error")
+  val completion = Value("completion")
+}
 
-include 'sdk'
-findProject(':sdk')?.name = 'amaterasu-sdk'
-
-//Spark
-include 'spark-runner'
-project(':spark-runner').projectDir=file("frameworks/spark/runner")
-include 'spark-runtime'
-project(':spark-runtime').projectDir=file("frameworks/spark/runtime")
-
+case class PySparkResult(
+  resultType: ResultType,
+  action: String,
+  statement: String,
+  message: String
+)
