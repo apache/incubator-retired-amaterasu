@@ -36,7 +36,9 @@ import scala.collection.mutable.ListBuffer
 class SparkTestsSuite extends Suites(
   new PySparkRunnerTests,
   new RunnersLoadingTests,
-  new SparkSqlRunnerTests) with BeforeAndAfterAll {
+  new SparkSqlRunnerTests,
+  new SparkScalaRunnerTests
+) with BeforeAndAfterAll {
 
   var env: Environment = _
   var factory: ProvidersFactory = _
@@ -84,8 +86,8 @@ class SparkTestsSuite extends Suites(
     this.nestedSuites.filter(s => s.isInstanceOf[RunnersLoadingTests]).foreach(s => s.asInstanceOf[RunnersLoadingTests].factory = factory)
     this.nestedSuites.filter(s => s.isInstanceOf[PySparkRunnerTests]).foreach(s => s.asInstanceOf[PySparkRunnerTests].factory = factory)
     this.nestedSuites.filter(s => s.isInstanceOf[SparkSqlRunnerTests]).foreach(s => s.asInstanceOf[SparkSqlRunnerTests].factory = factory)
+    this.nestedSuites.filter(s => s.isInstanceOf[SparkScalaRunnerTests]).foreach(s => s.asInstanceOf[SparkScalaRunnerTests].factory = factory)
     this.nestedSuites.filter(s => s.isInstanceOf[SparkSqlRunnerTests]).foreach(s => s.asInstanceOf[SparkSqlRunnerTests].env = env)
-
 
     super.beforeAll()
   }
