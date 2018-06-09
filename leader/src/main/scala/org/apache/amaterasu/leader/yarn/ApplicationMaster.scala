@@ -53,6 +53,7 @@ import scala.collection.{concurrent, mutable}
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.util.{Failure, Success}
+import scala.collection.JavaConverters._
 
 class ApplicationMaster extends AMRMClientAsync.CallbackHandler with Logging {
 
@@ -69,13 +70,7 @@ class ApplicationMaster extends AMRMClientAsync.CallbackHandler with Logging {
   private var conf: YarnConfiguration = _
   private var propPath: String = ""
   private var props: InputStream = _
-  private var jarPath: Path = _
-  private var executorPath: Path = _
-  private var executorJar: LocalResource = _
-  private var propFile: LocalResource = _
-  private var log4jPropFile: LocalResource = _
   private var nmClient: NMClientAsync = _
-  private var allocListener: YarnRMCallbackHandler = _
   private var rmClient: AMRMClientAsync[ContainerRequest] = _
   private var address: String = _
 
@@ -133,15 +128,6 @@ class ApplicationMaster extends AMRMClientAsync.CallbackHandler with Logging {
 
     log.info(s"Job ${jobManager.jobId} initiated with ${jobManager.registeredActions.size} actions")
 
-    jarPath = new Path(config.YARN.hdfsJarsPath)
-
-    // TODO: change this to read all dist folder and add to exec path
-    executorPath = Path.mergePaths(jarPath, new Path(s"/dist/executor-${config.version}-all.jar"))
-    log.info("Executor jar path is {}", executorPath)
-    executorJar = setLocalResourceFromPath(executorPath)
-    propFile = setLocalResourceFromPath(Path.mergePaths(jarPath, new Path("/amaterasu.properties")))
-    log4jPropFile = setLocalResourceFromPath(Path.mergePaths(jarPath, new Path("/log4j.properties")))
-
     log.info("Started execute")
 
     nmClient = new NMClientAsyncImpl(new YarnNMCallbackHandler())
@@ -149,9 +135,6 @@ class ApplicationMaster extends AMRMClientAsync.CallbackHandler with Logging {
     // Initialize clients to ResourceManager and NodeManagers
     nmClient.init(conf)
     nmClient.start()
-
-    // TODO: awsEnv currently set to empty string. should be changed to read values from (where?).
-    allocListener = new YarnRMCallbackHandler(nmClient, jobManager, env, awsEnv = "", config, executorJar)
 
     rmClient = startRMClient()
     val registrationResponse = registerAppMaster("", 0, "")
@@ -250,10 +233,10 @@ class ApplicationMaster extends AMRMClientAsync.CallbackHandler with Logging {
         val commands: List[String] = List(
           "/bin/bash ./miniconda.sh -b -p $PWD/miniconda && ",
           s"/bin/bash spark/bin/load-spark-env.sh && ",
-          s"java -cp spark/jars/*:executor.jar:spark/conf/:${config.YARN.hadoopHomeDir}/conf/ " +
+          s"java -cp spark/jars/*:executor.jar:spark-runner.jar:spark-runtime.jar:spark/conf/:${config.YARN.hadoopHomeDir}/conf/ " +
             "-Xmx1G " +
             "-Dscala.usejavacp=true " +
-            "-Dhdp.version=2.6.1.0-129 " +
+            "-Dhdp.version=2.6.5.0-292 " +
             "org.apache.amaterasu.executor.yarn.executors.ActionsExecutorLauncher " +
             s"'${jobManager.jobId}' '${config.master}' '${actionData.name}' '${URLEncoder.encode(taskData, "UTF-8")}' '${URLEncoder.encode(execData, "UTF-8")}' '${actionData.id}-${container.getId.getContainerId}' '$address' " +
             s"1> ${ApplicationConstants.LOG_DIR_EXPANSION_VAR}/stdout " +
@@ -266,22 +249,37 @@ class ApplicationMaster extends AMRMClientAsync.CallbackHandler with Logging {
         ctx.setCommands(commands)
         ctx.setTokens(allTokens)
 
+        val yarnJarPath = new Path(config.YARN.hdfsJarsPath)
+
+        //TODO Arun - Remove the hardcoding of the dist path
+        /*  val resources = mutable.Map[String, LocalResource]()
+          val binaryFileIter = fs.listFiles(new Path(s"${config.YARN.hdfsJarsPath}/dist"), false)
+          while (binaryFileIter.hasNext) {
+            val eachFile = binaryFileIter.next().getPath
+            resources (eachFile.getName) = setLocalResourceFromPath(fs.makeQualified(eachFile))
+          }
+          resources("log4j.properties") = setLocalResourceFromPath(fs.makeQualified(new Path(s"${config.YARN.hdfsJarsPath}/log4j.properties")))
+          resources ("amaterasu.properties") = setLocalResourceFromPath(fs.makeQualified(new Path(s"${config.YARN.hdfsJarsPath}/amaterasu.properties")))*/
+
         val resources = mutable.Map[String, LocalResource](
-          "executor.jar" -> executorJar,
-          "amaterasu.properties" -> propFile,
+          "executor.jar" -> setLocalResourceFromPath(Path.mergePaths(yarnJarPath, new Path(s"/dist/executor-${config.version}-all.jar"))),
+          "spark-runner.jar" -> setLocalResourceFromPath(Path.mergePaths(yarnJarPath, new Path(s"/dist/spark-runner-${config.version}-all.jar"))),
+          "spark-runtime.jar" -> setLocalResourceFromPath(Path.mergePaths(yarnJarPath, new Path(s"/dist/spark-runtime-${config.version}.jar"))),
+          "amaterasu.properties" -> setLocalResourceFromPath(Path.mergePaths(yarnJarPath, new Path("/amaterasu.properties"))),
+          "log4j.properties" -> setLocalResourceFromPath(Path.mergePaths(yarnJarPath, new Path("/log4j.properties"))),
           // TODO: Nadav/Eyal all of these should move to the executor resource setup
-          "miniconda.sh" -> setLocalResourceFromPath(Path.mergePaths(jarPath, new Path("/dist/Miniconda2-latest-Linux-x86_64.sh"))),
-          "codegen.py" -> setLocalResourceFromPath(Path.mergePaths(jarPath, new Path("/dist/codegen.py"))),
-          "runtime.py" -> setLocalResourceFromPath(Path.mergePaths(jarPath, new Path("/dist/runtime.py"))),
-          "spark-version-info.properties" -> setLocalResourceFromPath(Path.mergePaths(jarPath, new Path("/dist/spark-version-info.properties"))),
-          "spark_intp.py" -> setLocalResourceFromPath(Path.mergePaths(jarPath, new Path("/dist/spark_intp.py"))))
+          "miniconda.sh" -> setLocalResourceFromPath(Path.mergePaths(yarnJarPath, new Path("/dist/miniconda.sh"))),
+          "codegen.py" -> setLocalResourceFromPath(Path.mergePaths(yarnJarPath, new Path("/dist/codegen.py"))),
+          "runtime.py" -> setLocalResourceFromPath(Path.mergePaths(yarnJarPath, new Path("/dist/runtime.py"))),
+          "spark-version-info.properties" -> setLocalResourceFromPath(Path.mergePaths(yarnJarPath, new Path("/dist/spark-version-info.properties"))),
+          "spark_intp.py" -> setLocalResourceFromPath(Path.mergePaths(yarnJarPath, new Path("/dist/spark_intp.py"))))
 
         val frameworkFactory = FrameworkProvidersFactory(env, config)
         val framework = frameworkFactory.getFramework(actionData.groupId)
 
         //adding the framework and executor resources
-        setupResources(framework.getGroupIdentifier, resources, framework.getGroupIdentifier)
-        setupResources(s"${framework.getGroupIdentifier}/${actionData.typeId}", resources, s"${framework.getGroupIdentifier}-${actionData.typeId}")
+        setupResources(yarnJarPath, framework.getGroupIdentifier, resources, framework.getGroupIdentifier)
+        setupResources(yarnJarPath, s"${framework.getGroupIdentifier}/${actionData.typeId}", resources, s"${framework.getGroupIdentifier}-${actionData.typeId}")
 
         ctx.setLocalResources(resources)
 
@@ -327,9 +325,9 @@ class ApplicationMaster extends AMRMClientAsync.CallbackHandler with Logging {
     ByteBuffer.wrap(dob.getData, 0, dob.getLength)
   }
 
-  private def setupResources(frameworkPath: String, countainerResources: mutable.Map[String, LocalResource], resourcesPath: String): Unit = {
+  private def setupResources(yarnJarPath: Path, frameworkPath: String, countainerResources: mutable.Map[String, LocalResource], resourcesPath: String): Unit = {
 
-    val sourcePath = Path.mergePaths(jarPath, new Path(s"/$resourcesPath"))
+    val sourcePath = Path.mergePaths(yarnJarPath, new Path(s"/$resourcesPath"))
 
     if (fs.exists(sourcePath)) {
 

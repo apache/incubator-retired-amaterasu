@@ -25,9 +25,6 @@ shadowJar {
     zip64 true
 }
 
-//sourceCompatibility = 1.8
-//targetCompatibility = 1.8
-
 repositories {
     maven {
         url "https://plugins.gradle.org/m2/"
@@ -42,6 +39,12 @@ test {
 
 configurations {
     provided
+    runtime.exclude module: 'hadoop-common'
+    runtime.exclude module: 'hadoop-yarn-api'
+    runtime.exclude module: 'hadoop-yarn-client'
+    runtime.exclude module: 'hadoop-hdfs'
+    runtime.exclude module: 'mesos'
+    runtime.exclude module: 'scala-compiler'
 }
 
 sourceSets {
@@ -52,29 +55,18 @@ sourceSets {
 
 dependencies {
 
-    compile group: 'org.scala-lang', name: 'scala-library', version: '2.11.8'
-    compile group: 'org.scala-lang', name: 'scala-reflect', version: '2.11.8'
-    compile group: 'io.netty', name: 'netty-all', version: '4.0.42.Final'
-    compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.5'
-    compile group: 'org.apache.maven', name: 'maven-core', version: '3.0.5'
-    compile group: 'org.reflections', name: 'reflections', version: '0.9.10'
-    compile group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: '2.6.5'
-    compile group: 'com.fasterxml.jackson.core', name: 'jackson-annotations', version: '2.6.5'
-    compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.6.5'
-    compile group: 'com.fasterxml.jackson.module', name: 'jackson-module-scala_2.11', version: '2.6.5'
-    compile group: 'net.liftweb', name: 'lift-json_2.11', version: '3.2.0'
+    compile project(':executor')
+    compile project(':spark-runtime')
+    provided('org.apache.spark:spark-repl_2.11:2.2.1')
+    provided('org.apache.spark:spark-core_2.11:2.2.1')
 
-    compile('com.jcabi:jcabi-aether:0.10.1') {
-        exclude group: 'org.jboss.netty'
-    }
-    compile('org.apache.activemq:activemq-client:5.15.2') {
-        exclude group: 'org.jboss.netty'
-    }
-
-    compile project(':common')
-    compile project(':amaterasu-sdk')
-
-
+    testCompile project(':common')
+    testCompile "gradle.plugin.com.github.maiflai:gradle-scalatest:0.14"
+    testRuntime 'org.pegdown:pegdown:1.1.0'
+    testCompile 'junit:junit:4.11'
+    testCompile 'org.scalatest:scalatest_2.11:3.0.2'
+    testCompile('org.apache.spark:spark-repl_2.11:2.2.1')
+    testCompile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.9'
 
 }
 
@@ -83,7 +75,6 @@ sourceSets {
         resources.srcDirs += [file('src/test/resources')]
     }
 
-    // this is done so Scala will compile before Java
     main {
         scala {
             srcDirs = ['src/main/scala', 'src/main/java']
@@ -102,7 +93,7 @@ test {
 task copyToHome(type: Copy) {
     dependsOn shadowJar
     from 'build/libs'
-    into '../build/amaterasu/dist'
+    into '../../../build/amaterasu/dist'
     from 'build/resources/main'
-    into '../build/amaterasu/dist'
+    into '../../../build/amaterasu/dist'
 }
