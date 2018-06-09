@@ -1,4 +1,20 @@
 #!/usr/bin/env bash
+#
+#    Licensed to the Apache Software Foundation (ASF) under one or more
+#    contributor license agreements.  See the NOTICE file distributed with
+#    this work for additional information regarding copyright ownership.
+#    The ASF licenses this file to You under the Apache License, Version 2.0
+#    (the "License"); you may not use this file except in compliance with
+#    the License.  You may obtain a copy of the License at
+#
+#       http://www.apache.org/licenses/LICENSE-2.0
+#
+#    Unless required by applicable law or agreed to in writing, software
+#    distributed under the License is distributed on an "AS IS" BASIS,
+#    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#    See the License for the specific language governing permissions and
+#    limitations under the License.
+#
 
 BASEDIR=$(dirname "$0")
 
@@ -86,7 +102,7 @@ done
 echo "repo: ${REPO} "
 echo "force-bin: ${FORCE_BIN}"
 export HADOOP_USER_CLASSPATH_FIRST=true
-CMD="yarn jar ${BASEDIR}/bin/leader-0.2.0-incubating-all.jar org.apache.amaterasu.leader.yarn.Client --home ${BASEDIR}"
+CMD="yarn jar ${BASEDIR}/bin/leader-0.2.0-incubating-rc3-all.jar org.apache.amaterasu.leader.yarn.Client --home ${BASEDIR}"
 
 if [ -n "$REPO" ]; then
     echo "repo is ${REPO}"
@@ -129,9 +145,9 @@ fi
 if [ "$FORCE_BIN" = true ] ; then
     echo "FORCE: Deleting and re-creating /apps/amaterasu folder"
     eval "hdfs dfs -rm -R -skipTrash /apps/amaterasu"
-    eval "hdfs dfs -mkdir /apps/amaterasu/"
-    eval "hdfs dfs -chmod -R 777 /apps/amaterasu/"
-    eval "hdfs dfs -copyFromLocal ${BASEDIR}/* /apps/amaterasu/"
+    #eval "hdfs dfs -mkdir /apps/amaterasu/"
+    #eval "hdfs dfs -chmod -R 777 /apps/amaterasu/"
+    #eval "hdfs dfs -copyFromLocal ${BASEDIR}/* /apps/amaterasu/"
 fi
 
 eval $CMD | grep "===>"
