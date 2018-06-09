@@ -1,3 +1,19 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.apache.amaterasu.leader.frameworks.spark
 
 import java.io.File
@@ -15,19 +31,22 @@ class SparkSetupProvider extends FrameworkSetupProvider {
 
   private var env: String = _
   private var conf: ClusterConfig = _
-  private val runnersResources = mutable.Map[String,Array[File]]()
-  private var execData: ExecData = _
-  private var sparkExecConfigurations = mutable.Map[String, Any]()
+  private val runnersResources = mutable.Map[String, Array[File]]()
+  //private var execData: ExecData = _
+  private lazy val sparkExecConfigurations: mutable.Map[String, Any] = loadSparkConfig
 
-  override def init(env: String, conf: ClusterConfig): Unit = {
-    this.env = env
-    this.conf = conf
-    this.execData = DataLoader.getExecutorData(env, conf)
+  private def loadSparkConfig: mutable.Map[String, Any] = {
+    val execData = DataLoader.getExecutorData(env, conf)
     val sparkExecConfigurationsurations = execData.configurations.get("spark")
     if (sparkExecConfigurationsurations.isEmpty) {
       throw new Exception(s"Spark configuration files could not be loaded for the environment ${env}")
     }
-    this.sparkExecConfigurations = sparkExecConfigurations ++ sparkExecConfigurationsurations.get
+    collection.mutable.Map(sparkExecConfigurationsurations.get.toSeq: _*)
+  }
+
+  override def init(env: String, conf: ClusterConfig): Unit = {
+    this.env = env
+    this.conf = conf
 
     runnersResources += "scala" -> Array.empty[File]
     runnersResources += "sql" -> Array.empty[File]

@@ -145,16 +145,16 @@ object SparkRunnerHelper extends Logging {
       case "yarn" =>
         conf.set("spark.home", config.spark.home)
           // TODO: parameterize those
-          .setJars(s"executor-${config.version}-all.jar" +: jars)
+          .setJars(s"executor.jar" +: jars)
           .set("spark.history.kerberos.keytab", "/etc/security/keytabs/spark.headless.keytab")
           .set("spark.driver.extraLibraryPath", "/usr/hdp/current/hadoop-client/lib/native:/usr/hdp/current/hadoop-client/lib/native/Linux-amd64-64")
           .set("spark.yarn.queue", "default")
           .set("spark.history.kerberos.principal", "none")
 
           .set("spark.master", master)
-          .set("spark.executor.instances", "1") // TODO: change this
+          .set("spark.executor.instances", config.spark.opts.getOrElse("executor.instances", "1"))
           .set("spark.yarn.jars", s"spark/jars/*")
-          .set("spark.executor.memory", "1g")
+          .set("spark.executor.memory", config.spark.opts.getOrElse("executor.memory", "1g"))
           .set("spark.dynamicAllocation.enabled", "false")
           .set("spark.eventLog.enabled", "false")
           .set("spark.history.fs.logDirectory", "hdfs:///spark2-history/")

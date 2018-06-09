@@ -29,6 +29,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.yarn.api.ApplicationConstants;
 import org.apache.hadoop.yarn.api.records.*;
 import org.apache.hadoop.yarn.client.api.YarnClient;
@@ -110,8 +111,9 @@ public class Client {
 
 
         List<String> commands = Collections.singletonList(
-                "env AMA_NODE=" + System.getenv("AMA_NODE") + " " +
-                        "$JAVA_HOME/bin/java" +
+                "env AMA_NODE=" + System.getenv("AMA_NODE") +
+                        " env HADOOP_USER_NAME=" + UserGroupInformation.getCurrentUser().getUserName() +
+                        " $JAVA_HOME/bin/java" +
                         " -Dscala.usejavacp=false" +
                         " -Xmx1G" +
                         " org.apache.amaterasu.leader.yarn.ApplicationMaster " +
@@ -128,6 +130,7 @@ public class Client {
 
         // Setup local ama folder on hdfs.
         try {
+
             if (!fs.exists(jarPathQualified)) {
                 File home = new File(opts.home);
                 fs.mkdirs(jarPathQualified);
@@ -139,6 +142,7 @@ public class Client {
                 // setup frameworks
                 FrameworkProvidersFactory frameworkFactory = FrameworkProvidersFactory.apply(opts.env, config);
                 for (String group : frameworkFactory.groups()) {
+                    System.out.println("===> setting up " + group);
                     FrameworkSetupProvider framework = frameworkFactory.getFramework(group);
 
                     //creating a group folder
@@ -153,13 +157,14 @@ public class Client {
                 }
             }
         } catch (IOException e) {
+            System.out.println("===>" + e.getMessage());
             LOGGER.error("Error uploading ama folder to HDFS.", e);
             exit(3);
         } catch (NullPointerException ne) {
+            System.out.println("===>" + ne.getMessage());
             LOGGER.error("No files in home dir.", ne);
             exit(4);
         }
-
 
         // get version of build
         String version = config.version();
@@ -170,7 +175,6 @@ public class Client {
         Path mergedPath = Path.mergePaths(jarPath, new Path(leaderJarPath));
 
         // System.out.println("===> path: " + jarPathQualified);
-
         LOGGER.info("Leader merged jar path is: {}", mergedPath);
         LocalResource leaderJar = null;
         LocalResource propFile = null;
@@ -234,7 +238,7 @@ public class Client {
         reportBarrier.setBarrier();
         reportBarrier.waitOnBarrier();
 
-        String address = new String( client.getData().forPath("/" + newJobId + "/broker"));
+        String address = new String(client.getData().forPath("/" + newJobId + "/broker"));
         System.out.println("===> " + address);
         setupReportListener(address);
 

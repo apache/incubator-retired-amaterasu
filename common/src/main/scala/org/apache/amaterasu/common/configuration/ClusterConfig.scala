@@ -71,8 +71,8 @@ class ClusterConfig extends Logging {
       var memoryMB: Int = 1024
 
       def load(props: Properties): Unit = {
-        if (props.containsKey("yarn.master.cores")) this.cores = props.getProperty("yarn.master.cores").asInstanceOf[Int]
-        if (props.containsKey("yarn.master.memoryMB")) this.memoryMB = props.getProperty("yarn.master.memoryMB").asInstanceOf[Int]
+        if (props.containsKey("yarn.master.cores")) this.cores = props.getProperty("yarn.master.cores").toInt
+        if (props.containsKey("yarn.master.memoryMB")) this.memoryMB = props.getProperty("yarn.master.memoryMB").toInt
       }
     }
 
@@ -83,8 +83,8 @@ class ClusterConfig extends Logging {
       var memoryMB: Int = 1024
 
       def load(props: Properties): Unit = {
-        if (props.containsKey("yarn.worker.cores")) this.cores = props.getProperty("yarn.worker.cores").asInstanceOf[Int]
-        if (props.containsKey("yarn.worker.memoryMB")) this.memoryMB = props.getProperty("yarn.worker.memoryMB").asInstanceOf[Int]
+        if (props.containsKey("yarn.worker.cores")) this.cores = props.getProperty("yarn.worker.cores").toInt
+        if (props.containsKey("yarn.worker.memoryMB")) this.memoryMB = props.getProperty("yarn.worker.memoryMB").toInt
       }
     }
 
@@ -133,9 +133,9 @@ class ClusterConfig extends Logging {
 
     def load(props: Properties): Unit = {
 
-      if (props.containsKey("jobs.cpu")) cpus = props.getProperty("jobs.cpu").asInstanceOf[Double]
-      if (props.containsKey("jobs.mem")) mem = props.getProperty("jobs.mem").asInstanceOf[Long]
-      if (props.containsKey("jobs.repoSize")) repoSize = props.getProperty("jobs.repoSize").asInstanceOf[Long]
+      if (props.containsKey("jobs.cpu")) cpus = props.getProperty("jobs.cpu").toDouble
+      if (props.containsKey("jobs.mem")) mem = props.getProperty("jobs.mem").toLong
+      if (props.containsKey("jobs.repoSize")) repoSize = props.getProperty("jobs.repoSize").toLong
 
       Tasks.load(props)
     }
@@ -148,9 +148,9 @@ class ClusterConfig extends Logging {
 
       def load(props: Properties): Unit = {
 
-        if (props.containsKey("jobs.tasks.attempts")) attempts = props.getProperty("jobs.tasks.attempts").asInstanceOf[Int]
-        if (props.containsKey("jobs.tasks.cpus")) attempts = props.getProperty("jobs.tasks.cpus").asInstanceOf[Int]
-        if (props.containsKey("jobs.tasks.mem")) attempts = props.getProperty("jobs.tasks.mem").asInstanceOf[Int]
+        if (props.containsKey("jobs.tasks.attempts")) attempts = props.getProperty("jobs.tasks.attempts").toInt
+        if (props.containsKey("jobs.tasks.cpus")) cpus = props.getProperty("jobs.tasks.cpus").toInt
+        if (props.containsKey("jobs.tasks.mem")) mem = props.getProperty("jobs.tasks.mem").toInt
 
       }
     }
@@ -209,7 +209,7 @@ class ClusterConfig extends Logging {
     if (props.containsKey("timeout")) timeout = props.getProperty("timeout").asInstanceOf[Double]
     if (props.containsKey("mode")) mode = props.getProperty("mode")
     if (props.containsKey("workingFolder")) workingFolder = props.getProperty("workingFolder", s"/user/$user")
-
+    if (props.containsKey("pysparkPath")) pysparkPath = props.getProperty("pysparkPath")
     // TODO: rethink this
     Jar = this.getClass.getProtectionDomain.getCodeSource.getLocation.toURI.getPath
     JarName = Paths.get(this.getClass.getProtectionDomain.getCodeSource.getLocation.getPath).getFileName.toString
