@@ -16,19 +16,21 @@
  */
 package org.apache.amaterasu.executor.execution.actions.runners.spark.PySpark
 
-import java.io.{File, PrintWriter, StringWriter}
+import java.io.File
 import java.util
 
 import org.apache.amaterasu.common.configuration.ClusterConfig
 import org.apache.amaterasu.common.execution.actions.Notifier
-import org.apache.amaterasu.common.execution.dependencies.{PythonDependencies, PythonPackage}
+import org.apache.amaterasu.common.execution.dependencies.PythonDependencies
 import org.apache.amaterasu.common.logging.Logging
 import org.apache.amaterasu.common.runtime.Environment
 import org.apache.amaterasu.sdk.AmaterasuRunner
 import org.apache.spark.SparkEnv
 import org.apache.spark.sql.SparkSession
 
-import scala.sys.process.Process
+import scala.sys.process.{Process, ProcessLogger}
+
+
 
 
 class PySparkRunner extends AmaterasuRunner with Logging {
@@ -69,6 +71,15 @@ class PySparkRunner extends AmaterasuRunner with Logging {
 
 object PySparkRunner {
 
+  def collectCondaPackages(): String = {
+    val pkgsDirs = new File("./miniconda/pkgs")
+    (pkgsDirs.listFiles.filter {
+      file => file.getName.endsWith(".tar.bz2")
+    }.map {
+      file => s"./miniconda/pkgs/${file.getName}"
+    }.toBuffer ++ "dist/codegen.py").mkString(",")
+  }
+
   def apply(env: Environment,
             jobId: String,
             notifier: Notifier,
@@ -77,14 +88,13 @@ object PySparkRunner {
             pyDeps: PythonDependencies,
             config: ClusterConfig): PySparkRunner = {
 
-    //TODO: can we make this less ugly?
-    var pysparkPython = "/usr/bin/python"
+    val shellLoger = ProcessLogger(
+      (o: String) => println(o),
+      (e: String) => println(e)
+    )
 
-    if (pyDeps != null &&
-        pyDeps.packages.nonEmpty) {
-      loadPythonDependencies(pyDeps, notifier)
-      pysparkPython = "miniconda/bin/python"
-    }
+    //TODO: can we make this less ugly?
+
 
     val result = new PySparkRunner
 
@@ -98,87 +108,44 @@ object PySparkRunner {
       intpPath = s"spark_intp.py"
     }
     var pysparkPath = ""
-    if (env.configuration.contains("pysparkPath")) {
-      pysparkPath = env.configuration("pysparkPath")
-    } else {
-      pysparkPath = s"${config.spark.home}/bin/spark-submit"
+    var condaPkgs = ""
+    if (pyDeps != null)
+      condaPkgs = collectCondaPackages()
+    var sparkCmd: Seq[String] = Seq()
+    config.mode match {
+      case "yarn" =>
+        pysparkPath = s"spark/bin/spark-submit"
+        sparkCmd = Seq(pysparkPath, "--py-files", condaPkgs, "--master", "yarn", intpPath, port.toString)
+        val proc = Process(sparkCmd, None,
+          "PYTHONPATH" -> pypath,
+          "PYTHONHASHSEED" -> 0.toString)
+
+        proc.run(shellLoger)
+      case "mesos" =>
+        pysparkPath = config.pysparkPath
+        if (pysparkPath.endsWith("spark-submit")) {
+          sparkCmd = Seq(pysparkPath, "--py-files", condaPkgs, intpPath, port.toString)
+        }
+        else {
+          sparkCmd = Seq(pysparkPath, intpPath, port.toString)
+        }
+        var pysparkPython = "/usr/bin/python"
+
+        if (pyDeps != null &&
+          pyDeps.packages.nonEmpty) {
+          pysparkPython = "./miniconda/bin/python"
+        }
+        val proc = Process(sparkCmd, None,
+          "PYTHONPATH" -> pypath,
+          "PYSPARK_PYTHON" -> pysparkPython,
+        "PYTHONHASHSEED" -> 0.toString)
+
+        proc.run(shellLoger)
     }
-    val proc = Process(Seq(pysparkPath, intpPath, port.toString), None,
-      "PYTHONPATH" -> pypath,
-      "PYSPARK_PYTHON" -> pysparkPython,
-      "PYTHONHASHSEED" -> 0.toString) #> System.out
-
-    proc.run()
-
 
     result.notifier = notifier
 
     result
   }
-
-  /**
-    * This installs the required python dependencies.
-    * We basically need 2 packages to make pyspark work with customer's scripts:
-    * 1. py4j - supplied by spark, for communication between Python and Java runtimes.
-    * 2. codegen - for dynamically parsing and converting customer's scripts into executable Python code objects.
-    * Currently we only know how to install packages using Anaconda, the reason is 3rd party OS libraries, e.g. libevent
-    * Anaconda has the capabilities to automatically resolve the required OS libraries per Python package and install them.
-    *
-    * TODO - figure out if we really want to support pip directly, or if Anaconda is enough.
-    * @param deps All of the customer's supplied Python dependencies, this currently comes from job-repo/deps/python.yml
-    * @param notifier
-    */
-  private def loadPythonDependencies(deps: PythonDependencies, notifier: Notifier): Unit = {
-    notifier.info("loading anaconda evn")
-    installAnacondaOnNode()
-    val codegenPackage = PythonPackage("codegen", channel = Option("auto"))
-    installAnacondaPackage(codegenPackage)
-    try {
-      deps.packages.foreach(pack => {
-        pack.index.getOrElse("anaconda").toLowerCase match {
-          case "anaconda" => installAnacondaPackage(pack)
-          // case "pypi" => installPyPiPackage(pack) TODO: See if we can support this
-        }
-      })
-    }
-    catch {
-
-      case rte: RuntimeException =>
-        val sw = new StringWriter
-        rte.printStackTrace(new PrintWriter(sw))
-        notifier.error("", s"Failed to activate environment (runtime) - cause: ${rte.getCause}, message: ${rte.getMessage}, Stack: \n${sw.toString}")
-      case e: Exception =>
-        val sw = new StringWriter
-        e.printStackTrace(new PrintWriter(sw))
-        notifier.error("", s"Failed to activate environment (other) - type: ${e.getClass.getName}, cause: ${e.getCause}, message: ${e.getMessage}, Stack: \n${sw.toString}")
-    }
-  }
-
-
-  /**
-    * Installs one python package using Anaconda.
-    * Anaconda works with multiple channels, or better called, repositories.
-    * Normally, if a channel isn't specified, Anaconda will fetch the package from the default conda channel.
-    * The reason we need to use channels, is that sometimes the required package doesn't exist on the default channel.
-    * @param pythonPackage This comes from parsing the python.yml dep file.
-    */
-  private def installAnacondaPackage(pythonPackage: PythonPackage): Unit = {
-    val channel = pythonPackage.channel.getOrElse("anaconda")
-    if (channel == "anaconda") {
-      Seq("bash", "-c", s"$$PWD/miniconda/bin/python -m conda install -y ${pythonPackage.packageId}")
-    } else {
-      Seq("bash", "-c", s"$$PWD/miniconda/bin/python -m conda install -y -c $channel ${pythonPackage.packageId}")
-    }
-  }
-
-  /**
-    * Installs Anaconda and then links it with the local spark that was installed on the executor.
-    */
-  private def installAnacondaOnNode(): Unit = {
-    Seq("bash", "-c", "sh Miniconda2-latest-Linux-x86_64.sh -b -p $PWD/miniconda")
-    Seq("bash", "-c", "$PWD/miniconda/bin/python -m conda install -y conda-build")
-    Seq("bash", "-c", "ln -s $PWD/spark-2.2.1-bin-hadoop2.7/python/pyspark $PWD/miniconda/pkgs/pyspark")
-  }
-
 
 }
