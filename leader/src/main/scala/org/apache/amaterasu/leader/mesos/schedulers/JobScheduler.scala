@@ -16,11 +16,10 @@
  */
 package org.apache.amaterasu.leader.mesos.schedulers
 
-import java.io.File
 import java.util
 import java.util.concurrent.locks.ReentrantLock
 import java.util.concurrent.{ConcurrentHashMap, LinkedBlockingQueue}
-import java.util.{Collections, Properties, UUID}
+import java.util.{Collections, UUID}
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
@@ -63,6 +62,7 @@ class JobScheduler extends AmaterasuScheduler {
   private var branch: String = _
   private var resume: Boolean = false
   private var reportLevel: NotificationLevel = _
+  private var frameworkFactory: FrameworkProvidersFactory = _
 
   val slavesExecutors = new TrieMap[String, ExecutorInfo]
   private var awsEnv: String = ""
@@ -130,6 +130,7 @@ class JobScheduler extends AmaterasuScheduler {
   }
 
   def resourceOffers(driver: SchedulerDriver, offers: util.List[Offer]): Unit = {
+
     for (offer <- offers.asScala) {
 
       if (validateOffer(offer)) {
@@ -159,6 +160,9 @@ class JobScheduler extends AmaterasuScheduler {
             //TODO: move to .getOrElseUpdate when migrting to scala 2.11
             var executor: ExecutorInfo = null
             val slaveId = offer.getSlaveId.getValue
+
+            val frameworkProvider = frameworkFactory.providers(actionData.groupId)
+
             slavesExecutors.synchronized {
               if (slavesExecutors.contains(slaveId) &&
                 offer.getExecutorIdsList.contains(slavesExecutors(slaveId).getExecutorId)) {
@@ -170,10 +174,8 @@ class JobScheduler extends AmaterasuScheduler {
                 val command = CommandInfo
                   .newBuilder
                   .setValue(
-                    s"""$awsEnv env AMA_NODE=${sys.env("AMA_NODE")} env MESOS_NATIVE_JAVA_LIBRARY=/usr/lib/libmesos.so env SPARK_EXECUTOR_URI=http://${sys.env("AMA_NODE")}:${config.Webserver.Port}/dist/spark-${config.Webserver.sparkVersion}.tgz java -cp executor-${config.version}-all.jar:spark-${config.Webserver.sparkVersion}/jars/* -Dscala.usejavacp=true -Djava.library.path=/usr/lib org.apache.amaterasu.executor.mesos.executors.MesosActionsExecutor ${jobManager.jobId} ${config.master} ${actionData.name}""".stripMargin
+                    s"""$awsEnv env AMA_NODE=${sys.env("AMA_NODE")} env MESOS_NATIVE_JAVA_LIBRARY=/usr/lib/libmesos.so env SPARK_EXECUTOR_URI=http://${sys.env("AMA_NODE")}:${config.Webserver.Port}/dist/spark-${config.Webserver.sparkVersion}.tgz ${frameworkProvider.getRuntimeCommand} ${frameworkProvider.getRuntimePaths.mkString(":")} -Dscala.usejavacp=true -Djava.library.path=/usr/lib org.apache.amaterasu.executor.mesos.executors.MesosActionsExecutor ${jobManager.jobId} ${config.master} ${actionData.name}""".stripMargin
                   )
-                  //                  HttpServer.getFilesInDirectory(sys.env("AMA_NODE"), config.Webserver.Port).foreach(f=>
-                  //                  )
                   .addUris(URI.newBuilder
                   .setValue(s"http://${sys.env("AMA_NODE")}:${config.Webserver.Port}/executor-${config.version}-all.jar")
                   .setExecutable(false)
@@ -221,8 +223,6 @@ class JobScheduler extends AmaterasuScheduler {
               }
             }
 
-            val frameworkFactory = FrameworkProvidersFactory.apply(env, config)
-            val frameworkProvider = frameworkFactory.providers(actionData.groupId)
             val driverConfiguration = frameworkProvider.getDriverConfiguration
 
             val actionTask = TaskInfo
@@ -347,6 +347,7 @@ object JobScheduler {
     scheduler.client = CuratorFrameworkFactory.newClient(config.zk, retryPolicy)
     scheduler.client.start()
     scheduler.config = config
+    scheduler.frameworkFactory = FrameworkProvidersFactory(env, config)
     scheduler
 
   }

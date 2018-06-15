@@ -19,7 +19,6 @@ package org.apache.amaterasu.leader.frameworks.spark
 import java.io.File
 
 import org.apache.amaterasu.common.configuration.ClusterConfig
-import org.apache.amaterasu.common.dataobjects.ExecData
 import org.apache.amaterasu.leader.utilities.{DataLoader, MemoryFormatParser}
 import org.apache.amaterasu.sdk.frameworks.FrameworkSetupProvider
 import org.apache.amaterasu.sdk.frameworks.configuration.DriverConfiguration
@@ -28,21 +27,11 @@ import scala.collection.mutable
 
 class SparkSetupProvider extends FrameworkSetupProvider {
 
-
-  private var env: String = _
-  private var conf: ClusterConfig = _
-  private val runnersResources = mutable.Map[String, Array[File]]()
   //private var execData: ExecData = _
   private lazy val sparkExecConfigurations: mutable.Map[String, Any] = loadSparkConfig
-
-  private def loadSparkConfig: mutable.Map[String, Any] = {
-    val execData = DataLoader.getExecutorData(env, conf)
-    val sparkExecConfigurationsurations = execData.configurations.get("spark")
-    if (sparkExecConfigurationsurations.isEmpty) {
-      throw new Exception(s"Spark configuration files could not be loaded for the environment ${env}")
-    }
-    collection.mutable.Map(sparkExecConfigurationsurations.get.toSeq: _*)
-  }
+  private val runnersResources = mutable.Map[String, Array[File]]()
+  private var env: String = _
+  private var conf: ClusterConfig = _
 
   override def init(env: String, conf: ClusterConfig): Unit = {
     this.env = env
@@ -97,5 +86,25 @@ class SparkSetupProvider extends FrameworkSetupProvider {
     }
 
     new DriverConfiguration(mem, cpu)
+  }
+
+  override def getRuntimePaths: Array[String] = {
+    Array[String](
+      s"executor-${conf.version}-all.jar",
+      s"spark-${conf.Webserver.sparkVersion}/jars/*"
+    )
+  }
+
+  override def getRuntimeCommand = {
+    "java -cp"
+  }
+
+  private def loadSparkConfig: mutable.Map[String, Any] = {
+    val execData = DataLoader.getExecutorData(env, conf)
+    val sparkExecConfigurationsurations = execData.configurations.get("spark")
+    if (sparkExecConfigurationsurations.isEmpty) {
+      throw new Exception(s"Spark configuration files could not be loaded for the environment ${env}")
+    }
+    collection.mutable.Map(sparkExecConfigurationsurations.get.toSeq: _*)
   }
 }
