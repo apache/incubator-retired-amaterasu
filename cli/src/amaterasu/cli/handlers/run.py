@@ -157,7 +157,7 @@ def _check_amaterasu_properties():
 
 def get_handler(**kwargs):
     try:
-        props = ConfigurationFile(self.CONFIGURATION_PATH)
+        props = ConfigurationFile(BaseHandler.CONFIGURATION_PATH)
         cluster_manager = props['cluster.manager']
         if cluster_manager == 'mesos':
             return RunMesosPipelineHandler
