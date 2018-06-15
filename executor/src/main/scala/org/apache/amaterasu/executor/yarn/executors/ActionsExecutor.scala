@@ -99,6 +99,6 @@ object ActionsExecutorLauncher extends App with Logging {
   val notifier = ActiveNotifier(notificationsAddress)
 
   log.info("Setup notifier")
-  actionsExecutor.providersFactory = ProvidersFactory(execData, jobId, baos, notifier, taskIdAndContainerId, hostName, propFile = "./amaterasu.properties")
+  actionsExecutor.providersFactory = ProvidersFactory(execData, jobId, baos, notifier, taskIdAndContainerId, hostName, propFile = "./amaterasu.conf")
   actionsExecutor.execute()
 }

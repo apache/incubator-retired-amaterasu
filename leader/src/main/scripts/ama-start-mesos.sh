@@ -130,7 +130,7 @@ if [ ! -f ${BASEDIR}/dist/Miniconda2-latest-Linux-x86_64.sh ]; then
     echo "${bold}Fetching miniconda distributable ${NC}"
     wget https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh -P ${BASEDIR}/dist
 fi
-cp ${BASEDIR}/amaterasu.properties ${BASEDIR}/dist
+cp /etc/amaterasu/amaterasu.conf ${BASEDIR}/dist
 eval $CMD | grep "===>"
 
 echo ""

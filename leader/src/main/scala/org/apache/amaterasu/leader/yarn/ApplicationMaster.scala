@@ -103,7 +103,7 @@ class ApplicationMaster extends AMRMClientAsync.CallbackHandler with Logging {
 
     log.info(s"started AM with args $arguments")
 
-    propPath = System.getenv("PWD") + "/amaterasu.properties"
+    propPath = System.getenv("PWD") + "/amaterasu.conf"
     props = new FileInputStream(new File(propPath))
 
     // no need for hdfs double check (nod to Aaron Rodgers)
@@ -139,7 +139,7 @@ class ApplicationMaster extends AMRMClientAsync.CallbackHandler with Logging {
     executorPath = Path.mergePaths(jarPath, new Path(s"/dist/executor-${config.version}-all.jar"))
     log.info("Executor jar path is {}", executorPath)
     executorJar = setLocalResourceFromPath(executorPath)
-    propFile = setLocalResourceFromPath(Path.mergePaths(jarPath, new Path("/amaterasu.properties")))
+    propFile = setLocalResourceFromPath(Path.mergePaths(jarPath, new Path("/amaterasu.conf")))
     log4jPropFile = setLocalResourceFromPath(Path.mergePaths(jarPath, new Path("/log4j.properties")))
 
     log.info("Started execute")
@@ -268,7 +268,7 @@ class ApplicationMaster extends AMRMClientAsync.CallbackHandler with Logging {
 
         val resources = mutable.Map[String, LocalResource](
           "executor.jar" -> executorJar,
-          "amaterasu.properties" -> propFile,
+          "amaterasu.conf" -> propFile,
           // TODO: Nadav/Eyal all of these should move to the executor resource setup
           "miniconda.sh" -> setLocalResourceFromPath(Path.mergePaths(jarPath, new Path("/dist/Miniconda2-latest-Linux-x86_64.sh"))),
           "codegen.py" -> setLocalResourceFromPath(Path.mergePaths(jarPath, new Path("/dist/codegen.py"))),

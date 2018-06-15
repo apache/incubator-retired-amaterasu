@@ -90,8 +90,8 @@ class RunMesosPipelineHandler(BaseRunPipelineHandler, MakiMixin,  ValidateReposi
             self.args.get('report', 'code'),
             "--branch",
             self.args.get('branch', 'master'),
-            "--config-home",
-            self.args.get('config_home', os.path.dirname(self.CONFIGURATION_PATH))
+            "--config-file",
+            self.args.get('config_file', self.CONFIGURATION_PATH)
         ]
         if self.args.get('job_id'):
             command_params.extend(["--job-id", self.args['job_id']])
@@ -124,8 +124,8 @@ class RunYarnPipelineHandler(BaseRunPipelineHandler, MakiMixin,  ValidateReposit
             self.args.get('report', 'code'),
             "--branch",
             self.args.get('branch', 'master'),
-            "--config-home",
-            self.args.get('config_home', os.path.dirname(self.CONFIGURATION_PATH))
+            "--config-file",
+            self.args.get('config_file', self.CONFIGURATION_PATH)
         ]
         if self.args.get('job_id'):
             command_params.extend(["--job-id", self.args['job_id']])
@@ -141,8 +141,7 @@ class RunYarnPipelineHandler(BaseRunPipelineHandler, MakiMixin,  ValidateReposit
 
 def _check_amaterasu_properties():
     supported_cluster_managers = ['mesos', 'yarn']
-    if not os.path.exists(
-        os.path.expanduser('~/.amaterasu/amaterasu.properties')):
+    if not os.path.exists(os.path.expanduser(BaseHandler.CONFIGURATION_PATH)):
         print('Amaterasu hasn\'t been configured yet, please fill in the following details:')
         cluster_manager = None
         while not cluster_manager:

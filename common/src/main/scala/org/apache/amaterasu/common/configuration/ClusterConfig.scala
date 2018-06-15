@@ -27,8 +27,7 @@ import scala.collection.mutable
 
 class ClusterConfig extends Logging {
 
-  val DEFAULT_FILE: InputStream = getClass.getResourceAsStream("/src/main/scripts/amaterasu.properties")
-  //val DEFAULT_FILE = getClass().getResourceAsStream("/amaterasu.properties")
+  val DEFAULT_FILE: InputStream = getClass.getResourceAsStream("/src/main/scripts/amaterasu.conf")
   var version: String = ""
   var user: String = ""
   var zk: String = ""

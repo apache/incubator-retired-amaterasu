@@ -205,7 +205,7 @@ class JobScheduler extends AmaterasuScheduler {
                     .setExtract(false)
                     .build())
                   .addUris(URI.newBuilder()
-                    .setValue(s"http://${sys.env("AMA_NODE")}:${config.Webserver.Port}/amaterasu.properties")
+                    .setValue(s"http://${sys.env("AMA_NODE")}:${config.Webserver.Port}/amaterasu.conf")
                     .setExecutable(false)
                     .setExtract(false)
                     .build())

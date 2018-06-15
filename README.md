@@ -72,7 +72,7 @@ ama setup mesos
 
 During step you will be asked to configure a few parameters, the setup will result in the following happening:
 1. The Amaterasu distributable will be downloaded and deployed. 
-2. `amaterasu.properties` file will be created in the current user's home directory. This is a configuration file that feeds the distributable.
+2. `amaterasu.conf` file will be created by default in ```/etc/amaterasu```. This is a configuration file that feeds the distributable.
 3. Dependencies will be downloaded (miniconda and spark for a Mesos cluster and only miniconda for a Hadoop cluster)
 
 ## Creating a dev/test Mesos cluster

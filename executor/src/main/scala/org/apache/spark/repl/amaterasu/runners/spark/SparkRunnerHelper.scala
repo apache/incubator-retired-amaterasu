@@ -165,7 +165,7 @@ object SparkRunnerHelper extends Logging {
 
     if (config.spark.opts != null && config.spark.opts.nonEmpty) {
       config.spark.opts.foreach(kv => {
-        log.info(s"Setting ${kv._1} to ${kv._2} as specified in amaterasu.properties")
+        log.info(s"Setting ${kv._1} to ${kv._2} as specified in amaterasu.conf")
         conf.set(kv._1, kv._2)
       })
     }
