@@ -59,8 +59,11 @@ object HttpServer extends Logging {
     handler.setDirectoriesListed(true)
     handler.setWelcomeFiles(Array[String]("index.html"))
     handler.setResourceBase(serverRoot)
+    val configHandler = new ResourceHandler()
+    configHandler.setDirectoriesListed(true)
+    configHandler.setResourceBase("/etc/amaterasu")
     val handlers = new HandlerList()
-    handlers.setHandlers(Array(handler, new DefaultHandler()))
+    handlers.setHandlers(Array(handler, configHandler, new DefaultHandler()))
 
     server.setHandler(handlers)
     server.start()
