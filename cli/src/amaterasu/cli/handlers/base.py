@@ -221,4 +221,4 @@ class ConfigurationFile(dict):
         os.makedirs(configuration_root, exist_ok=True)
         with open(self.path, 'w') as f:
             for k, v in self.items():
-                f.write('{}={}'.format(k, v))
+                f.write('{}={}\n'.format(k, v))

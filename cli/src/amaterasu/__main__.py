@@ -27,7 +27,7 @@ from .cli import common, consts, handlers
 from docopt import docopt
 
 ama_package_path = os.path.abspath(os.path.dirname(__file__))
-logging_config_path = '{}/logging.yml'.format(ama_package_path)
+logging_config_path = '{}/cli/resources/logging.yml'.format(ama_package_path)
 with open(logging_config_path) as fp:
     logging_cfg = yaml.load(fp)
 logging.config.dictConfig(logging_cfg)
