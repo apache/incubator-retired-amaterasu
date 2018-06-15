@@ -44,6 +44,7 @@ class BaseHandler(abc.ABC):
      2. Implement handle
      3. Implement get_parser
     """
+    CONFIGURATION_PATH = '/etc/amaterasu/amaterasu.conf'
 
     def __init__(self, **args):
         self.args = args

@@ -187,8 +187,6 @@ class ConfigurationMeta(abc.ABCMeta):
 
 class BaseConfigurationHandler(BaseHandler, metaclass=ConfigurationMeta):
 
-    CONFIGURATION_PATH = '/etc/amaterasu/amaterasu.conf'
-
     cluster_manager = None
     amaterasu_home = PathField(input_text='Amaterasu home directory', default='/ama', name='amaterasu.home', auto_create=True)
     zk = TextField(required=True, input_text='Zookeeper IP', default=get_zookeeper_ip)

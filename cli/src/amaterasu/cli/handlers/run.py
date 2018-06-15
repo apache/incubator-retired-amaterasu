@@ -35,7 +35,7 @@ class BaseRunPipelineHandler(BaseHandler, MakiMixin):
 
     def __init__(self, **args):
         super(BaseRunPipelineHandler, self).__init__(**args)
-        self.props = ConfigurationFile('~/.amaterasu/amaterasu.properties')
+        self.props = ConfigurationFile(self.CONFIGURATION_PATH)
         self.base_dir = '/tmp/amaterasu/repos'
         self.dir_path = '{}/{}'.format(self.base_dir, uuid.uuid4())
         self.amaterasu_root = self.props['amaterasu.home']
@@ -157,7 +157,7 @@ def _check_amaterasu_properties():
 
 def get_handler(**kwargs):
     try:
-        props = ConfigurationFile('~/.amaterasu/amaterasu.properties')
+        props = ConfigurationFile(self.CONFIGURATION_PATH)
         cluster_manager = props['cluster.manager']
         if cluster_manager == 'mesos':
             return RunMesosPipelineHandler
