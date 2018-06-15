@@ -74,7 +74,7 @@ public class ArgsParser {
         }
 
         if (cli.hasOption("config-home")) {
-            opts.configHome = cli.getOptionValue("config-home");
+            opts.configFile = cli.getOptionValue("config-file");
         }
 
         return opts;
