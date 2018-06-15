@@ -91,7 +91,7 @@ class RunMesosPipelineHandler(BaseRunPipelineHandler, MakiMixin,  ValidateReposi
             "--branch",
             self.args.get('branch', 'master'),
             "--config-home",
-            self.args.get('config_home', os.path.expanduser("~/.amaterasu"))
+            self.args.get('config_home', os.path.dirname(self.CONFIGURATION_PATH))
         ]
         if self.args.get('job_id'):
             command_params.extend(["--job-id", self.args['job_id']])
@@ -125,7 +125,7 @@ class RunYarnPipelineHandler(BaseRunPipelineHandler, MakiMixin,  ValidateReposit
             "--branch",
             self.args.get('branch', 'master'),
             "--config-home",
-            os.path.expanduser("~/.amaterasu")
+            self.args.get('config_home', os.path.dirname(self.CONFIGURATION_PATH))
         ]
         if self.args.get('job_id'):
             command_params.extend(["--job-id", self.args['job_id']])
