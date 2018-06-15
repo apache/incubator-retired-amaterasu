@@ -75,8 +75,8 @@ class ConfigurationField(metaclass=abc.ABCMeta):
 
     def clean(self, value: Any) -> Any:
         logger.debug('Field: \'{}\' received value of {}'.format(self._find_field_name_on_handler(), value))
-        cleaned_value = None
-        if not value and value != 0 and self._default is not None:
+        cleaned_value = value
+        if not cleaned_value and cleaned_value != 0 and self._default is not None:
             try:
                 default_func = getattr(self._handler, str(self.default))
                 cleaned_value = default_func()
