@@ -72,7 +72,7 @@ class ConfigurationField(metaclass=abc.ABCMeta):
                     self._varname = k
                     return k
 
-    def clean(self, value: Any) -> Any:
+    def clean(self, value):
         logger.debug('Field: \'{}\' received value of {}'.format(self._find_field_name_on_handler(), value))
         cleaned_value = value
         if not cleaned_value and cleaned_value != 0 and self._default is not None:
