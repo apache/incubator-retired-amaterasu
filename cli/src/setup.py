@@ -9,7 +9,7 @@ setup(
     author='Apache Amaterasu (incubating)',
     author_email="dev@amaterasu.incubator.apache.org",
     description='Apache Amaterasu (incubating) is an open source, configuration managment and deployment framework for big data pipelines',
-    install_requires=['colorama', 'GitPython', 'six', 'PyYAML', 'netifaces', 'multipledispatch', 'docopt', 'paramiko', 'wget', 'PyArrow'],
+    install_requires=['colorama', 'GitPython', 'six', 'PyYAML', 'netifaces', 'multipledispatch', 'docopt', 'paramiko', 'wget'],
     tests_require=['behave'],
     python_requires='!=3.0.*, !=3.1.*, !=3.2.*, <4',
     entry_points={
@@ -21,7 +21,7 @@ setup(
     package_data={
         'amaterasu.cli.resources': ['*']
     },
-    classifiers= [
+    classifiers=[
         'Development Status :: 3 - Alpha',
         'Environment :: Console',
         'Intended Audience :: Developers',

@@ -10,6 +10,7 @@ from typing import Any
 
 from ..utils.input import default_input
 from .base import BaseHandler, ConfigurationFile
+from ..compat import run_subprocess
 import netifaces
 import os
 import abc
@@ -18,7 +19,6 @@ import getpass
 import wget
 import colorama
 import logging
-import pyarrow
 
 logger = logging.getLogger(__name__)
 
@@ -321,17 +321,31 @@ class YarnConfigurationHandler(BaseConfigurationHandler):
             return '/usr/lib/spark'
 
     def _copy_to_HDFS(self):
-        fs = pyarrow.hdfs.connect()
         logger.info('Uploading Amaterasu executor to HDFS')
-        with open('{}/dist/executor-{}-all.jar'.format(self.amaterasu_home, __version__), 'rb') as f:
-            fs.upload('{}/executor.jar'.format(self.yarn_jarspath), f)
-        with open('/etc/amaterasu/amaterasu.conf', 'rb') as f:
-            fs.upload('{}/amaterasu.conf'.format(self.yarn_jarspath), f)
+        run_subprocess(
+            "hdfs",
+            "dfs",
+            '-copyFromLocal',
+            '{}/dist/executor-{}-all.jar'.format(self.amaterasu_home, __version__),
+            '{}/executor.jar'.format(self.yarn_jarspath)
+        )
+        run_subprocess(
+            "hdfs",
+            "dfs",
+            '-copyFromLocal',
+            '/etc/amaterasu/amaterasu.conf',
+            '{}/amaterasu.conf'.format(self.yarn_jarspath)
+        )
         logger.info('Uploading Miniconda to HDFS')
         miniconda_dist_path = os.path.join(self.amaterasu_home, 'dist',
                                            'Miniconda2-latest-Linux-x86_64.sh')
-        with open(miniconda_dist_path) as f:
-            fs.upload("{}/{}".format(self.yarn_jarspath, 'miniconda.sh'), f)
+        run_subprocess(
+            "hdfs",
+            "dfs",
+            '-copyFromLocal',
+            miniconda_dist_path,
+            "{}/{}".format(self.yarn_jarspath, 'miniconda.sh')
+        )
         logger.info('Uploading Spark-Client to HDFS')
         for root, _, files in os.walk(self.spark_home):
             remote_path_dir = root.split(self.spark_home)[1]
@@ -339,8 +353,13 @@ class YarnConfigurationHandler(BaseConfigurationHandler):
                 logger.debug('Uploading: "{}" to HDFS at: {}'.format(local_path, remote_path))
                 local_path = '{}/{}'.format(root, file_name)
                 remote_path = '{}/{}/{}'.format(self.yarn_jarspath, remote_path_dir, file_name)
-                with open(local_path, 'rb') as f:
-                    fs.upload(remote_path, f)
+                run_subprocess(
+                    "hdfs",
+                    "dfs",
+                    '-copyFromLocal',
+                    local_path,
+                    remote_path
+                )
 
 
 
