@@ -324,6 +324,12 @@ class YarnConfigurationHandler(BaseConfigurationHandler):
         run_subprocess(
             "hdfs",
             "dfs",
+            "-mkdir",
+            "/apps/amaterasu"
+        )
+        run_subprocess(
+            "hdfs",
+            "dfs",
             '-copyFromLocal',
             '{}/dist/executor-{}-all.jar'.format(self.amaterasu_home, __version__),
             '{}/executor.jar'.format(self.yarn_jarspath)
