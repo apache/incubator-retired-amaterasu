@@ -322,30 +322,30 @@ class YarnConfigurationHandler(BaseConfigurationHandler):
 
     def _copy_to_HDFS(self):
         logger.info('Uploading Amaterasu executor to HDFS')
-        run_subprocess(
+        run_subprocess([
             "hdfs",
             "dfs",
             '-copyFromLocal',
             '{}/dist/executor-{}-all.jar'.format(self.amaterasu_home, __version__),
             '{}/executor.jar'.format(self.yarn_jarspath)
-        )
-        run_subprocess(
+        ])
+        run_subprocess([
             "hdfs",
             "dfs",
             '-copyFromLocal',
             '/etc/amaterasu/amaterasu.conf',
             '{}/amaterasu.conf'.format(self.yarn_jarspath)
-        )
+        ])
         logger.info('Uploading Miniconda to HDFS')
         miniconda_dist_path = os.path.join(self.amaterasu_home, 'dist',
                                            'Miniconda2-latest-Linux-x86_64.sh')
-        run_subprocess(
+        run_subprocess([
             "hdfs",
             "dfs",
             '-copyFromLocal',
             miniconda_dist_path,
             "{}/{}".format(self.yarn_jarspath, 'miniconda.sh')
-        )
+        ])
         logger.info('Uploading Spark-Client to HDFS')
         for root, _, files in os.walk(self.spark_home):
             remote_path_dir = root.split(self.spark_home)[1]
@@ -353,13 +353,13 @@ class YarnConfigurationHandler(BaseConfigurationHandler):
                 logger.debug('Uploading: "{}" to HDFS at: {}'.format(local_path, remote_path))
                 local_path = '{}/{}'.format(root, file_name)
                 remote_path = '{}/{}/{}'.format(self.yarn_jarspath, remote_path_dir, file_name)
-                run_subprocess(
+                run_subprocess([
                     "hdfs",
                     "dfs",
                     '-copyFromLocal',
                     local_path,
                     remote_path
-                )
+                ])
 
 
 
