@@ -6,7 +6,6 @@ Usage:
 
 """
 from string import Template
-from typing import Any
 
 from ..utils.input import default_input
 from .base import BaseHandler, ConfigurationFile
@@ -201,7 +200,7 @@ class BaseConfigurationHandler(BaseHandler, metaclass=ConfigurationMeta):
     def spark_home_default(self):
         pass
 
-    def __new__(cls, *args, **kwargs) -> Any:
+    def __new__(cls, *args, **kwargs):
         instance = super().__new__(cls)
         for field in instance._fields.values():
             field._handler = instance

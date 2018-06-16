@@ -1,10 +1,8 @@
 import abc
 import os
-import sys
 import yaml
 import logging
 from six.moves import configparser
-from typing import List, Tuple, Any
 
 __version__ = '0.2.0-incubating-rc3'
 
@@ -214,7 +212,7 @@ class ConfigurationFile(dict):
 
         super().__init__(**kwargs)
 
-    def startswith(self, prefix:str) -> List[Tuple[str, Any]]:
+    def startswith(self, prefix:str):
         return [(k, v) for k, v in self.items() if k.startswith(prefix)]
 
     def save(self):
