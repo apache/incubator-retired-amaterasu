@@ -135,7 +135,7 @@ class RunYarnPipelineHandler(BaseRunPipelineHandler, MakiMixin,  ValidateReposit
 
     def handle(self):
         if self.args.get('force-bin', False):
-            compat.run_subprocess(['hdfs', 'dfs', '-rm', '-R', '-skipTrash', self.props['yarn.jarspath']])
+            compat.run_subprocess('hdfs', 'dfs', '-rm', '-R', '-skipTrash', self.props['yarn.jarspath'])
         return super().handle()
 
 
