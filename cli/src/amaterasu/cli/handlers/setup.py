@@ -325,10 +325,7 @@ class YarnConfigurationHandler(BaseConfigurationHandler):
             "su",
             "hadoop",
             "-c",
-            "hdfs",
-            "dfs",
-            "-mkdir",
-            "/apps/amaterasu"
+            "hdfs dfs -mkdir /apps/amaterasu"
         )
         run_subprocess(
             "su",
