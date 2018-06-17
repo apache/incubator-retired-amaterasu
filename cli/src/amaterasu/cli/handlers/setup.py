@@ -322,15 +322,8 @@ class YarnConfigurationHandler(BaseConfigurationHandler):
         else:
             return '/usr/lib/spark'
 
-    def _copy_to_HDFS(self):
-        if self.args.get('force-bin', False):
-            run_subprocess(
-                "su",
-                "hadoop",
-                "-c",
-                "hdfs dfs -rmr -skipTrash /apps/amaterasu"
-            )
-            
+
+    def _amaterasu_HDFS_dir_exists(self):
         try:
             run_subprocess(
                 "su",
@@ -340,12 +333,30 @@ class YarnConfigurationHandler(BaseConfigurationHandler):
             )
             amaterasu_hdfs_dir_exists = True
         except subprocess.CalledProcessError as e:
+            print(e.returncode)
             if e.returncode == 1:
                 amaterasu_hdfs_dir_exists = False
             else:
                 raise
+        return amaterasu_hdfs_dir_exists
 
-        if not amaterasu_hdfs_dir_exists:
+    def _remove_amaterasu_HDFS_assets(self):
+        run_subprocess(
+            "su",
+            "hadoop",
+            "-c",
+            "hdfs dfs -rmr -skipTrash /apps/amaterasu"
+        )
+
+    def _copy_to_HDFS(self):
+
+        amaterasu_dir_exists = self._amaterasu_HDFS_dir_exists()
+
+        if amaterasu_dir_exists and self.args.get('force-bin', False):
+            self._remove_amaterasu_HDFS_assets()
+            amaterasu_dir_exists = self._amaterasu_HDFS_dir_exists()
+
+        if not amaterasu_dir_exists:
             logger.info('Uploading Amaterasu executor to HDFS')
             run_subprocess(
                 "su",
