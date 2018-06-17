@@ -320,52 +320,66 @@ class YarnConfigurationHandler(BaseConfigurationHandler):
             return '/usr/lib/spark'
 
     def _copy_to_HDFS(self):
-        logger.info('Uploading Amaterasu executor to HDFS')
-        run_subprocess(
+        if self.args.get('force-bin', False):
+            run_subprocess(
+                "su",
+                "hadoop",
+                "-c",
+                "hdfs dfs -rmr -skipTrash /apps/amaterasu"
+            )
+        amaterasu_hdfs_dir_exists = run_subprocess(
             "su",
             "hadoop",
             "-c",
-            "hdfs dfs -mkdir -p /apps/amaterasu"
-        )
-        run_subprocess(
-            "su",
-            "hadoop",
-            "-c",
-            "hdfs dfs -copyFromLocal {}/dist/executor-{}-all.jar {}/executor.jar".format(
-                self.amaterasu_home,
-                __version__,
-                self.yarn_jarspath)
-        )
-        run_subprocess(
-            "su",
-            "hadoop",
-            "-c",
-            "hdfs dfs -copyFromLocal /etc/amaterasu/amaterasu.conf {}/amaterasu.conf".format(self.yarn_jarspath)
-        )
-        logger.info('Copying Miniconda to HDFS')
-        miniconda_dist_path = os.path.join(self.amaterasu_home, 'dist',
-                                           'Miniconda2-latest-Linux-x86_64.sh')
-        run_subprocess(
-            "su",
-            "hadoop",
-            "-c",
-            "hdfs dfs -copyFromLocal {} {}/miniconda.sh".format(miniconda_dist_path, self.yarn_jarspath)
-        )
+            "hdfs dfs -test -e /apps/amaterasu"
+        ).returncode == 0
+        if not amaterasu_hdfs_dir_exists:
+            logger.info('Uploading Amaterasu executor to HDFS')
+            run_subprocess(
+                "su",
+                "hadoop",
+                "-c",
+                "hdfs dfs -mkdir -p /apps/amaterasu"
+            )
+            run_subprocess(
+                "su",
+                "hadoop",
+                "-c",
+                "hdfs dfs -copyFromLocal {}/dist/executor-{}-all.jar {}/executor.jar".format(
+                    self.amaterasu_home,
+                    __version__,
+                    self.yarn_jarspath)
+            )
+            run_subprocess(
+                "su",
+                "hadoop",
+                "-c",
+                "hdfs dfs -copyFromLocal /etc/amaterasu/amaterasu.conf {}/amaterasu.conf".format(self.yarn_jarspath)
+            )
+            logger.info('Copying Miniconda to HDFS')
+            miniconda_dist_path = os.path.join(self.amaterasu_home, 'dist',
+                                               'Miniconda2-latest-Linux-x86_64.sh')
+            run_subprocess(
+                "su",
+                "hadoop",
+                "-c",
+                "hdfs dfs -copyFromLocal {} {}/miniconda.sh".format(miniconda_dist_path, self.yarn_jarspath)
+            )
 
-        logger.info('Copying Spark-Client to HDFS')
-        for root, _, files in os.walk(self.spark_home):
-            remote_path_dir = root.split(self.spark_home)[1]
-            for file_name in files:
-                local_path = '{}/{}'.format(root, file_name)
-                remote_path = '{}/{}/{}'.format(self.yarn_jarspath, remote_path_dir, file_name)
-                logger.debug('Copying: "{}" to HDFS at: {}'.format(local_path,
-                                                                   remote_path))
-                run_subprocess(
-                    "su",
-                    "hadoop",
-                    "-c",
-                    "hdfs dfs -copyFromLocal {} {}".format(local_path, remote_path)
-                )
+            logger.info('Copying Spark-Client to HDFS')
+            for root, _, files in os.walk(self.spark_home):
+                remote_path_dir = root.split(self.spark_home)[1]
+                for file_name in files:
+                    local_path = '{}/{}'.format(root, file_name)
+                    remote_path = '{}/{}/{}'.format(self.yarn_jarspath, remote_path_dir, file_name)
+                    logger.debug('Copying: "{}" to HDFS at: {}'.format(local_path,
+                                                                       remote_path))
+                    run_subprocess(
+                        "su",
+                        "hadoop",
+                        "-c",
+                        "hdfs dfs -copyFromLocal {} {}".format(local_path, remote_path)
+                    )
 
 
 
