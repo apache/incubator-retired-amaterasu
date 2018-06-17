@@ -20,6 +20,7 @@ import getpass
 import wget
 import colorama
 import logging
+import subprocess
 
 logger = logging.getLogger(__name__)
 
@@ -329,12 +330,21 @@ class YarnConfigurationHandler(BaseConfigurationHandler):
                 "-c",
                 "hdfs dfs -rmr -skipTrash /apps/amaterasu"
             )
-        amaterasu_hdfs_dir_exists = run_subprocess(
-            "su",
-            "hadoop",
-            "-c",
-            "hdfs dfs -test -e /apps/amaterasu"
-        ).returncode == 0
+            
+        try:
+            run_subprocess(
+                "su",
+                "hadoop",
+                "-c",
+                "hdfs dfs -test -e /apps/amaterasu"
+            )
+            amaterasu_hdfs_dir_exists = True
+        except subprocess.CalledProcessError as e:
+            if e.returncode == 1:
+                amaterasu_hdfs_dir_exists = False
+            else:
+                raise
+
         if not amaterasu_hdfs_dir_exists:
             logger.info('Uploading Amaterasu executor to HDFS')
             run_subprocess(
