@@ -322,14 +322,13 @@ class YarnConfigurationHandler(BaseConfigurationHandler):
         else:
             return '/usr/lib/spark'
 
-
-    def _amaterasu_HDFS_dir_exists(self):
+    def _hdfs_directory_exists(self, dir_name):
         try:
             run_subprocess(
                 "su",
                 "hadoop",
                 "-c",
-                "hdfs dfs -test -e /apps/amaterasu"
+                "hdfs dfs -test -e {}".format(dir_name)
             )
             amaterasu_hdfs_dir_exists = True
         except subprocess.CalledProcessError as e:
@@ -345,25 +344,29 @@ class YarnConfigurationHandler(BaseConfigurationHandler):
             "su",
             "hadoop",
             "-c",
-            "hdfs dfs -rmr -skipTrash /apps/amaterasu"
+            "hdfs dfs -rm -r -skipTrash /apps/amaterasu"
         )
+
+    def _HDFS_mkdir(self, dir_path):
+        run_subprocess(
+            "su",
+            "hadoop",
+            "-c",
+            "hdfs dfs -mkdir -p {}".format(dir_path)
+        )
+
 
     def _copy_to_HDFS(self):
 
-        amaterasu_dir_exists = self._amaterasu_HDFS_dir_exists()
+        amaterasu_dir_exists = self._hdfs_directory_exists("/apps/amaterasu")
 
         if amaterasu_dir_exists and self.args.get('force-bin', False):
             self._remove_amaterasu_HDFS_assets()
-            amaterasu_dir_exists = self._amaterasu_HDFS_dir_exists()
+            amaterasu_dir_exists = self._hdfs_directory_exists("/apps/amaterasu")
 
         if not amaterasu_dir_exists:
             logger.info('Uploading Amaterasu executor to HDFS')
-            run_subprocess(
-                "su",
-                "hadoop",
-                "-c",
-                "hdfs dfs -mkdir -p /apps/amaterasu"
-            )
+            self._HDFS_mkdir('/apps/amaterasu')
             run_subprocess(
                 "su",
                 "hadoop",
@@ -391,12 +394,15 @@ class YarnConfigurationHandler(BaseConfigurationHandler):
 
             logger.info('Copying Spark-Client to HDFS')
             for root, _, files in os.walk(self.spark_home):
-                remote_path_dir = root.split(self.spark_home)[1]
+                remote_dir = root.split(self.spark_home)[1]
                 for file_name in files:
                     local_path = '{}/{}'.format(root, file_name)
-                    remote_path = '{}/{}/{}'.format(self.yarn_jarspath, remote_path_dir, file_name)
+                    remote_dir_path = '{}/{}'.format(self.yarn_jarspath, remote_dir)
+                    remote_path = '{}/{}'.format(remote_dir_path, file_name)
                     logger.debug('Copying: "{}" to HDFS at: {}'.format(local_path,
                                                                        remote_path))
+                    if not self._hdfs_directory_exists(remote_dir_path):
+                        self._HDFS_mkdir(remote_dir_path)
                     run_subprocess(
                         "su",
                         "hadoop",
