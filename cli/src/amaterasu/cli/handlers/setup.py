@@ -325,7 +325,7 @@ class YarnConfigurationHandler(BaseConfigurationHandler):
             "su",
             "hadoop",
             "-c",
-            "hdfs dfs -mkdir /apps/amaterasu"
+            "hdfs dfs -mkdir -f /apps/amaterasu"
         )
         run_subprocess(
             "su",
@@ -356,9 +356,10 @@ class YarnConfigurationHandler(BaseConfigurationHandler):
         for root, _, files in os.walk(self.spark_home):
             remote_path_dir = root.split(self.spark_home)[1]
             for file_name in files:
-                logger.debug('Copying: "{}" to HDFS at: {}'.format(local_path, remote_path))
                 local_path = '{}/{}'.format(root, file_name)
                 remote_path = '{}/{}/{}'.format(self.yarn_jarspath, remote_path_dir, file_name)
+                logger.debug('Copying: "{}" to HDFS at: {}'.format(local_path,
+                                                                   remote_path))
                 run_subprocess(
                     "su",
                     "hadoop",
