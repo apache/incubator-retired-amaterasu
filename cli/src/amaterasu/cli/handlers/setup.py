@@ -2,8 +2,10 @@
 Create or change Amaterasu's configuration.
 
 Usage:
-    ama [-V] setup ( mesos | yarn )
+    ama [-V] setup ( mesos | yarn [-f] )
 
+Options:
+    -f --force-bin  YARN-only - remove all existing Amaterasu HDFS assets
 """
 from string import Template
 
