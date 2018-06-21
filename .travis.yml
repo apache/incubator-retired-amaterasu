@@ -34,7 +34,6 @@ deploy:
   file: 'build/distributions/apache-amaterasu-*.tar'
   skip_cleanup: true
   on:
-    tags: true
     repo: apache/incubator-amaterasu
     all_branches: true
     condition: $TRAVIS_BRANCH =~ ^version-.*
