@@ -22,7 +22,7 @@ apply plugin: 'distribution'
 
 allprojects {
     group 'org.apache.amaterasu'
-    version '0.2.0-incubating-rc3'
+    version '0.2.0-incubating-rc4'
 }
 
 project(':leader')
