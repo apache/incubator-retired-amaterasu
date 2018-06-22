@@ -33,8 +33,7 @@ deploy:
   file_glob: true
   file: 'build/distributions/apache-amaterasu-*.tar'
   skip_cleanup: true
-  target_commitish: $TRAVIS_COMMIT # <--------both used
-  tag_name: $TRAVIS_TAG # <--------both used
+  target_commitish: $TRAVIS_COMMIT
   on:
     repo: apache/incubator-amaterasu
     all_branches: true
