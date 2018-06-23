@@ -35,6 +35,7 @@ deploy:
   skip_cleanup: true
   target_commitish: $TRAVIS_COMMIT
   on:
+    tags: true
     repo: apache/incubator-amaterasu
     all_branches: true
     condition: $TRAVIS_BRANCH =~ ^version-.*
