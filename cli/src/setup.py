@@ -1,4 +1,21 @@
 from setuptools import setup, find_packages
+from setuptools.command.install import install
+import os
+
+class PostInstallCommand(install):
+
+    AMATERASU_LOG_DIR = '/var/log/amaterasu'
+    AMATERASU_CONFIG_DIR = '/etc/amaterasu'
+
+    def run(self):
+        if not os.path.exists(self.AMATERASU_LOG_DIR):
+            os.mkdir(self.AMATERASU_LOG_DIR)
+            os.chmod(self.AMATERASU_LOG_DIR, 777)
+        if not os.path.exists(self.AMATERASU_CONFIG_DIR):
+            os.mkdir(self.AMATERASU_CONFIG_DIR)
+
+        return super().run()
+
 
 setup(
     name='amaterasu',
@@ -20,6 +37,9 @@ setup(
     include_package_data=True,
     package_data={
         'amaterasu.cli.resources': ['*']
+    },
+    cmdclass={
+        'install': PostInstallCommand
     },
     classifiers=[
         'Development Status :: 3 - Alpha',
