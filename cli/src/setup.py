@@ -8,12 +8,13 @@ class PostInstallCommand(install):
     AMATERASU_CONFIG_DIR = '/etc/amaterasu'
 
     def run(self):
+        old_umask = os.umask(000)
         if not os.path.exists(self.AMATERASU_LOG_DIR):
             os.mkdir(self.AMATERASU_LOG_DIR)
             os.chmod(self.AMATERASU_LOG_DIR, 777)
         if not os.path.exists(self.AMATERASU_CONFIG_DIR):
             os.mkdir(self.AMATERASU_CONFIG_DIR)
-
+        os.umask(old_umask)
         return super().run()
 
 

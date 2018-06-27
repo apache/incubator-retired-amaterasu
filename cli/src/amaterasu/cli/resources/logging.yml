@@ -9,13 +9,13 @@ handlers:
     formatter: simple
     stream: ext://sys.stdout
   logFile:
-    class: logging.handlers.TimedRotatingFileHandler
+    class: amaterasu.utils.logging.AllUsersTimedRotatingFileHandler
     level: INFO
     filename: /var/log/amaterasu/amaterasu.log
     formatter: simple
     when: midnight
   debugLog:
-    class: logging.handlers.TimedRotatingFileHandler
+    class: amaterasu.utils.logging.AllUsersTimedRotatingFileHandler
     level: DEBUG
     filename: /var/log/amaterasu/amaterasu-debug.log
     when: midnight
