@@ -70,6 +70,15 @@ def _copy_file_to_hdfs(root, remote_dir_path, file_name):
     ])
 
 
+def _HDFS_mkdir(dir_path):
+    run_subprocess([
+        "su",
+        "hadoop",
+        "-c",
+        "hdfs dfs -mkdir -p {}".format(dir_path)
+    ])
+
+
 class ValidationError(Exception):
     pass
 
@@ -365,13 +374,7 @@ class YarnConfigurationHandler(BaseConfigurationHandler):
             "hdfs dfs -rm -r -skipTrash /apps/amaterasu"
         ])
 
-    def _HDFS_mkdir(self, dir_path):
-        run_subprocess([
-            "su",
-            "hadoop",
-            "-c",
-            "hdfs dfs -mkdir -p {}".format(dir_path)
-        ])
+
 
     def _copy_to_HDFS(self):
         p = multiprocessing.Pool()
@@ -410,11 +413,12 @@ class YarnConfigurationHandler(BaseConfigurationHandler):
             ])
 
             logger.info('Copying Spark-Client to HDFS')
+            p.map(_HDFS_mkdir, ['{}/{}'.format(self.yarn_jarspath, root.split(self.spark_home)[1]) for root, _, _ in os.walk(self.spark_home)])
             for root, _, files in os.walk(self.spark_home):
                 remote_dir = root.split(self.spark_home)[1]
                 remote_dir_path = '{}/{}'.format(self.yarn_jarspath, remote_dir)
-                if not self._hdfs_directory_exists(remote_dir_path):
-                    self._HDFS_mkdir(remote_dir_path)
+                # if not self._hdfs_directory_exists(remote_dir_path):
+                #     _HDFS_mkdir(remote_dir_path)
                 p.starmap(_copy_file_to_hdfs, [(root, remote_dir_path, file_name) for file_name in files])
 
 
