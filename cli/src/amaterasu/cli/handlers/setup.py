@@ -386,7 +386,7 @@ class YarnConfigurationHandler(BaseConfigurationHandler):
 
         if not amaterasu_dir_exists:
             logger.info('Uploading Amaterasu executor to HDFS')
-            self._HDFS_mkdir('/apps/amaterasu')
+            _HDFS_mkdir('/apps/amaterasu')
             run_subprocess([
                 "su",
                 "hadoop",
