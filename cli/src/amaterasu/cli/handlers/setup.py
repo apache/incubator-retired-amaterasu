@@ -325,12 +325,12 @@ class YarnConfigurationHandler(BaseConfigurationHandler):
 
     def _hdfs_directory_exists(self, dir_name):
         try:
-            run_subprocess(
+            run_subprocess([
                 "su",
                 "hadoop",
                 "-c",
                 "hdfs dfs -test -e {}".format(dir_name)
-            )
+            ])
             amaterasu_hdfs_dir_exists = True
         except subprocess.CalledProcessError as e:
             print(e.returncode)
@@ -341,20 +341,20 @@ class YarnConfigurationHandler(BaseConfigurationHandler):
         return amaterasu_hdfs_dir_exists
 
     def _remove_amaterasu_HDFS_assets(self):
-        run_subprocess(
+        run_subprocess([
             "su",
             "hadoop",
             "-c",
             "hdfs dfs -rm -r -skipTrash /apps/amaterasu"
-        )
+        ])
 
     def _HDFS_mkdir(self, dir_path):
-        run_subprocess(
-            ["su",
+        run_subprocess([
+            "su",
             "hadoop",
             "-c",
-            "hdfs dfs -mkdir -p {}".format(dir_path)]
-        )
+            "hdfs dfs -mkdir -p {}".format(dir_path)
+        ])
 
     @staticmethod
     def _copy_file_to_hdfs(root, remote_dir_path, file_name):
@@ -363,12 +363,12 @@ class YarnConfigurationHandler(BaseConfigurationHandler):
         logger.debug('Copying: "{}" to HDFS at: {}'.format(local_path,
                                                            remote_path))
 
-        run_subprocess(
+        run_subprocess([
             "su",
             "hadoop",
             "-c",
             "hdfs dfs -copyFromLocal {} {}".format(local_path, remote_path)
-        )
+        ])
 
     def _copy_to_HDFS(self):
         p = multiprocessing.Pool()
@@ -381,7 +381,7 @@ class YarnConfigurationHandler(BaseConfigurationHandler):
         if not amaterasu_dir_exists:
             logger.info('Uploading Amaterasu executor to HDFS')
             self._HDFS_mkdir('/apps/amaterasu')
-            run_subprocess(
+            run_subprocess([
                 "su",
                 "hadoop",
                 "-c",
@@ -389,22 +389,22 @@ class YarnConfigurationHandler(BaseConfigurationHandler):
                     self.amaterasu_home,
                     __version__,
                     self.yarn_jarspath)
-            )
-            run_subprocess(
-                ["su",
+            ])
+            run_subprocess([
+                "su",
                 "hadoop",
                 "-c",
-                "hdfs dfs -copyFromLocal /etc/amaterasu/amaterasu.conf {}/amaterasu.conf".format(self.yarn_jarspath)]
-            )
+                "hdfs dfs -copyFromLocal /etc/amaterasu/amaterasu.conf {}/amaterasu.conf".format(self.yarn_jarspath)
+            ])
             logger.info('Copying Miniconda to HDFS')
             miniconda_dist_path = os.path.join(self.amaterasu_home, 'dist',
                                                'Miniconda2-latest-Linux-x86_64.sh')
-            run_subprocess(
+            run_subprocess([
                 "su",
                 "hadoop",
                 "-c",
                 "hdfs dfs -copyFromLocal {} {}/miniconda.sh".format(miniconda_dist_path, self.yarn_jarspath)
-            )
+            ])
 
             logger.info('Copying Spark-Client to HDFS')
             for root, _, files in os.walk(self.spark_home):
