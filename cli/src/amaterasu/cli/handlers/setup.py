@@ -21,6 +21,7 @@ import wget
 import colorama
 import logging
 import subprocess
+import multiprocessing
 
 logger = logging.getLogger(__name__)
 
@@ -349,15 +350,28 @@ class YarnConfigurationHandler(BaseConfigurationHandler):
 
     def _HDFS_mkdir(self, dir_path):
         run_subprocess(
+            ["su",
+            "hadoop",
+            "-c",
+            "hdfs dfs -mkdir -p {}".format(dir_path)]
+        )
+
+    @staticmethod
+    def _copy_file_to_hdfs(root, remote_dir_path, file_name):
+        local_path = '{}/{}'.format(root, file_name)
+        remote_path = '{}/{}'.format(remote_dir_path, file_name)
+        logger.debug('Copying: "{}" to HDFS at: {}'.format(local_path,
+                                                           remote_path))
+
+        run_subprocess(
             "su",
             "hadoop",
             "-c",
-            "hdfs dfs -mkdir -p {}".format(dir_path)
+            "hdfs dfs -copyFromLocal {} {}".format(local_path, remote_path)
         )
 
-
     def _copy_to_HDFS(self):
-
+        p = multiprocessing.Pool()
         amaterasu_dir_exists = self._hdfs_directory_exists("/apps/amaterasu")
 
         if amaterasu_dir_exists and self.args.get('force-bin', False):
@@ -377,10 +391,10 @@ class YarnConfigurationHandler(BaseConfigurationHandler):
                     self.yarn_jarspath)
             )
             run_subprocess(
-                "su",
+                ["su",
                 "hadoop",
                 "-c",
-                "hdfs dfs -copyFromLocal /etc/amaterasu/amaterasu.conf {}/amaterasu.conf".format(self.yarn_jarspath)
+                "hdfs dfs -copyFromLocal /etc/amaterasu/amaterasu.conf {}/amaterasu.conf".format(self.yarn_jarspath)]
             )
             logger.info('Copying Miniconda to HDFS')
             miniconda_dist_path = os.path.join(self.amaterasu_home, 'dist',
@@ -395,21 +409,10 @@ class YarnConfigurationHandler(BaseConfigurationHandler):
             logger.info('Copying Spark-Client to HDFS')
             for root, _, files in os.walk(self.spark_home):
                 remote_dir = root.split(self.spark_home)[1]
-                for file_name in files:
-                    local_path = '{}/{}'.format(root, file_name)
-                    remote_dir_path = '{}/{}'.format(self.yarn_jarspath, remote_dir)
-                    remote_path = '{}/{}'.format(remote_dir_path, file_name)
-                    logger.debug('Copying: "{}" to HDFS at: {}'.format(local_path,
-                                                                       remote_path))
-                    if not self._hdfs_directory_exists(remote_dir_path):
-                        self._HDFS_mkdir(remote_dir_path)
-                    run_subprocess(
-                        "su",
-                        "hadoop",
-                        "-c",
-                        "hdfs dfs -copyFromLocal {} {}".format(local_path, remote_path)
-                    )
-
+                remote_dir_path = '{}/{}'.format(self.yarn_jarspath, remote_dir)
+                if not self._hdfs_directory_exists(remote_dir_path):
+                    self._HDFS_mkdir(remote_dir_path)
+                p.map(YarnConfigurationHandler._copy_file_to_hdfs, [(root, remote_dir_path, file_name) for file_name in files])
 
 
     def handle(self):
