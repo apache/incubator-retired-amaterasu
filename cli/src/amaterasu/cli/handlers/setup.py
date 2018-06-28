@@ -415,7 +415,7 @@ class YarnConfigurationHandler(BaseConfigurationHandler):
                 remote_dir_path = '{}/{}'.format(self.yarn_jarspath, remote_dir)
                 if not self._hdfs_directory_exists(remote_dir_path):
                     self._HDFS_mkdir(remote_dir_path)
-                p.map(_copy_file_to_hdfs, [(root, remote_dir_path, file_name) for file_name in files])
+                p.starmap(_copy_file_to_hdfs, [(root, remote_dir_path, file_name) for file_name in files])
 
 
     def handle(self):
