@@ -25,7 +25,8 @@ import multiprocessing
 
 logger = logging.getLogger(__name__)
 
-__version__ = '0.2.0-incubating-rc3'
+__version__ = '0.2.1-incubating-rc3'
+
 
 def get_current_ip():
     logger.debug("Trying to get the current IP")
@@ -38,6 +39,7 @@ def get_current_ip():
         ip = '127.0.0.1'
     logging.debug("Resulting IP is: {}".format(ip))
     return ip
+
 
 def get_zookeeper_ip():
     logger.debug('Trying to retrieve the cluster\'s ZK instance IP')
@@ -52,6 +54,21 @@ def get_zookeeper_ip():
             return server_addr.split(':')[0]
         except IndexError:
             return 'localhost'
+
+
+def _copy_file_to_hdfs(root, remote_dir_path, file_name):
+    local_path = '{}/{}'.format(root, file_name)
+    remote_path = '{}/{}'.format(remote_dir_path, file_name)
+    logger.debug('Copying: "{}" to HDFS at: {}'.format(local_path,
+                                                       remote_path))
+
+    run_subprocess([
+        "su",
+        "hadoop",
+        "-c",
+        "hdfs dfs -copyFromLocal {} {}".format(local_path, remote_path)
+    ])
+
 
 class ValidationError(Exception):
     pass
@@ -356,20 +373,6 @@ class YarnConfigurationHandler(BaseConfigurationHandler):
             "hdfs dfs -mkdir -p {}".format(dir_path)
         ])
 
-    @staticmethod
-    def _copy_file_to_hdfs(root, remote_dir_path, file_name):
-        local_path = '{}/{}'.format(root, file_name)
-        remote_path = '{}/{}'.format(remote_dir_path, file_name)
-        logger.debug('Copying: "{}" to HDFS at: {}'.format(local_path,
-                                                           remote_path))
-
-        run_subprocess([
-            "su",
-            "hadoop",
-            "-c",
-            "hdfs dfs -copyFromLocal {} {}".format(local_path, remote_path)
-        ])
-
     def _copy_to_HDFS(self):
         p = multiprocessing.Pool()
         amaterasu_dir_exists = self._hdfs_directory_exists("/apps/amaterasu")
@@ -412,7 +415,7 @@ class YarnConfigurationHandler(BaseConfigurationHandler):
                 remote_dir_path = '{}/{}'.format(self.yarn_jarspath, remote_dir)
                 if not self._hdfs_directory_exists(remote_dir_path):
                     self._HDFS_mkdir(remote_dir_path)
-                p.map(YarnConfigurationHandler._copy_file_to_hdfs, [(root, remote_dir_path, file_name) for file_name in files])
+                p.map(_copy_file_to_hdfs, [(root, remote_dir_path, file_name) for file_name in files])
 
 
     def handle(self):
