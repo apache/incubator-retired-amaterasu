@@ -72,7 +72,7 @@ def run_subprocess(*args, **kwargs):
     if sys.version_info.major >= 3 and sys.version_info.minor >= 5:
         return subprocess.run(*args, check=True, **kwargs)
     else:
-        return subprocess.check_output(args)
+        return subprocess.check_output(*args)
 
 
 __all__ = ['FileNotFoundError', 'WindowsError', 'run_subprocess']
