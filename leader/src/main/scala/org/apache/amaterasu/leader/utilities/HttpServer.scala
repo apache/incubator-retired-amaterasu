@@ -18,22 +18,16 @@ package org.apache.amaterasu.leader.utilities
 
 import org.apache.amaterasu.common.logging.Logging
 import org.apache.log4j.{BasicConfigurator, Level, Logger}
-import org.eclipse.jetty.server.{Handler, Server, ServerConnector}
 import org.eclipse.jetty.server.handler._
-import org.eclipse.jetty.servlet.{DefaultServlet, ServletContextHandler, ServletHolder}
-import org.eclipse.jetty.toolchain.test.MavenTestingUtils
-import org.eclipse.jetty.util.thread.QueuedThreadPool
+import org.eclipse.jetty.server.{Server, ServerConnector}
 import org.eclipse.jetty.util.log.StdErrLog
-import org.eclipse.jetty.util.resource.Resource
 import org.jsoup.Jsoup
 import org.jsoup.select.Elements
 
 import scala.collection.JavaConverters._
 import scala.io.{BufferedSource, Source}
-import scala.text.Document
 
 /**
-  * Created by kirupa
   * Implementation of Jetty Web server to server Amaterasu libraries and other distribution files
   */
 object HttpServer extends Logging {
