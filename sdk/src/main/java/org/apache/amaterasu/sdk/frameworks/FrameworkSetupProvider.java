@@ -21,7 +21,7 @@ import org.apache.amaterasu.sdk.frameworks.configuration.DriverConfiguration;
 
 import java.io.File;
 
-public interface FrameworkSetupProvider {
+public interface  FrameworkSetupProvider {
 
     void init(String env, ClusterConfig conf);
 
@@ -32,5 +32,9 @@ public interface FrameworkSetupProvider {
     File[] getRunnerResources(String runnerId);
 
     DriverConfiguration getDriverConfiguration();
+
+    String[] getRuntimePaths();
+
+    String getRuntimeCommand();
 
 }
