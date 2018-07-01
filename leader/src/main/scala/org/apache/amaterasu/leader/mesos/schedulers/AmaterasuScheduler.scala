@@ -17,7 +17,6 @@
 package org.apache.amaterasu.leader.mesos.schedulers
 
 import org.apache.amaterasu.common.logging.Logging
-
 import org.apache.mesos.Protos.{Resource, Value}
 import org.apache.mesos.Scheduler
 
