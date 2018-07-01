@@ -209,19 +209,32 @@
    licenses.
 
 ========================================================================
-BSD licenses
+For heapq (pyspark/heapq3.py):
 ========================================================================
-The following components are provided under the BSD license.
+
+See license/LICENSE-heapq.txt
+
+========================================================================
+For join (pyspark/heapq3.py):
+========================================================================
+
+see license/LICENSE-join.txt
+
+========================================================================
+For join (py4j/backport.py):
+========================================================================
+
+see license/LICENSE-backport.txt
+
+========================================================================
+BSD-style licenses
+========================================================================
+The following components are provided under a BSD-style license.
 See file headers and project links for details.
 The text of each license is also included at licenses/LICENSE-[project].txt.
 
     (BSD License) codegen (https://github.com/andreif/codegen)
-
-========================================================================
-BSD 3-Clause licenses
-========================================================================
-The following components are provided under the BSD 2-Clause license.
-See file headers and project links for details.
-The text of each license is also included at licenses/LICENSE-[project].txt.
-
     (BSD 3 License) Conda (https://conda.io/docs/)
+    (BSD 3 Clause) CloudPickle (https://github.com/cloudpipe/cloudpickle/blob/master/LICENSE)
+    (The New BSD License) Py4J (net.sf.py4j:py4j:0.10.7 - http://py4j.sourceforge.net/)
+
