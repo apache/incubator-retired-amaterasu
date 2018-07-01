@@ -17,8 +17,8 @@
 package org.apache.amaterasu.leader.mesos
 
 import org.apache.amaterasu.common.configuration.ClusterConfig
-import org.apache.amaterasu.leader.Kami
 import org.apache.amaterasu.leader.mesos.schedulers.ClusterScheduler
+import org.apache.amaterasu.leader.Kami
 import org.scalatest._
 
 class ClusterSchedulerTests extends FlatSpec with Matchers {

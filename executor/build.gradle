@@ -54,6 +54,7 @@ dependencies {
 
     compile group: 'org.scala-lang', name: 'scala-library', version: '2.11.8'
     compile group: 'org.scala-lang', name: 'scala-reflect', version: '2.11.8'
+    compile group: 'org.scala-lang', name: 'scala-compiler', version: '2.11.8'
     compile group: 'io.netty', name: 'netty-all', version: '4.0.42.Final'
     compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.5'
     compile group: 'org.apache.maven', name: 'maven-core', version: '3.0.5'
@@ -74,7 +75,18 @@ dependencies {
     compile project(':common')
     compile project(':amaterasu-sdk')
 
+    //runtime dependency for spark
+    provided('org.apache.spark:spark-repl_2.11:2.2.1')
+    provided('org.apache.spark:spark-core_2.11:2.2.1')
 
+    testCompile project(':common')
+    testCompile "gradle.plugin.com.github.maiflai:gradle-scalatest:0.14"
+    testRuntime 'org.pegdown:pegdown:1.1.0'
+    testCompile 'junit:junit:4.11'
+    testCompile 'org.scalatest:scalatest_2.11:3.0.2'
+    testCompile 'org.scala-lang:scala-library:2.11.8'
+    testCompile('org.apache.spark:spark-repl_2.11:2.2.1')
+    testCompile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.9'
 
 }
 

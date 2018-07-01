@@ -16,10 +16,11 @@
  */
 package org.apache.amaterasu.leader.mesos.schedulers
 
+import java.io.File
 import java.util
 import java.util.concurrent.locks.ReentrantLock
 import java.util.concurrent.{ConcurrentHashMap, LinkedBlockingQueue}
-import java.util.{Collections, UUID}
+import java.util.{Collections, Properties, UUID}
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
@@ -184,7 +185,7 @@ class JobScheduler extends AmaterasuScheduler {
                     .setExtract(true)
                     .build())
                   .addUris(URI.newBuilder()
-                    .setValue(s"http://${sys.env("AMA_NODE")}:${config.Webserver.Port}/miniconda.sh")
+                    .setValue(s"http://${sys.env("AMA_NODE")}:${config.Webserver.Port}/Miniconda2-latest-Linux-x86_64.sh")
                     .setExecutable(false)
                     .setExtract(false)
                     .build())

@@ -18,12 +18,12 @@ package org.apache.amaterasu.leader.dsl
 
 import java.util.concurrent.BlockingQueue
 
-import com.fasterxml.jackson.databind.node.ArrayNode
 import com.fasterxml.jackson.databind.{JsonNode, ObjectMapper}
+import com.fasterxml.jackson.databind.node.ArrayNode
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
 import org.apache.amaterasu.common.dataobjects.ActionData
-import org.apache.amaterasu.leader.execution.JobManager
 import org.apache.amaterasu.leader.execution.actions.{Action, ErrorAction, SequentialAction}
+import org.apache.amaterasu.leader.execution.JobManager
 import org.apache.curator.framework.CuratorFramework
 
 import scala.collection.JavaConverters._
