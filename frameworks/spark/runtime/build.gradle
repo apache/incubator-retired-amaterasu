@@ -1,0 +1,89 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+plugins {
+    id 'com.github.johnrengelman.shadow' version '1.2.4'
+    id 'com.github.maiflai.scalatest' version '0.6-5-g9065d91'
+    id 'scala'
+    id 'java'
+}
+
+shadowJar {
+    zip64 true
+}
+
+repositories {
+    maven {
+        url "https://plugins.gradle.org/m2/"
+    }
+    mavenCentral()
+}
+
+test {
+    maxParallelForks = 1
+    forkEvery = 1
+}
+
+configurations {
+    provided
+    runtime.exclude module: 'hadoop-common'
+    runtime.exclude module: 'hadoop-yarn-api'
+    runtime.exclude module: 'hadoop-yarn-client'
+    runtime.exclude module: 'hadoop-hdfs'
+    runtime.exclude module: 'mesos'
+    runtime.exclude module: 'scala-compiler'
+}
+
+sourceSets {
+    main.compileClasspath += configurations.provided
+    test.compileClasspath += configurations.provided
+    test.runtimeClasspath += configurations.provided
+}
+
+dependencies {
+
+    compile project(':executor')
+    provided('org.apache.spark:spark-repl_2.11:2.2.1')
+    provided('org.apache.spark:spark-core_2.11:2.2.1')
+
+}
+
+sourceSets {
+    test {
+        resources.srcDirs += [file('src/test/resources')]
+    }
+
+    main {
+        scala {
+            srcDirs = ['src/main/scala', 'src/main/java']
+        }
+        java {
+            srcDirs = []
+        }
+    }
+}
+
+test {
+
+    maxParallelForks = 1
+}
+
+task copyToHome(type: Copy) {
+    from 'build/libs'
+    into '../../../build/amaterasu/dist'
+    from 'build/resources/main'
+    into '../../../build/amaterasu/dist'
+}
