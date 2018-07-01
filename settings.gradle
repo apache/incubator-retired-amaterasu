@@ -15,20 +15,8 @@
  * limitations under the License.
  */
 include 'leader'
-project(':leader')
-
-include 'common'
-project(':common')
-
 include 'executor'
-project(':executor')
-
+include 'common'
 include 'sdk'
 findProject(':sdk')?.name = 'amaterasu-sdk'
-
-//Spark
-include 'spark-runner'
-project(':spark-runner').projectDir=file("frameworks/spark/runner")
-include 'spark-runtime'
-project(':spark-runtime').projectDir=file("frameworks/spark/runtime")
 

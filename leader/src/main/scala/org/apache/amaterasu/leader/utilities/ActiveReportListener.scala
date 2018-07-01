@@ -17,7 +17,9 @@
 package org.apache.amaterasu.leader.utilities
 
 import javax.jms.{Message, MessageListener, TextMessage}
+
 import net.liftweb.json._
+import net.liftweb.json.JsonDSL._
 import org.apache.amaterasu.common.execution.actions.{Notification, NotificationLevel, NotificationType}
 
 class ActiveReportListener extends MessageListener {
