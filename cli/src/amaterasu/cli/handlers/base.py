@@ -4,7 +4,7 @@ import yaml
 import logging
 from six.moves import configparser
 
-__version__ = '0.2.0-incubating-rc3'
+__version__ = '0.2.0-incubating-rc4'
 
 git_parser = configparser.ConfigParser()
 git_parser.read(os.path.expanduser('~/.gitconfig'))

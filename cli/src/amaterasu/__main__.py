@@ -14,7 +14,7 @@ Options:
 
 See 'ama <command> --help' for more detailed information.
 """
-__version__ = '0.2.0-incubating-rc3'
+__version__ = '0.2.0-incubating-rc4'
 
 import colorama
 import pkgutil

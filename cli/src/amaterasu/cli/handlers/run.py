@@ -26,7 +26,7 @@ import uuid
 import git
 
 
-__version__ = '0.2.0-incubating-rc3'
+__version__ = '0.2.0-incubating-rc4'
 
 
 class BaseRunPipelineHandler(BaseHandler, MakiMixin):

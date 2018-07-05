@@ -25,7 +25,7 @@ import multiprocessing
 
 logger = logging.getLogger(__name__)
 
-__version__ = '0.2.0-incubating-rc3'
+__version__ = '0.2.0-incubating-rc4'
 
 
 def get_current_ip():

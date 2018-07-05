@@ -20,7 +20,7 @@ class PostInstallCommand(install):
 
 setup(
     name='amaterasu',
-    version='0.2.1',
+    version='0.2.0-incubating-rc4',
     packages=find_packages(),
     url='https://github.com/apache/incubator-amaterasu',
     license='Apache License 2.0 ',
