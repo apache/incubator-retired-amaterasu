@@ -413,18 +413,25 @@ class YarnConfigurationHandler(BaseConfigurationHandler):
             ])
 
             logger.info('Copying Spark-Client to HDFS')
-            p.map(_HDFS_mkdir, ['{}/{}'.format(self.yarn_jarspath, root.split(self.spark_home)[1]) for root, _, _ in os.walk(self.spark_home)])
-            for root, _, files in os.walk(self.spark_home):
-                remote_dir = root.split(self.spark_home)[1]
-                remote_dir_path = '{}/{}'.format(self.yarn_jarspath, remote_dir)
-                # if not self._hdfs_directory_exists(remote_dir_path):
-                #     _HDFS_mkdir(remote_dir_path)
-                p.starmap(_copy_file_to_hdfs, [(root, remote_dir_path, file_name) for file_name in files])
+            run_subprocess([
+                "tar",
+                "-czf",
+                'spark.tar.gz',
+                self.spark_home
+            ])
+            spark_dist_path = os.path.join(os.getcwd(), 'spark.tar.gz')
+            run_subprocess([
+                "su",
+                "hadoop",
+                "-c",
+                "hdfs dfs -copyFromLocal {} {}/spark.tar.gz".format(
+                    spark_dist_path, self.yarn_jarspath)
+            ])
 
-
-    def handle(self):
-        super().handle()
-        self._copy_to_HDFS()
+    #
+    # def handle(self):
+    #     super().handle()
+    #     self._copy_to_HDFS()
 
 
 def get_handler(**kwargs):
