@@ -44,6 +44,11 @@ object HttpServer extends Logging {
 
     BasicConfigurator.configure()
     initLogging()
+    log.debug(s"serverRoot $serverRoot")
+    log.info(s"serverRoot $serverRoot")
+    log.error(s"serverRoot $serverRoot")
+    log.warn(s"serverRoot $serverRoot")
+    println(s"serverRoot $serverRoot")
 
     server = new Server()
     val connector = new ServerConnector(server)
@@ -54,8 +59,11 @@ object HttpServer extends Logging {
     handler.setDirectoriesListed(true)
     handler.setWelcomeFiles(Array[String]("index.html"))
     handler.setResourceBase(serverRoot)
+    val configHandler = new ResourceHandler()
+    configHandler.setDirectoriesListed(true)
+    configHandler.setResourceBase("/etc/amaterasu")
     val handlers = new HandlerList()
-    handlers.setHandlers(Array(handler, new DefaultHandler()))
+    handlers.setHandlers(Array(handler, configHandler, new DefaultHandler()))
 
     server.setHandler(handlers)
     server.start()

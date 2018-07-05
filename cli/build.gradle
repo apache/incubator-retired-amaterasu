@@ -1,0 +1,4 @@
+task copyToHome(type: Copy) {
+    from 'src'
+    into '../build/amaterasu/cli'
+}

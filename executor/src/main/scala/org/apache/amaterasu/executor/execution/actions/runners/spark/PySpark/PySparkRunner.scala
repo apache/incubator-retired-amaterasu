@@ -112,7 +112,7 @@ object PySparkRunner {
     if (pyDeps != null)
       condaPkgs = collectCondaPackages()
     var sparkCmd: Seq[String] = Seq()
-    config.mode match {
+    config.CLUSTER.manager match {
       case "yarn" =>
         pysparkPath = s"spark/bin/spark-submit"
         sparkCmd = Seq(pysparkPath, "--py-files", condaPkgs, "--master", "yarn", intpPath, port.toString)

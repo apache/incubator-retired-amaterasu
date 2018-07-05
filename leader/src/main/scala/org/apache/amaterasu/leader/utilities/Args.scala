@@ -24,10 +24,11 @@ case class Args(
                  jobId: String = null,
                  report: String = "code",
                  home: String = "",
+                 configFile: String = "",
                  newJobId: String = ""
                ) {
   def toCmdString: String = {
-    var cmd = s""" --repo $repo --branch $branch --env $env --name $name --report $report --home $home"""
+    var cmd = s""" --repo $repo --branch $branch --env $env --name $name --report $report --home $home --config-file $configFile"""
     if(jobId != null && !jobId.isEmpty) {
       cmd += s" --job-id $jobId"
     }
@@ -77,6 +78,9 @@ object Args {
       opt[String]('h', "home") action { (x, c) =>
         c.copy(home = x)
       }
+      opt[String]('c', "config-file") action { (x, c) =>
+        c.copy(configFile = x)
+      } text "Path to where the Amaterasu configuration resides. Default: /etc/amaterasu/amaterasu.conf"
     }
   }
 }

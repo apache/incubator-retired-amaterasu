@@ -1,0 +1,19 @@
+behave==1.2.5
+cffi==1.11.4
+colorama==0.3.9
+parse==1.8.2
+parse-type==0.4.2
+pycparser==2.18
+pyfakefs==3.2
+pygit2==0.26.0
+PyHamcrest==1.9.0
+six==1.11.0
+mock; python_version <= '2.7'
+PyYAML
+wget
+netifaces
+multipledispatch
+GitPython
+docopt
+paramiko
+docker-py

@@ -80,7 +80,7 @@ class SparkTestsSuite extends Suites(
       new TestNotifier(),
       "test",
       "localhost",
-      getClass.getClassLoader.getResource("amaterasu.properties").getPath)
+      getClass.getClassLoader.getResource("amaterasu.conf").getPath)
     spark = factory.getRunner("spark", "scala").get.asInstanceOf[SparkScalaRunner].spark
 
     this.nestedSuites.filter(s => s.isInstanceOf[RunnersLoadingTests]).foreach(s => s.asInstanceOf[RunnersLoadingTests].factory = factory)

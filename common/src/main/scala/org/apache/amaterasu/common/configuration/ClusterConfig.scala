@@ -27,12 +27,10 @@ import scala.collection.mutable
 
 class ClusterConfig extends Logging {
 
-  val DEFAULT_FILE: InputStream = getClass.getResourceAsStream("/src/main/scripts/amaterasu.properties")
-  //val DEFAULT_FILE = getClass().getResourceAsStream("/amaterasu.properties")
+  val DEFAULT_FILE: InputStream = getClass.getResourceAsStream("/src/main/scripts/amaterasu.conf")
   var version: String = ""
   var user: String = ""
   var zk: String = ""
-  var mode: String = ""
   var master: String = "127.0.0.1"
   var masterPort: String = "5050"
   var timeout: Double = 600000
@@ -47,6 +45,17 @@ class ClusterConfig extends Logging {
   // not packaged, there is a need to load the spark-assembly jar
   var additionalClassPath: String = ""
   var spark: Spark = new Spark()
+
+
+  class CLUSTER {
+    var manager: String = ""
+
+    def load(props: Properties): Unit = {
+      if (props.containsKey("cluster.manager")) manager = props.getProperty("cluster.manager")
+    }
+  }
+
+  val CLUSTER = new CLUSTER()
 
   //this should be a filesystem path that is reachable by all executors (HDFS, S3, local)
 
@@ -190,8 +199,8 @@ class ClusterConfig extends Logging {
   }
 
   def validationCheck(): Unit = {
-    if (!Array("yarn", "mesos").contains(mode)) {
-      throw new ConfigurationException(s"mode $mode is not legal. Options are 'yarn' or 'mesos'!")
+    if (!Array("yarn", "mesos").contains(CLUSTER.manager)) {
+      throw new ConfigurationException(s"cluster manager ${CLUSTER.manager} is not legal. Options are 'yarn' or 'mesos'!")
     }
   }
 
@@ -207,13 +216,13 @@ class ClusterConfig extends Logging {
     if (props.containsKey("master")) master = props.getProperty("master")
     if (props.containsKey("masterPort")) masterPort = props.getProperty("masterPort")
     if (props.containsKey("timeout")) timeout = props.getProperty("timeout").asInstanceOf[Double]
-    if (props.containsKey("mode")) mode = props.getProperty("mode")
     if (props.containsKey("workingFolder")) workingFolder = props.getProperty("workingFolder", s"/user/$user")
     if (props.containsKey("pysparkPath")) pysparkPath = props.getProperty("pysparkPath")
     // TODO: rethink this
     Jar = this.getClass.getProtectionDomain.getCodeSource.getLocation.toURI.getPath
     JarName = Paths.get(this.getClass.getProtectionDomain.getCodeSource.getLocation.getPath).getFileName.toString
 
+    CLUSTER.load(props)
     Jobs.load(props)
     Webserver.load(props)
     YARN.load(props)

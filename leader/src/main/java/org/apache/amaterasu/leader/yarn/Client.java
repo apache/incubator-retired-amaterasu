@@ -73,7 +73,7 @@ public class Client {
 
         LogManager.resetConfiguration();
         ClusterConfig config = new ClusterConfig();
-        config.load(new FileInputStream(opts.home + "/amaterasu.properties"));
+        config.load(new FileInputStream(opts.configFile));
 
         // Create yarnClient
         YarnClient yarnClient = YarnClient.createYarnClient();
@@ -138,6 +138,7 @@ public class Client {
                 for (File f : home.listFiles()) {
                     fs.copyFromLocalFile(false, true, new Path(f.getAbsolutePath()), jarPathQualified);
                 }
+                fs.copyFromLocalFile(false, true, new Path(opts.configFile), Path.mergePaths(jarPathQualified, new Path("/amaterasu.conf")));
 
                 // setup frameworks
                 FrameworkProvidersFactory frameworkFactory = FrameworkProvidersFactory.apply(opts.env, config);
@@ -182,7 +183,7 @@ public class Client {
 
         try {
             leaderJar = setLocalResourceFromPath(mergedPath);
-            propFile = setLocalResourceFromPath(Path.mergePaths(jarPath, new Path("/amaterasu.properties")));
+            propFile = setLocalResourceFromPath(Path.mergePaths(jarPath, new Path("/amaterasu.conf")));
             log4jPropFile = setLocalResourceFromPath(Path.mergePaths(jarPath, new Path("/log4j.properties")));
         } catch (IOException e) {
             LOGGER.error("Error initializing yarn local resources.", e);
@@ -192,14 +193,14 @@ public class Client {
         // set local resource on master container
         Map<String, LocalResource> localResources = new HashMap<>();
         localResources.put("leader.jar", leaderJar);
-        localResources.put("amaterasu.properties", propFile);
+        localResources.put("amaterasu.conf", propFile);
         localResources.put("log4j.properties", log4jPropFile);
         amContainer.setLocalResources(localResources);
 
         // Setup CLASSPATH for ApplicationMaster
         Map<String, String> appMasterEnv = new HashMap<>();
         setupAppMasterEnv(appMasterEnv);
-        appMasterEnv.put("AMA_CONF_PATH", String.format("%s/amaterasu.properties", config.YARN().hdfsJarsPath()));
+        appMasterEnv.put("AMA_CONF_PATH", String.format("%s/amaterasu.conf", config.YARN().hdfsJarsPath()));
         amContainer.setEnvironment(appMasterEnv);
 
         // Set up resource type requirements for ApplicationMaster

@@ -1,0 +1,16 @@
+---
+job-name: amaterasu-test # Replace this with your job's name
+flow:
+    - name: start # Name of this step
+      runner:
+          group: spark # Currently supporting spark only, but expect more here in the future!
+          type: scala # scala, sql, r, python
+      file: example.scala # Source code for the step
+      exports:
+          odd: parquet
+    - name: step2
+      runner:
+          group: spark
+          type: python
+      file: example.py
+...

@@ -28,6 +28,7 @@ allprojects {
 project(':leader')
 project(':common')
 project(':executor')
+project(':cli')
 
 task copyLeagalFiles(type: Copy) {
     from "./DISCLAIMER", "./LICENSE", "./NOTICE"

@@ -26,7 +26,7 @@ class ClusterSchedulerTests extends FlatSpec with Matchers {
   "an offer" should "be accepted if has enough resources" in {
 
     val kami = Kami()
-    val config = ClusterConfig(getClass.getResourceAsStream("/amaterasu.properties"))
+    val config = ClusterConfig(getClass.getResourceAsStream("/amaterasu.conf"))
     config.Jobs.cpus = 1
     config.Jobs.mem = 1024
     config.Jobs.repoSize = 1024
@@ -42,7 +42,7 @@ class ClusterSchedulerTests extends FlatSpec with Matchers {
   it should "not be accepted if has missing resources" in {
 
     val kami = Kami()
-    val config = ClusterConfig(getClass.getResourceAsStream("/amaterasu.properties"))
+    val config = ClusterConfig(getClass.getResourceAsStream("/amaterasu.conf"))
     config.Jobs.cpus = 1
     config.Jobs.mem = 1024
     config.Jobs.repoSize = 1024
