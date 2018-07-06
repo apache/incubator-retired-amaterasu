@@ -369,7 +369,7 @@ class YarnConfigurationHandler(BaseConfigurationHandler):
     def _remove_amaterasu_HDFS_assets(self):
         run_subprocess([
             "su",
-            "hadoop",
+            self.user,
             "-c",
             "hdfs dfs -rm -r -skipTrash /apps/amaterasu"
         ])
@@ -378,11 +378,7 @@ class YarnConfigurationHandler(BaseConfigurationHandler):
 
     def _copy_to_HDFS(self):
         p = multiprocessing.Pool()
-        amaterasu_dir_exists = self._hdfs_directory_exists("/apps/amaterasu")
 
-        if amaterasu_dir_exists and self.args.get('force-bin', False):
-            self._remove_amaterasu_HDFS_assets()
-            amaterasu_dir_exists = self._hdfs_directory_exists("/apps/amaterasu")
 
         if not amaterasu_dir_exists:
             logger.info('Uploading Amaterasu executor to HDFS')
@@ -428,10 +424,13 @@ class YarnConfigurationHandler(BaseConfigurationHandler):
                     spark_dist_path, self.yarn_jarspath)
             ])
 
-    #
-    # def handle(self):
-    #     super().handle()
-    #     self._copy_to_HDFS()
+
+    def handle(self):
+        super().handle()
+        amaterasu_dir_exists = self._hdfs_directory_exists("/apps/amaterasu")
+
+        if amaterasu_dir_exists and self.args.get('force-bin', False):
+            self._remove_amaterasu_HDFS_assets()
 
 
 def get_handler(**kwargs):

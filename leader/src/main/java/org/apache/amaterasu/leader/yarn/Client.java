@@ -187,6 +187,7 @@ public class Client {
             log4jPropFile = setLocalResourceFromPath(Path.mergePaths(jarPath, new Path("/log4j.properties")));
         } catch (IOException e) {
             LOGGER.error("Error initializing yarn local resources.", e);
+            System.out.printf("ERROR: %s", e.getMessage());
             exit(4);
         }
 
