@@ -31,9 +31,13 @@ class PostInstallCommand(install):
             os.chmod(self.AMATERASU_LOG_DIR, 777)
         if not os.path.exists(self.AMATERASU_CONFIG_DIR):
             os.mkdir(self.AMATERASU_CONFIG_DIR)
-        shutil.copy(os.path.abspath("resources/amaterasu.conf"), '{}/amaterasu.conf'.format(self.AMATERASU_CONFIG_DIR))
+        res = super().run()
+        self.install_usersite
+        shutil.copy(
+            os.path.abspath("{}/resources/amaterasu.conf".format(self.install_lib)),
+            '{}/amaterasu.conf'.format(self.AMATERASU_CONFIG_DIR))
         os.umask(old_umask)
-        return super().run()
+        return res
 
 
 setup(

@@ -34,7 +34,6 @@ Options:
 from .. import common, consts, compat
 from .base import MakiMixin, ValidateRepositoryMixin, BaseHandler, HandlerError, \
     ConfigurationFile
-from . import setup as config_handlers
 import abc
 import os
 import socket
@@ -153,21 +152,6 @@ class RunYarnPipelineHandler(BaseRunPipelineHandler, MakiMixin,  ValidateReposit
         if self.args.get('force-bin', False):
             compat.run_subprocess('hdfs', 'dfs', '-rm', '-R', '-skipTrash', self.props['yarn.jarspath'])
         return super().handle()
-
-
-def _check_amaterasu_properties():
-    supported_cluster_managers = ['mesos', 'yarn']
-    if not os.path.exists(os.path.expanduser(BaseHandler.CONFIGURATION_PATH)):
-        print('Amaterasu hasn\'t been configured yet, please fill in the following details:')
-        cluster_manager = None
-        while not cluster_manager:
-            cluster_manager = input('Choose cluster manager [{}]:'.format(', '.join(supported_cluster_managers)))
-            if cluster_manager.strip() not in supported_cluster_managers:
-                print('Invalid cluster manager: {}'.format(cluster_manager))
-                cluster_manager = None
-        kwargs = {cluster_manager: True}
-        handler = config_handlers.get_handler(**kwargs)
-        handler()
 
 
 def get_handler(**kwargs):
