@@ -169,7 +169,7 @@ class JobScheduler extends AmaterasuScheduler {
                 val command = CommandInfo
                   .newBuilder
                   .setValue(
-                    s"""$awsEnv env AMA_NODE=${sys.env("AMA_NODE")} env MESOS_NATIVE_JAVA_LIBRARY=/usr/lib/libmesos.so env SPARK_EXECUTOR_URI=http://${sys.env("AMA_NODE")}:${config.Webserver.Port}/dist/spark-${config.Webserver.sparkVersion}.tgz java -cp executor-${config.version}-all.jar:spark-${config.Webserver.sparkVersion}/jars/* -Dscala.usejavacp=true -Djava.library.path=/usr/lib org.apache.amaterasu.executor.mesos.executors.MesosActionsExecutor ${jobManager.jobId} ${config.master} ${actionData.name}""".stripMargin
+                    s"""$awsEnv env AMA_NODE=${sys.env("AMA_NODE")} env MESOS_NATIVE_JAVA_LIBRARY=/usr/lib/libmesos.so env SPARK_EXECUTOR_URI=http://${sys.env("AMA_NODE")}:${config.Webserver.Port}/dist/spark-${config.Webserver.sparkVersion}.tgz java -cp executor-${config.version}-all.jar:spark-runner-${config.version}-all.jar:spark-runtime-${config.version}.jar:spark-${config.Webserver.sparkVersion}/jars/* -Dscala.usejavacp=true -Djava.library.path=/usr/lib org.apache.amaterasu.executor.mesos.executors.MesosActionsExecutor ${jobManager.jobId} ${config.master} ${actionData.name}""".stripMargin
                   )
                   //                  HttpServer.getFilesInDirectory(sys.env("AMA_NODE"), config.Webserver.Port).foreach(f=>
                   //                  )
@@ -178,6 +178,16 @@ class JobScheduler extends AmaterasuScheduler {
                   .setExecutable(false)
                   .setExtract(false)
                   .build())
+                  .addUris(URI.newBuilder
+                    .setValue(s"http://${sys.env("AMA_NODE")}:${config.Webserver.Port}/spark-runner-${config.version}-all.jar")
+                    .setExecutable(false)
+                    .setExtract(false)
+                    .build())
+                  .addUris(URI.newBuilder
+                    .setValue(s"http://${sys.env("AMA_NODE")}:${config.Webserver.Port}/spark-runtime-${config.version}.jar")
+                    .setExecutable(false)
+                    .setExtract(false)
+                    .build())
                   .addUris(URI.newBuilder()
                     .setValue(s"http://${sys.env("AMA_NODE")}:${config.Webserver.Port}/spark-2.2.1-bin-hadoop2.7.tgz")
                     .setExecutable(false)

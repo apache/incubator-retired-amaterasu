@@ -128,7 +128,7 @@ if ! ls ${BASEDIR}/dist/spark*.tgz 1> /dev/null 2>&1; then
 fi
 if [ ! -f ${BASEDIR}/dist/miniconda.sh ]; then
     echo "${bold}Fetching miniconda distributable ${NC}"
-    wget https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh -O miniconda.sh -P ${BASEDIR}/dist
+    wget https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh -O ${BASEDIR}/dist/miniconda.s
 fi
 cp ${BASEDIR}/amaterasu.properties ${BASEDIR}/dist
 eval $CMD | grep "===>"
