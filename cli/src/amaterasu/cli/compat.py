@@ -85,9 +85,9 @@ except NameError:
 
 def run_subprocess(*args, **kwargs):
     if sys.version_info.major >= 3 and sys.version_info.minor >= 5:
-        return subprocess.run(*args, check=True, **kwargs)
+        return subprocess.run(*args, check=True, **kwargs, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     else:
-        return subprocess.check_output(*args)
+        return subprocess.check_output(*args, stderr=subprocess.PIPE)
 
 
 __all__ = ['FileNotFoundError', 'WindowsError', 'run_subprocess']
