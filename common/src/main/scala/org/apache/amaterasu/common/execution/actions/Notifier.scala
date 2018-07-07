@@ -16,9 +16,9 @@
  */
 package org.apache.amaterasu.common.execution.actions
 
-import NotificationLevel.NotificationLevel
-import NotificationType.NotificationType
 import com.fasterxml.jackson.annotation.JsonProperty
+import org.apache.amaterasu.common.execution.actions.NotificationLevel.NotificationLevel
+import org.apache.amaterasu.common.execution.actions.NotificationType.NotificationType
 
 abstract class Notifier {
 

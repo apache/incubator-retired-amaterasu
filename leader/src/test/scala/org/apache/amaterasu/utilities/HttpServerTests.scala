@@ -19,13 +19,7 @@ package org.apache.amaterasu.utilities
 
 import java.io.File
 
-import org.apache.amaterasu.leader.utilities.HttpServer
-import org.jsoup.Jsoup
-import org.jsoup.select.Elements
 import org.scalatest.{FlatSpec, Matchers}
-
-import scala.collection.JavaConverters._
-import scala.io.Source
 
 
 class HttpServerTests extends FlatSpec with Matchers {
