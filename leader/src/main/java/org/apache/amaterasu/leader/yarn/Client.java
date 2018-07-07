@@ -183,7 +183,7 @@ public class Client {
 
         try {
             leaderJar = setLocalResourceFromPath(mergedPath);
-            propFile = setLocalResourceFromPath(Path.mergePaths(jarPath, new Path("/amaterasu.conf")));
+            propFile = setLocalResourceFromPath(Path.mergePaths(jarPath, new Path("/etc/amaterasu/amaterasu.conf")));
             log4jPropFile = setLocalResourceFromPath(Path.mergePaths(jarPath, new Path("/log4j.properties")));
         } catch (IOException e) {
             LOGGER.error("Error initializing yarn local resources.", e);

@@ -21,6 +21,7 @@ Usage: ama [--verbose] <command> [<args>...]
 
 Builtin commands:
     init        Start a new Amaterasu compliant repository
+    setup       Initial setup for Amaterasu
     update      Update an existing Amaterasu repository based on a maki file
     run         Run an Amaterasu job
 
