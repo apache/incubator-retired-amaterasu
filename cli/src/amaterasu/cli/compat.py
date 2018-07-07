@@ -85,7 +85,7 @@ except NameError:
 
 def run_subprocess(*args, **kwargs):
     if sys.version_info.major >= 3 and sys.version_info.minor >= 5:
-        return subprocess.run(*args, check=True, **kwargs, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        return subprocess.run(*args, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, **kwargs)
     else:
         return subprocess.check_output(*args, stderr=subprocess.PIPE)
 
