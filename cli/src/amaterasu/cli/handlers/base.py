@@ -60,6 +60,7 @@ class BaseHandler(abc.ABC):
      3. Implement get_parser
     """
     CONFIGURATION_PATH = '/etc/amaterasu/amaterasu.conf'
+    AMATERASU_HOME = os.getenv("AMATERASU_HOME")
 
     def __init__(self, **args):
         self.args = args

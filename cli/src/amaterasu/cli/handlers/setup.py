@@ -22,15 +22,10 @@ logger = logging.getLogger(__name__)
 __version__ = '0.2.0-incubating-rc4'
 
 
-class ValidationError(Exception):
-    pass
-
-
 class BaseConfigurationHandler(BaseHandler):
 
     def _render_configuration_file(self):
         dir_path = os.path.normpath(os.path.join(os.path.abspath(__file__), os.path.pardir, os.path.pardir))
-        generate_new_configuration = False
         if os.path.exists(self.CONFIGURATION_PATH):
             answer = input.default_input("An Apache Amaterasu configuration file exists, do you want to overwrite (Yn)?", "n")
             generate_new_configuration = answer.lower() == 'y'
@@ -41,7 +36,7 @@ class BaseConfigurationHandler(BaseHandler):
         logger.info("Successfully created Apache Amaterasu configuration file")
 
     def _download_dependencies(self):
-        miniconda_dist_path = os.path.join(self.amaterasu_home, 'dist', 'Miniconda2-latest-Linux-x86_64.sh')
+        miniconda_dist_path = os.path.join(self.AMATERASU_HOME, 'dist', 'Miniconda2-latest-Linux-x86_64.sh')
         if not os.path.exists(miniconda_dist_path):
             print('\n', colorama.Style.BRIGHT, 'Fetching Miniconda distributable', colorama.Style.RESET_ALL)
             wget.download(
@@ -58,7 +53,7 @@ class MesosConfigurationHandler(BaseConfigurationHandler):
 
     def _download_dependencies(self):
         super()._download_dependencies()
-        spark_dist_path = os.path.join(self.amaterasu_home, 'dist',
+        spark_dist_path = os.path.join(self.AMATERASU_HOME, 'dist',
                                        'spark-{}.tgz'.format(
                                            self.spark_version))
         if not os.path.exists(spark_dist_path):

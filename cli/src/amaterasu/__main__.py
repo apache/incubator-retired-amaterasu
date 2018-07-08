@@ -40,7 +40,11 @@ import logging.config
 import os
 import yaml
 from .cli import common, consts, handlers
+from .cli.utils import exceptions
 from docopt import docopt
+
+if not os.getenv("AMATERASU_HOME"):
+    raise exceptions.ImproperlyConfiguredError("$AMATERASU_HOME isn't defined! Please export $AMATERASU_HOME or add it to .bashrc")
 
 ama_package_path = os.path.abspath(os.path.dirname(__file__))
 logging_config_path = '{}/cli/resources/logging.yml'.format(ama_package_path)
