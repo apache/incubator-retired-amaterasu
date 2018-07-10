@@ -16,23 +16,32 @@ import wget
 import colorama
 import logging
 import subprocess
+from jinja2 import Environment, FileSystemLoader
 
 logger = logging.getLogger(__name__)
 
 __version__ = '0.2.0-incubating-rc4'
+THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
 class BaseConfigurationHandler(BaseHandler):
 
+    TEMPLATE_NAME = None
+
+    def __init__(self, **args):
+        self.jinja_env = Environment(
+            loader=FileSystemLoader(os.path.normpath(os.path.join(THIS_DIR, os.path.pardir, 'conf')))
+        )
+        super().__init__(**args)
+
     def _render_configuration_file(self):
-        dir_path = os.path.normpath(os.path.join(os.path.abspath(__file__), os.path.pardir, os.path.pardir))
         if os.path.exists(self.CONFIGURATION_PATH):
             answer = input.default_input("An Apache Amaterasu configuration file exists, do you want to overwrite (Yn)?", "n")
             generate_new_configuration = answer.lower() == 'y'
         else:
             generate_new_configuration = True
         if generate_new_configuration:
-            shutil.copy('{}/resources/amaterasu.conf'.format(dir_path), self.CONFIGURATION_PATH)
+            self.jinja_env.get_template(self.TEMPLATE_NAME).stream().dump(self.CONFIGURATION_PATH)
         logger.info("Successfully created Apache Amaterasu configuration file")
 
     def _download_dependencies(self):
@@ -51,6 +60,8 @@ class BaseConfigurationHandler(BaseHandler):
 
 class MesosConfigurationHandler(BaseConfigurationHandler):
 
+    TEMPLATE_NAME = "ama-mesos.conf"
+
     def _download_dependencies(self):
         super()._download_dependencies()
         spark_dist_path = os.path.join(self.AMATERASU_HOME, 'dist',
@@ -66,6 +77,8 @@ class MesosConfigurationHandler(BaseConfigurationHandler):
 
 
 class YarnConfigurationHandler(BaseConfigurationHandler):
+
+    TEMPLATE_NAME = "ama-yarn.conf"
 
     def _hdfs_directory_exists(self, dir_name):
         try:
