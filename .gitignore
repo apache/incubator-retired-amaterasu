@@ -48,3 +48,5 @@ bin/
 amaterasu-executor/
 project/project/
 executor/spark-warehouse/
+repo
+repo/**

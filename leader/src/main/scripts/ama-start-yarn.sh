@@ -102,7 +102,7 @@ done
 echo "repo: ${REPO} "
 echo "force-bin: ${FORCE_BIN}"
 export HADOOP_USER_CLASSPATH_FIRST=true
-CMD="yarn jar ${BASEDIR}/bin/leader-0.2.0-incubating-rc3-all.jar org.apache.amaterasu.leader.yarn.Client --home ${BASEDIR}"
+CMD="yarn jar ${BASEDIR}/bin/leader-0.2.0-incubating-rc4-all.jar org.apache.amaterasu.leader.yarn.Client --home ${BASEDIR}"
 
 if [ -n "$REPO" ]; then
     echo "repo is ${REPO}"
@@ -136,9 +136,9 @@ fi
 
 echo $CMD
 
-if [ ! -f ${BASEDIR}/dist/Miniconda2-latest-Linux-x86_64.sh ]; then
+if [ ! -f ${BASEDIR}/dist/miniconda.sh ]; then
     echo "${bold}Fetching miniconda distributable ${NC}"
-    wget https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh -P ${BASEDIR}/dist
+    wget https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh -O ${BASEDIR}/dist/miniconda.sh
 fi
 
 
