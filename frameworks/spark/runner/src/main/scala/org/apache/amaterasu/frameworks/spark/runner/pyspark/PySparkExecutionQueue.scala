@@ -14,30 +14,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.amaterasu.frameworks.spark.runner.pyspark
 
-// Core
-include 'leader'
-project(':leader')
-
-include 'leader-common'
-project(':leader-common')
-
-include 'common'
-project(':common')
-
-include 'executor'
-project(':executor')
-
-include 'sdk'
-findProject(':sdk')?.name = 'amaterasu-sdk'
-
-// Frameworks
-// Spark
-include 'spark-runner'
-project(':spark-runner').projectDir=file("frameworks/spark/runner")
-include 'spark-runtime'
-project(':spark-runtime').projectDir=file("frameworks/spark/runtime")
-include 'spark-dispatcher'
-project(':spark-dispatcher').projectDir=file("frameworks/spark/dispatcher")
+import java.util
+import java.util.concurrent.{LinkedBlockingQueue, TimeUnit}
 
 
+class PySparkExecutionQueue {
+
+  val queue = new LinkedBlockingQueue[(String, String, util.Map[String, String])]()
+
+  def getNext(): (String, String, util.Map[String, String]) = {
+
+    // if the queue is idle for an hour it will return null which
+    // terminates the python execution, need to revisit
+    queue.poll(1, TimeUnit.HOURS)
+
+  }
+
+  def setForExec(line: (String, String, util.Map[String, String])) = {
+
+    queue.put(line)
+
+  }
+
+}

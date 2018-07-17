@@ -34,9 +34,9 @@ repositories {
 dependencies {
     compile 'org.scala-lang:scala-library:2.11.8'
     compile group: 'org.scala-lang', name: 'scala-reflect', version: '2.11.8'
-//    compile group: 'org.scala-lang', name: 'scala-compiler', version: '2.11.8'
 
     compile project(':common')
+    compile project(':leader-common')
     compile project(':amaterasu-sdk')
 
     compile group: 'com.github.scopt', name: 'scopt_2.11', version: '3.3.0'
@@ -52,7 +52,6 @@ dependencies {
     compile group: 'org.eclipse.jetty', name: 'jetty-http', version: '9.2.19.v20160908'
     compile group: 'org.eclipse.jetty', name: 'jetty-io', version: '9.2.19.v20160908'
     compile group: 'org.eclipse.jetty', name: 'jetty-servlet', version: '9.2.19.v20160908'
-    //compile group: 'javax.servlet', name: 'javax.servlet-api', version: '3.1.0'
     compile group: 'org.eclipse.jetty.toolchain', name: 'jetty-test-helper', version: '4.0'
     compile group: 'org.eclipse.jgit', name: 'org.eclipse.jgit', version: '4.2.0.201601211800-r'
     compile group: 'org.yaml', name: 'snakeyaml', version: '1.18'
