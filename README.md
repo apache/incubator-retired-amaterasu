@@ -61,6 +61,17 @@ We recommend you either fork or clone the job sample repo and use that as a star
 
 ## Building Apache Amaterasu
 
+### Instructions to download gradle wrapper when building from source distribution
+
+As part of the ASFs policy, when building Apache Amaterasu from a source distribution and not from git, the gradle-wrapper.jar needs to be downloaded.
+The following command, will download the gradle wrapper from Amaterasu git repository and puts under incubator-amaterasu/gradle/wrapper
+
+wget --no-check-certificate -P incubator-amaterasu/gradle/wrapper https://github.com/apache/incubator-amaterasu/raw/version-0.2.0-incubating-rc4/gradle/wrapper/gradle-wrapper.jar
+(or)
+curl --insecure -L https://github.com/apache/incubator-amaterasu/raw/version-0.2.0-incubating-rc4/gradle/wrapper/gradle-wrapper.jar > incubator-amaterasu/gradle/wrapper/gradle-wrapper.jar
+
+### Building Amaterasu with Gradle
+
 to build the amaterasu home dir (for dev purposes) run:
 ```
 ./gradlew buildHomeDir test
