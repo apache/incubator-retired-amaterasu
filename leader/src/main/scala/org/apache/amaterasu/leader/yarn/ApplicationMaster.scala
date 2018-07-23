@@ -252,7 +252,7 @@ class ApplicationMaster extends AMRMClientAsync.CallbackHandler with Logging {
           "/bin/bash ./miniconda.sh -b -p $PWD/miniconda && ",
           s"/bin/bash spark/bin/load-spark-env.sh && ",
           s"java -cp spark/jars/*:executor.jar:spark-runner.jar:spark-runtime.jar:spark/conf/:${config.YARN.hadoopHomeDir}/conf/ " +
-            "-Xmx1G " +
+            "-Xmx2G " +
             "-Dscala.usejavacp=true " +
             "-Dhdp.version=2.6.1.0-129 " +
             "org.apache.amaterasu.executor.yarn.executors.ActionsExecutorLauncher " +

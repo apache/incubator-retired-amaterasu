@@ -113,7 +113,7 @@ public class Client {
                         " env HADOOP_USER_NAME=" + UserGroupInformation.getCurrentUser().getUserName() +
                         " $JAVA_HOME/bin/java" +
                         " -Dscala.usejavacp=false" +
-                        " -Xmx1G" +
+                        " -Xmx2G" +
                         " org.apache.amaterasu.leader.yarn.ApplicationMaster " +
                         joinStrings(args) +
                         newId +
