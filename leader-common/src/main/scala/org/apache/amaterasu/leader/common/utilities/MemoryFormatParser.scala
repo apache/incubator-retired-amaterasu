@@ -14,30 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.amaterasu.leader.common.utilities
 
-// Core
-include 'leader'
-project(':leader')
+object MemoryFormatParser {
 
-include 'leader-common'
-project(':leader-common')
+  def extractMegabytes(input: String): Int = {
+    var result: Int = 0
+    val lower = input.toLowerCase
+    if (lower.contains("mb")) {
+      result = lower.replace("mb", "").toInt
+    } else if (lower.contains("gb") | lower.contains("g")) {
+      result = lower.replace("g", "").replace("b","").toInt * 1024
+    } else {
+      result = lower.toInt
+    }
 
-include 'common'
-project(':common')
-
-include 'executor'
-project(':executor')
-
-include 'sdk'
-findProject(':sdk')?.name = 'amaterasu-sdk'
-
-// Frameworks
-// Spark
-include 'spark-runner'
-project(':spark-runner').projectDir=file("frameworks/spark/runner")
-include 'spark-runtime'
-project(':spark-runtime').projectDir=file("frameworks/spark/runtime")
-include 'spark-dispatcher'
-project(':spark-dispatcher').projectDir=file("frameworks/spark/dispatcher")
-
-
+    result
+  }
+}

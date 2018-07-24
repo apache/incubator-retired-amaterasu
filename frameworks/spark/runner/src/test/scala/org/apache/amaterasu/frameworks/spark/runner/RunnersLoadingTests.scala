@@ -14,30 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.amaterasu.frameworks.spark.runner
 
-// Core
-include 'leader'
-project(':leader')
+import org.apache.amaterasu.common.runtime.Environment
+import org.apache.amaterasu.executor.common.executors.ProvidersFactory
+import org.scalatest._
 
-include 'leader-common'
-project(':leader-common')
+@DoNotDiscover
+class RunnersLoadingTests extends FlatSpec with Matchers with BeforeAndAfterAll {
 
-include 'common'
-project(':common')
+  var env: Environment = _
+  var factory: ProvidersFactory = _
 
-include 'executor'
-project(':executor')
-
-include 'sdk'
-findProject(':sdk')?.name = 'amaterasu-sdk'
-
-// Frameworks
-// Spark
-include 'spark-runner'
-project(':spark-runner').projectDir=file("frameworks/spark/runner")
-include 'spark-runtime'
-project(':spark-runtime').projectDir=file("frameworks/spark/runtime")
-include 'spark-dispatcher'
-project(':spark-dispatcher').projectDir=file("frameworks/spark/dispatcher")
-
-
+  "RunnersFactory" should "be loaded with all the implementations of AmaterasuRunner in its classpath" in {
+    val r = factory.getRunner("spark", "scala")
+    r should not be null
+  }
+}

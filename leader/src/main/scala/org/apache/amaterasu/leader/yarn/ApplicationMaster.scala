@@ -21,16 +21,17 @@ import java.net.{InetAddress, ServerSocket, URLEncoder}
 import java.nio.ByteBuffer
 import java.util
 import java.util.concurrent.{ConcurrentHashMap, LinkedBlockingQueue}
-
 import javax.jms.Session
+
 import org.apache.activemq.ActiveMQConnectionFactory
 import org.apache.activemq.broker.BrokerService
 import org.apache.amaterasu.common.configuration.ClusterConfig
 import org.apache.amaterasu.common.dataobjects.ActionData
 import org.apache.amaterasu.common.logging.Logging
+import org.apache.amaterasu.leader.common.utilities.DataLoader
 import org.apache.amaterasu.leader.execution.frameworks.FrameworkProvidersFactory
 import org.apache.amaterasu.leader.execution.{JobLoader, JobManager}
-import org.apache.amaterasu.leader.utilities.{ActiveReportListener, Args, DataLoader}
+import org.apache.amaterasu.leader.utilities.{ActiveReportListener, Args}
 import org.apache.curator.framework.recipes.barriers.DistributedBarrier
 import org.apache.curator.framework.{CuratorFramework, CuratorFrameworkFactory}
 import org.apache.curator.retry.ExponentialBackoffRetry
@@ -251,7 +252,7 @@ class ApplicationMaster extends AMRMClientAsync.CallbackHandler with Logging {
           "/bin/bash ./miniconda.sh -b -p $PWD/miniconda && ",
           s"/bin/bash spark/bin/load-spark-env.sh && ",
           s"java -cp spark/jars/*:executor.jar:spark-runner.jar:spark-runtime.jar:spark/conf/:${config.YARN.hadoopHomeDir}/conf/ " +
-            "-Xmx1G " +
+            "-Xmx2G " +
             "-Dscala.usejavacp=true " +
             "-Dhdp.version=2.6.1.0-129 " +
             "org.apache.amaterasu.executor.yarn.executors.ActionsExecutorLauncher " +
