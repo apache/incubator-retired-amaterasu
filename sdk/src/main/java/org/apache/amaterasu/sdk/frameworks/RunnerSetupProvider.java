@@ -16,21 +16,12 @@
  */
 package org.apache.amaterasu.sdk.frameworks;
 
-import org.apache.amaterasu.common.configuration.ClusterConfig;
-import org.apache.amaterasu.sdk.frameworks.configuration.DriverConfiguration;
+import org.apache.amaterasu.common.dataobjects.ActionData;
 
-import java.io.File;
+public interface RunnerSetupProvider {
 
-public interface FrameworkSetupProvider {
+    String getCommand(String jobId, ActionData actionData, String env, String executorId);
 
-    void init(String env, ClusterConfig conf);
-
-    String getGroupIdentifier();
-
-    File[] getGroupResources();
-
-    DriverConfiguration getDriverConfiguration();
-
-    RunnerSetupProvider getRunnerProvider(String runnerId);
+    String[] getRunnerResources();
 
 }

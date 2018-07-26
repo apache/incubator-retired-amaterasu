@@ -154,9 +154,12 @@ class JobScheduler extends AmaterasuScheduler {
             val slaveActions = executionMap(offer.getSlaveId.toString)
             slaveActions.put(taskId.getValue, ActionStatus.started)
 
+            val frameworkFactory = FrameworkProvidersFactory.apply(env, config)
+            val frameworkProvider = frameworkFactory.providers(actionData.groupId)
+            val runnerProvider = frameworkProvider.getRunnerProvider(actionData.typeId)
+
             // searching for an executor that already exist on the slave, if non exist
             // we create a new one
-            //TODO: move to .getOrElseUpdate when migrting to scala 2.11
             var executor: ExecutorInfo = null
             val slaveId = offer.getSlaveId.getValue
             slavesExecutors.synchronized {
@@ -166,52 +169,35 @@ class JobScheduler extends AmaterasuScheduler {
               }
               else {
                 val execData = DataLoader.getExecutorDataBytes(env, config)
-
+                val executorId = taskId.getValue + "-" + UUID.randomUUID()
+                //creating the command
                 val command = CommandInfo
                   .newBuilder
-                  .setValue(
-                    s"""$awsEnv env AMA_NODE=${sys.env("AMA_NODE")} env MESOS_NATIVE_JAVA_LIBRARY=/usr/lib/libmesos.so env SPARK_EXECUTOR_URI=http://${sys.env("AMA_NODE")}:${config.Webserver.Port}/dist/spark-${config.Webserver.sparkVersion}.tgz java -cp executor-${config.version}-all.jar:spark-runner-${config.version}-all.jar:spark-runtime-${config.version}.jar:spark-${config.Webserver.sparkVersion}/jars/* -Dscala.usejavacp=true -Djava.library.path=/usr/lib org.apache.amaterasu.executor.mesos.executors.MesosActionsExecutor ${jobManager.jobId} ${config.master} ${actionData.name}""".stripMargin
-                  )
-                  //                  HttpServer.getFilesInDirectory(sys.env("AMA_NODE"), config.Webserver.Port).foreach(f=>
-                  //                  )
+                  .setValue(runnerProvider.getCommand(jobManager.jobId, actionData, env, executorId))
                   .addUris(URI.newBuilder
-                  .setValue(s"http://${sys.env("AMA_NODE")}:${config.Webserver.Port}/executor-${config.version}-all.jar")
+                    .setValue(s"http://${sys.env("AMA_NODE")}:${config.Webserver.Port}/executor-${config.version}-all.jar")
+                    .setExecutable(false)
+                    .setExtract(false)
+                    .build())
+
+                // Getting framework resources
+                frameworkProvider.getGroupResources.foreach(f => command.addUris(URI.newBuilder
+                  .setValue(s"http://${sys.env("AMA_NODE")}:${config.Webserver.Port}/${f.getName}")
+                  .setExecutable(false)
+                  .setExtract(true)
+                  .build()))
+
+                // Getting running resources
+                runnerProvider.getRunnerResources.foreach(r => command.addUris(URI.newBuilder
+                  .setValue(s"http://${sys.env("AMA_NODE")}:${config.Webserver.Port}/$r")
                   .setExecutable(false)
                   .setExtract(false)
-                  .build())
-                  .addUris(URI.newBuilder
-                    .setValue(s"http://${sys.env("AMA_NODE")}:${config.Webserver.Port}/spark-runner-${config.version}-all.jar")
-                    .setExecutable(false)
-                    .setExtract(false)
-                    .build())
-                  .addUris(URI.newBuilder
-                    .setValue(s"http://${sys.env("AMA_NODE")}:${config.Webserver.Port}/spark-runtime-${config.version}.jar")
-                    .setExecutable(false)
-                    .setExtract(false)
-                    .build())
-                  .addUris(URI.newBuilder()
-                    .setValue(s"http://${sys.env("AMA_NODE")}:${config.Webserver.Port}/spark-2.2.1-bin-hadoop2.7.tgz")
-                    .setExecutable(false)
-                    .setExtract(true)
-                    .build())
+                  .build()))
+
+                command
                   .addUris(URI.newBuilder()
                     .setValue(s"http://${sys.env("AMA_NODE")}:${config.Webserver.Port}/miniconda.sh")
-                    .setExecutable(false)
-                    .setExtract(false)
-                    .build())
-                  .addUris(URI.newBuilder()
-                    .setValue(s"http://${sys.env("AMA_NODE")}:${config.Webserver.Port}/spark_intp.py")
-                    .setExecutable(false)
-                    .setExtract(false)
-                    .build())
-                  .addUris(URI.newBuilder()
-                    .setValue(s"http://${sys.env("AMA_NODE")}:${config.Webserver.Port}/runtime.py")
-                    .setExecutable(false)
-                    .setExtract(false)
-                    .build())
-                  .addUris(URI.newBuilder()
-                    .setValue(s"http://${sys.env("AMA_NODE")}:${config.Webserver.Port}/codegen.py")
-                    .setExecutable(false)
+                    .setExecutable(true)
                     .setExtract(false)
                     .build())
                   .addUris(URI.newBuilder()
@@ -223,7 +209,7 @@ class JobScheduler extends AmaterasuScheduler {
                   .newBuilder
                   .setData(ByteString.copyFrom(execData))
                   .setName(taskId.getValue)
-                  .setExecutorId(ExecutorID.newBuilder().setValue(taskId.getValue + "-" + UUID.randomUUID()))
+                  .setExecutorId(ExecutorID.newBuilder().setValue(executorId))
                   .setCommand(command)
                   .build()
 
@@ -231,8 +217,6 @@ class JobScheduler extends AmaterasuScheduler {
               }
             }
 
-            val frameworkFactory = FrameworkProvidersFactory.apply(env, config)
-            val frameworkProvider = frameworkFactory.providers(actionData.groupId)
             val driverConfiguration = frameworkProvider.getDriverConfiguration
 
             val actionTask = TaskInfo
