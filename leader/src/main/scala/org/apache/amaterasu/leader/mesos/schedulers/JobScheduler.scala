@@ -171,9 +171,11 @@ class JobScheduler extends AmaterasuScheduler {
                 val execData = DataLoader.getExecutorDataBytes(env, config)
                 val executorId = taskId.getValue + "-" + UUID.randomUUID()
                 //creating the command
+
+                println(s"===> ${runnerProvider.getCommand(jobManager.jobId, actionData, env, executorId, "")}")
                 val command = CommandInfo
                   .newBuilder
-                  .setValue(runnerProvider.getCommand(jobManager.jobId, actionData, env, executorId))
+                  .setValue(runnerProvider.getCommand(jobManager.jobId, actionData, env, executorId, ""))
                   .addUris(URI.newBuilder
                     .setValue(s"http://${sys.env("AMA_NODE")}:${config.Webserver.Port}/executor-${config.version}-all.jar")
                     .setExecutable(false)

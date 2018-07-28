@@ -20,7 +20,7 @@ import org.apache.amaterasu.common.dataobjects.ActionData;
 
 public interface RunnerSetupProvider {
 
-    String getCommand(String jobId, ActionData actionData, String env, String executorId);
+    String getCommand(String jobId, ActionData actionData, String env, String executorId, String callbackAddress);
 
     String[] getRunnerResources();
 
