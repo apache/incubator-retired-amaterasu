@@ -36,7 +36,7 @@ class SparkScalaRunnerProvider extends RunnerSetupProvider {
       "-Dscala.usejavacp=true " +
       "-Dhdp.version=2.6.1.0-129 " +
       "org.apache.amaterasu.executor.yarn.executors.ActionsExecutorLauncher " +
-      s"'$jobId' '${conf.master}' '${actionData.name}' '${URLEncoder.encode(DataLoader.getTaskDataString(actionData, env), "UTF-8")}' '${URLEncoder.encode(DataLoader.getExecutorDataString(env, conf), "UTF-8")}' '$executorId'" +
+      s"'$jobId' '${conf.master}' '${actionData.name}' '${URLEncoder.encode(DataLoader.getTaskDataString(actionData, env), "UTF-8")}' '${URLEncoder.encode(DataLoader.getExecutorDataString(env, conf), "UTF-8")}' '$executorId' '$callbackAddress' " +
       s"1> ${ApplicationConstants.LOG_DIR_EXPANSION_VAR}/stdout " +
       s"2> ${ApplicationConstants.LOG_DIR_EXPANSION_VAR}/stderr "
     case _ => ""
