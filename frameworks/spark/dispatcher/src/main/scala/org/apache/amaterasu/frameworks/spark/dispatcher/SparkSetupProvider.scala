@@ -58,7 +58,6 @@ class SparkSetupProvider extends FrameworkSetupProvider {
 
   override def getGroupResources: Array[File] = {
 
-    println(s"===> mode ${conf.mode}")
     conf.mode match {
       case "mesos" => Array[File](new File("spark-2.2.1-bin-hadoop2.7.tgz"), new File(s"spark-runner-${conf.version}-all.jar"), new File(s"spark-runtime-${conf.version}.jar"))
       case "yarn" => new File(conf.spark.home).listFiles
