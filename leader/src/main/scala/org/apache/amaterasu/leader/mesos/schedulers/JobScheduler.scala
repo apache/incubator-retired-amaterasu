@@ -37,6 +37,7 @@ import org.apache.curator.framework.{CuratorFramework, CuratorFrameworkFactory}
 import org.apache.curator.retry.ExponentialBackoffRetry
 import org.apache.log4j.LogManager
 import org.apache.mesos.Protos.CommandInfo.URI
+import org.apache.mesos.Protos.Environment.Variable
 import org.apache.mesos.Protos._
 import org.apache.mesos.protobuf.ByteString
 import org.apache.mesos.{Protos, SchedulerDriver}
@@ -207,12 +208,18 @@ class JobScheduler extends AmaterasuScheduler {
                     .setExecutable(false)
                     .setExtract(false)
                     .build())
+
+                // setting the processes environment variables
+                val envVarsList = frameworkProvider.getEnvironmentVariables.asScala.toList.map(x=> Variable.newBuilder().setName(x._1).setValue(x._2).build()).asJava
+                command.setEnvironment(Environment.newBuilder().addAllVariables(envVarsList))
+
                 executor = ExecutorInfo
                   .newBuilder
                   .setData(ByteString.copyFrom(execData))
                   .setName(taskId.getValue)
                   .setExecutorId(ExecutorID.newBuilder().setValue(executorId))
                   .setCommand(command)
+
                   .build()
 
                 slavesExecutors.put(offer.getSlaveId.getValue, executor)
