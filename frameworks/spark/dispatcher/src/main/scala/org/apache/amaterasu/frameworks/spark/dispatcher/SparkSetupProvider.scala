@@ -19,50 +19,50 @@ package org.apache.amaterasu.frameworks.spark.dispatcher
 import java.io.File
 
 import org.apache.amaterasu.common.configuration.ClusterConfig
+import org.apache.amaterasu.frameworks.spark.dispatcher.runners.providers.{PySparkRunnerProvider, SparkScalaRunnerProvider}
 import org.apache.amaterasu.leader.common.utilities.{DataLoader, MemoryFormatParser}
-import org.apache.amaterasu.sdk.frameworks.FrameworkSetupProvider
 import org.apache.amaterasu.sdk.frameworks.configuration.DriverConfiguration
-
-import scala.collection.mutable
+import org.apache.amaterasu.sdk.frameworks.{FrameworkSetupProvider, RunnerSetupProvider}
 
 import scala.collection.mutable
 
 class SparkSetupProvider extends FrameworkSetupProvider {
 
-
   private var env: String = _
   private var conf: ClusterConfig = _
-  private val runnersResources = mutable.Map[String, Array[File]]()
-  //private var execData: ExecData = _
   private lazy val sparkExecConfigurations: mutable.Map[String, Any] = loadSparkConfig
 
+  private val runnerProviders: mutable.Map[String, RunnerSetupProvider] = mutable.Map[String, RunnerSetupProvider]()
+
   private def loadSparkConfig: mutable.Map[String, Any] = {
+
     val execData = DataLoader.getExecutorData(env, conf)
-    val sparkExecConfigurationsurations = execData.configurations.get("spark")
-    if (sparkExecConfigurationsurations.isEmpty) {
-      throw new Exception(s"Spark configuration files could not be loaded for the environment ${env}")
+    val sparkExecConfiguration = execData.configurations.get("spark")
+    if (sparkExecConfiguration.isEmpty) {
+      throw new Exception(s"Spark configuration files could not be loaded for the environment $env")
     }
-    collection.mutable.Map(sparkExecConfigurationsurations.get.toSeq: _*)
+    collection.mutable.Map(sparkExecConfiguration.get.toSeq: _*)
+
   }
 
   override def init(env: String, conf: ClusterConfig): Unit = {
     this.env = env
     this.conf = conf
 
-    runnersResources += "scala" -> Array.empty[File]
-    runnersResources += "sql" -> Array.empty[File]
-    //TODO: Nadav needs to setup conda here
-    runnersResources += "python" -> Array.empty[File]
+    runnerProviders += ("scala" -> SparkScalaRunnerProvider(conf))
+    runnerProviders += ("pyspark" -> PySparkRunnerProvider(conf))
+
   }
 
   override def getGroupIdentifier: String = "spark"
 
   override def getGroupResources: Array[File] = {
-    new File(conf.spark.home).listFiles
-  }
 
-  override def getRunnerResources(runnerId: String): Array[File] = {
-    runnersResources(runnerId)
+    conf.mode match {
+      case "mesos" => Array[File](new File(s"spark-${conf.Webserver.sparkVersion}.tgz"), new File(s"spark-runner-${conf.version}-all.jar"), new File(s"spark-runtime-${conf.version}.jar"))
+      case "yarn" => new File(conf.spark.home).listFiles
+      case _ => Array[File]()
+    }
   }
 
   override def getDriverConfiguration: DriverConfiguration = {
@@ -98,5 +98,9 @@ class SparkSetupProvider extends FrameworkSetupProvider {
     }
 
     new DriverConfiguration(mem, cpu)
+  }
+
+  override def getRunnerProvider(runnerId: String): RunnerSetupProvider = {
+    runnerProviders(runnerId)
   }
 }
