@@ -422,7 +422,10 @@ class ApplicationMaster extends AMRMClientAsync.CallbackHandler with Logging {
         log.error("Error connecting to zookeeper", e)
         throw e
     }
-    if (args.jobId != null && !args.jobId.isEmpty) {
+    val zkPath = client.checkExists().forPath(s"/${args.newJobId}")
+
+    if (zkPath != null) {
+
       log.info("resuming job" + args.jobId)
       jobManager = JobLoader.reloadJob(
         args.jobId,
