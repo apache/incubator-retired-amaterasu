@@ -1,0 +1,8 @@
+name: test
+master: yarn
+inputRootPath: /apps/amaterasu/input
+outputRootPath: /apps/amaterasu/output
+workingDir: /apps/amaterasu/work_dir
+configuration:
+    spark.cassandra.connection.host: 127.0.0.1
+    sourceTable: documents
