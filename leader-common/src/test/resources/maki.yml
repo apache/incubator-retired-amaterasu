@@ -16,11 +16,20 @@
 # specific language governing permissions and limitations
 # under the License.
 #
-name: test
-master: yarn
-inputRootPath: /apps/amaterasu/input
-outputRootPath: /apps/amaterasu/output
-workingDir: /apps/amaterasu/work_dir
-configuration:
-    spark.cassandra.connection.host: 127.0.0.1
-    sourceTable: documents
+---
+job-config: env/{env}/job.yml, env/{env}/passwords.yml, env/{env}/spark.yml
+job-name:    amaterasu-test
+flow:
+    - name: start
+      runner:
+          group: spark
+          type: scala
+      exports:
+          odd: parquet
+    - name: step2
+      config: src/{action_name}/{env}/
+      runner:
+          group: spark
+          type: scala
+      file: file2.scala
+...

@@ -25,14 +25,14 @@ allprojects {
     version '0.2.0-incubating-rc4'
 }
 
-task copyLeagalFiles(type: Copy) {
+task copyLegalFiles(type: Copy) {
     from "./DISCLAIMER", "./LICENSE", "./NOTICE"
     into "${buildDir}/amaterasu"
 }
 
 task buildHomeDir() {
     dependsOn subprojects.collect { getTasksByName('copyToHome', true) }
-    dependsOn copyLeagalFiles
+    dependsOn copyLegalFiles
 }
 
 distributions {

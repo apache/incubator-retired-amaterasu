@@ -117,3 +117,6 @@ kotlin {
         coroutines 'enable'
     }
 }
+
+task copyToHome() {
+}
