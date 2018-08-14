@@ -29,14 +29,13 @@ buildscript {
 
     dependencies {
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
-        classpath group: 'org.junit.platform', name: 'junit-platform-gradle-plugin', version: '1.2.0'
+        classpath 'org.junit.platform:junit-platform-gradle-plugin:1.0.0'
     }
 }
 
 plugins {
     id "com.github.johnrengelman.shadow" version "2.0.4"
     id 'scala'
-    id 'java'
 }
 
 apply plugin: 'kotlin'
@@ -54,27 +53,14 @@ sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
 repositories {
-    maven {
-        url "https://plugins.gradle.org/m2/"
-    }
-    maven {
-        url 'http://repository.jetbrains.com/all'
-    }
-    maven {
-        url "https://jetbrains.jfrog.io/jetbrains/spek-snapshots"
-    }
+    maven { url "https://plugins.gradle.org/m2/" }
+    maven { url 'http://repository.jetbrains.com/all' }
+    maven { url "https://jetbrains.jfrog.io/jetbrains/spek-snapshots" }
     maven { url "http://dl.bintray.com/jetbrains/spek" }
+    maven { url "http://oss.jfrog.org/artifactory/oss-snapshot-local" }
 
     mavenCentral()
     jcenter()
-}
-
-junitPlatform {
-    filters {
-        engines {
-            include 'spek'
-        }
-    }
 }
 
 dependencies {
@@ -92,11 +78,14 @@ dependencies {
     compile "org.jetbrains.kotlin:kotlin-reflect"
     compile 'com.uchuhimo:konf:0.11'
 
-    testCompile 'org.jetbrains.kotlin:kotlin-test:1.2.60'
     testCompile 'org.jetbrains.spek:spek-api:1.1.5'
+    testCompile "org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version"
     testRuntime 'org.jetbrains.spek:spek-junit-platform-engine:1.1.5'
-}
 
+    // spek requires kotlin-reflect, can be omitted if already in the classpath
+    testRuntimeOnly "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
+
+}
 
 sourceSets {
     test {
@@ -111,12 +100,12 @@ compileKotlin {
 compileTestKotlin {
     kotlinOptions.jvmTarget = "1.8"
 }
+//
+//kotlin {
+//    experimental {
+//        coroutines 'enable'
+//    }
+//}
 
-kotlin {
-    experimental {
-        coroutines 'enable'
-    }
-}
-
-task copyToHome() {
-}
+//task copyToHome() {
+//}

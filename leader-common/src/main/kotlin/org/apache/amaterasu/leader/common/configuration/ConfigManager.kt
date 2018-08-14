@@ -37,17 +37,25 @@ class ConfigManager(private val env: String, private val repoPath: String) {
 
     fun getActionConfiguration(action: String, path: String = ""): Config {
 
-        var actionPath = "$repoPath/src/$action/env/$env"
-        if (!path.isEmpty()) {
-            actionPath = "$repoPath/$path"
+        val actionPath = if (path.isEmpty()) {
+            "$repoPath/src/$action/env/$env"
+        } else {
+            "$repoPath/$path"
                     .replace("{env}", env)
                     .replace("{action_name}", action)
         }
 
-        var result = Config()
+        var result = config
 
-        for (file in File(actionPath).listFiles()) {
-            result = config.from.yaml.file(file)
+        val configLocation = File(actionPath)
+        if (configLocation.exists()) {
+            if (configLocation.isDirectory) {
+                for (file in File(actionPath).listFiles()) {
+                    result = config.from.yaml.file(file)
+                }
+            } else {
+                result = config.from.yaml.file(configLocation)
+            }
         }
         return result
     }

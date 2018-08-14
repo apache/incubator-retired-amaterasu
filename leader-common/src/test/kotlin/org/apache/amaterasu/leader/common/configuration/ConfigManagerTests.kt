@@ -16,26 +16,28 @@
  */
 package org.apache.amaterasu.leader.common.configuration
 
+
 import org.jetbrains.spek.api.Spek
 import org.jetbrains.spek.api.dsl.*
+import kotlin.test.assertEquals
 import java.io.File
 
-class ConfigManagerTests : Spek({
+object ConfigManagerTests : Spek({
 
-    describe("creating a ConfigManager for a job with ") {
+    given("creating a ConfigManager for a job with ") {
 
         val marker = this.javaClass.getResource("/maki.yml").path
         val repoPath = "${File(marker).parent}/test_repo"
         val cfg = ConfigManager("test", repoPath)
 
         it("loads the job level environment"){
-            assert(cfg.config[Job.master] == "yarn")
+            assertEquals(cfg.config[Job.master] , "yarn")
         }
 
         on("getting an env for an action with default path") {
             val startConf = cfg.getActionConfiguration("start")
             it("loads the specific configuration defined in the actions folder"){
-                assert(startConf[Job.master] == "mesos")
+                assertEquals(startConf[Job.master] , "mesos")
             }
         }
 
@@ -43,7 +45,23 @@ class ConfigManagerTests : Spek({
             val step2conf = cfg.getActionConfiguration("step2", "src/{action_name}/{env}/")
 
             it("loads the specific configuration defined in the actions folder"){
-                assert(step2conf[Job.name] == "step2")
+                assertEquals(step2conf[Job.name] , "test2")
+            }
+        }
+
+        on("getting an env for an action with no action level config"){
+            val step3conf = cfg.getActionConfiguration("step3")
+
+            it("loads only the job level conf"){
+                assertEquals(step3conf[Job.name] , "test")
+            }
+        }
+
+        on("receiving a path to a specific file" ){
+            val step4conf = cfg.getActionConfiguration("step4", "src/start/env/{env}/job.yml")
+
+            it("loads the specific configuration from the file"){
+                assertEquals(step4conf[Job.master] , "mesos")
             }
         }
     }
