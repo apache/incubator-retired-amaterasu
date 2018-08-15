@@ -33,12 +33,13 @@ object GitUtil {
     path.deleteRecursively()
 
     //TODO: add authentication
-    Git.cloneRepository
+    val git = Git.cloneRepository
       .setURI(repoAddress)
       .setDirectory(new File("repo"))
       .setBranch(branch)
       .call
 
+    git.close()
   }
 
 }
