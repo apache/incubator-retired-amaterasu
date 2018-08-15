@@ -18,7 +18,7 @@ package org.apache.amaterasu.leader.common.configuration
 
 import com.uchuhimo.konf.ConfigSpec
 
-object Job : ConfigSpec() {
+object Job : ConfigSpec("") {
     val name by required<String>()
     val master by required<String>()
     val inputRootPath by required<String>()

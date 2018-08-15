@@ -17,21 +17,26 @@
 package org.apache.amaterasu.leader.common.configuration
 
 import com.uchuhimo.konf.Config
+import com.uchuhimo.konf.source.yaml.toYaml
 import java.io.File
 
-class ConfigManager(private val env: String, private val repoPath: String) {
+class ConfigManager(private val env: String, private val repoPath: String, private val frameworkItems: List<String> = emptyList()) {
 
     private val envFolder = "$repoPath/env/$env"
 
     // this is currently public for testing reasons, need to reconsider
-    var config: Config = Config {}
-    private var baseconfig = Config {
+    var config: Config = Config {
         addSpec(Job)
+        for (item in frameworkItems) {
+            val frameworkSpec = GenericSpec(item)
+            addSpec(frameworkSpec.spec)
+        }
     }
 
     init {
         for (file in File(envFolder).listFiles()) {
-            config = baseconfig.from.yaml.watchFile(file)
+            config = config.from.yaml.file(file)
+            println(config.toYaml.toText())
         }
     }
 

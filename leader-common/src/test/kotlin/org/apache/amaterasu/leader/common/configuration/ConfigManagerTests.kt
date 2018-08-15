@@ -24,9 +24,10 @@ import java.io.File
 
 object ConfigManagerTests : Spek({
 
-    given("creating a ConfigManager for a job with ") {
+    val marker = this.javaClass.getResource("/maki.yml").path
 
-        val marker = this.javaClass.getResource("/maki.yml").path
+    given("a ConfigManager for a job ") {
+
         val repoPath = "${File(marker).parent}/test_repo"
         val cfg = ConfigManager("test", repoPath)
 
@@ -63,6 +64,19 @@ object ConfigManagerTests : Spek({
             it("loads the specific configuration from the file"){
                 assertEquals(step4conf[Job.master] , "mesos")
             }
+        }
+
+
+    }
+
+    given("a ConfigManager for a job with spark framework") {
+
+        val repoPath = "${File(marker).parent}/spark_repo"
+        val cfg = ConfigManager("test", repoPath, listOf("sparkConfiguration"))
+
+        it("load the framework configuration for spark"){
+            val spark: Map<String, String> = cfg.config["sparkConfiguration"]
+            assertEquals(spark["spark.executor.memory"], "1g")
         }
     }
 })
