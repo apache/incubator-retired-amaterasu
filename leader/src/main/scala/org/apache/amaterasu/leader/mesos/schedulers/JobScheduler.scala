@@ -16,6 +16,8 @@
  */
 package org.apache.amaterasu.leader.mesos.schedulers
 
+import java.io.{File, PrintWriter}
+import java.nio.file.{Files, Paths}
 import java.util
 import java.util.concurrent.locks.ReentrantLock
 import java.util.concurrent.{ConcurrentHashMap, LinkedBlockingQueue}
@@ -29,6 +31,7 @@ import org.apache.amaterasu.common.configuration.enums.ActionStatus.ActionStatus
 import org.apache.amaterasu.common.dataobjects.ActionData
 import org.apache.amaterasu.common.execution.actions.NotificationLevel.NotificationLevel
 import org.apache.amaterasu.common.execution.actions.{Notification, NotificationLevel, NotificationType}
+import org.apache.amaterasu.leader.common.configuration.ConfigManager
 import org.apache.amaterasu.leader.common.utilities.DataLoader
 import org.apache.amaterasu.leader.execution.frameworks.FrameworkProvidersFactory
 import org.apache.amaterasu.leader.execution.{JobLoader, JobManager}
@@ -55,6 +58,8 @@ class JobScheduler extends AmaterasuScheduler {
   private val version = props.getProperty("version")
   println(s"===> version  $version")*/
   LogManager.resetConfiguration()
+  private var frameworkFactory: FrameworkProvidersFactory = _
+  private var configManager: ConfigManager = _
   private var jobManager: JobManager = _
   private var client: CuratorFramework = _
   private var config: ClusterConfig = _
@@ -145,6 +150,9 @@ class JobScheduler extends AmaterasuScheduler {
           if (actionData != null) {
             val taskId = Protos.TaskID.newBuilder().setValue(actionData.id).build()
 
+            val envYaml = configManager.getActionConfigContent(actionData.name, "") //TODO: replace with the value in actionData.config
+            writeEnvFile(envYaml, jobManager.jobId, actionData.name)
+
             offersToTaskIds.put(offer.getId.getValue, taskId.getValue)
 
             // atomically adding a record for the slave, I'm storing all the actions
@@ -154,7 +162,7 @@ class JobScheduler extends AmaterasuScheduler {
             val slaveActions = executionMap(offer.getSlaveId.toString)
             slaveActions.put(taskId.getValue, ActionStatus.started)
 
-            val frameworkFactory = FrameworkProvidersFactory.apply(env, config)
+
             val frameworkProvider = frameworkFactory.providers(actionData.groupId)
             val runnerProvider = frameworkProvider.getRunnerProvider(actionData.typeId)
 
@@ -181,6 +189,13 @@ class JobScheduler extends AmaterasuScheduler {
                     .setExecutable(false)
                     .setExtract(false)
                     .build())
+
+                // Getting env.yml
+                frameworkProvider.getGroupResources.foreach(f => command.addUris(URI.newBuilder
+                  .setValue(s"http://${sys.env("AMA_NODE")}:${config.Webserver.Port}/${jobManager.jobId}/${actionData.name}/env.yml")
+                  .setExecutable(false)
+                  .setExtract(true)
+                  .build()))
 
                 // Getting framework resources
                 frameworkProvider.getGroupResources.foreach(f => command.addUris(URI.newBuilder
@@ -284,7 +299,14 @@ class JobScheduler extends AmaterasuScheduler {
       )
 
     }
+
+    frameworkFactory = FrameworkProvidersFactory(env, config)
+    val items = frameworkFactory.providers.values.flatMap(_.getConfigurationItems).toList.asJava
+    configManager = new ConfigManager(env, "repo", items)
+
     jobManager.start()
+
+    createJobDir(jobManager.jobId)
 
   }
 
@@ -309,6 +331,42 @@ class JobScheduler extends AmaterasuScheduler {
 
     }
 
+  }
+
+  private def createJobDir(jobId: String): Unit = {
+    val jarFile = new File(this.getClass.getProtectionDomain.getCodeSource.getLocation.getPath)
+    val amaHome  = new File(jarFile.getParent).getParent
+    val jobDir = s"$amaHome/dist/$jobId/"
+
+    val dir = new File(jobDir)
+    if(!dir.exists()){
+      dir.mkdir()
+    }
+  }
+
+  /**
+    * This function creates an action specific env.yml file int the dist folder with the following path:
+    * dist/{jobId}/{actionName}/env.yml to be added to the container
+    *
+    * @param configuration A YAML string to be written to the env file
+    * @param jobId         the jobId
+    * @param actionName    the name of the action
+    */
+  def writeEnvFile(configuration: String, jobId: String, actionName: String): Unit = {
+    val jarFile = new File(this.getClass.getProtectionDomain.getCodeSource.getLocation.getPath)
+    val amaHome  = new File(jarFile.getParent).getParent
+    val envLocation = s"$amaHome/dist/$jobId/$actionName/"
+
+    val dir = new File(envLocation)
+    if(!dir.exists()){
+      dir.mkdir()
+    }
+
+
+    new PrintWriter(s"$envLocation/env.yml") {
+      write(configuration)
+      close
+    }
   }
 }
 
@@ -343,6 +401,7 @@ object JobScheduler {
     scheduler.client = CuratorFrameworkFactory.newClient(config.zk, retryPolicy)
     scheduler.client.start()
     scheduler.config = config
+
     scheduler
 
   }

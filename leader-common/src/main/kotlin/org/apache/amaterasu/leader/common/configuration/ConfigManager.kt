@@ -64,4 +64,8 @@ class ConfigManager(private val env: String, private val repoPath: String, priva
         }
         return result
     }
+
+    fun getActionConfigContent(action: String, path: String = ""): String {
+        return getActionConfiguration(action, path).toYaml.toText()
+    }
 }

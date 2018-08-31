@@ -14,32 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-//package org.apache.amaterasu.leader.dsl
-//
-//import java.io.File
-//
-//import org.eclipse.jgit.api.Git
-//
-//import scala.reflect.io.Path
+package org.apache.amaterasu.leader.common.dsl
 
-/**
-  * The GitUtil class handles getting the job git repository
-  */
-//object GitUtil {
-//
-//  def cloneRepo(repoAddress: String, branch: String) = {
-//
-//    val path = Path("repo")
-//    path.deleteRecursively()
-//
-//    //TODO: add authentication
-//    val git = Git.cloneRepository
-//      .setURI(repoAddress)
-//      .setDirectory(new File("repo"))
-//      .setBranch(branch)
-//      .call
-//
-//    git.close()
-//  }
-//
-//}
+import org.eclipse.jgit.api.Git
+import java.io.File
+
+object GitUtil {
+    @JvmStatic
+    fun cloneRepo(repoAddress: String, branch: String) {
+        Git.cloneRepository().apply {
+            setURI(repoAddress)
+            setDirectory(File("repo"))
+            setBranch(branch)
+        }.call().close()
+    }
+}
