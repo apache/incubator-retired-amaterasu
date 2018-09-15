@@ -39,6 +39,7 @@ dependencies {
     compile project(':common')
     compile project(':leader-common')
     compile project(':amaterasu-sdk')
+    compile project(':python-dispatcher')
     compile 'com.uchuhimo:konf:0.11'
 }
 

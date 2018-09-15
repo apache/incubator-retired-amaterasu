@@ -34,7 +34,7 @@ import scala.collection.mutable
 import scala.io.Source
 
 
-object DataLoader extends Logging {
+//object DataLoader extends Logging {
 
   val mapper = new ObjectMapper()
   mapper.registerModule(DefaultScalaModule)
