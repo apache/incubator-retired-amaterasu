@@ -16,14 +16,14 @@
  */
 package org.apache.amaterasu.leader.mesos.schedulers
 
-import java.io.{File, PrintWriter}
-import java.nio.file.{Files, Paths}
+import java.io.{File, PrintWriter, StringWriter}
 import java.util
 import java.util.concurrent.locks.ReentrantLock
 import java.util.concurrent.{ConcurrentHashMap, LinkedBlockingQueue}
 import java.util.{Collections, UUID}
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
 import org.apache.amaterasu.common.configuration.ClusterConfig
 import org.apache.amaterasu.common.configuration.enums.ActionStatus
@@ -82,6 +82,9 @@ class JobScheduler extends AmaterasuScheduler {
 
   private val mapper = new ObjectMapper()
   mapper.registerModule(DefaultScalaModule)
+
+  private val yamlMapper = new ObjectMapper(new YAMLFactory())
+  yamlMapper.registerModule(DefaultScalaModule)
 
   def error(driver: SchedulerDriver, message: String) {}
 
@@ -150,8 +153,17 @@ class JobScheduler extends AmaterasuScheduler {
           if (actionData != null) {
             val taskId = Protos.TaskID.newBuilder().setValue(actionData.id).build()
 
+            // setting up the configuration files for the container
             val envYaml = configManager.getActionConfigContent(actionData.name, "") //TODO: replace with the value in actionData.config
-            writeEnvFile(envYaml, jobManager.jobId, actionData.name)
+            writeConfigFile(envYaml, jobManager.jobId, actionData.name, "env.yaml")
+
+            val dataStores = DataLoader.getTaskData(actionData, env).exports
+            val writer = new StringWriter()
+            yamlMapper.writeValue(writer, dataStores)
+            val dataStoresYaml = writer.toString
+            writeConfigFile(dataStoresYaml, jobManager.jobId, actionData.name, "datastores.yaml")
+
+            writeConfigFile(s"jobId: ${jobManager.jobId}", jobManager.jobId, actionData.name, "runtime.yaml")
 
             offersToTaskIds.put(offer.getId.getValue, taskId.getValue)
 
@@ -190,9 +202,23 @@ class JobScheduler extends AmaterasuScheduler {
                     .setExtract(false)
                     .build())
 
-                // Getting env.yml
+                // Getting env.yaml
                 frameworkProvider.getGroupResources.foreach(f => command.addUris(URI.newBuilder
-                  .setValue(s"http://${sys.env("AMA_NODE")}:${config.Webserver.Port}/${jobManager.jobId}/${actionData.name}/env.yml")
+                  .setValue(s"http://${sys.env("AMA_NODE")}:${config.Webserver.Port}/${jobManager.jobId}/${actionData.name}/env.yaml")
+                  .setExecutable(false)
+                  .setExtract(true)
+                  .build()))
+
+                // Getting datastores.yaml
+                frameworkProvider.getGroupResources.foreach(f => command.addUris(URI.newBuilder
+                  .setValue(s"http://${sys.env("AMA_NODE")}:${config.Webserver.Port}/${jobManager.jobId}/${actionData.name}/datastores.yaml")
+                  .setExecutable(false)
+                  .setExtract(true)
+                  .build()))
+
+                // Getting runtime.yaml
+                frameworkProvider.getGroupResources.foreach(f => command.addUris(URI.newBuilder
+                  .setValue(s"http://${sys.env("AMA_NODE")}:${config.Webserver.Port}/${jobManager.jobId}/${actionData.name}/runtime.yaml")
                   .setExecutable(false)
                   .setExtract(true)
                   .build()))
@@ -253,6 +279,9 @@ class JobScheduler extends AmaterasuScheduler {
           }
           else if (jobManager.outOfActions) {
             log.info(s"framework ${jobManager.jobId} execution finished")
+
+            val repo = new File("repo/")
+            repo.delete()
 
             HttpServer.stop()
             driver.declineOffer(offer.getId)
@@ -335,11 +364,11 @@ class JobScheduler extends AmaterasuScheduler {
 
   private def createJobDir(jobId: String): Unit = {
     val jarFile = new File(this.getClass.getProtectionDomain.getCodeSource.getLocation.getPath)
-    val amaHome  = new File(jarFile.getParent).getParent
+    val amaHome = new File(jarFile.getParent).getParent
     val jobDir = s"$amaHome/dist/$jobId/"
 
     val dir = new File(jobDir)
-    if(!dir.exists()){
+    if (!dir.exists()) {
       dir.mkdir()
     }
   }
@@ -352,18 +381,18 @@ class JobScheduler extends AmaterasuScheduler {
     * @param jobId         the jobId
     * @param actionName    the name of the action
     */
-  def writeEnvFile(configuration: String, jobId: String, actionName: String): Unit = {
+  def writeConfigFile(configuration: String, jobId: String, actionName: String, fileName: String): Unit = {
     val jarFile = new File(this.getClass.getProtectionDomain.getCodeSource.getLocation.getPath)
-    val amaHome  = new File(jarFile.getParent).getParent
+    val amaHome = new File(jarFile.getParent).getParent
     val envLocation = s"$amaHome/dist/$jobId/$actionName/"
 
     val dir = new File(envLocation)
-    if(!dir.exists()){
+    if (!dir.exists()) {
       dir.mkdir()
     }
 
 
-    new PrintWriter(s"$envLocation/env.yml") {
+    new PrintWriter(s"$envLocation/$fileName") {
       write(configuration)
       close
     }

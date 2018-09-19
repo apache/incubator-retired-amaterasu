@@ -19,6 +19,7 @@ plugins {
     id 'com.github.maiflai.scalatest' version '0.22'
     id 'scala'
     id 'java'
+
 }
 
 sourceCompatibility = 1.8
@@ -53,7 +54,7 @@ dependencies {
     compile group: 'org.eclipse.jetty', name: 'jetty-io', version: '9.2.19.v20160908'
     compile group: 'org.eclipse.jetty', name: 'jetty-servlet', version: '9.2.19.v20160908'
     compile group: 'org.eclipse.jetty.toolchain', name: 'jetty-test-helper', version: '4.0'
-    compile group: 'org.yaml', name: 'snakeyaml', version: '1.18'
+    compile group: 'org.yaml', name: 'snakeyaml', version: '1.23'
     compile group: 'commons-cli', name: 'commons-cli', version: '1.2'
     compile group: 'org.jsoup', name: 'jsoup', version: '1.10.2'
     compile group: 'org.scala-lang.modules', name: 'scala-async_2.11', version: '0.9.6'
