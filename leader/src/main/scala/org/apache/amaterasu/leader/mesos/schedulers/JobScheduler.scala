@@ -163,7 +163,7 @@ class JobScheduler extends AmaterasuScheduler {
             val dataStoresYaml = writer.toString
             writeConfigFile(dataStoresYaml, jobManager.jobId, actionData.name, "datastores.yaml")
 
-            writeConfigFile(s"jobId: ${jobManager.jobId}", jobManager.jobId, actionData.name, "runtime.yaml")
+            writeConfigFile(s"jobId: ${jobManager.jobId}\\nactionName: ${actionData.name}", jobManager.jobId, actionData.name, "runtime.yaml")
 
             offersToTaskIds.put(offer.getId.getValue, taskId.getValue)
 
