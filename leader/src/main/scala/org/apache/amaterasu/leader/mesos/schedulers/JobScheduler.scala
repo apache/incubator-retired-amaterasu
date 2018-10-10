@@ -138,6 +138,7 @@ class JobScheduler extends AmaterasuScheduler {
   }
 
   def resourceOffers(driver: SchedulerDriver, offers: util.List[Offer]): Unit = {
+
     for (offer <- offers.asScala) {
 
       if (validateOffer(offer)) {
@@ -203,25 +204,25 @@ class JobScheduler extends AmaterasuScheduler {
                     .build())
 
                 // Getting env.yaml
-                frameworkProvider.getGroupResources.foreach(f => command.addUris(URI.newBuilder
+                command.addUris(URI.newBuilder
                   .setValue(s"http://${sys.env("AMA_NODE")}:${config.Webserver.Port}/${jobManager.jobId}/${actionData.name}/env.yaml")
                   .setExecutable(false)
                   .setExtract(true)
-                  .build()))
+                  .build())
 
                 // Getting datastores.yaml
-                frameworkProvider.getGroupResources.foreach(f => command.addUris(URI.newBuilder
+                command.addUris(URI.newBuilder
                   .setValue(s"http://${sys.env("AMA_NODE")}:${config.Webserver.Port}/${jobManager.jobId}/${actionData.name}/datastores.yaml")
                   .setExecutable(false)
                   .setExtract(true)
-                  .build()))
+                  .build())
 
                 // Getting runtime.yaml
-                frameworkProvider.getGroupResources.foreach(f => command.addUris(URI.newBuilder
+                command.addUris(URI.newBuilder
                   .setValue(s"http://${sys.env("AMA_NODE")}:${config.Webserver.Port}/${jobManager.jobId}/${actionData.name}/runtime.yaml")
                   .setExecutable(false)
                   .setExtract(true)
-                  .build()))
+                  .build())
 
                 // Getting framework resources
                 frameworkProvider.getGroupResources.foreach(f => command.addUris(URI.newBuilder
@@ -239,7 +240,7 @@ class JobScheduler extends AmaterasuScheduler {
 
                 command
                   .addUris(URI.newBuilder()
-                    .setValue(s"http://${sys.env("AMA_NODE")}:${config.Webserver.Port}/miniconda.sh")
+                    .setValue(s"http://${sys.env("AMA_NODE")}:${config.Webserver.Port}/miniconda.sh") //TODO: Nadav needs to clean this on the executor side
                     .setExecutable(true)
                     .setExtract(false)
                     .build())
@@ -248,6 +249,7 @@ class JobScheduler extends AmaterasuScheduler {
                     .setExecutable(false)
                     .setExtract(false)
                     .build())
+
                 executor = ExecutorInfo
                   .newBuilder
                   .setData(ByteString.copyFrom(execData))
