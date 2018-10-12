@@ -14,7 +14,7 @@ class SparkShellScalaRunnerProvider extends RunnerSetupProvider {
     s"$$SPARK_HOME/bin/spark-shell ${actionData.src} --jars spark-runtime-${conf.version}.jar"
   }
 
-  override def getRunnerResources = ???
+  override def getRunnerResources: Array[String] = Array[String]()
 }
 
 object SparkShellScalaRunnerProvider {

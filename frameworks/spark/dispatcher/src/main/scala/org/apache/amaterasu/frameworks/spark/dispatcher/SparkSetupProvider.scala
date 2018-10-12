@@ -68,7 +68,7 @@ class SparkSetupProvider extends FrameworkSetupProvider {
 
   override def getEnvironmentVariables: util.Map[String, String] = conf.mode match {
     case "mesos" => Map[String, String](s"SPARK_HOME" -> s"spark-${conf.Webserver.sparkVersion}")
-    case "yarn" => Map[String, String]("SPARK_HOME" -> "spark")we e
+    case "yarn" => Map[String, String]("SPARK_HOME" -> "spark")
     case _ => Map[String, String]()
   }
 
