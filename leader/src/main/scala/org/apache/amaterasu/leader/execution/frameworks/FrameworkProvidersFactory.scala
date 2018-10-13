@@ -33,6 +33,7 @@ class FrameworkProvidersFactory {
   def getFramework(groupId: String): FrameworkSetupProvider = {
     providers(groupId)
   }
+
 }
 
 object FrameworkProvidersFactory extends Logging {

@@ -14,40 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-plugins {
-    id 'com.github.johnrengelman.shadow' version '1.2.4'
-    id 'com.github.maiflai.scalatest' version '0.22'
-    id 'scala'
-}
+package org.apache.amaterasu.leader.common.dsl
 
-shadowJar {
-    zip64 true
-}
+import org.eclipse.jgit.api.Git
+import java.io.File
 
-repositories {
-    maven {
-        url "https://plugins.gradle.org/m2/"
+object GitUtil {
+    @JvmStatic
+    fun cloneRepo(repoAddress: String, branch: String) {
+        Git.cloneRepository().apply {
+            setURI(repoAddress)
+            setDirectory(File("repo"))
+            setBranch(branch)
+        }.call().close()
     }
-    mavenCentral()
-}
-
-dependencies {
-    compile 'org.scala-lang:scala-library:2.11.8'
-//    compile group: 'org.scala-lang', name: 'scala-reflect', version: '2.11.8'
-//    compile group: 'org.scala-lang', name: 'scala-compiler', version: '2.11.8'
-
-    compile project(':common')
-    compile project(':leader-common')
-    compile project(':amaterasu-sdk')
-    compile 'com.uchuhimo:konf:0.11'
-}
-
-task copyToHomeBin(type: Copy) {
-    dependsOn shadowJar
-    from 'build/libs'
-    into '../../../build/amaterasu/bin'
-}
-
-task copyToHome() {
-    dependsOn copyToHomeBin
 }

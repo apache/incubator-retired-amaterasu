@@ -103,4 +103,6 @@ class SparkSetupProvider extends FrameworkSetupProvider {
   override def getRunnerProvider(runnerId: String): RunnerSetupProvider = {
     runnerProviders(runnerId)
   }
+
+  override def getConfigurationItems = Array("sparkConfiguration", "sparkExecutor")
 }

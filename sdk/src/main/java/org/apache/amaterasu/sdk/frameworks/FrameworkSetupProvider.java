@@ -33,4 +33,6 @@ public interface FrameworkSetupProvider {
 
     RunnerSetupProvider getRunnerProvider(String runnerId);
 
+    String[] getConfigurationItems();
+
 }

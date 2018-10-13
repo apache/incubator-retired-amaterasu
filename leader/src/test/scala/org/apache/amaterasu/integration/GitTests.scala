@@ -16,7 +16,7 @@
  */
 package org.apache.amaterasu.integration
 
-import org.apache.amaterasu.leader.dsl.GitUtil
+import org.apache.amaterasu.leader.common.dsl.GitUtil
 import org.scalatest.{FlatSpec, Matchers}
 
 import scala.reflect.io.Path
