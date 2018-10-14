@@ -1,3 +1,21 @@
+#
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+#
 language: scala
 cache:
   directories:
@@ -7,13 +25,15 @@ cache:
 before_install:
 - chmod +x gradlew
 script:
-- "./gradlew buildDistribution"
+- "./gradlew clean test buildDistribution"
 deploy:
   provider: releases
   api_key:
     secure: LgUGiVEjuFmAepc1XDIEPovYTh6zqn+/q/HXW0AZfwv4RoxROuoXFS8AgG6y1PY3QnbfoxCa2FsvVBwP3MupJyWlMKzZBWp9I1bFEbf4Zmn7Lb5hBJieWrgwvMN/R31YybiA9wBlhL32uN1JN3dvNQIIqwGjRzBS4Hm6db+RtnKiZFTn8p5eB5loyEu32QIlx9PWTLPSVZ/ZEqJlxFE7B5XBRCiy4+JQavFZ9fgg2DmuH5erqBGpv5W/Bn0ekKnj9NA4QaoksNnQSFx+MtL+mvJN/jACZpHF2ACjtMr01KoAUIKC2G8cnX2HVp/CBw2qG5UtTNnlh/ECpG/dtZfKaRmbZhoIxy9clf/PgiBQFdGHJKLrdN2Jpc8wG4aLDM2rRQ0k7oVp0AMWXAB1oZJ7MQcZeiwyAOo/HcU298iGuETRWMghlwEHy66iDzB+3xvxzROC2mVx0cvZE7095PkxJeddKBSpYXRQcdONkNj+b46IenpEj611UqvDilmCikhpIxqFxop24/eeTFOpmREf6JRo1dhMg0e8LwuxU5d4ZiwWx2xwlrZs2wKxrHygx/R8UD08FyntK4vaY6mTfEhcFkPuGb4kUnyrLv4fFq7oH96QXzhTtfftutxMTyLL+Y2+aJTbTeQPo6wpJo3Qn5vEsodzU9ytNV1+yvuqFfPgHtw=
-  file: 'build/distributions/apache-amaterasu-0.2.0-incubating.tar'
+  file_glob: true
+  file: 'build/distributions/apache-amaterasu-*.tar'
   skip_cleanup: true
+  target_commitish: $TRAVIS_COMMIT
   on:
     tags: true
     repo: apache/incubator-amaterasu

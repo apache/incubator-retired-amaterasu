@@ -14,20 +14,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+plugins {
+    id "org.nosphere.apache.rat" version "0.3.1"
+}
+
 apply plugin: 'distribution'
+apply plugin: 'project-report'
+
+htmlDependencyReport {
+    projects = project.allprojects
+}
 
 allprojects {
     group 'org.apache.amaterasu'
-    version '0.2.0-incubating'
+    version '0.2.0-incubating-rc4'
 }
 
-project(':leader')
-project(':common')
-project(':executor')
+task copyLegalFiles(type: Copy) {
+    from "./DISCLAIMER", "./LICENSE", "./NOTICE"
+    into "${buildDir}/amaterasu"
+}
 
 task buildHomeDir() {
-    dependsOn subprojects.collect { getTasksByName('shadowJar', true) }
     dependsOn subprojects.collect { getTasksByName('copyToHome', true) }
+    dependsOn copyLegalFiles
 }
 
 distributions {
@@ -46,6 +56,11 @@ task buildDistribution() {
     dependsOn customDistTar
 }
 
-tasks.withType(Test)  {
+rat {
+    // List of exclude directives, defaults to ['**/.gradle/**']
+    excludes = ["**/build/**", '**/.gradle/**', '**/gradle/**', '**/.idea/**', '**/.ruby-version/**', '**/repo/**', '**/resources/**',  '**/*.iml/**']
+}
+
+tasks.withType(Test) {
     maxParallelForks = 1
 }

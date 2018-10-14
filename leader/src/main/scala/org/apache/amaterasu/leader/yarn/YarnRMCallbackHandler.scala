@@ -23,8 +23,8 @@ import java.util.concurrent.ConcurrentHashMap
 import com.google.gson.Gson
 import org.apache.amaterasu.common.configuration.ClusterConfig
 import org.apache.amaterasu.common.logging.Logging
+import org.apache.amaterasu.leader.common.utilities.DataLoader
 import org.apache.amaterasu.leader.execution.JobManager
-import org.apache.amaterasu.leader.utilities.DataLoader
 import org.apache.hadoop.yarn.api.records._
 import org.apache.hadoop.yarn.client.api.async.{AMRMClientAsync, NMClientAsync}
 import org.apache.hadoop.yarn.util.Records
@@ -32,10 +32,9 @@ import org.apache.hadoop.yarn.util.Records
 import scala.collection.JavaConversions._
 import scala.collection.JavaConverters._
 import scala.collection.concurrent
-import scala.concurrent.Future
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.{Future, _}
 import scala.util.{Failure, Success}
-import scala.concurrent._
-import ExecutionContext.Implicits.global
 
 class YarnRMCallbackHandler(nmClient: NMClientAsync,
                             jobManager: JobManager,
@@ -106,7 +105,7 @@ class YarnRMCallbackHandler(nmClient: NMClientAsync,
         val ctx = Records.newRecord(classOf[ContainerLaunchContext])
         val command = s"""$awsEnv env AMA_NODE=${sys.env("AMA_NODE")}
                          | env SPARK_EXECUTOR_URI=http://${sys.env("AMA_NODE")}:${config.Webserver.Port}/dist/spark-${config.Webserver.sparkVersion}.tgz
-                         | java -cp executor-0.2.0-all.jar:spark-${config.Webserver.sparkVersion}/lib/*
+                         | java -cp executor.jar:spark-${config.Webserver.sparkVersion}/lib/*
                          | -Dscala.usejavacp=true
                          | -Djava.library.path=/usr/lib org.apache.amaterasu.executor.yarn.executors.ActionsExecutorLauncher
                          | ${jobManager.jobId} ${config.master} ${actionData.name} ${gson.toJson(taskData)} ${gson.toJson(execData)}""".stripMargin
