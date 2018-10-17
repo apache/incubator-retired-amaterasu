@@ -83,7 +83,7 @@ sourceSets {
     // this is done so Scala will compile before Java
     main {
         scala {
-            srcDirs = ['src/main/scala', 'src/main/java']
+            srcDirs = ['src/main/scala', 'src/main/java', 'src/main/kotlin']
         }
         java {
             srcDirs = []
