@@ -36,4 +36,6 @@ public interface FrameworkSetupProvider {
 
     Map<String, String> getEnvironmentVariables();
 
+    String[] getConfigurationItems();
+
 }

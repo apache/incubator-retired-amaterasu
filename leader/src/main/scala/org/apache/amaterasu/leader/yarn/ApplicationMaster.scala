@@ -89,6 +89,8 @@ class ApplicationMaster extends AMRMClientAsync.CallbackHandler with Logging {
     val stat = fs.getFileStatus(path)
     val fileResource = Records.newRecord(classOf[LocalResource])
 
+    fileResource.setShouldBeUploadedToSharedCache(true)
+    fileResource.setVisibility(LocalResourceVisibility.PUBLIC)
     fileResource.setResource(ConverterUtils.getYarnUrlFromPath(path))
     fileResource.setSize(stat.getLen)
     fileResource.setTimestamp(stat.getModificationTime)

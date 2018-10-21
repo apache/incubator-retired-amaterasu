@@ -24,4 +24,8 @@ public interface RunnerSetupProvider {
 
     String[] getRunnerResources();
 
+    String[] getActionResources();
+
+    String[] getActionDependencies(String jobId, ActionData actionData);
+
 }
