@@ -20,6 +20,7 @@ import org.apache.amaterasu.common.configuration.ClusterConfig;
 import org.apache.amaterasu.sdk.frameworks.configuration.DriverConfiguration;
 
 import java.io.File;
+import java.util.Map;
 
 public interface FrameworkSetupProvider {
 
@@ -32,6 +33,8 @@ public interface FrameworkSetupProvider {
     DriverConfiguration getDriverConfiguration();
 
     RunnerSetupProvider getRunnerProvider(String runnerId);
+
+    Map<String, String> getEnvironmentVariables();
 
     String[] getConfigurationItems();
 

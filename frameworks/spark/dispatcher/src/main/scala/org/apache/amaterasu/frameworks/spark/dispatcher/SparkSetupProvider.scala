@@ -17,14 +17,16 @@
 package org.apache.amaterasu.frameworks.spark.dispatcher
 
 import java.io.File
+import java.util
 
 import org.apache.amaterasu.common.configuration.ClusterConfig
-import org.apache.amaterasu.frameworks.spark.dispatcher.runners.providers.{PySparkRunnerProvider, SparkScalaRunnerProvider}
+import org.apache.amaterasu.frameworks.spark.dispatcher.runners.providers._
 import org.apache.amaterasu.leader.common.utilities.{DataLoader, MemoryFormatParser}
 import org.apache.amaterasu.sdk.frameworks.configuration.DriverConfiguration
 import org.apache.amaterasu.sdk.frameworks.{FrameworkSetupProvider, RunnerSetupProvider}
 
 import scala.collection.mutable
+import collection.JavaConversions._
 
 class SparkSetupProvider extends FrameworkSetupProvider {
 
@@ -50,19 +52,24 @@ class SparkSetupProvider extends FrameworkSetupProvider {
     this.conf = conf
 
     runnerProviders += ("scala" -> SparkScalaRunnerProvider(conf))
+    runnerProviders += ("scala-shell" -> SparkShellScalaRunnerProvider(conf))
     runnerProviders += ("pyspark" -> PySparkRunnerProvider(conf))
 
   }
 
   override def getGroupIdentifier: String = "spark"
 
-  override def getGroupResources: Array[File] = {
-
-    conf.mode match {
+  override def getGroupResources: Array[File] = conf.mode match {
       case "mesos" => Array[File](new File(s"spark-${conf.Webserver.sparkVersion}.tgz"), new File(s"spark-runner-${conf.version}-all.jar"), new File(s"spark-runtime-${conf.version}.jar"))
       case "yarn" => new File(conf.spark.home).listFiles
       case _ => Array[File]()
     }
+
+
+  override def getEnvironmentVariables: util.Map[String, String] = conf.mode match {
+    case "mesos" => Map[String, String](s"SPARK_HOME" -> s"spark-${conf.Webserver.sparkVersion}")
+    case "yarn" => Map[String, String]("SPARK_HOME" -> "spark")
+    case _ => Map[String, String]()
   }
 
   override def getDriverConfiguration: DriverConfiguration = {
