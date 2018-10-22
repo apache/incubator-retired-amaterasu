@@ -21,6 +21,7 @@ object ActionStatus extends Enumeration {
   val pending = Value("pending")
   val queued = Value("queued")
   val started = Value("started")
+  val running = Value("running")
   val complete = Value("complete")
   val failed = Value("failed")
   val canceled = Value("canceled")

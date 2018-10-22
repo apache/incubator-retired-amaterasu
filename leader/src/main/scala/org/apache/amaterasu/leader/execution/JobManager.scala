@@ -148,6 +148,13 @@ class JobManager extends Logging {
 
   }
 
+  def actionRunning(actionId: String): Unit = {
+
+    val action = registeredActions.get(actionId).get
+    action.announceRunning
+
+  }
+
   def actionsCount(): Int = {
     executionQueue.size()
   }

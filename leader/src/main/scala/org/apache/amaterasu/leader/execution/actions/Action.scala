@@ -44,6 +44,13 @@ trait Action extends Logging {
     data.status = ActionStatus.started
   }
 
+  def announceRunning: Unit = {
+
+    log.debug(s"Running action ${data.name} of group ${data.groupId} and type ${data.typeId}")
+    client.setData().forPath(actionPath, ActionStatus.running.toString.getBytes)
+    data.status = ActionStatus.running
+  }
+
   def announceQueued: Unit = {
 
     log.debug(s"Action ${data.name} of group ${data.groupId} and of type ${data.typeId} is queued for execution")

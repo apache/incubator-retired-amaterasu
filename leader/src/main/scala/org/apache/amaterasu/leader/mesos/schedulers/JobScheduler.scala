@@ -43,6 +43,7 @@ import org.apache.curator.framework.{CuratorFramework, CuratorFrameworkFactory}
 import org.apache.curator.retry.ExponentialBackoffRetry
 import org.apache.log4j.LogManager
 import org.apache.mesos.Protos.CommandInfo.URI
+import org.apache.mesos.Protos.ContainerInfo.DockerInfo
 import org.apache.mesos.Protos.Environment.Variable
 import org.apache.mesos.Protos._
 import org.apache.mesos.protobuf.ByteString
@@ -114,8 +115,11 @@ class JobScheduler extends AmaterasuScheduler {
 
   def statusUpdate(driver: SchedulerDriver, status: TaskStatus): Unit = {
 
+    log.info("statusUpdate() task "+ status.getTaskId +" is in state " + status.getState.toString)
+
     status.getState match {
-      case TaskState.TASK_RUNNING => jobManager.actionStarted(status.getTaskId.getValue)
+      case TaskState.TASK_STARTING => jobManager.actionStarted(status.getTaskId.getValue)
+      case TaskState.TASK_RUNNING => jobManager.actionRunning(status.getTaskId.getValue)
       case TaskState.TASK_FINISHED => jobManager.actionComplete(status.getTaskId.getValue)
       case TaskState.TASK_FAILED |
            TaskState.TASK_KILLED |
@@ -187,6 +191,7 @@ class JobScheduler extends AmaterasuScheduler {
             // we create a new one
             var executor: ExecutorInfo = null
             val slaveId = offer.getSlaveId.getValue
+            val containerInfo = ContainerInfo.newBuilder()
             slavesExecutors.synchronized {
               //              if (slavesExecutors.contains(slaveId) &&
               //                offer.getExecutorIdsList.contains(slavesExecutors(slaveId).getExecutorId)) {
@@ -264,6 +269,18 @@ class JobScheduler extends AmaterasuScheduler {
                   .setExtract(false)
                   .build())
 
+
+              val dockerBuilder = DockerInfo.newBuilder()
+                //.setImage("bento/centos-7.1") //TODO: change docker image
+                .setImage("mesosphere/spark")
+                .setNetwork(DockerInfo.Network.BRIDGE)
+
+              containerInfo
+                .setType(ContainerInfo.Type.DOCKER)
+                .setDocker(dockerBuilder.build())
+
+
+
               // setting the processes environment variables
               val envVarsList = frameworkProvider.getEnvironmentVariables.asScala.toList.map(x => Variable.newBuilder().setName(x._1).setValue(x._2).build()).asJava
               command.setEnvironment(Environment.newBuilder().addAllVariables(envVarsList))
@@ -288,6 +305,7 @@ class JobScheduler extends AmaterasuScheduler {
               .setName(taskId.getValue)
               .setTaskId(taskId)
               .setSlaveId(offer.getSlaveId)
+              .setContainer(containerInfo)
               .setExecutor(executor)
 
               .setData(ByteString.copyFrom(DataLoader.getTaskDataBytes(actionData, env)))
@@ -296,6 +314,7 @@ class JobScheduler extends AmaterasuScheduler {
               .addResources(createScalarResource("disk", config.Jobs.repoSize))
               .build()
 
+            log.info(s"launching task: ${offer.getId} with image: ${actionTask.getContainer.getDocker.getImage}")
             driver.launchTasks(Collections.singleton(offer.getId), Collections.singleton(actionTask))
           }
           else if (jobManager.outOfActions) {

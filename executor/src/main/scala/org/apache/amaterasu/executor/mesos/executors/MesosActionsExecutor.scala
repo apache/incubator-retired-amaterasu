@@ -93,6 +93,9 @@ class MesosActionsExecutor extends Executor with Logging {
     val status = TaskStatus.newBuilder
       .setTaskId(taskInfo.getTaskId)
       .setState(TaskState.TASK_STARTING).build()
+
+    log.debug(s"container info: ${taskInfo.getContainer.getDocker.getImage}, ${taskInfo.getContainer.getType.getDescriptorForType}")
+
     driver.sendStatusUpdate(status)
 
     val task = Future {
