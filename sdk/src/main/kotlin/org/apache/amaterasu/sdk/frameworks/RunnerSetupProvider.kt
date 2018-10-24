@@ -20,7 +20,7 @@ import org.apache.amaterasu.common.dataobjects.ActionData
 
 abstract class RunnerSetupProvider {
 
-    private val amaFiles = arrayOf("env.yaml","runtime.yaml","datastores.yaml")
+    private val actionFiles = arrayOf("env.yaml", "runtime.yaml", "datastores.yaml")
 
     abstract val runnerResources: Array<String>
 
@@ -29,8 +29,8 @@ abstract class RunnerSetupProvider {
     abstract fun getActionUserResources(jobId: String, actionData: ActionData): Array<String>
 
     fun getActionResources(jobId: String, actionData: ActionData): Array<String> =
-         amaFiles.map { f -> "$jobId/${actionData.name()}/$f" }.toTypedArray() +
-                 getActionUserResources(jobId, actionData)
+            actionFiles.map { f -> "$jobId/${actionData.name()}/$f" }.toTypedArray() +
+                    getActionUserResources(jobId, actionData)
 
     abstract fun getActionDependencies(jobId: String, actionData: ActionData): Array<String>
 

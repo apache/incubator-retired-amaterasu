@@ -188,11 +188,7 @@ class JobScheduler extends AmaterasuScheduler {
             var executor: ExecutorInfo = null
             val slaveId = offer.getSlaveId.getValue
             slavesExecutors.synchronized {
-              //              if (slavesExecutors.contains(slaveId) &&
-              //                offer.getExecutorIdsList.contains(slavesExecutors(slaveId).getExecutorId)) {
-              //                executor = slavesExecutors(slaveId)
-              //              }
-              //              else {
+
               val execData = DataLoader.getExecutorDataBytes(env, config)
               val executorId = taskId.getValue + "-" + UUID.randomUUID()
               //creating the command
@@ -210,28 +206,8 @@ class JobScheduler extends AmaterasuScheduler {
                   .setExtract(false)
                   .build())
 
-              // Getting env.yaml
-              command.addUris(URI.newBuilder
-                .setValue(s"http://${sys.env("AMA_NODE")}:${config.Webserver.Port}/${jobManager.jobId}/${actionData.name}/env.yaml")
-                .setExecutable(false)
-                .setExtract(true)
-                .build())
-
-              // Getting datastores.yaml
-              command.addUris(URI.newBuilder
-                .setValue(s"http://${sys.env("AMA_NODE")}:${config.Webserver.Port}/${jobManager.jobId}/${actionData.name}/datastores.yaml")
-                .setExecutable(false)
-                .setExtract(true)
-                .build())
-
-              // Getting runtime.yaml
-              command.addUris(URI.newBuilder
-                .setValue(s"http://${sys.env("AMA_NODE")}:${config.Webserver.Port}/${jobManager.jobId}/${actionData.name}/runtime.yaml")
-                .setExecutable(false)
-                .setExtract(true)
-                .build())
-
               // Getting framework resources
+              println(s"===> ${frameworkProvider.getGroupResources}")
               frameworkProvider.getGroupResources.foreach(f => command.addUris(URI.newBuilder
                 .setValue(s"http://${sys.env("AMA_NODE")}:${config.Webserver.Port}/${f.getName}")
                 .setExecutable(false)
@@ -279,7 +255,6 @@ class JobScheduler extends AmaterasuScheduler {
 
               slavesExecutors.put(offer.getSlaveId.getValue, executor)
             }
-            //}
 
             val driverConfiguration = frameworkProvider.getDriverConfiguration
 
@@ -291,7 +266,7 @@ class JobScheduler extends AmaterasuScheduler {
               .setExecutor(executor)
 
               .setData(ByteString.copyFrom(DataLoader.getTaskDataBytes(actionData, env)))
-              .addResources(createScalarResource("cpus", driverConfiguration.getCPUs))
+              .addResources(createScalarResource("cpus", driverConfiguration.getCpus))
               .addResources(createScalarResource("mem", driverConfiguration.getMemory))
               .addResources(createScalarResource("disk", config.Jobs.repoSize))
               .build()
@@ -411,7 +386,6 @@ class JobScheduler extends AmaterasuScheduler {
     if (!dir.exists()) {
       dir.mkdir()
     }
-
 
     new PrintWriter(s"$envLocation/$fileName") {
       write(configuration)

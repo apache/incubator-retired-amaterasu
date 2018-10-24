@@ -95,7 +95,6 @@ sourceSets {
     test {
         resources.srcDirs += [file('src/test/resources')]
     }
-
 }
 
 compileKotlin {

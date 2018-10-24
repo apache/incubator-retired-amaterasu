@@ -16,4 +16,4 @@
  */
 package org.apache.amaterasu.sdk.frameworks.configuration
 
-class DriverConfiguration(val memory: Int = 0, val cpus: Int = 0)
+data class DriverConfiguration(val memory: Int = 0, val cpus: Int = 0)

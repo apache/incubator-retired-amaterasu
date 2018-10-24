@@ -177,7 +177,7 @@ class ApplicationMaster extends AMRMClientAsync.CallbackHandler with Logging {
         mem = Math.min(mem, maxMem)
         this.capability.setMemory(mem)
 
-        var cpu = driverConfiguration.getCPUs
+        var cpu = driverConfiguration.getCpus
         cpu = Math.min(cpu, maxVCores)
         this.capability.setVirtualCores(cpu)
 
