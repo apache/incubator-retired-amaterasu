@@ -17,6 +17,7 @@
 plugins {
     id "com.github.johnrengelman.shadow" version "1.2.4"
     id 'com.github.maiflai.scalatest' version '0.22'
+    id 'kotlin'
     id 'scala'
     id 'java'
 
@@ -83,7 +84,7 @@ sourceSets {
     // this is done so Scala will compile before Java
     main {
         scala {
-            srcDirs = ['src/main/scala', 'src/main/java', 'src/main/kotlin']
+            srcDirs = ['src/main/kotlin', 'src/main/scala', 'src/main/java']
         }
         java {
             srcDirs = []
