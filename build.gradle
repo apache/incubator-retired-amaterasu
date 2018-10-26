@@ -40,6 +40,12 @@ task buildHomeDir() {
     dependsOn copyLegalFiles
 }
 
+task cleanBuild {
+    dependsOn clean
+    dependsOn buildHomeDir
+    buildHomeDir.mustRunAfter(clean)
+}
+
 distributions {
     custom {
         baseName = 'apache-amaterasu'

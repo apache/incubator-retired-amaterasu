@@ -215,6 +215,8 @@ class JobScheduler extends AmaterasuScheduler {
                   .setExtract(false)
                   .build())
 
+
+
               // Getting env.yaml
               command.addUris(URI.newBuilder
                 .setValue(s"http://${sys.env("AMA_NODE")}:${config.Webserver.Port}/${jobManager.jobId}/${actionData.name}/env.yaml")
@@ -290,6 +292,7 @@ class JobScheduler extends AmaterasuScheduler {
                 .setData(ByteString.copyFrom(execData))
                 .setName(taskId.getValue)
                 .setExecutorId(ExecutorID.newBuilder().setValue(executorId))
+                .setContainer(containerInfo)
                 .setCommand(command)
 
                 .build()
@@ -305,7 +308,6 @@ class JobScheduler extends AmaterasuScheduler {
               .setName(taskId.getValue)
               .setTaskId(taskId)
               .setSlaveId(offer.getSlaveId)
-              .setContainer(containerInfo)
               .setExecutor(executor)
 
               .setData(ByteString.copyFrom(DataLoader.getTaskDataBytes(actionData, env)))
@@ -314,7 +316,7 @@ class JobScheduler extends AmaterasuScheduler {
               .addResources(createScalarResource("disk", config.Jobs.repoSize))
               .build()
 
-            log.info(s"launching task: ${offer.getId} with image: ${actionTask.getContainer.getDocker.getImage}")
+            log.info(s"launching task: ${offer.getId} with image: ${actionTask.getExecutor.getContainer.getDocker.getImage}")
             driver.launchTasks(Collections.singleton(offer.getId), Collections.singleton(actionTask))
           }
           else if (jobManager.outOfActions) {

@@ -30,11 +30,15 @@ class SparkScalaRunnerProvider extends RunnerSetupProvider {
   private val libPath = System.getProperty("java.library.path")
 
   override def getCommand(jobId: String, actionData: ActionData, env: String, executorId: String, callbackAddress: String): String = conf.mode match {
+    case "docker_test" => s"docker ps"
     case "mesos" =>
-      s"env AMA_NODE=${sys.env("AMA_NODE")} env MESOS_NATIVE_JAVA_LIBRARY=/usr/lib/libmesos.so env SPARK_EXECUTOR_URI=http://${sys.env("AMA_NODE")}:${conf.Webserver.Port}/dist/spark-${conf.Webserver.sparkVersion}.tgz " +
-        s"java -cp executor-${conf.version}-all.jar:spark-runner-${conf.version}-all.jar:spark-runtime-${conf.version}.jar:spark-${conf.Webserver.sparkVersion}/jars/* " +
-        s"-Dscala.usejavacp=true -Djava.library.path=$libPath " +
-        s"org.apache.amaterasu.executor.mesos.executors.MesosActionsExecutor $jobId ${conf.master} ${actionData.name}".stripMargin
+      s"env AMA_NODE=${sys.env("AMA_NODE")} " +
+      s"env MESOS_NATIVE_JAVA_LIBRARY=/usr/lib/libmesos.so " +
+      s"env SPARK_EXECUTOR_URI=http://${sys.env("AMA_NODE")}:${conf.Webserver.Port}/dist/spark-${conf.Webserver.sparkVersion}.tgz " +
+      s"java -cp executor-${conf.version}-all.jar:spark-runner-${conf.version}-all.jar:spark-runtime-${conf.version}.jar:spark-${conf.Webserver.sparkVersion}/jars/* " +
+      s"-Dscala.usejavacp=true -Djava.library.path=$libPath " +
+      s"org.apache.amaterasu.executor.mesos.executors.MesosActionsExecutor $jobId ${conf.master} ${actionData.name}" +
+      s" && docker -v".stripMargin
     case "yarn" => s"/bin/bash spark/bin/load-spark-env.sh && " +
       s"java -cp spark/jars/*:executor.jar:spark-runner.jar:spark-runtime.jar:spark/conf/:${conf.YARN.hadoopHomeDir}/conf/ " +
       "-Xmx2G " +

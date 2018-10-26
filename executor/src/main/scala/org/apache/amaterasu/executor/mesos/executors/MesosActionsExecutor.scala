@@ -94,7 +94,7 @@ class MesosActionsExecutor extends Executor with Logging {
       .setTaskId(taskInfo.getTaskId)
       .setState(TaskState.TASK_STARTING).build()
 
-    log.debug(s"container info: ${taskInfo.getContainer.getDocker.getImage}, ${taskInfo.getContainer.getType.getDescriptorForType}")
+    notifier.info(s"container info: ${taskInfo.getContainer.getDocker.getImage}, ${taskInfo.getContainer.getType}")
 
     driver.sendStatusUpdate(status)
 
