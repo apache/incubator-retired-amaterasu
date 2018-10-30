@@ -375,11 +375,11 @@ class ApplicationMaster extends AMRMClientAsync.CallbackHandler with Logging {
 
           //completedContainersAndTaskIds.put(containerId, task.id)
           jobManager.actionComplete(task.id)
-          log.info(s"Container $containerId completed with task ${task.id} with success.")
+          log.info(s"Container $containerId complete with task ${task.id} with success.")
         } else {
           // TODO: Check the getDiagnostics value and see if appropriate
           jobManager.actionFailed(task.id, status.getDiagnostics)
-          log.warn(s"Container $containerId completed with task ${task.id} with failed status code (${status.getExitStatus})")
+          log.warn(s"Container $containerId complete with task ${task.id} with failed status code (${status.getExitStatus})")
         }
       }
     }
