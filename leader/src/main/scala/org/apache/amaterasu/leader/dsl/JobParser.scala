@@ -105,17 +105,18 @@ object JobParser {
     )
 
     //updating the list of frameworks setup
-    manager.frameworks.getOrElseUpdate(action.data.groupId,
+    manager.frameworks.getOrElseUpdate(action.data.getGroupId,
                                        new mutable.HashSet[String]())
-                                       .add(action.data.typeId)
+                                       .add(action.data.getTypeId)
 
 
-    if (manager.head == null)
+    if (manager.head == null) {
       manager.head = action
+    }
 
-    if (previous != null)
-      previous.data.nextActionIds.append(action.actionId)
-
+    if (previous != null) {
+      previous.data.getNextActionIds.add(action.actionId)
+    }
     manager.registerAction(action)
 
     val errorNode = actionData.path("error")
@@ -125,7 +126,7 @@ object JobParser {
       val errorAction = parseErrorAction(
         errorNode,
         manager.jobId,
-        action.data.id,
+        action.data.getId,
         actionsQueue,
         manager.client
       )
@@ -134,9 +135,9 @@ object JobParser {
       manager.registerAction(errorAction)
 
       //updating the list of frameworks setup
-      manager.frameworks.getOrElseUpdate(errorAction.data.groupId,
+      manager.frameworks.getOrElseUpdate(errorAction.data.getGroupId,
         new mutable.HashSet[String]())
-        .add(errorAction.data.typeId)
+        .add(errorAction.data.getTypeId)
     }
 
     parseActions(actions.tail, manager, actionsQueue, attempts, action)

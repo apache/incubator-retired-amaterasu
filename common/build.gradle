@@ -16,7 +16,7 @@
  */
 plugins {
     id 'com.github.johnrengelman.shadow' version '1.2.4'
-    id 'kotlin'
+    id "org.jetbrains.kotlin.jvm"
     id 'scala'
 }
 
@@ -46,6 +46,10 @@ dependencies {
     compile group: 'org.slf4j', name: 'slf4j-simple', version: '1.7.9'
     compile group: 'com.fasterxml.jackson.core', name: 'jackson-annotations', version: '2.9.4'
 
+
+    compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
+    compile "org.jetbrains.kotlin:kotlin-reflect"
+
     // currently we have to use this specific mesos version to prevent from
     // clashing with spark
     compile('org.apache.mesos:mesos:0.22.2:shaded-protobuf') {
@@ -73,8 +77,11 @@ sourceSets {
 
     // this is done so Scala will compile before Kotlin
     main {
+        kotlin {
+            srcDirs = ['src/main/kotlin']
+        }
         scala {
-            srcDirs = ['src/main/kotlin', 'src/main/java', 'src/main/scala']
+            srcDirs = ['src/main/kotlin','src/main/java', 'src/main/scala']
         }
         java {
             srcDirs = []
@@ -82,7 +89,7 @@ sourceSets {
     }
 }
 
-compileKotlin {
+compileKotlin{
     kotlinOptions.jvmTarget = "1.8"
 }
 compileTestKotlin {

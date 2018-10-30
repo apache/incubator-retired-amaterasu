@@ -51,7 +51,7 @@ class SequentialAction extends Action {
 
   override def handleFailure(message: String): String = {
 
-    println(s"Part ${data.name} of group ${data.groupId} and of type ${data.typeId} failed on attempt $attempt with message: $message")
+    println(s"Part ${data.getName} of group ${data.getGroupId} and of type ${data.getTypeId} failed on attempt $attempt with message: $message")
     attempt += 1
 
     if (attempt <= attempts) {
@@ -60,7 +60,7 @@ class SequentialAction extends Action {
     else {
       announceFailure()
       println(s"===> moving to err action ${data.errorActionId}")
-      data.status = ActionStatus.failed
+      data.setStatus ( ActionStatus.failed )
       data.errorActionId
     }
 

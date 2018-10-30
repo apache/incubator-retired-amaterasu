@@ -17,15 +17,20 @@
 package org.apache.amaterasu.common.dataobjects
 
 import org.apache.amaterasu.common.configuration.enums.ActionStatus
-import scala.collection.mutable.ListBuffer
 
-data class ActionData(var status: ActionStatus,
-                      var name: String,
-                      var src: String,
-                      var groupId: String,
-                      var typeId: String,
-                      var id: String,
-                      var exports: Map<String, String>,
-                      var nextActionIds: ListBuffer<String>) {
+
+
+/*
+    Adding default values just for the sake of Scala
+ */
+data class ActionData(var status: ActionStatus = ActionStatus.pending,
+                      var name: String= "",
+                      var src: String= "",
+                      var groupId: String= "",
+                      var typeId: String= "",
+                      var id: String= "",
+                      var exports: Map<String, String> = mutableMapOf(),
+                      var nextActionIds: List<String> = listOf()) {
     lateinit var errorActionId: String
+
 }
