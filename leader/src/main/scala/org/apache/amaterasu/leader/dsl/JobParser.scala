@@ -131,7 +131,7 @@ object JobParser {
         manager.client
       )
 
-      action.data.errorActionId = errorAction.data.id
+      action.data.errorActionId = errorAction.data.getId
       manager.registerAction(errorAction)
 
       //updating the list of frameworks setup

@@ -27,7 +27,6 @@ import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
 import org.apache.amaterasu.common.configuration.ClusterConfig
 import org.apache.amaterasu.common.configuration.enums.ActionStatus
-import org.apache.amaterasu.common.configuration.enums.ActionStatus.ActionStatus
 import org.apache.amaterasu.common.dataobjects.ActionData
 import org.apache.amaterasu.common.execution.actions.NotificationLevel.NotificationLevel
 import org.apache.amaterasu.common.execution.actions.{Notification, NotificationLevel, NotificationType}
@@ -152,19 +151,19 @@ class JobScheduler extends AmaterasuScheduler {
         try {
           val actionData = jobManager.getNextActionData
           if (actionData != null) {
-            val taskId = Protos.TaskID.newBuilder().setValue(actionData.id).build()
+            val taskId = Protos.TaskID.newBuilder().setValue(actionData.getId).build()
 
             // setting up the configuration files for the container
-            val envYaml = configManager.getActionConfigContent(actionData.name, "") //TODO: replace with the value in actionData.config
-            writeConfigFile(envYaml, jobManager.jobId, actionData.name, "env.yaml")
+            val envYaml = configManager.getActionConfigContent(actionData.getName, "") //TODO: replace with the value in actionData.config
+            writeConfigFile(envYaml, jobManager.jobId, actionData.getName, "env.yaml")
 
             val dataStores = DataLoader.getTaskData(actionData, env).exports
             val writer = new StringWriter()
             yamlMapper.writeValue(writer, dataStores)
             val dataStoresYaml = writer.toString
-            writeConfigFile(dataStoresYaml, jobManager.jobId, actionData.name, "datastores.yaml")
+            writeConfigFile(dataStoresYaml, jobManager.jobId, actionData.getName, "datastores.yaml")
 
-            writeConfigFile(s"jobId: ${jobManager.jobId}\nactionName: ${actionData.name}", jobManager.jobId, actionData.name, "runtime.yaml")
+            writeConfigFile(s"jobId: ${jobManager.jobId}\nactionName: ${actionData.getName}", jobManager.jobId, actionData.getName, "runtime.yaml")
 
             offersToTaskIds.put(offer.getId.getValue, taskId.getValue)
 
@@ -176,8 +175,8 @@ class JobScheduler extends AmaterasuScheduler {
             slaveActions.put(taskId.getValue, ActionStatus.started)
 
 
-            val frameworkProvider = frameworkFactory.providers(actionData.groupId)
-            val runnerProvider = frameworkProvider.getRunnerProvider(actionData.typeId)
+            val frameworkProvider = frameworkFactory.providers(actionData.getGroupId)
+            val runnerProvider = frameworkProvider.getRunnerProvider(actionData.getTypeId)
 
             // searching for an executor that already exist on the slave, if non exist
             // we create a new one
@@ -205,21 +204,21 @@ class JobScheduler extends AmaterasuScheduler {
 
                 // Getting env.yaml
                 command.addUris(URI.newBuilder
-                  .setValue(s"http://${sys.env("AMA_NODE")}:${config.Webserver.Port}/${jobManager.jobId}/${actionData.name}/env.yaml")
+                  .setValue(s"http://${sys.env("AMA_NODE")}:${config.Webserver.Port}/${jobManager.jobId}/${actionData.getName}/env.yaml")
                   .setExecutable(false)
                   .setExtract(true)
                   .build())
 
                 // Getting datastores.yaml
                 command.addUris(URI.newBuilder
-                  .setValue(s"http://${sys.env("AMA_NODE")}:${config.Webserver.Port}/${jobManager.jobId}/${actionData.name}/datastores.yaml")
+                  .setValue(s"http://${sys.env("AMA_NODE")}:${config.Webserver.Port}/${jobManager.jobId}/${actionData.getName}/datastores.yaml")
                   .setExecutable(false)
                   .setExtract(true)
                   .build())
 
                 // Getting runtime.yaml
                 command.addUris(URI.newBuilder
-                  .setValue(s"http://${sys.env("AMA_NODE")}:${config.Webserver.Port}/${jobManager.jobId}/${actionData.name}/runtime.yaml")
+                  .setValue(s"http://${sys.env("AMA_NODE")}:${config.Webserver.Port}/${jobManager.jobId}/${actionData.getName}/runtime.yaml")
                   .setExecutable(false)
                   .setExtract(true)
                   .build())

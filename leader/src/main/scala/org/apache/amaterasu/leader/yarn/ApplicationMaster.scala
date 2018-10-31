@@ -170,7 +170,7 @@ class ApplicationMaster extends AMRMClientAsync.CallbackHandler with Logging {
       val actionData = jobManager.getNextActionData
       if (actionData != null) {
 
-        val frameworkProvider = frameworkFactory.providers(actionData.groupId)
+        val frameworkProvider = frameworkFactory.providers(actionData.getGroupId)
         val driverConfiguration = frameworkProvider.getDriverConfiguration
 
         var mem: Int = driverConfiguration.getMemory
@@ -221,14 +221,14 @@ class ApplicationMaster extends AMRMClientAsync.CallbackHandler with Logging {
   private def askContainer(actionData: ActionData): Unit = {
 
     actionsBuffer.add(actionData)
-    log.info(s"About to ask container for action ${actionData.id}. Action buffer size is: ${actionsBuffer.size()}")
+    log.info(s"About to ask container for action ${actionData.getId}. Action buffer size is: ${actionsBuffer.size()}")
 
     // we have an action to schedule, let's request a container
     val priority: Priority = Records.newRecord(classOf[Priority])
     priority.setPriority(1)
     val containerReq = new ContainerRequest(capability, null, null, priority)
     rmClient.addContainerRequest(containerReq)
-    log.info(s"Asked container for action ${actionData.id}")
+    log.info(s"Asked container for action ${actionData.getId}")
 
   }
 
@@ -245,10 +245,10 @@ class ApplicationMaster extends AMRMClientAsync.CallbackHandler with Logging {
       val containerTask = Future[ActionData] {
 
         val frameworkFactory = FrameworkProvidersFactory(env, config)
-        val framework = frameworkFactory.getFramework(actionData.groupId)
-        val runnerProvider = framework.getRunnerProvider(actionData.typeId)
+        val framework = frameworkFactory.getFramework(actionData.getGroupId)
+        val runnerProvider = framework.getRunnerProvider(actionData.getTypeId)
         val ctx = Records.newRecord(classOf[ContainerLaunchContext])
-        val commands: List[String] = List(runnerProvider.getCommand(jobManager.jobId, actionData, env, s"${actionData.id}-${container.getId.getContainerId}", address))
+        val commands: List[String] = List(runnerProvider.getCommand(jobManager.jobId, actionData, env, s"${actionData.getId}-${container.getId.getContainerId}", address))
 
         log.info("Running container id {}.", container.getId.getContainerId)
         log.info("Running container id {} with command '{}'", container.getId.getContainerId, commands.last)
@@ -283,7 +283,7 @@ class ApplicationMaster extends AMRMClientAsync.CallbackHandler with Logging {
 
         //adding the framework and executor resources
         setupResources(yarnJarPath, framework.getGroupIdentifier, resources, framework.getGroupIdentifier)
-        setupResources(yarnJarPath, s"${framework.getGroupIdentifier}/${actionData.typeId}", resources, s"${framework.getGroupIdentifier}-${actionData.typeId}")
+        setupResources(yarnJarPath, s"${framework.getGroupIdentifier}/${actionData.getTypeId}", resources, s"${framework.getGroupIdentifier}-${actionData.getTypeId}")
 
         ctx.setLocalResources(resources)
 
@@ -305,9 +305,9 @@ class ApplicationMaster extends AMRMClientAsync.CallbackHandler with Logging {
           askContainer(actionData)
 
         case Success(requestedActionData) =>
-          jobManager.actionStarted(requestedActionData.id)
+          jobManager.actionStarted(requestedActionData.getId)
           containersIdsToTask.put(container.getId.getContainerId, requestedActionData)
-          log.info(s"launching container succeeded: ${container.getId.getContainerId}; task: ${requestedActionData.id}")
+          log.info(s"launching container succeeded: ${container.getId.getContainerId}; task: ${requestedActionData.getId}")
 
       }
     }
@@ -371,15 +371,16 @@ class ApplicationMaster extends AMRMClientAsync.CallbackHandler with Logging {
         val task = containersIdsToTask(containerId)
         rmClient.releaseAssignedContainer(status.getContainerId)
 
+        val taskId = task.getId
         if (status.getExitStatus == 0) {
 
           //completedContainersAndTaskIds.put(containerId, task.id)
-          jobManager.actionComplete(task.id)
-          log.info(s"Container $containerId complete with task ${task.id} with success.")
+          jobManager.actionComplete(taskId)
+          log.info(s"Container $containerId complete with task ${taskId} with success.")
         } else {
           // TODO: Check the getDiagnostics value and see if appropriate
-          jobManager.actionFailed(task.id, status.getDiagnostics)
-          log.warn(s"Container $containerId complete with task ${task.id} with failed status code (${status.getExitStatus})")
+          jobManager.actionFailed(taskId, status.getDiagnostics)
+          log.warn(s"Container $containerId complete with task ${taskId} with failed status code (${status.getExitStatus})")
         }
       }
     }

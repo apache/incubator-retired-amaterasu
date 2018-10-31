@@ -108,7 +108,7 @@ class YarnRMCallbackHandler(nmClient: NMClientAsync,
                          | java -cp executor.jar:spark-${config.Webserver.sparkVersion}/lib/*
                          | -Dscala.usejavacp=true
                          | -Djava.library.path=/usr/lib org.apache.amaterasu.executor.yarn.executors.ActionsExecutorLauncher
-                         | ${jobManager.jobId} ${config.master} ${actionData.name} ${gson.toJson(taskData)} ${gson.toJson(execData)}""".stripMargin
+                         | ${jobManager.jobId} ${config.master} ${actionData.getName} ${gson.toJson(taskData)} ${gson.toJson(execData)}""".stripMargin
         ctx.setCommands(Collections.singletonList(command))
 
         ctx.setLocalResources(Map[String, LocalResource] (
@@ -116,7 +116,7 @@ class YarnRMCallbackHandler(nmClient: NMClientAsync,
         ))
 
         nmClient.startContainerAsync(container, ctx)
-        actionData.id
+        actionData.getId
       }
 
       containerTask onComplete {

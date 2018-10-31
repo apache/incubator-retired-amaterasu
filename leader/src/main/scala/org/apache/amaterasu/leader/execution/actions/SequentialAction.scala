@@ -16,6 +16,7 @@
  */
 package org.apache.amaterasu.leader.execution.actions
 
+import java.util
 import java.util.concurrent.BlockingQueue
 
 import org.apache.amaterasu.common.configuration.enums.ActionStatus
@@ -23,6 +24,7 @@ import org.apache.amaterasu.common.dataobjects.ActionData
 import org.apache.curator.framework.CuratorFramework
 import org.apache.zookeeper.CreateMode
 
+import scala.collection.JavaConverters._
 import scala.collection.mutable.ListBuffer
 
 class SequentialAction extends Action {
@@ -55,7 +57,7 @@ class SequentialAction extends Action {
     attempt += 1
 
     if (attempt <= attempts) {
-      data.id
+      data.getId
     }
     else {
       announceFailure()
@@ -91,7 +93,8 @@ object SequentialAction {
 
     action.attempts = attempts
     action.jobId = jobId
-    action.data = ActionData(ActionStatus.pending, name, src, groupId, typeId, action.actionId, exports, new ListBuffer[String])
+    val javaExports = exports.asJava
+    action.data = new ActionData(ActionStatus.pending, name, src, groupId, typeId, action.actionId, javaExports, new util.ArrayList[String]())
     action.jobsQueue = queue
     action.client = zkClient
 
@@ -121,7 +124,7 @@ object ErrorAction {
     action.actionId = action.actionPath.substring(action.actionPath.indexOf('-') + 1).replace("/", "-")
 
     action.jobId = jobId
-    action.data = ActionData(ActionStatus.pending, name, src, groupId, typeId, action.actionId, Map.empty, new ListBuffer[String])
+    action.data = new ActionData(ActionStatus.pending, name, src, groupId, typeId, action.actionId, new util.HashMap[String, String](), new util.ArrayList[String]())
     action.jobsQueue = queue
     action.client = zkClient
 
