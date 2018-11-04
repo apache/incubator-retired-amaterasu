@@ -17,8 +17,8 @@
 plugins {
     id "com.github.johnrengelman.shadow" version "1.2.4"
     id 'com.github.maiflai.scalatest' version '0.22'
-    id 'org.jetbrains.kotlin.jvm'
     id 'scala'
+    id 'org.jetbrains.kotlin.jvm'
     id 'java'
 
 }

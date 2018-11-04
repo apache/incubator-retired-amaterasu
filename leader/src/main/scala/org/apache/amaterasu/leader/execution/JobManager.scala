@@ -21,7 +21,7 @@ import java.util.concurrent.BlockingQueue
 import org.apache.amaterasu.common.configuration.enums.ActionStatus
 import org.apache.amaterasu.common.dataobjects.ActionData
 import org.apache.amaterasu.common.logging.Logging
-import org.apache.amaterasu.leader.execution.actions.Action
+import org.apache.amaterasu.leader.common.execution.actions.Action
 import org.apache.curator.framework.CuratorFramework
 
 import scala.collection.concurrent.TrieMap
@@ -102,8 +102,7 @@ class JobManager extends Logging {
 
     val action = registeredActions.get(actionId).get
     action.announceComplete
-    action.data.getNextActionIds.forEach(id =>
-      registeredActions.get(id).get.execute())
+    action.data.getNextActionIds.toArray.foreach(id => registeredActions.get(id.toString).get.execute())
 
     // we don't need the error action anymore
     if (action.data.errorActionId != null)
@@ -134,8 +133,8 @@ class JobManager extends Logging {
     if (action.data.getStatus != ActionStatus.failed)
       action.announceCanceled
 
-    action.data.getNextActionIds.forEach(id =>
-      cancelFutureActions(registeredActions.get(id).get))
+    action.data.getNextActionIds.toArray.foreach(id =>
+      cancelFutureActions(registeredActions.get(id.toString).get))
   }
 
   /**

@@ -14,13 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.amaterasu.leader.execution.actions
+package org.apache.amaterasu.leader.common.actions
 
 import java.util
 import java.util.concurrent.BlockingQueue
 
 import org.apache.amaterasu.common.configuration.enums.ActionStatus
 import org.apache.amaterasu.common.dataobjects.ActionData
+import org.apache.amaterasu.leader.common.execution.actions.Action
 import org.apache.curator.framework.CuratorFramework
 import org.apache.zookeeper.CreateMode
 
