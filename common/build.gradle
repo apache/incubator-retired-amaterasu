@@ -96,4 +96,12 @@ compileTestKotlin {
     kotlinOptions.jvmTarget = "1.8"
 }
 
+compileScala {
+    dependsOn compileJava
+}
+
+compileJava {
+    dependsOn compileKotlin
+}
+
 
