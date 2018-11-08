@@ -28,13 +28,15 @@ import org.apache.curator.test.TestingServer
 import org.apache.zookeeper.CreateMode
 import org.scalatest.{FlatSpec, Matchers}
 
+import scala.collection.JavaConverters._
+
 class ActionStatusTests extends FlatSpec with Matchers {
 
   // setting up a testing zookeeper server (curator TestServer)
   val retryPolicy = new ExponentialBackoffRetry(1000, 3)
   val server = new TestingServer(2181, true)
   val jobId = s"job_${System.currentTimeMillis}"
-  val data = new ActionData(ActionStatus.pending, "test_action", "start.scala", "spark","scala", null, new util.HashMap() , null)
+  val data = new ActionData(ActionStatus.pending, "test_action", "start.scala", "spark","scala", "0000001", new util.HashMap() , List[String]().asJava)
 
   "an Action" should "queue it's ActionData int the job queue when executed" in {
 
@@ -48,7 +50,7 @@ class ActionStatusTests extends FlatSpec with Matchers {
     val action = SequentialAction(data.getName, data.getSrc, data.getGroupId, data.getTypeId, Map.empty, jobId, queue, client, 1)
 
     action.execute()
-    queue.peek().getName() should be(data.getName)
+    queue.peek().getName should be(data.getName)
     queue.peek().getSrc should be(data.getSrc)
 
   }

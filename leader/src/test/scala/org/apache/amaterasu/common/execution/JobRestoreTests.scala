@@ -68,7 +68,7 @@ class JobRestoreTests extends FlatSpec with Matchers with BeforeAndAfterEach {
 
     JobLoader.restoreJobState(manager, jobId, client)
 
-    queue.peek.name should be("start")
+    queue.peek.getName should be("start")
   }
 
   "a restored job" should "have all started actions in the executionQueue" in {
@@ -78,6 +78,6 @@ class JobRestoreTests extends FlatSpec with Matchers with BeforeAndAfterEach {
 
     JobLoader.restoreJobState(manager, jobId, client)
 
-    queue.peek.name should be("start")
+    queue.peek.getName should be("start")
   }
 }
