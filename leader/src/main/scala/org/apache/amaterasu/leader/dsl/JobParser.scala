@@ -84,13 +84,11 @@ object JobParser {
     * @param previous the previous action, this is used in order to add the current action
     *                 to the nextActionIds
     */
-  def parseActions(
-    actions: Seq[JsonNode],
-    manager: JobManager,
-    actionsQueue: BlockingQueue[ActionData],
-    attempts: Int,
-    previous: Action
-  ): Unit = {
+  def parseActions(actions: Seq[JsonNode],
+                   manager: JobManager,
+                   actionsQueue: BlockingQueue[ActionData],
+                   attempts: Int,
+                   previous: Action): Unit = {
 
     if (actions.isEmpty)
       return
@@ -145,34 +143,28 @@ object JobParser {
 
   }
 
-  def parseSequentialAction(
-    action: JsonNode,
-    jobId: String,
-    actionsQueue: BlockingQueue[ActionData],
-    client: CuratorFramework,
-    attempts: Int
-  ): SequentialAction = {
+  def parseSequentialAction(action: JsonNode,
+                            jobId: String,
+                            actionsQueue: BlockingQueue[ActionData],
+                            client: CuratorFramework,
+                            attempts: Int): SequentialAction = {
 
-    SequentialAction(
-      action.path("name").asText,
+    SequentialAction(action.path("name").asText,
       action.path("file").asText,
       action.path("runner").path("group").asText,
       action.path("runner").path("type").asText,
-      action.path("exports").fields().asScala.toSeq.map(e=> (e.getKey, e.getValue.asText())).toMap,
+      action.path("exports").fields().asScala.toSeq.map(e => (e.getKey, e.getValue.asText())).toMap,
       jobId,
       actionsQueue,
       client,
-      attempts
-    )
+      attempts)
   }
 
-  def parseErrorAction(
-    action: JsonNode,
-    jobId: String,
-    parent: String,
-    actionsQueue: BlockingQueue[ActionData],
-    client: CuratorFramework
-  ): SequentialAction = {
+  def parseErrorAction(action: JsonNode,
+                       jobId: String,
+                       parent: String,
+                       actionsQueue: BlockingQueue[ActionData],
+                       client: CuratorFramework): SequentialAction = {
 
     ErrorAction(
       action.path("name").asText,

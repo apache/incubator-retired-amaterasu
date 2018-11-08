@@ -94,6 +94,7 @@ class MesosActionsExecutor extends Logging with Executor {
       .setTaskId(taskInfo.getTaskId)
       .setState(TaskState.TASK_STARTING).build()
     driver.sendStatusUpdate(status)
+
     val task = Future {
 
       val taskData = mapper.readValue(new ByteArrayInputStream(taskInfo.getData.toByteArray), classOf[TaskData])
