@@ -197,7 +197,7 @@ class JobScheduler extends AmaterasuScheduler {
               //creating the command
 
               // TODO: move this into the runner provider somehow
-              copy(get(s"repo/src/${actionData.src}"), get(s"dist/${jobManager.jobId}/${actionData.name}/${actionData.src}"), REPLACE_EXISTING)
+              copy(get(s"repo/src/${actionData.getSrc}"), get(s"dist/${jobManager.jobId}/${actionData.getName}/${actionData.getSrc}"), REPLACE_EXISTING)
 
               println(s"===> ${runnerProvider.getCommand(jobManager.jobId, actionData, env, executorId, "")}")
               val command = CommandInfo
