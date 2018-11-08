@@ -20,7 +20,7 @@ import org.apache.amaterasu.common.logging.Logging
 import org.apache.mesos.Protos.{Resource, Value}
 import org.apache.mesos.Scheduler
 
-trait AmaterasuScheduler extends Scheduler with Logging {
+trait AmaterasuScheduler extends Logging with Scheduler {
 
   def createScalarResource(name: String, value: Double): Resource = {
     Resource.newBuilder

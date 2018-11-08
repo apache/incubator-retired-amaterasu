@@ -41,7 +41,7 @@ class YarnRMCallbackHandler(nmClient: NMClientAsync,
                             env: String,
                             awsEnv: String,
                             config: ClusterConfig,
-                            executorJar: LocalResource) extends AMRMClientAsync.CallbackHandler with Logging {
+                            executorJar: LocalResource) extends Logging with AMRMClientAsync.CallbackHandler {
 
 
   val gson:Gson = new Gson()

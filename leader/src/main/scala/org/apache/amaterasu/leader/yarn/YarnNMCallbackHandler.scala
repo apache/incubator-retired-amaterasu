@@ -24,7 +24,7 @@ import org.apache.hadoop.yarn.api.records.{ContainerId, ContainerStatus}
 import org.apache.hadoop.yarn.client.api.async.NMClientAsync
 
 
-class YarnNMCallbackHandler extends NMClientAsync.CallbackHandler with Logging {
+class YarnNMCallbackHandler extends Logging with NMClientAsync.CallbackHandler {
 
   override def onStartContainerError(containerId: ContainerId, t: Throwable): Unit = {
     log.error(s"Container ${containerId.getContainerId} couldn't start.", t)

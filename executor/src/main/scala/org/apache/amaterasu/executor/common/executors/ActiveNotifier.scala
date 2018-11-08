@@ -25,7 +25,7 @@ import org.apache.activemq.ActiveMQConnectionFactory
 import org.apache.amaterasu.common.execution.actions.{Notification, NotificationLevel, NotificationType, Notifier}
 import org.apache.amaterasu.common.logging.Logging
 
-class ActiveNotifier extends Notifier with Logging {
+class ActiveNotifier extends Notifier {
 
   var producer: MessageProducer = _
   var session: Session = _

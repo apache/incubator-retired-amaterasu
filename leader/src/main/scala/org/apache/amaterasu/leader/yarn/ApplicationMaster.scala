@@ -53,7 +53,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.util.{Failure, Success}
 
-class ApplicationMaster extends AMRMClientAsync.CallbackHandler with Logging {
+class ApplicationMaster extends Logging with AMRMClientAsync.CallbackHandler {
 
   var capability: Resource = _
 
@@ -457,7 +457,7 @@ class ApplicationMaster extends AMRMClientAsync.CallbackHandler with Logging {
   }
 }
 
-object ApplicationMaster extends App with Logging {
+object ApplicationMaster extends Logging with App {
 
 
   val parser = Args.getParser

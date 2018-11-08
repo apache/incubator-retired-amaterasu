@@ -65,6 +65,12 @@ dependencies {
     testCompile 'junit:junit:4.11'
     testCompile 'org.scalatest:scalatest_2.11:3.0.1'
     testCompile 'org.scala-lang:scala-library:2.11.8'
+    testCompile 'org.jetbrains.spek:spek-api:1.1.5'
+    testCompile "org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version"
+    testRuntime 'org.jetbrains.spek:spek-junit-platform-engine:1.1.5'
+
+    // spek requires kotlin-reflect, can be omitted if already in the classpath
+    testRuntimeOnly "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
 }
 
 task copyToHome() {
@@ -84,7 +90,7 @@ sourceSets {
             srcDirs = ['src/main/kotlin','src/main/java', 'src/main/scala']
         }
         java {
-            srcDirs = []
+            srcDirs = ['src/main/java']
         }
     }
 }
@@ -98,6 +104,7 @@ compileTestKotlin {
 
 compileScala {
     dependsOn compileJava
+    classpath += files(compileJava.destinationDir) + files(compileKotlin.destinationDir)
 }
 
 compileJava {
