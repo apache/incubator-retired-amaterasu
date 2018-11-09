@@ -20,7 +20,7 @@ import org.apache.amaterasu.common.logging.Logging
 import org.apache.mesos.Protos._
 import org.apache.mesos.{Executor, ExecutorDriver}
 
-object JobExecutor extends Executor with Logging {
+object JobExecutor extends Logging with Executor {
 
   override def shutdown(driver: ExecutorDriver): Unit = {}
 

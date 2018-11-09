@@ -15,7 +15,6 @@
  * limitations under the License.
  */
 buildscript {
-    ext.kotlin_version = '1.2.60'
 
     repositories {
         mavenCentral()
@@ -104,12 +103,3 @@ compileKotlin {
 compileTestKotlin {
     kotlinOptions.jvmTarget = "1.8"
 }
-//
-//kotlin {
-//    experimental {
-//        coroutines 'enable'
-//    }
-//}
-
-//task copyToHome() {
-//}

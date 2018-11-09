@@ -33,7 +33,7 @@ import scala.sys.process.{Process, ProcessLogger}
 
 
 
-class PySparkRunner extends AmaterasuRunner with Logging {
+class PySparkRunner extends Logging with AmaterasuRunner {
 
   var proc: Process = _
   var notifier: Notifier = _

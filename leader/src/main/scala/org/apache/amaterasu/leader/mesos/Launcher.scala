@@ -24,7 +24,7 @@ import org.apache.amaterasu.leader.Kami
 import org.apache.amaterasu.leader.mesos.schedulers.ClusterScheduler
 import org.apache.mesos.{MesosSchedulerDriver, Protos}
 
-object Launcher extends App with Logging {
+object Launcher extends Logging with App {
 
   println(
     """

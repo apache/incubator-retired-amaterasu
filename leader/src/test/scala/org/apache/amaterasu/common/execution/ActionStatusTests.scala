@@ -16,24 +16,27 @@
  */
 package org.apache.amaterasu.common.execution
 
+import java.util
 import java.util.concurrent.LinkedBlockingQueue
 
 import org.apache.amaterasu.common.configuration.enums.ActionStatus
 import org.apache.amaterasu.common.dataobjects.ActionData
-import org.apache.amaterasu.leader.execution.actions.SequentialAction
+import org.apache.amaterasu.leader.common.actions.SequentialAction
 import org.apache.curator.framework.CuratorFrameworkFactory
 import org.apache.curator.retry.ExponentialBackoffRetry
 import org.apache.curator.test.TestingServer
 import org.apache.zookeeper.CreateMode
 import org.scalatest.{FlatSpec, Matchers}
 
-class ActionTests extends FlatSpec with Matchers {
+import scala.collection.JavaConverters._
+
+class ActionStatusTests extends FlatSpec with Matchers {
 
   // setting up a testing zookeeper server (curator TestServer)
   val retryPolicy = new ExponentialBackoffRetry(1000, 3)
   val server = new TestingServer(2181, true)
   val jobId = s"job_${System.currentTimeMillis}"
-  val data = ActionData(ActionStatus.pending, "test_action", "start.scala", "spark","scala", null, Map.empty , null)
+  val data = new ActionData(ActionStatus.pending, "test_action", "start.scala", "spark","scala", "0000001", new util.HashMap() , List[String]().asJava)
 
   "an Action" should "queue it's ActionData int the job queue when executed" in {
 
@@ -44,11 +47,11 @@ class ActionTests extends FlatSpec with Matchers {
     client.start()
 
     client.create().withMode(CreateMode.PERSISTENT).forPath(s"/$jobId")
-    val action = SequentialAction(data.name, data.src, data.groupId, data.typeId, Map.empty, jobId, queue, client, 1)
+    val action = SequentialAction(data.getName, data.getSrc, data.getGroupId, data.getTypeId, Map.empty, jobId, queue, client, 1)
 
     action.execute()
-    queue.peek().name should be(data.name)
-    queue.peek().src should be(data.src)
+    queue.peek().getName should be(data.getName)
+    queue.peek().getSrc should be(data.getSrc)
 
   }
 

@@ -14,14 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.amaterasu.common.configuration.enums
+package org.apache.amaterasu.common.dataobjects
 
-object ActionStatus extends Enumeration {
-  type ActionStatus = Value
-  val pending = Value("pending")
-  val queued = Value("queued")
-  val started = Value("started")
-  val complete = Value("complete")
-  val failed = Value("failed")
-  val canceled = Value("canceled")
+import org.apache.amaterasu.common.configuration.enums.ActionStatus
+
+
+
+/*
+    Adding default values just for the sake of Scala
+ */
+data class ActionData(var status: ActionStatus = ActionStatus.pending,
+                      var name: String= "",
+                      var src: String= "",
+                      var groupId: String= "",
+                      var typeId: String= "",
+                      var id: String= "",
+                      var exports: Map<String, String> = mutableMapOf(),
+                      var nextActionIds: List<String> = listOf()) {
+    lateinit var errorActionId: String
+
 }
