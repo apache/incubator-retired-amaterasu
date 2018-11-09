@@ -151,7 +151,7 @@ class JobScheduler extends AmaterasuScheduler {
 
       if (validateOffer(offer)) {
 
-        log.info(s"Accepting offer, id=${offer.getId}")
+        log.info(s"Evaluating offer, id=${offer.getId}")
 
         // this is done to avoid the processing the same action
         // multiple times
@@ -162,6 +162,7 @@ class JobScheduler extends AmaterasuScheduler {
           if (actionData != null) {
             val taskId = Protos.TaskID.newBuilder().setValue(actionData.id).build()
 
+            log.info(s"Accepting offer, id=${offer.getId}, taskId=${taskId}")
             // setting up the configuration files for the container
             val envYaml = configManager.getActionConfigContent(actionData.name, "") //TODO: replace with the value in actionData.config
             writeConfigFile(envYaml, jobManager.jobId, actionData.name, "env.yaml")
@@ -191,7 +192,8 @@ class JobScheduler extends AmaterasuScheduler {
             // we create a new one
             var executor: ExecutorInfo = null
             val slaveId = offer.getSlaveId.getValue
-            val containerInfo = ContainerInfo.newBuilder()
+            val container = ContainerInfo.newBuilder
+
             slavesExecutors.synchronized {
               //              if (slavesExecutors.contains(slaveId) &&
               //                offer.getExecutorIdsList.contains(slavesExecutors(slaveId).getExecutorId)) {
@@ -200,21 +202,18 @@ class JobScheduler extends AmaterasuScheduler {
               //              else {
               val execData = DataLoader.getExecutorDataBytes(env, config)
               val executorId = taskId.getValue + "-" + UUID.randomUUID()
-              //creating the command
 
               // TODO: move this into the runner provider somehow
               copy(get(s"repo/src/${actionData.src}"), get(s"dist/${jobManager.jobId}/${actionData.name}/${actionData.src}"), REPLACE_EXISTING)
 
               println(s"===> ${runnerProvider.getCommand(jobManager.jobId, actionData, env, executorId, "")}")
-              val command = CommandInfo
-                .newBuilder
+              val command = CommandInfo.newBuilder
                 .setValue(runnerProvider.getCommand(jobManager.jobId, actionData, env, executorId, ""))
                 .addUris(URI.newBuilder
                   .setValue(s"http://${sys.env("AMA_NODE")}:${config.Webserver.Port}/executor-${config.version}-all.jar")
                   .setExecutable(false)
                   .setExtract(false)
                   .build())
-
 
 
               // Getting env.yaml
@@ -274,13 +273,15 @@ class JobScheduler extends AmaterasuScheduler {
 
               val dockerBuilder = DockerInfo.newBuilder()
                 //.setImage("bento/centos-7.1") //TODO: change docker image
-                .setImage("mesosphere/spark")
+                //.setImage("fedora/apache")
+                .setForcePullImage(true)
+                .setImage("mesosphere/spark:latest")
                 .setNetwork(DockerInfo.Network.BRIDGE)
 
-              containerInfo
+
+              container
                 .setType(ContainerInfo.Type.DOCKER)
                 .setDocker(dockerBuilder.build())
-
 
 
               // setting the processes environment variables
@@ -292,7 +293,7 @@ class JobScheduler extends AmaterasuScheduler {
                 .setData(ByteString.copyFrom(execData))
                 .setName(taskId.getValue)
                 .setExecutorId(ExecutorID.newBuilder().setValue(executorId))
-                .setContainer(containerInfo)
+                .setContainer(container)
                 .setCommand(command)
 
                 .build()
@@ -330,7 +331,7 @@ class JobScheduler extends AmaterasuScheduler {
             driver.stop()
           }
           else {
-            log.info("Declining offer, no action ready for execution")
+            log.info(s"Declining offer, no action ready for execution, action count=${jobManager.actionsCount()}")
             driver.declineOffer(offer.getId)
           }
         }
