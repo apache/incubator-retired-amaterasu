@@ -20,7 +20,6 @@ plugins {
     id 'scala'
     id 'org.jetbrains.kotlin.jvm'
     id 'java'
-
 }
 
 sourceCompatibility = 1.8
@@ -92,7 +91,7 @@ sourceSets {
             srcDirs = ['src/main/kotlin','src/main/java', 'src/main/scala']
         }
         java {
-            srcDirs = []
+            srcDirs = ['src/main/java']
         }
     }
 }
@@ -120,6 +119,16 @@ task copyToHome() {
 compileKotlin{
     kotlinOptions.jvmTarget = "1.8"
 }
+
 compileTestKotlin {
     kotlinOptions.jvmTarget = "1.8"
+}
+
+compileScala {
+    dependsOn compileJava
+    classpath += files(compileJava.destinationDir) + files(compileKotlin.destinationDir)
+}
+
+compileJava {
+    dependsOn compileKotlin
 }
