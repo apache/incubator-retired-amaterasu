@@ -21,7 +21,7 @@ import java.util.concurrent.BlockingQueue
 import org.apache.amaterasu.common.configuration.enums.ActionStatus
 import org.apache.amaterasu.common.dataobjects.ActionData
 import org.apache.amaterasu.common.logging.Logging
-import org.apache.amaterasu.leader.execution.actions.Action
+import org.apache.amaterasu.leader.common.execution.actions.Action
 import org.apache.curator.framework.CuratorFramework
 
 import scala.collection.concurrent.TrieMap
@@ -54,9 +54,9 @@ class JobManager extends Logging {
 
   }
 
-  def outOfActions: Boolean = !registeredActions.values.exists(a => a.data.status == ActionStatus.pending ||
-    a.data.status == ActionStatus.queued ||
-    a.data.status == ActionStatus.started)
+  def outOfActions: Boolean = !registeredActions.values.exists(a => a.data.getStatus == ActionStatus.pending ||
+    a.data.getStatus == ActionStatus.queued ||
+    a.data.getStatus == ActionStatus.started)
   /**
     * getNextActionData returns the data of the next action to be executed if such action
     * exists
@@ -68,7 +68,7 @@ class JobManager extends Logging {
     val nextAction: ActionData = executionQueue.poll()
 
     if (nextAction != null) {
-      registeredActions(nextAction.id).announceStart
+      registeredActions(nextAction.getId).announceStart
     }
 
     nextAction
@@ -102,8 +102,7 @@ class JobManager extends Logging {
 
     val action = registeredActions.get(actionId).get
     action.announceComplete
-    action.data.nextActionIds.foreach(id =>
-      registeredActions.get(id).get.execute())
+    action.data.getNextActionIds.toArray.foreach(id => registeredActions.get(id.toString).get.execute())
 
     // we don't need the error action anymore
     if (action.data.errorActionId != null)
@@ -131,11 +130,11 @@ class JobManager extends Logging {
 
   def cancelFutureActions(action: Action): Unit = {
 
-    if (action.data.status != ActionStatus.failed)
+    if (action.data.getStatus != ActionStatus.failed)
       action.announceCanceled
 
-    action.data.nextActionIds.foreach(id =>
-      cancelFutureActions(registeredActions.get(id).get))
+    action.data.getNextActionIds.toArray.foreach(id =>
+      cancelFutureActions(registeredActions.get(id.toString).get))
   }
 
   /**

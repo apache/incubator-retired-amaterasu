@@ -19,8 +19,9 @@ package org.apache.amaterasu.common.execution.actions
 import com.fasterxml.jackson.annotation.JsonProperty
 import org.apache.amaterasu.common.execution.actions.NotificationLevel.NotificationLevel
 import org.apache.amaterasu.common.execution.actions.NotificationType.NotificationType
+import org.apache.amaterasu.common.logging.Logging
 
-abstract class Notifier {
+abstract class Notifier extends Logging {
 
   def info(msg: String)
 

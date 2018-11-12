@@ -55,9 +55,9 @@ class JobParserTests extends FlatSpec with Matchers {
 
     job.registeredActions.size should be(3)
 
-    job.registeredActions.get("0000000000").get.data.name should be("start")
-    job.registeredActions.get("0000000001").get.data.name should be("step2")
-    job.registeredActions.get("0000000001-error").get.data.name should be("error-action")
+    job.registeredActions.get("0000000000").get.data.getName should be("start")
+    job.registeredActions.get("0000000001").get.data.getName should be("step2")
+    job.registeredActions.get("0000000001-error").get.data.getName should be("error-action")
 
   }
 

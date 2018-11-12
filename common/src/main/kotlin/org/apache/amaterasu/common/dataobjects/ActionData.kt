@@ -14,11 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.amaterasu.common.logging
+package org.apache.amaterasu.common.dataobjects
 
-import org.slf4j.LoggerFactory
+import org.apache.amaterasu.common.configuration.enums.ActionStatus
 
-trait Logging {
-  protected lazy val log = LoggerFactory.getLogger(getClass.getName)
+
+
+/*
+    Adding default values just for the sake of Scala
+ */
+data class ActionData(var status: ActionStatus = ActionStatus.pending,
+                      var name: String= "",
+                      var src: String= "",
+                      var groupId: String= "",
+                      var typeId: String= "",
+                      var id: String= "",
+                      var exports: Map<String, String> = mutableMapOf(),
+                      var nextActionIds: List<String> = listOf()) {
+    lateinit var errorActionId: String
+
 }
-

@@ -20,7 +20,7 @@ import org.apache.amaterasu.common.execution.actions.Notifier
 import org.apache.amaterasu.common.logging.Logging
 
 
-class TestNotifier extends Notifier with Logging {
+class TestNotifier extends Notifier  {
 
   override def info(msg: String): Unit = {
     log.info(msg)

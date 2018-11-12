@@ -22,7 +22,7 @@ import org.apache.amaterasu.common.configuration.ClusterConfig
 import org.apache.amaterasu.common.logging.Logging
 
 
-abstract class BaseJobLauncher extends App with Logging {
+abstract class BaseJobLauncher extends Logging with App {
 
   def run(args: Args, config: ClusterConfig, resume: Boolean): Unit = ???
 

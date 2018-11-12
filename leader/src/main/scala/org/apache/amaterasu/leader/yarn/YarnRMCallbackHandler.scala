@@ -41,7 +41,7 @@ class YarnRMCallbackHandler(nmClient: NMClientAsync,
                             env: String,
                             awsEnv: String,
                             config: ClusterConfig,
-                            executorJar: LocalResource) extends AMRMClientAsync.CallbackHandler with Logging {
+                            executorJar: LocalResource) extends Logging with AMRMClientAsync.CallbackHandler {
 
 
   val gson:Gson = new Gson()
@@ -67,9 +67,9 @@ class YarnRMCallbackHandler(nmClient: NMClientAsync,
         val taskId = containersIdsToTaskIds(containerId)
         if (status.getExitStatus == 0) {
           completedContainersAndTaskIds.put(containerId, taskId)
-          log.info(s"Container $containerId completed with task $taskId with success.")
+          log.info(s"Container $containerId complete with task $taskId with success.")
         } else {
-          log.warn(s"Container $containerId completed with task $taskId with failed status code (${status.getExitStatus}.")
+          log.warn(s"Container $containerId complete with task $taskId with failed status code (${status.getExitStatus}.")
           val failedTries = failedTasksCounter.getOrElse(taskId, 0)
           if (failedTries < MAX_ATTEMPTS_PER_TASK) {
             // TODO: notify and ask for a new container
@@ -108,7 +108,7 @@ class YarnRMCallbackHandler(nmClient: NMClientAsync,
                          | java -cp executor.jar:spark-${config.Webserver.sparkVersion}/lib/*
                          | -Dscala.usejavacp=true
                          | -Djava.library.path=/usr/lib org.apache.amaterasu.executor.yarn.executors.ActionsExecutorLauncher
-                         | ${jobManager.jobId} ${config.master} ${actionData.name} ${gson.toJson(taskData)} ${gson.toJson(execData)}""".stripMargin
+                         | ${jobManager.jobId} ${config.master} ${actionData.getName} ${gson.toJson(taskData)} ${gson.toJson(execData)}""".stripMargin
         ctx.setCommands(Collections.singletonList(command))
 
         ctx.setLocalResources(Map[String, LocalResource] (
@@ -116,7 +116,7 @@ class YarnRMCallbackHandler(nmClient: NMClientAsync,
         ))
 
         nmClient.startContainerAsync(container, ctx)
-        actionData.id
+        actionData.getId
       }
 
       containerTask onComplete {

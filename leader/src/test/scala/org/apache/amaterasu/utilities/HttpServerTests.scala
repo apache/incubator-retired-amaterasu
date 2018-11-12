@@ -26,7 +26,7 @@ class HttpServerTests extends FlatSpec with Matchers {
 
   // this is an ugly hack, getClass.getResource("/").getPath should have worked but
   // stopped working when we moved to gradle :(
-  val resources = new File(getClass.getResource("/simple-maki.yml").getPath).getParent
+  val resources: String = new File(getClass.getResource("/simple-maki.yml").getPath).getParent
 
   //  "Jetty Web server" should "start HTTP server, serve content and stop successfully" in {
   //
