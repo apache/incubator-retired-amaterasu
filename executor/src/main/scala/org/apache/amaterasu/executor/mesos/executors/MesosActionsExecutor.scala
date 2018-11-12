@@ -32,7 +32,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.util.{Failure, Success}
 
-class MesosActionsExecutor extends Executor with Logging {
+class MesosActionsExecutor extends Logging with Executor {
 
   var master: String = _
   var executorDriver: ExecutorDriver = _

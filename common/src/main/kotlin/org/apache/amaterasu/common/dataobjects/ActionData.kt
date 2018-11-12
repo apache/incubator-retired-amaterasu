@@ -6,7 +6,7 @@
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *    http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -14,29 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.amaterasu.leader.utilities
+package org.apache.amaterasu.common.dataobjects
 
-import java.io.FileInputStream
+import org.apache.amaterasu.common.configuration.enums.ActionStatus
 
-import org.apache.amaterasu.common.configuration.ClusterConfig
-import org.apache.amaterasu.common.logging.Logging
-
-
-abstract class BaseJobLauncher extends Logging with App {
-
-  def run(args: Args, config: ClusterConfig, resume: Boolean): Unit = ???
-
-  val parser = Args.getParser
-  parser.parse(args, Args()) match {
-
-    case Some(arguments: Args) =>
-
-      val config = ClusterConfig(new FileInputStream(s"${arguments.home}/amaterasu.properties"))
-      val resume = arguments.jobId != null
-
-      run(arguments, config, resume)
-
-    case None =>
-    // arguments are bad, error message will have been displayed
-  }
+data class ActionData(var status: ActionStatus = ActionStatus.pending,
+                      var name: String= "",
+                      var src: String= "",
+                      var groupId: String= "",
+                      var typeId: String= "",
+                      var id: String= "",
+                      var exports: Map<String, String> = mutableMapOf(),
+                      var nextActionIds: List<String> = listOf()) {
+    lateinit var errorActionId: String
+    lateinit var artifact: Artifact
+    lateinit var repo: Repo
 }

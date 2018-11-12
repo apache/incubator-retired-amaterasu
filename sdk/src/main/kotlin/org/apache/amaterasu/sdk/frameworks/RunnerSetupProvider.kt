@@ -29,7 +29,7 @@ abstract class RunnerSetupProvider {
     abstract fun getActionUserResources(jobId: String, actionData: ActionData): Array<String>
 
     fun getActionResources(jobId: String, actionData: ActionData): Array<String> =
-            actionFiles.map { f -> "$jobId/${actionData.name()}/$f" }.toTypedArray() +
+            actionFiles.map { f -> "$jobId/${actionData.name}/$f" }.toTypedArray() +
                     getActionUserResources(jobId, actionData)
 
     abstract fun getActionDependencies(jobId: String, actionData: ActionData): Array<String>

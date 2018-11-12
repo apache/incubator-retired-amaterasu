@@ -14,14 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.amaterasu.common.configuration.enums
+package org.apache.amaterasu.common.dataobjects
 
-object ActionStatus extends Enumeration {
-  type ActionStatus = Value
-  val pending = Value("pending")
-  val queued = Value("queued")
-  val started = Value("started")
-  val complete = Value("complete")
-  val failed = Value("failed")
-  val canceled = Value("canceled")
-}
+data class Repo(val id: String, val type: String, val url: String)

@@ -38,7 +38,7 @@ import scala.collection.JavaConverters._
 import scala.collection.concurrent.TrieMap
 import scala.sys.process._
 
-class SparkRunnersProvider extends RunnersProvider with Logging {
+class SparkRunnersProvider extends Logging with RunnersProvider {
 
   private val runners = new TrieMap[String, AmaterasuRunner]
   private var shellLoger = ProcessLogger(

@@ -18,12 +18,17 @@ plugins {
     id "com.github.johnrengelman.shadow" version "1.2.4"
     id 'com.github.maiflai.scalatest' version '0.22'
     id 'scala'
+    id 'org.jetbrains.kotlin.jvm'
     id 'java'
 
 }
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
+
+shadowJar {
+    zip64 true
+}
 
 repositories {
     maven {
@@ -62,6 +67,8 @@ dependencies {
     compile group: 'org.reflections', name: 'reflections', version: '0.9.11'
     compile group: 'org.apache.activemq', name: 'activemq-broker', version: '5.15.3'
     compile group: 'net.liftweb', name: 'lift-json_2.11', version: '3.2.0'
+    compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
+    compile "org.jetbrains.kotlin:kotlin-reflect"
     runtime group: 'org.apache.activemq', name: 'activemq-kahadb-store', version: '5.15.3'
 
     testCompile project(':common')
@@ -82,8 +89,11 @@ sourceSets {
 
     // this is done so Scala will compile before Java
     main {
+        kotlin {
+            srcDirs = ['src/main/kotlin']
+        }
         scala {
-            srcDirs = ['src/main/scala', 'src/main/java']
+            srcDirs = ['src/main/kotlin','src/main/java', 'src/main/scala']
         }
         java {
             srcDirs = []
@@ -109,4 +119,11 @@ task copyToHomeBin(type: Copy) {
 task copyToHome() {
     dependsOn copyToHomeRoot
     dependsOn copyToHomeBin
+}
+
+compileKotlin{
+    kotlinOptions.jvmTarget = "1.8"
+}
+compileTestKotlin {
+    kotlinOptions.jvmTarget = "1.8"
 }

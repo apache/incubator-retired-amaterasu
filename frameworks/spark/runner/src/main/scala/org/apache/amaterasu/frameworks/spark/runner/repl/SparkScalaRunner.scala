@@ -87,9 +87,6 @@ class SparkScalaRunner(var env: Environment,
 
               val resultName = interpreter.prevRequestList.last.termNames.last
 
-              //notifier.info(s" result name ${resultName.toString}")
-              //notifier.info(s" exist in exports: ${exports.contains(resultName.toString)}")
-
               if (exports.contains(resultName.toString)) {
 
                 val format = exports(resultName.toString)

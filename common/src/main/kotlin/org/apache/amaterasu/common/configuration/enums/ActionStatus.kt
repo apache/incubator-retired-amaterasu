@@ -14,11 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.amaterasu.common.logging
+package org.apache.amaterasu.common.configuration.enums
 
-import org.slf4j.LoggerFactory
-
-trait Logging {
-  protected lazy val log = LoggerFactory.getLogger(getClass.getName)
+enum class ActionStatus (val value: String) {
+    pending("pending"),
+    queued("queued"),
+    started("started"),
+    complete("complete"),
+    failed("failed"),
+    canceled("canceled")
 }
-

@@ -21,7 +21,7 @@ import org.apache.amaterasu.common.logging.Logging
 import org.apache.hadoop.yarn.conf.YarnConfiguration
 import org.apache.hadoop.yarn.ipc.YarnRPC
 
-class YarnNotifier(conf: YarnConfiguration) extends Notifier with Logging {
+class YarnNotifier(conf: YarnConfiguration) extends Notifier {
 
   var rpc: YarnRPC = YarnRPC.create(conf)
 

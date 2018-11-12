@@ -61,7 +61,7 @@ class ActionsExecutor extends Logging {
 
 // launched with args:
 //s"'${jobManager.jobId}' '${config.master}' '${actionData.name}' '${URLEncoder.encode(gson.toJson(taskData), "UTF-8")}' '${URLEncoder.encode(gson.toJson(execData), "UTF-8")}' '${actionData.id}-${container.getId.getContainerId}'"
-object ActionsExecutorLauncher extends App with Logging {
+object ActionsExecutorLauncher extends Logging with App {
 
   val hostName = InetAddress.getLocalHost.getHostName
 

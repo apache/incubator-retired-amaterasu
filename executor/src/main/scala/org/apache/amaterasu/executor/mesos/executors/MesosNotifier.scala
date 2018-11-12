@@ -23,7 +23,7 @@ import org.apache.amaterasu.common.logging.Logging
 import org.apache.mesos.ExecutorDriver
 
 
-class MesosNotifier(driver: ExecutorDriver) extends Notifier with Logging {
+class MesosNotifier(driver: ExecutorDriver) extends Notifier {
 
   private val mapper = new ObjectMapper()
   mapper.registerModule(DefaultScalaModule)

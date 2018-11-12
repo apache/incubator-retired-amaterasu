@@ -18,6 +18,7 @@ package org.apache.amaterasu.common.dataobjects
 
 import com.google.gson.Gson
 
+/*
 object ActionDataHelper {
   private val gson = new Gson
   def toJsonString(actionData: ActionData): String = {
@@ -25,6 +26,7 @@ object ActionDataHelper {
   }
 
   def fromJsonString(jsonString: String) : ActionData = {
-    gson.fromJson[ActionData](jsonString, ActionData.getClass)
+    gson.fromJson[ActionData](jsonString, new ActionData().getClass)
   }
 }
+*/

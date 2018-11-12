@@ -14,19 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.amaterasu.common.dataobjects
+package org.apache.amaterasu.common.logging
 
-import org.apache.amaterasu.common.configuration.enums.ActionStatus.ActionStatus
+import org.slf4j.LoggerFactory
 
-import scala.collection.mutable.ListBuffer
-
-case class ActionData(var status: ActionStatus,
-                      name: String,
-                      src: String,
-                      groupId: String,
-                      typeId: String,
-                      id: String,
-                      exports: Map[String, String],
-                      nextActionIds: ListBuffer[String]) {
-  var errorActionId: String = _
+abstract class KLogging {
+    protected var log = LoggerFactory.getLogger(this.javaClass.name)
 }

@@ -52,7 +52,7 @@ class SparkSetupProvider extends FrameworkSetupProvider {
     this.conf = conf
 
     runnerProviders += ("scala" -> SparkScalaRunnerProvider(conf))
-    runnerProviders += ("scala-shell" -> SparkShellScalaRunnerProvider(conf))
+    runnerProviders += ("scala-jar" -> SparkSubmitScalaRunnerProvider(conf))
     runnerProviders += ("pyspark" -> PySparkRunnerProvider(conf))
 
   }

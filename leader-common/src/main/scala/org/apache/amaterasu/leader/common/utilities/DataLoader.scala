@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 package org.apache.amaterasu.leader.common.utilities
-
+import scala.collection.JavaConverters._
 import java.io.{File, FileInputStream}
 import java.nio.file.{Files, Paths}
 
@@ -43,12 +43,15 @@ object DataLoader extends Logging {
   ymlMapper.registerModule(DefaultScalaModule)
 
   def getTaskData(actionData: ActionData, env: String): TaskData = {
-    val srcFile = actionData.src
+    val srcFile = actionData.getSrc
     val src = Source.fromFile(s"repo/src/$srcFile").mkString
     val envValue = Source.fromFile(s"repo/env/$env/job.yml").mkString
 
     val envData = ymlMapper.readValue(envValue, classOf[Environment])
-    TaskData(src, envData, actionData.groupId, actionData.typeId, actionData.exports)
+
+    val exports = actionData.getExports.asScala.toMap // Kotlin to Scala TODO: Remove me as fast as you can
+
+    TaskData(src, envData, actionData.getGroupId, actionData.getTypeId, exports)
   }
 
   def getTaskDataBytes(actionData: ActionData, env: String): Array[Byte] = {
