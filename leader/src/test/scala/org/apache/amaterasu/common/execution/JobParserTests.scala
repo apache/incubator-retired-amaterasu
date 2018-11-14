@@ -19,7 +19,7 @@ package org.apache.amaterasu.common.execution
 import java.util.concurrent.LinkedBlockingQueue
 
 import org.apache.amaterasu.common.dataobjects.ActionData
-import org.apache.amaterasu.leader.dsl.JobParser
+import org.apache.amaterasu.leader.common.dsl.JobParser
 import org.apache.curator.framework.CuratorFrameworkFactory
 import org.apache.curator.retry.ExponentialBackoffRetry
 import org.apache.curator.test.TestingServer

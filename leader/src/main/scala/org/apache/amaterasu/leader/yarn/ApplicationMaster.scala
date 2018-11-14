@@ -21,15 +21,16 @@ import java.net.{InetAddress, ServerSocket}
 import java.nio.ByteBuffer
 import java.util
 import java.util.concurrent.{ConcurrentHashMap, LinkedBlockingQueue}
-import javax.jms.Session
 
+import javax.jms.Session
 import org.apache.activemq.ActiveMQConnectionFactory
 import org.apache.activemq.broker.BrokerService
 import org.apache.amaterasu.common.configuration.ClusterConfig
 import org.apache.amaterasu.common.dataobjects.ActionData
 import org.apache.amaterasu.common.logging.Logging
+import org.apache.amaterasu.leader.common.execution.JobManager
 import org.apache.amaterasu.leader.execution.frameworks.FrameworkProvidersFactory
-import org.apache.amaterasu.leader.execution.{JobLoader, JobManager}
+import org.apache.amaterasu.leader.execution.JobLoader
 import org.apache.amaterasu.leader.utilities.{ActiveReportListener, Args}
 import org.apache.curator.framework.recipes.barriers.DistributedBarrier
 import org.apache.curator.framework.{CuratorFramework, CuratorFrameworkFactory}

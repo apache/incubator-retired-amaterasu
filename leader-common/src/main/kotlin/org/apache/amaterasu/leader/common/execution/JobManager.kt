@@ -1,4 +1,4 @@
-package org.apache.amaterasu.leader.execution
+package org.apache.amaterasu.leader.common.execution
 
 import org.apache.amaterasu.common.configuration.enums.ActionStatus
 import org.apache.amaterasu.common.dataobjects.ActionData
@@ -10,16 +10,18 @@ import java.util.concurrent.BlockingQueue
 /**
  * Created by Eran Bartenstein on 10/11/18.
  */
-class JobManager : KLogging() {
-    var name: String = ""
-    var jobId: String = ""
-    lateinit var client: CuratorFramework
+data class JobManager(var name: String = "",
+                 var jobId: String = "",
+                 var executionQueue: BlockingQueue<ActionData>,
+                 var client: CuratorFramework
+                 ) : KLogging() {
+
+
     lateinit var head: Action
 
     // TODO: this is not private due to tests, fix this!!!
     val registeredActions = HashMap<String, Action>()
     val frameworks = HashMap<String, HashSet<String>>()
-    private lateinit var executionQueue: BlockingQueue<ActionData>
 
     /**
      * The start method initiates the job execution by executing the first action.
