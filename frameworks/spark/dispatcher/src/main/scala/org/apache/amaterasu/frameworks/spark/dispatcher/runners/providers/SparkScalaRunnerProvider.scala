@@ -31,8 +31,11 @@ class SparkScalaRunnerProvider extends RunnerSetupProvider {
 
   override def getCommand(jobId: String, actionData: ActionData, env: String, executorId: String, callbackAddress: String): String = conf.mode match {
     case "mesos" =>
-      s"env AMA_NODE=${sys.env("AMA_NODE")} env MESOS_NATIVE_JAVA_LIBRARY=/usr/lib/libmesos.so env SPARK_EXECUTOR_URI=http://${sys.env("AMA_NODE")}:${conf.Webserver.Port}/dist/spark-${conf.Webserver.sparkVersion}.tgz " +
-      s"java -cp executor-${conf.version}-all.jar:spark-runner-${conf.version}-all.jar:spark-runtime-${conf.version}.jar:spark-${conf.Webserver.sparkVersion}/jars/* "
+      s"add-apt-repository -y ppa:openjdk-r/ppa && apt-get update && apt-get -y install libc6-i386 openjdk-8-jre && export MESOS_NATIVE_JAVA_LIBRARY=/opt/mesosphere/libmesos-bundle/lib/libmesos.so && env && pwd &&" +
+      s"env AMA_NODE=${sys.env("AMA_NODE")} env MESOS_NATIVE_JAVA_LIBRARY=/opt/mesosphere/libmesos-bundle/lib/libmesos.so env SPARK_EXECUTOR_URI=http://${sys.env("AMA_NODE")}:${conf.Webserver.Port}/dist/spark-${conf.Webserver.sparkVersion}.tgz " +
+      s"java -cp /mnt/mesos/sandbox/executor-${conf.version}-all.jar:/mnt/mesos/sandbox/spark-runner-${conf.version}-all.jar:/mnt/mesos/sandbox/spark-runtime-${conf.version}.jar:/mnt/mesos/sandbox/spark-${conf.Webserver.sparkVersion}/jars/* " +
+      s"-Dscala.usejavacp=true -Djava.library.path=$libPath:/opt/mesosphere/libmesos-bundle/lib/ " +
+      s"org.apache.amaterasu.executor.mesos.executors.MesosActionsExecutor $jobId ${conf.master} ${actionData.getName}".stripMargin
     case "yarn" => s"/bin/bash spark/bin/load-spark-env.sh && " +
       s"java -cp spark/jars/*:executor.jar:spark-runner.jar:spark-runtime.jar:spark/conf/:${conf.YARN.hadoopHomeDir}/conf/ " +
       "-Xmx2G " +

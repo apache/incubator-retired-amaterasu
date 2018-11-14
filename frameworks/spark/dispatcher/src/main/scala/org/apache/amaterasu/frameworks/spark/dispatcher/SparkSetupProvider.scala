@@ -67,7 +67,8 @@ class SparkSetupProvider extends FrameworkSetupProvider {
 
 
   override def getEnvironmentVariables: util.Map[String, String] = conf.mode match {
-    case "mesos" => Map[String, String](s"SPARK_HOME" -> s"spark-${conf.Webserver.sparkVersion}")
+    case "mesos" => Map[String, String](s"SPARK_HOME" -> s"spark-${conf.Webserver.sparkVersion}",
+      s"MESOS_NATIVE_JAVA_LIBRARY" -> s"/opt/mesosphere/libmesos-bundle/lib/libmesos.so")
     case "yarn" => Map[String, String]("SPARK_HOME" -> "spark")
     case _ => Map[String, String]()
   }
@@ -90,8 +91,8 @@ class SparkSetupProvider extends FrameworkSetupProvider {
     var mem: Int = 0
     if (sparkExecConfigurations.get("spark.yarn.am.memory").isDefined) {
       mem = MemoryFormatParser.extractMegabytes(sparkExecConfigurations("spark.yarn.am.memory").toString)
-    } else if (sparkExecConfigurations.get("spark.driver.memeory").isDefined) {
-      mem = MemoryFormatParser.extractMegabytes(sparkExecConfigurations("spark.driver.memeory").toString)
+    } else if (sparkExecConfigurations.get("spark.driver.memory").isDefined) {
+      mem = MemoryFormatParser.extractMegabytes(sparkExecConfigurations("spark.driver.memory").toString)
     } else if (conf.spark.opts.contains("yarn.am.memory")) {
       mem = MemoryFormatParser.extractMegabytes(conf.spark.opts("yarn.am.memory"))
     } else if (conf.spark.opts.contains("driver.memory")) {
