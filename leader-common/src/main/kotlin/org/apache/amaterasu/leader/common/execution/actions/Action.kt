@@ -19,7 +19,6 @@ package org.apache.amaterasu.leader.common.execution.actions
 import org.apache.amaterasu.common.dataobjects.ActionData
 import org.apache.amaterasu.common.configuration.enums.ActionStatus
 import org.apache.amaterasu.common.logging.KLogging
-import org.apache.amaterasu.common.logging.Logging
 import org.apache.curator.framework.CuratorFramework
 
 /**

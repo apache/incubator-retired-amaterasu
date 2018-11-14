@@ -24,7 +24,7 @@ object MemoryFormatParser {
     if (lower.contains("mb")) {
       result = lower.replace("mb", "").toInt
     } else if (lower.contains("gb") | lower.contains("g")) {
-      result = lower.replace("g", "").replace("b","").toInt * 1024
+      result = lower.replace("g", "").replace("b", "").toInt * 1024
     } else {
       result = lower.toInt
     }
