@@ -36,7 +36,7 @@ import org.apache.amaterasu.common.execution.actions.{Notification, Notification
 import org.apache.amaterasu.leader.common.configuration.ConfigManager
 import org.apache.amaterasu.leader.common.execution.JobManager
 import org.apache.amaterasu.leader.common.utilities.DataLoader
-import org.apache.amaterasu.leader.execution.frameworks.FrameworkProvidersFactory
+import org.apache.amaterasu.leader.common.execution.frameworks.FrameworkProvidersFactory
 import org.apache.amaterasu.leader.execution.JobLoader
 import org.apache.amaterasu.leader.utilities.HttpServer
 import org.apache.curator.framework.{CuratorFramework, CuratorFrameworkFactory}
@@ -160,15 +160,15 @@ class JobScheduler extends AmaterasuScheduler {
 
             // setting up the configuration files for the container
             val envYaml = configManager.getActionConfigContent(actionData.getName, "") //TODO: replace with the value in actionData.config
-            writeConfigFile(envYaml, jobManager.jobId, actionData.getName, "env.yaml")
+            writeConfigFile(envYaml, jobManager.getJobId, actionData.getName, "env.yaml")
 
             val dataStores = DataLoader.getTaskData(actionData, env).exports
             val writer = new StringWriter()
             yamlMapper.writeValue(writer, dataStores)
             val dataStoresYaml = writer.toString
-            writeConfigFile(dataStoresYaml, jobManager.jobId, actionData.getName, "datastores.yaml")
+            writeConfigFile(dataStoresYaml, jobManager.getJobId, actionData.getName, "datastores.yaml")
 
-            writeConfigFile(s"jobId: ${jobManager.jobId}\nactionName: ${actionData.getName}", jobManager.jobId, actionData.getName, "runtime.yaml")
+            writeConfigFile(s"jobId: ${jobManager.getJobId}\nactionName: ${actionData.getName}", jobManager.getJobId, actionData.getName, "runtime.yaml")
 
             offersToTaskIds.put(offer.getId.getValue, taskId.getValue)
 
@@ -198,12 +198,12 @@ class JobScheduler extends AmaterasuScheduler {
               //creating the command
 
               // TODO: move this into the runner provider somehow
-              copy(get(s"repo/src/${actionData.getSrc}"), get(s"dist/${jobManager.jobId}/${actionData.getName}/${actionData.getSrc}"), REPLACE_EXISTING)
+              copy(get(s"repo/src/${actionData.getSrc}"), get(s"dist/${jobManager.getJobId}/${actionData.getName}/${actionData.getSrc}"), REPLACE_EXISTING)
 
-              println(s"===> ${runnerProvider.getCommand(jobManager.jobId, actionData, env, executorId, "")}")
+              println(s"===> ${runnerProvider.getCommand(jobManager.getJobId, actionData, env, executorId, "")}")
               val command = CommandInfo
                 .newBuilder
-                .setValue(runnerProvider.getCommand(jobManager.jobId, actionData, env, executorId, ""))
+                .setValue(runnerProvider.getCommand(jobManager.getJobId, actionData, env, executorId, ""))
                 .addUris(URI.newBuilder
                   .setValue(s"http://${sys.env("AMA_NODE")}:${config.Webserver.Port}/executor-${config.version}-all.jar")
                   .setExecutable(false)
@@ -212,21 +212,21 @@ class JobScheduler extends AmaterasuScheduler {
 
                 // Getting env.yaml
                 command.addUris(URI.newBuilder
-                  .setValue(s"http://${sys.env("AMA_NODE")}:${config.Webserver.Port}/${jobManager.jobId}/${actionData.getName}/env.yaml")
+                  .setValue(s"http://${sys.env("AMA_NODE")}:${config.Webserver.Port}/${jobManager.getJobId}/${actionData.getName}/env.yaml")
                   .setExecutable(false)
                   .setExtract(true)
                   .build())
 
                 // Getting datastores.yaml
                 command.addUris(URI.newBuilder
-                  .setValue(s"http://${sys.env("AMA_NODE")}:${config.Webserver.Port}/${jobManager.jobId}/${actionData.getName}/datastores.yaml")
+                  .setValue(s"http://${sys.env("AMA_NODE")}:${config.Webserver.Port}/${jobManager.getJobId}/${actionData.getName}/datastores.yaml")
                   .setExecutable(false)
                   .setExtract(true)
                   .build())
 
                 // Getting runtime.yaml
                 command.addUris(URI.newBuilder
-                  .setValue(s"http://${sys.env("AMA_NODE")}:${config.Webserver.Port}/${jobManager.jobId}/${actionData.getName}/runtime.yaml")
+                  .setValue(s"http://${sys.env("AMA_NODE")}:${config.Webserver.Port}/${jobManager.getJobId}/${actionData.getName}/runtime.yaml")
                   .setExecutable(false)
                   .setExtract(true)
                   .build())
@@ -246,7 +246,7 @@ class JobScheduler extends AmaterasuScheduler {
                 .build()))
 
               // Getting action specific resources
-              runnerProvider.getActionResources(jobManager.jobId, actionData).foreach(r => command.addUris(URI.newBuilder
+              runnerProvider.getActionResources(jobManager.getJobId, actionData).foreach(r => command.addUris(URI.newBuilder
                 .setValue(s"http://${sys.env("AMA_NODE")}:${config.Webserver.Port}/$r")
                 .setExecutable(false)
                 .setExtract(false)
@@ -298,8 +298,8 @@ class JobScheduler extends AmaterasuScheduler {
 
             driver.launchTasks(Collections.singleton(offer.getId), Collections.singleton(actionTask))
           }
-          else if (jobManager.outOfActions) {
-            log.info(s"framework ${jobManager.jobId} execution finished")
+          else if (jobManager.getOutOfActions) {
+            log.info(s"framework ${jobManager.getJobId} execution finished")
 
             val repo = new File("repo/")
             repo.delete()
@@ -356,7 +356,7 @@ class JobScheduler extends AmaterasuScheduler {
 
     jobManager.start()
 
-    createJobDir(jobManager.jobId)
+    createJobDir(jobManager.getJobId)
 
   }
 

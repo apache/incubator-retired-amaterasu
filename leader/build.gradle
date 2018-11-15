@@ -59,12 +59,9 @@ dependencies {
     compile group: 'org.jsoup', name: 'jsoup', version: '1.10.2'
     compile group: 'org.scala-lang.modules', name: 'scala-async_2.11', version: '0.9.6'
     compile group: 'org.jsoup', name: 'jsoup', version: '1.10.2'
-    compile group: 'org.reflections', name: 'reflections', version: '0.9.11'
-    compile group: 'org.apache.activemq', name: 'activemq-broker', version: '5.15.3'
     compile group: 'net.liftweb', name: 'lift-json_2.11', version: '3.2.0'
     compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
     compile "org.jetbrains.kotlin:kotlin-reflect"
-    runtime group: 'org.apache.activemq', name: 'activemq-kahadb-store', version: '5.15.3'
 
     testCompile project(':common')
     testCompile "gradle.plugin.com.github.maiflai:gradle-scalatest:0.14"
@@ -124,6 +121,9 @@ compileTestKotlin {
     kotlinOptions.jvmTarget = "1.8"
 }
 
+tet {
+    dependsOn compileJava
+}
 compileScala {
     dependsOn compileJava
     classpath += files(compileJava.destinationDir) + files(compileKotlin.destinationDir)

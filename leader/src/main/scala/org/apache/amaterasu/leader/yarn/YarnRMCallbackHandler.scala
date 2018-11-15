@@ -87,7 +87,7 @@ class YarnRMCallbackHandler(nmClient: NMClientAsync,
   }
 
   override def getProgress: Float = {
-    jobManager.registeredActions.size.toFloat / completedContainersAndTaskIds.size
+    jobManager.getRegisteredActions.size.toFloat / completedContainersAndTaskIds.size
   }
 
   override def onNodesUpdated(updatedNodes: util.List[NodeReport]): Unit = {
@@ -108,7 +108,7 @@ class YarnRMCallbackHandler(nmClient: NMClientAsync,
                          | java -cp executor.jar:spark-${config.Webserver.sparkVersion}/lib/*
                          | -Dscala.usejavacp=true
                          | -Djava.library.path=/usr/lib org.apache.amaterasu.executor.yarn.executors.ActionsExecutorLauncher
-                         | ${jobManager.jobId} ${config.master} ${actionData.getName} ${gson.toJson(taskData)} ${gson.toJson(execData)}""".stripMargin
+                         | ${jobManager.getJobId} ${config.master} ${actionData.getName} ${gson.toJson(taskData)} ${gson.toJson(execData)}""".stripMargin
         ctx.setCommands(Collections.singletonList(command))
 
         ctx.setLocalResources(Map[String, LocalResource] (

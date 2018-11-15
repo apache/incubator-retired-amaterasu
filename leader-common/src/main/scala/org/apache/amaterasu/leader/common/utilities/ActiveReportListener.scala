@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.amaterasu.leader.utilities
+package org.apache.amaterasu.leader.common.utilities
 
 import javax.jms.{Message, MessageListener, TextMessage}
 import net.liftweb.json._

@@ -29,7 +29,9 @@ import org.apache.curator.framework.CuratorFramework
 import java.io.File
 import java.util.concurrent.BlockingQueue
 
-class JobParser {
+object JobParser {
+
+    @JvmStatic
     fun loadMakiFile(): String = File("repo/maki.yml").readText(Charsets.UTF_8)
 
     /**
@@ -41,6 +43,7 @@ class JobParser {
      * @param client
      * @return
      */
+    @JvmStatic
     fun parse(jobId: String,
               maki: String,
               actionsQueue: BlockingQueue<ActionData>,
@@ -62,6 +65,7 @@ class JobParser {
         return manager
     }
 
+    @JvmStatic
     fun parseActions(actions: List<JsonNode>,
                      manager: JobManager,
                      actionsQueue: BlockingQueue<ActionData>,
@@ -119,6 +123,7 @@ class JobParser {
 
     }
 
+    @JvmStatic
     fun parseSequentialAction(action: JsonNode,
     jobId: String,
     actionsQueue: BlockingQueue<ActionData>,
@@ -137,6 +142,7 @@ class JobParser {
 
     }
 
+    @JvmStatic
     fun parseErrorAction(action: JsonNode,
                          jobId: String,
                          parent: String,
