@@ -26,6 +26,7 @@ import org.apache.amaterasu.common.configuration.enums.ActionStatus
 data class ActionData(var status: ActionStatus = ActionStatus.pending,
                       var name: String= "",
                       var src: String= "",
+                      var config: String= "",
                       var groupId: String= "",
                       var typeId: String= "",
                       var id: String= "",

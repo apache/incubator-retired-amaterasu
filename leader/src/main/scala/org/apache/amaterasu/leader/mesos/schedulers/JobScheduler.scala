@@ -159,7 +159,7 @@ class JobScheduler extends AmaterasuScheduler {
             val taskId = Protos.TaskID.newBuilder().setValue(actionData.getId).build()
 
             // setting up the configuration files for the container
-            val envYaml = configManager.getActionConfigContent(actionData.getName, "") //TODO: replace with the value in actionData.config
+            val envYaml = configManager.getActionConfigContent(actionData.getName, actionData.getConfig)
             writeConfigFile(envYaml, jobManager.getJobId, actionData.getName, "env.yaml")
 
             val dataStores = DataLoader.getTaskData(actionData, env).exports
