@@ -61,4 +61,14 @@ class JobParserTests extends FlatSpec with Matchers {
 
   }
 
+  it should "Action 'config' is parsed successfully" in {
+
+    job.getRegisteredActions.size should be(3)
+
+    job.getRegisteredActions.get("0000000000").data.getConfig should be("start-cfg")
+    job.getRegisteredActions.get("0000000001").data.getConfig should be("step2-cfg")
+    job.getRegisteredActions.get("0000000001-error").data.getConfig should be("error-cfg")
+
+  }
+
 }
