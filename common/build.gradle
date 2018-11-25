@@ -99,12 +99,7 @@ compileKotlin{
     kotlinOptions.jvmTarget = "1.8"
 }
 compileTestKotlin {
-    dependsOn compileScala
     kotlinOptions.jvmTarget = "1.8"
-}
-
-compileTestScala {
-    dependsOn compileScala
 }
 
 compileScala {
