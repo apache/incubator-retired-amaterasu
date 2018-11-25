@@ -25,6 +25,7 @@ import java.util.concurrent.BlockingQueue
 class ErrorAction(name: String,
                   src: String,
                   parent: String,
+                  config: String,
                   groupId: String,
                   typeId: String,
                   jobId: String,
@@ -40,7 +41,7 @@ class ErrorAction(name: String,
         actionId = actionPath.substring(actionPath.indexOf('-') + 1).replace("/", "-")
 
         this.jobId = jobId
-        data =  ActionData (ActionStatus.pending, name, src, groupId, typeId, actionId, hashMapOf(), arrayListOf())
+        data = ActionData(ActionStatus.pending, name, src, config, groupId, typeId, actionId)
         jobsQueue = queue
         client = zkClient
     }

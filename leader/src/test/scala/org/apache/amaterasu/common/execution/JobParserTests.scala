@@ -65,9 +65,9 @@ class JobParserTests extends FlatSpec with Matchers {
 
     job.getRegisteredActions.size should be(3)
 
-    job.getRegisteredActions.get("0000000000").data.getConfig should be("start-cfg")
-    job.getRegisteredActions.get("0000000001").data.getConfig should be("step2-cfg")
-    job.getRegisteredActions.get("0000000001-error").data.getConfig should be("error-cfg")
+    job.getRegisteredActions.get("0000000000").data.getConfig should be("start-cfg.yaml")
+    job.getRegisteredActions.get("0000000001").data.getConfig should be("step2-cfg.yaml")
+    job.getRegisteredActions.get("0000000001-error").data.getConfig should be("error-cfg.yaml")
 
   }
 

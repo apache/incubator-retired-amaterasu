@@ -155,8 +155,10 @@ object JobParser {
                 action.path("name").asText(),
                 action.path("file").asText(),
                 parent,
-                action.path("group").asText(),
-                action.path("type").asText(),
+                action.path("config").asText(),
+                action.path("runner").path("group").asText(),
+                action.path("runner").path("type").asText(),
+
                 jobId,
                 actionsQueue,
                 client

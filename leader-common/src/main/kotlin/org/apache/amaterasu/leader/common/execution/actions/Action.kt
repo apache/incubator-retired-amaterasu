@@ -40,20 +40,12 @@ abstract class Action : KLogging() {
 
     fun announceQueued() {
         log.debug("Action ${data.name} of group ${data.groupId} and of type ${data.typeId} is queued for execution")
-        println("**********************")
-        println(actionPath)
-        println("queued")
-        println("**********************")
         client.setData().forPath(actionPath, ActionStatus.queued.value.toByteArray())
         data.status = ActionStatus.queued
     }
 
     fun announceComplete() {
         log.debug("Action ${data.name} of group ${data.groupId} and of type ${data.typeId} complete")
-        println("**********************")
-        println(actionPath)
-        println("complete")
-        println("**********************")
         client.setData().forPath(actionPath, ActionStatus.complete.value.toByteArray())
         data.status = ActionStatus.complete
     }
