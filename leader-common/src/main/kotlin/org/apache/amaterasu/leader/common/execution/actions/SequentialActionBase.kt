@@ -50,7 +50,7 @@ open class SequentialActionBase : Action() {
         println("Part ${data.name} of group ${data.groupId} and of type ${data.typeId} failed on attempt $attempt with message: $message")
         attempt += 1
 
-        lateinit var result: String
+        var result: String
         if (attempt <= attempts) {
             result = data.id
         }

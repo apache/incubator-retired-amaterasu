@@ -21,10 +21,10 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.ArrayNode
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
 import org.apache.amaterasu.common.dataobjects.ActionData
+import org.apache.amaterasu.leader.common.execution.JobManager
 import org.apache.amaterasu.leader.common.execution.actions.Action
 import org.apache.amaterasu.leader.common.execution.actions.ErrorAction
 import org.apache.amaterasu.leader.common.execution.actions.SequentialAction
-import org.apache.amaterasu.leader.common.execution.JobManager
 import org.apache.curator.framework.CuratorFramework
 import java.io.File
 import java.util.concurrent.BlockingQueue
@@ -55,7 +55,7 @@ object JobParser {
         val job = mapper.readTree(maki)
 
         // loading the job details
-        val manager = JobManager(jobId, job.path("job-name").asText(), actionsQueue, client)
+        val manager = JobManager(job.path("job-name").asText(), jobId, actionsQueue, client)
 
         // iterating the flow list and constructing the job's flow
         val actions = (job.path("flow") as ArrayNode).toList()
@@ -72,6 +72,7 @@ object JobParser {
                      attempts: Int,
                      previous: Action?) {
 
+
         if (actions.isEmpty())
             return
 
@@ -86,16 +87,16 @@ object JobParser {
         )
 
         //updating the list of frameworks setup
-        manager.frameworks.getOrPut(action.data.groupId){HashSet()}
+        manager.frameworks.getOrPut(action.data.groupId) { HashSet() }
                 .add(action.data.typeId)
 
 
-        if (manager.head == null) {
+        if (!manager.isInitialized) {
             manager.head = action
         }
 
-        if (previous != null) {
-            ArrayList(previous.data.nextActionIds).add(action.actionId)
+        previous?.let {
+            previous.data.nextActionIds.add(action.actionId)
         }
         manager.registerAction(action)
 
@@ -115,7 +116,7 @@ object JobParser {
             manager.registerAction(errorAction)
 
             //updating the list of frameworks setup
-            manager.frameworks.getOrPut(errorAction.data.groupId){HashSet()}
+            manager.frameworks.getOrPut(errorAction.data.groupId) { HashSet() }
                     .add(errorAction.data.typeId)
         }
 
@@ -125,20 +126,20 @@ object JobParser {
 
     @JvmStatic
     fun parseSequentialAction(action: JsonNode,
-    jobId: String,
-    actionsQueue: BlockingQueue<ActionData>,
-    client: CuratorFramework,
-    attempts: Int): SequentialAction {
+                              jobId: String,
+                              actionsQueue: BlockingQueue<ActionData>,
+                              client: CuratorFramework,
+                              attempts: Int): SequentialAction {
 
-        return  SequentialAction(action.path("name").asText(),
+        return SequentialAction(action.path("name").asText(),
                 action.path("file").asText(),
                 action.path("runner").path("group").asText(),
                 action.path("runner").path("type").asText(),
                 action.path("exports").fields().asSequence().map { it.key to it.value.asText() }.toMap(),
-        jobId,
-        actionsQueue,
-        client,
-        attempts)
+                jobId,
+                actionsQueue,
+                client,
+                attempts)
 
     }
 

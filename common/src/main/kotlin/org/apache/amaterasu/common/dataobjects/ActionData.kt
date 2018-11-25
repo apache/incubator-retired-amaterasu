@@ -30,7 +30,9 @@ data class ActionData(var status: ActionStatus = ActionStatus.pending,
                       var typeId: String= "",
                       var id: String= "",
                       var exports: Map<String, String> = mutableMapOf(),
-                      var nextActionIds: List<String> = listOf()) {
+                      var nextActionIds: MutableList<String> = mutableListOf()) {
     lateinit var errorActionId: String
+    val hasErrorAction: Boolean
+        get() = ::errorActionId.isInitialized
 
 }

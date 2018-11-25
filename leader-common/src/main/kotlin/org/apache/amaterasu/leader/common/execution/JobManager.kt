@@ -41,10 +41,10 @@ data class JobManager(var name: String = "",
      */
     fun start(): Unit = head.execute()
 
-    val outOfActions: Boolean = registeredActions.filterValues {
-        action -> action.data.status == ActionStatus.pending ||
-            action.data.status == ActionStatus.queued ||
-            action.data.status == ActionStatus.started
+    val outOfActions: Boolean = registeredActions.filterValues { action ->
+        action.data.status == ActionStatus.pending ||
+                action.data.status == ActionStatus.queued ||
+                action.data.status == ActionStatus.started
     }.isEmpty()
 
     /**
@@ -53,9 +53,9 @@ data class JobManager(var name: String = "",
      *
      * @return the ActionData of the next action, returns null if no such action exists
      */
-    fun getNextActionData(): ActionData {
+    fun getNextActionData(): ActionData? {
 
-        val nextAction: ActionData = executionQueue.poll()
+        val nextAction: ActionData? = executionQueue.poll()
 
         if (nextAction != null) {
             registeredActions[nextAction.id]!!.announceStart()
@@ -78,7 +78,7 @@ data class JobManager(var name: String = "",
      * @param action
      */
     fun registerAction(action: Action) {
-        registeredActions.put(action.actionId, action)
+        registeredActions[action.actionId] = action
     }
 
     /**
@@ -87,14 +87,18 @@ data class JobManager(var name: String = "",
      * @param actionId
      */
     fun actionComplete(actionId: String) {
-
         val action = registeredActions[actionId]
-        action!!.announceComplete()
-        action.data.nextActionIds.forEach{id -> registeredActions[id]!!.execute()}
+        action?.let {
 
-        // we don't need the error action anymore
-        if (action.data.errorActionId != null)
-            registeredActions[action.data.errorActionId]!!.announceCanceled()
+            it.announceComplete()
+
+            action.data.nextActionIds.forEach { id -> registeredActions[id]!!.execute() }
+
+            // we don't need the error action anymore
+            if (it.data.hasErrorAction)
+                registeredActions[action.data.errorActionId]!!.announceCanceled()
+        }
+
     }
 
     /**
@@ -109,7 +113,7 @@ data class JobManager(var name: String = "",
 
         val action = registeredActions[actionId]
         val id = action!!.handleFailure(message)
-        if (id != null)
+        if (!id.isEmpty())
             registeredActions[id]?.execute()
 
         //delete all future actions
@@ -121,7 +125,7 @@ data class JobManager(var name: String = "",
         if (action.data.status != ActionStatus.failed)
             action.announceCanceled()
 
-        action.data.nextActionIds.forEach{id ->
+        action.data.nextActionIds.forEach { id ->
             val registeredAction = registeredActions[id]
             if (registeredAction != null) {
                 cancelFutureActions(registeredAction)
@@ -141,4 +145,6 @@ data class JobManager(var name: String = "",
 
     fun actionsCount(): Int = executionQueue.size
 
+    val isInitialized: Boolean
+        get() = ::head.isInitialized
 }

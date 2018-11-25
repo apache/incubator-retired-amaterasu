@@ -26,7 +26,7 @@ import org.apache.curator.framework.CuratorFrameworkFactory
 import org.apache.curator.retry.ExponentialBackoffRetry
 import org.apache.curator.test.TestingServer
 import org.apache.zookeeper.CreateMode
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.{DoNotDiscover, FlatSpec, Matchers}
 
 import scala.collection.JavaConverters._
 

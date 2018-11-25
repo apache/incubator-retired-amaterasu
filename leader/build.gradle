@@ -121,9 +121,10 @@ compileTestKotlin {
     kotlinOptions.jvmTarget = "1.8"
 }
 
-tet {
-    dependsOn compileJava
+compileTestScala {
+    dependsOn compileScala
 }
+
 compileScala {
     dependsOn compileJava
     classpath += files(compileJava.destinationDir) + files(compileKotlin.destinationDir)
