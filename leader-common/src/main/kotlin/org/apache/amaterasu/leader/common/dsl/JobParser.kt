@@ -133,6 +133,7 @@ object JobParser {
 
         return SequentialAction(action.path("name").asText(),
                 action.path("file").asText(),
+                action.path("config").asText(),
                 action.path("runner").path("group").asText(),
                 action.path("runner").path("type").asText(),
                 action.path("exports").fields().asSequence().map { it.key to it.value.asText() }.toMap(),

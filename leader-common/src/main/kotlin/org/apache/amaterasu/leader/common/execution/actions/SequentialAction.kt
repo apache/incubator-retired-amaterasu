@@ -24,6 +24,7 @@ import java.util.concurrent.BlockingQueue
 
 class SequentialAction(name: String,
                        src: String,
+                       config: String,
                        groupId: String,
                        typeId: String,
                        exports: Map<String, String>,
@@ -42,7 +43,7 @@ class SequentialAction(name: String,
         this.attempts = attempts
         this.jobId = jobId
         val javaExports = exports
-        data = ActionData(ActionStatus.pending, name, src, groupId, typeId, actionId, javaExports, arrayListOf())
+        data = ActionData(ActionStatus.pending, name, src, config, groupId, typeId, actionId, javaExports, arrayListOf())
         jobsQueue = queue
         client = zkClient
 
