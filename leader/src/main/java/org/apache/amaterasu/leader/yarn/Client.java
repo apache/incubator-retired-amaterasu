@@ -18,8 +18,8 @@ package org.apache.amaterasu.leader.yarn;
 
 import org.apache.activemq.ActiveMQConnectionFactory;
 import org.apache.amaterasu.common.configuration.ClusterConfig;
-import org.apache.amaterasu.leader.execution.frameworks.FrameworkProvidersFactory;
-import org.apache.amaterasu.leader.utilities.ActiveReportListener;
+import org.apache.amaterasu.leader.common.execution.frameworks.FrameworkProvidersFactory;
+import org.apache.amaterasu.leader.common.utilities.ActiveReportListener;
 import org.apache.amaterasu.sdk.frameworks.FrameworkSetupProvider;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;

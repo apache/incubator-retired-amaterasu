@@ -21,8 +21,8 @@ import java.util.concurrent.BlockingQueue
 import org.apache.amaterasu.common.configuration.enums.ActionStatus
 import org.apache.amaterasu.common.dataobjects.ActionData
 import org.apache.amaterasu.common.logging.Logging
-import org.apache.amaterasu.leader.common.dsl.GitUtil
-import org.apache.amaterasu.leader.dsl.JobParser
+import org.apache.amaterasu.leader.common.dsl.{GitUtil, JobParser}
+import org.apache.amaterasu.leader.common.execution.JobManager
 import org.apache.curator.framework.CuratorFramework
 import org.apache.zookeeper.CreateMode
 

@@ -22,13 +22,16 @@ flow:
       group: spark
       type: scala
       src: simple-spark.scala
+      config: start-cfg.yaml
     - name: step2
       group: spark
       type: scala
       src: file2.scala
+      config: step2-cfg.yaml
       error:
         name: error-action
         group: spark
         type: scala
         src: error.scala
+        config: error-cfg.yaml
 ...

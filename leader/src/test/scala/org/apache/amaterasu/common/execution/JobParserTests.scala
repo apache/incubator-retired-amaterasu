@@ -19,7 +19,7 @@ package org.apache.amaterasu.common.execution
 import java.util.concurrent.LinkedBlockingQueue
 
 import org.apache.amaterasu.common.dataobjects.ActionData
-import org.apache.amaterasu.leader.dsl.JobParser
+import org.apache.amaterasu.leader.common.dsl.JobParser
 import org.apache.curator.framework.CuratorFrameworkFactory
 import org.apache.curator.retry.ExponentialBackoffRetry
 import org.apache.curator.test.TestingServer
@@ -46,18 +46,28 @@ class JobParserTests extends FlatSpec with Matchers {
 
   "JobParser" should "parse the simple-maki.yml" in {
 
-    job.name should be("amaterasu-test")
+    job.getName should be("amaterasu-test")
 
   }
 
   //TODO: I suspect this test is not indicative, and that order is assured need to verify this
   it should "also have two actions in the right order" in {
 
-    job.registeredActions.size should be(3)
+    job.getRegisteredActions.size should be(3)
 
-    job.registeredActions.get("0000000000").get.data.getName should be("start")
-    job.registeredActions.get("0000000001").get.data.getName should be("step2")
-    job.registeredActions.get("0000000001-error").get.data.getName should be("error-action")
+    job.getRegisteredActions.get("0000000000").data.getName should be("start")
+    job.getRegisteredActions.get("0000000001").data.getName should be("step2")
+    job.getRegisteredActions.get("0000000001-error").data.getName should be("error-action")
+
+  }
+
+  it should "Action 'config' is parsed successfully" in {
+
+    job.getRegisteredActions.size should be(3)
+
+    job.getRegisteredActions.get("0000000000").data.getConfig should be("start-cfg.yaml")
+    job.getRegisteredActions.get("0000000001").data.getConfig should be("step2-cfg.yaml")
+    job.getRegisteredActions.get("0000000001-error").data.getConfig should be("error-cfg.yaml")
 
   }
 

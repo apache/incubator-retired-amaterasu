@@ -23,8 +23,8 @@ import java.util.concurrent.ConcurrentHashMap
 import com.google.gson.Gson
 import org.apache.amaterasu.common.configuration.ClusterConfig
 import org.apache.amaterasu.common.logging.Logging
+import org.apache.amaterasu.leader.common.execution.JobManager
 import org.apache.amaterasu.leader.common.utilities.DataLoader
-import org.apache.amaterasu.leader.execution.JobManager
 import org.apache.hadoop.yarn.api.records._
 import org.apache.hadoop.yarn.client.api.async.{AMRMClientAsync, NMClientAsync}
 import org.apache.hadoop.yarn.util.Records
@@ -87,7 +87,7 @@ class YarnRMCallbackHandler(nmClient: NMClientAsync,
   }
 
   override def getProgress: Float = {
-    jobManager.registeredActions.size.toFloat / completedContainersAndTaskIds.size
+    jobManager.getRegisteredActions.size.toFloat / completedContainersAndTaskIds.size
   }
 
   override def onNodesUpdated(updatedNodes: util.List[NodeReport]): Unit = {
@@ -108,7 +108,7 @@ class YarnRMCallbackHandler(nmClient: NMClientAsync,
                          | java -cp executor.jar:spark-${config.Webserver.sparkVersion}/lib/*
                          | -Dscala.usejavacp=true
                          | -Djava.library.path=/usr/lib org.apache.amaterasu.executor.yarn.executors.ActionsExecutorLauncher
-                         | ${jobManager.jobId} ${config.master} ${actionData.getName} ${gson.toJson(taskData)} ${gson.toJson(execData)}""".stripMargin
+                         | ${jobManager.getJobId} ${config.master} ${actionData.getName} ${gson.toJson(taskData)} ${gson.toJson(execData)}""".stripMargin
         ctx.setCommands(Collections.singletonList(command))
 
         ctx.setLocalResources(Map[String, LocalResource] (
