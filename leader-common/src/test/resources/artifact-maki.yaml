@@ -17,22 +17,26 @@
 # under the License.
 #
 ---
-job-name:    amaterasu-test
+job-name: amaterasu-artifact-test
 flow:
-    - name: start
-      group: spark
-      type: scala
-      src: simple-spark.scala
-      config: start-cfg.yaml
-    - name: step2
-      group: spark
-      type: scala
-      src: file2.scala
-      config: step2-cfg.yaml
-      error:
-        name: error-action
-        group: spark
-        type: scala
-        src: error.scala
-        config: error-cfg.yaml
+- name: start
+  runner:
+    group: spark
+    type: scala-jar
+  artifact:
+    groupId: io.shonto
+    artifactId: amaterasu-simple-spar
+    version: 1.0-SNAPSHOT
+  repo:
+    id: packagecloud
+    type: default
+    url: https://packagecloud.io/yanivr/amaterasu-demo/maven2
+  class: DataGenerator
+  exports:
+    odd: parquet
+- name: step2
+  runner:
+    group: spark
+    type: scala-shell
+  file: file2.scala
 ...

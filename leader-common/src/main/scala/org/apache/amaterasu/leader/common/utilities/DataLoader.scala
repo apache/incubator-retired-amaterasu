@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 package org.apache.amaterasu.leader.common.utilities
-import scala.collection.JavaConverters._
+
 import java.io.{File, FileInputStream}
 import java.nio.file.{Files, Paths}
 
@@ -42,9 +42,18 @@ object DataLoader extends Logging {
   val ymlMapper = new ObjectMapper(new YAMLFactory())
   ymlMapper.registerModule(DefaultScalaModule)
 
+  def getTaskDataBytes(actionData: ActionData, env: String): Array[Byte] = {
+    mapper.writeValueAsBytes(getTaskData(actionData, env))
+  }
+
   def getTaskData(actionData: ActionData, env: String): TaskData = {
     val srcFile = actionData.getSrc
-    val src = Source.fromFile(s"repo/src/$srcFile").mkString
+    var src = ""
+
+    if(!srcFile.isEmpty){
+       src = Source.fromFile(s"repo/src/$srcFile").mkString
+    }
+
     val envValue = Source.fromFile(s"repo/env/$env/job.yml").mkString
 
     val envData = ymlMapper.readValue(envValue, classOf[Environment])
@@ -54,12 +63,12 @@ object DataLoader extends Logging {
     TaskData(src, envData, actionData.getGroupId, actionData.getTypeId, exports)
   }
 
-  def getTaskDataBytes(actionData: ActionData, env: String): Array[Byte] = {
-    mapper.writeValueAsBytes(getTaskData(actionData, env))
-  }
-
   def getTaskDataString(actionData: ActionData, env: String): String = {
     mapper.writeValueAsString(getTaskData(actionData, env))
+  }
+
+  def getExecutorDataBytes(env: String, clusterConf: ClusterConfig): Array[Byte] = {
+    mapper.writeValueAsBytes(getExecutorData(env, clusterConf))
   }
 
   def getExecutorData(env: String, clusterConf: ClusterConfig): ExecData = {
@@ -85,22 +94,18 @@ object DataLoader extends Logging {
     ExecData(envData, depsData, pyDepsData, config)
   }
 
-  def getExecutorDataBytes(env: String, clusterConf: ClusterConfig): Array[Byte] = {
-    mapper.writeValueAsBytes(getExecutorData(env, clusterConf))
+  def yamlToMap(file: File): (String, Map[String, Any]) = {
+
+    val yaml = new Yaml()
+    val conf = yaml.load(new FileInputStream(file)).asInstanceOf[java.util.Map[String, Any]].asScala.toMap
+
+    (file.getName.replace(".yml", ""), conf)
   }
 
   def getExecutorDataString(env: String, clusterConf: ClusterConfig): String = {
     mapper.writeValueAsString(getExecutorData(env, clusterConf))
   }
 
-  def yamlToMap(file: File): (String, Map[String, Any]) = {
-
-    val yaml = new Yaml()
-    val conf = yaml.load(new FileInputStream(file)).asInstanceOf[java.util.Map[String, Any]].asScala.toMap
-
-    (file.getName.replace(".yml",""), conf)
-  }
-
 }
 
-class ConfMap[String,  T <: ConfMap[String, T]] extends mutable.ListMap[String, Either[String, T]]
+class ConfMap[String, T <: ConfMap[String, T]] extends mutable.ListMap[String, Either[String, T]]

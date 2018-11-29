@@ -21,7 +21,7 @@ class SparkSubmitScalaRunnerProvider extends RunnerSetupProvider {
     Array[String]()
 
   override def getActionUserResources(jobId: String, actionData: ActionData): Array[String] =
-    Array[String](s"$jobId/${actionData.getName}/${actionData.getSrc}")
+    Array[String]()
 
   override def getActionDependencies(jobId: String, actionData: ActionData): Array[String] = {
     val util = new ArtifactUtil(List(actionData.repo).asJava)

@@ -21,16 +21,18 @@ import java.net.{InetAddress, ServerSocket}
 import java.nio.ByteBuffer
 import java.util
 import java.util.concurrent.{ConcurrentHashMap, LinkedBlockingQueue}
-import javax.jms.Session
 
+import javax.jms.Session
 import org.apache.activemq.ActiveMQConnectionFactory
 import org.apache.activemq.broker.BrokerService
 import org.apache.amaterasu.common.configuration.ClusterConfig
 import org.apache.amaterasu.common.dataobjects.ActionData
 import org.apache.amaterasu.common.logging.Logging
-import org.apache.amaterasu.leader.execution.frameworks.FrameworkProvidersFactory
-import org.apache.amaterasu.leader.execution.{JobLoader, JobManager}
-import org.apache.amaterasu.leader.utilities.{ActiveReportListener, Args}
+import org.apache.amaterasu.leader.common.execution.JobManager
+import org.apache.amaterasu.leader.common.execution.frameworks.FrameworkProvidersFactory
+import org.apache.amaterasu.leader.common.utilities.ActiveReportListener
+import org.apache.amaterasu.leader.execution.JobLoader
+import org.apache.amaterasu.leader.utilities.Args
 import org.apache.curator.framework.recipes.barriers.DistributedBarrier
 import org.apache.curator.framework.{CuratorFramework, CuratorFrameworkFactory}
 import org.apache.curator.retry.ExponentialBackoffRetry
@@ -122,17 +124,17 @@ class ApplicationMaster extends Logging with AMRMClientAsync.CallbackHandler {
 
     // now that the job was initiated, the curator client is started and we can
     // register the broker's address
-    client.create().withMode(CreateMode.PERSISTENT).forPath(s"/${jobManager.jobId}/broker")
-    client.setData().forPath(s"/${jobManager.jobId}/broker", address.getBytes)
+    client.create().withMode(CreateMode.PERSISTENT).forPath(s"/${jobManager.getJobId}/broker")
+    client.setData().forPath(s"/${jobManager.getJobId}/broker", address.getBytes)
 
     // once the broker is registered, we can remove the barrier so clients can connect
-    log.info(s"/${jobManager.jobId}-report-barrier")
-    val barrier = new DistributedBarrier(client, s"/${jobManager.jobId}-report-barrier")
+    log.info(s"/${jobManager.getJobId}-report-barrier")
+    val barrier = new DistributedBarrier(client, s"/${jobManager.getJobId}-report-barrier")
     barrier.removeBarrier()
 
-    setupMessaging(jobManager.jobId)
+    setupMessaging(jobManager.getJobId)
 
-    log.info(s"Job ${jobManager.jobId} initiated with ${jobManager.registeredActions.size} actions")
+    log.info(s"Job ${jobManager.getJobId} initiated with ${jobManager.getRegisteredActions.size} actions")
 
     jarPath = new Path(config.YARN.hdfsJarsPath)
 
@@ -160,13 +162,13 @@ class ApplicationMaster extends Logging with AMRMClientAsync.CallbackHandler {
     log.info("Max mem capability of resources in this cluster " + maxMem)
     val maxVCores = registrationResponse.getMaximumResourceCapability.getVirtualCores
     log.info("Max vcores capability of resources in this cluster " + maxVCores)
-    log.info(s"Created jobManager. jobManager.registeredActions.size: ${jobManager.registeredActions.size}")
+    log.info(s"Created jobManager. jobManager.registeredActions.size: ${jobManager.getRegisteredActions.size}")
 
     // Resource requirements for worker containers
     this.capability = Records.newRecord(classOf[Resource])
     val frameworkFactory = FrameworkProvidersFactory.apply(env, config)
 
-    while (!jobManager.outOfActions) {
+    while (!jobManager.getOutOfActions) {
       val actionData = jobManager.getNextActionData
       if (actionData != null) {
 
@@ -248,7 +250,7 @@ class ApplicationMaster extends Logging with AMRMClientAsync.CallbackHandler {
         val framework = frameworkFactory.getFramework(actionData.getGroupId)
         val runnerProvider = framework.getRunnerProvider(actionData.getTypeId)
         val ctx = Records.newRecord(classOf[ContainerLaunchContext])
-        val commands: List[String] = List(runnerProvider.getCommand(jobManager.jobId, actionData, env, s"${actionData.getId}-${container.getId.getContainerId}", address))
+        val commands: List[String] = List(runnerProvider.getCommand(jobManager.getJobId, actionData, env, s"${actionData.getId}-${container.getId.getContainerId}", address))
 
         log.info("Running container id {}.", container.getId.getContainerId)
         log.info("Running container id {} with command '{}'", container.getId.getContainerId, commands.last)
@@ -385,17 +387,17 @@ class ApplicationMaster extends Logging with AMRMClientAsync.CallbackHandler {
       }
     }
 
-    if (jobManager.outOfActions) {
+    if (jobManager.getOutOfActions) {
       log.info("Finished all tasks successfully! Wow!")
       jobManager.actionsCount()
       stopApplication(FinalApplicationStatus.SUCCEEDED, "SUCCESS")
     } else {
-      log.info(s"jobManager.registeredActions.size: ${jobManager.registeredActions.size}; completedContainersAndTaskIds.size: ${completedContainersAndTaskIds.size}")
+      log.info(s"jobManager.registeredActions.size: ${jobManager.getRegisteredActions.size}; completedContainersAndTaskIds.size: ${completedContainersAndTaskIds.size}")
     }
   }
 
   override def getProgress: Float = {
-    jobManager.registeredActions.size.toFloat / completedContainersAndTaskIds.size
+    jobManager.getRegisteredActions.size.toFloat / completedContainersAndTaskIds.size
   }
 
   override def onNodesUpdated(updatedNodes: util.List[NodeReport]): Unit = {

@@ -26,12 +26,12 @@ import java.io.File
 
 class ArtifactUtil(repos: List<Repo> = listOf()) {
 
+    val repo = File(System.getProperty("java.io.tmpdir"), "ama-repo")
+    private val remoteRepos: MutableList<RemoteRepository> = mutableListOf()
+
     init {
         addRepos(repos)
     }
-
-    val repo = File(System.getProperty("java.io.tmpdir"), "ama-repo")
-    private val remoteRepos: MutableList<RemoteRepository> = mutableListOf()
 
     fun addRepo(repo: Repo) {
         remoteRepos.add(RemoteRepository(repo.id, repo.type, repo.url))

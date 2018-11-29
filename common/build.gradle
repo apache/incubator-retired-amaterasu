@@ -58,7 +58,8 @@ dependencies {
     compile('com.jcabi:jcabi-aether:0.10.1') {
         exclude group: 'org.jboss.netty'
     }
-
+    compile group: 'org.apache.maven', name: 'maven-core', version: '3.0.5'
+    
     provided group: 'org.apache.hadoop', name: 'hadoop-yarn-client', version: '2.7.3'
     provided group: 'org.apache.hadoop', name: 'hadoop-common', version: '2.7.3'
     provided group: 'org.apache.hadoop', name: 'hadoop-yarn-api', version: '2.7.3'
