@@ -9,10 +9,10 @@ import java.io.File
 
 abstract class PythonRunnerProviderBase(env: String?, conf:ClusterConfig?) : RunnerSetupProvider {
 
-    val execData: ExecData = DataLoader.getExecutorData(env, conf)
+    private val execData: ExecData = DataLoader.getExecutorData(env, conf)
 
     override fun getCommand(jobId: String?, actionData: ActionData?, env: String?, executorId: String?, callbackAddress: String?): String {
-        return "pip install -r {deps}"
+        return "pip install -r requirements.txt"
     }
 
     override fun getRunnerResources(): Array<String> {
@@ -23,9 +23,9 @@ abstract class PythonRunnerProviderBase(env: String?, conf:ClusterConfig?) : Run
         File("requirements.txt").appendText("./python_sdk.zip\n")
         for (dep in execData.pyDeps().packages())
             if (dep.index().isDefined && !dep.index().isEmpty)
-                File("requirements.txt").appendText("-i ${dep.index()} ${dep.packageId()}")
+                File("requirements.txt").appendText("-i ${dep.index()} ${dep.packageId()}\n")
             else
-                File("requirements.txt").appendText(dep.packageId())
+                File("requirements.txt").appendText("${dep.packageId()}\n")
         return arrayOf("requirements.txt")
     }
 }

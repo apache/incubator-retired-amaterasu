@@ -9,7 +9,7 @@ open class BasicPythonRunnerProvider(env: String?, conf: ClusterConfig?): Python
     }
 
     override fun getCommand(jobId: String?, actionData: ActionData?, env: String?, executorId: String?, callbackAddress: String?): String {
-        return super.getCommand(jobId, actionData, env, executorId, callbackAddress) + " && python ${actionData!!.src()}"
+        return super.getCommand(jobId, actionData, env, executorId, callbackAddress) + " && python ${actionData!!.src}"
     }
 
     override fun getRunnerResources(): Array<String> {

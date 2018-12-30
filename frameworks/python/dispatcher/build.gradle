@@ -85,7 +85,7 @@ dependencies {
     testCompile "org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version"
     testRuntime 'org.jetbrains.spek:spek-junit-platform-engine:1.1.5'
     testCompile 'org.junit.platform:junit-platform-runner:1.0.0'
-    testCompile group: 'io.mockk', name: 'mockk', version: '1.8.13'
+    testCompile "com.nhaarman:mockito-kotlin:1.6.0"
 
     // spek requires kotlin-reflect, can be omitted if already in the classpath
     testRuntimeOnly "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
