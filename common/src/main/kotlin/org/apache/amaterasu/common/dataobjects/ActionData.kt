@@ -34,6 +34,7 @@ data class ActionData(var status: ActionStatus = ActionStatus.pending,
     lateinit var errorActionId: String
     lateinit var artifact: Artifact
     lateinit var repo: Repo
+    lateinit var entryClass: String
 
     val hasErrorAction: Boolean
         get() = ::errorActionId.isInitialized

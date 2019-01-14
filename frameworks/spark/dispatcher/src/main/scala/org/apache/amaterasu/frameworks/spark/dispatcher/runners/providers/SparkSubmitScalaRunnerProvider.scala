@@ -1,5 +1,7 @@
 package org.apache.amaterasu.frameworks.spark.dispatcher.runners.providers
 
+import java.io.File
+
 import org.apache.amaterasu.common.configuration.ClusterConfig
 import org.apache.amaterasu.common.dataobjects.ActionData
 import org.apache.amaterasu.common.utils.ArtifactUtil
@@ -10,22 +12,26 @@ import scala.collection.JavaConverters._
 class SparkSubmitScalaRunnerProvider extends RunnerSetupProvider {
 
   private var conf: ClusterConfig = _
+  val jarFile = new File(this.getClass.getProtectionDomain.getCodeSource.getLocation.getPath)
+  val amaDist = new File (s"${new File(jarFile.getParent).getParent}/dist")
 
-  override def getCommand(jobId: String, actionData: ActionData, env: String, executorId: String, callbackAddress: String): String ={
-    val util = new ArtifactUtil(List(actionData.repo).asJava)
-
-    s"$$SPARK_HOME/bin/spark-submit ${util.getLocalArtifacts(actionData.getArtifact).get(0)} --jars spark-runtime-${conf.version}.jar"
+  override def getCommand(jobId: String, actionData: ActionData, env: String, executorId: String, callbackAddress: String): String = {
+    val util = new ArtifactUtil(List(actionData.repo).asJava, jobId)
+    val classParam = if (actionData.getHasArtifact)  s" --class ${actionData.entryClass}" else ""
+    //s"./spark-2.2.1-bin-hadoop2.7/bin/spark-submit $classParam ${util.getLocalArtifacts(actionData.getArtifact).get(0).getName} --jars spark-runtime-${conf.version}.jar"
+    "/bin/echo hello"
   }
 
   override def getRunnerResources: Array[String] =
     Array[String]()
 
-  override def getActionUserResources(jobId: String, actionData: ActionData): Array[String] =
+  override def getActionUserResources(jobId: String, actionData: ActionData): Array[String] = {
     Array[String]()
+  }
 
   override def getActionDependencies(jobId: String, actionData: ActionData): Array[String] = {
-    val util = new ArtifactUtil(List(actionData.repo).asJava)
-    util.getLocalArtifacts(actionData.getArtifact).toArray().map(_.toString)
+    val util = new ArtifactUtil(List(actionData.repo).asJava, jobId)
+    util.getLocalArtifacts(actionData.getArtifact).toArray().map(x => amaDist.toPath.relativize(x.asInstanceOf[File].toPath).toString)
   }
 
 }

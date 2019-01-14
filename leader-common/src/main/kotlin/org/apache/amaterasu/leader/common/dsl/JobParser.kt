@@ -146,6 +146,7 @@ object JobParser {
 
         if(!action.path("artifact").isMissingNode){
             result.data.artifact = parseArtifact(action)
+            result.data.entryClass = action.path("class").asText()
         }
 
         if(!action.path("repo").isMissingNode){

@@ -24,9 +24,16 @@ import org.sonatype.aether.util.artifact.DefaultArtifact
 import org.sonatype.aether.util.artifact.JavaScopes
 import java.io.File
 
-class ArtifactUtil(repos: List<Repo> = listOf()) {
+class ArtifactUtil(repos: List<Repo> = listOf(), jobId: String) {
 
-    val repo = File(System.getProperty("java.io.tmpdir"), "ama-repo")
+    var repo: File
+
+    init {
+        val jarFile = File(this.javaClass.protectionDomain.codeSource.location.path)
+        val amaHome = File(jarFile.parent).parent
+        repo = File("$amaHome/dist/$jobId")
+    }
+
     private val remoteRepos: MutableList<RemoteRepository> = mutableListOf()
 
     init {
@@ -41,12 +48,12 @@ class ArtifactUtil(repos: List<Repo> = listOf()) {
         repos.forEach { addRepo(it) }
     }
 
-    fun getLocalArtifacts(artifact: Artifact): List<String> {
+    fun getLocalArtifacts(artifact: Artifact): List<File> {
 
-        val aether =  Aether(remoteRepos, repo)
-        val resolvedArtifacts = aether.resolve( DefaultArtifact(artifact.groupId, artifact.artifactId, "", "jar", artifact.version),
-        JavaScopes.RUNTIME)
+        val aether = Aether(remoteRepos, repo)
+        val resolvedArtifacts = aether.resolve(DefaultArtifact(artifact.groupId, artifact.artifactId, "", "jar", artifact.version),
+                JavaScopes.RUNTIME)
 
-        return resolvedArtifacts.map { it.file.absolutePath }
+        return resolvedArtifacts.map { it.file }
     }
 }
