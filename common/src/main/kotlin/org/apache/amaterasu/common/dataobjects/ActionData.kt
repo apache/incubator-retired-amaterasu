@@ -21,7 +21,7 @@ import org.apache.amaterasu.common.configuration.enums.ActionStatus
 /*
     Adding default values just for the sake of Scala
  */
-data class ActionData(var status: ActionStatus = ActionStatus.pending,
+data class ActionData(var status: ActionStatus = ActionStatus.Pending,
                       var name: String= "",
                       var src: String= "",
                       var config: String= "",

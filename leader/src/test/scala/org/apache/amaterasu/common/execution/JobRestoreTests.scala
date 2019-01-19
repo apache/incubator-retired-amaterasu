@@ -62,20 +62,20 @@ class JobRestoreTests extends FlatSpec with Matchers with BeforeAndAfterEach {
 
   }
 
-  "a restored job" should "have all queued actions in the executionQueue" in {
+  "a restored job" should "have all Queued actions in the executionQueue" in {
 
-    // setting task-0000000002 as queued
-    client.setData().forPath(s"/${jobId}/task-0000000002", ActionStatus.queued.toString.getBytes)
+    // setting task-0000000002 as Queued
+    client.setData().forPath(s"/${jobId}/task-0000000002", ActionStatus.Queued.toString.getBytes)
 
     JobLoader.restoreJobState(manager, jobId, client)
 
     queue.peek.getName should be("start")
   }
 
-  "a restored job" should "have all started actions in the executionQueue" in {
+  "a restored job" should "have all Started actions in the executionQueue" in {
 
-    // setting task-0000000002 as queued
-    client.setData().forPath(s"/${jobId}/task-0000000002", ActionStatus.started.toString.getBytes)
+    // setting task-0000000002 as Queued
+    client.setData().forPath(s"/${jobId}/task-0000000002", ActionStatus.Started.toString.getBytes)
 
     JobLoader.restoreJobState(manager, jobId, client)
 

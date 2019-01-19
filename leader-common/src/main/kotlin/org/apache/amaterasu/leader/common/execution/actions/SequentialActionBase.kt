@@ -47,7 +47,7 @@ open class SequentialActionBase : Action() {
 
     override fun handleFailure(message: String): String {
 
-        println("Part ${data.name} of group ${data.groupId} and of type ${data.typeId} failed on attempt $attempt with message: $message")
+        println("Part ${data.name} of group ${data.groupId} and of type ${data.typeId} Failed on attempt $attempt with message: $message")
         attempt += 1
 
         var result = ""
@@ -58,7 +58,7 @@ open class SequentialActionBase : Action() {
             announceFailure()
             if(data.hasErrorAction) {
                 println("===> moving to err action ${data.errorActionId}")
-                data.status = ActionStatus.failed
+                data.status = ActionStatus.Failed
                 result = data.errorActionId
             }
         }

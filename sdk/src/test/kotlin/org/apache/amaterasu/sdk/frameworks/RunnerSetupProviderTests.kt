@@ -12,7 +12,7 @@ object RunnerSetupProviderTests : Spek({
     given("A class implementing RunnerSetupProvider") {
 
         val testProvider = TestRunnerProvider()
-        val data = ActionData(ActionStatus.started, "test", "test.scala", "spark", "scala-shell", "123")
+        val data = ActionData(ActionStatus.Started, "test", "test.scala", "spark", "scala-jar", "123")
 
         it("adds the default action resource files to the user action resource files") {
             val resources = testProvider.getActionResources("job", data)

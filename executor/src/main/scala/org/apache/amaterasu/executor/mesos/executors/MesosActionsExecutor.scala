@@ -116,7 +116,7 @@ class MesosActionsExecutor extends Logging with Executor {
     task onComplete {
 
       case Failure(t) =>
-        println(s"launching task failed: ${t.getMessage}")
+        println(s"launching task Failed: ${t.getMessage}")
         System.exit(1)
 
       case Success(ts) =>
@@ -124,7 +124,7 @@ class MesosActionsExecutor extends Logging with Executor {
         driver.sendStatusUpdate(TaskStatus.newBuilder()
           .setTaskId(taskInfo.getTaskId)
           .setState(TaskState.TASK_FINISHED).build())
-        notifier.info(s"complete task: ${taskInfo.getTaskId.getValue}")
+        notifier.info(s"Complete task: ${taskInfo.getTaskId.getValue}")
 
     }
 

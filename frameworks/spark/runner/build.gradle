@@ -24,7 +24,7 @@ plugins {
 shadowJar {
     zip64 true
 }
-
+2
 repositories {
     maven {
         url "https://plugins.gradle.org/m2/"

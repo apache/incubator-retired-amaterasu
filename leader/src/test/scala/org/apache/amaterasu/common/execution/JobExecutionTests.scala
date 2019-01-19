@@ -62,7 +62,7 @@ class JobExecutionTests extends FlatSpec with Matchers {
 
     // making sure that the status is reflected in zk
     val actionStatus = client.getData.forPath(s"/$jobId/task-0000000000")
-    new String(actionStatus) should be("queued")
+    new String(actionStatus) should be("Queued")
 
   }
 
@@ -73,32 +73,35 @@ class JobExecutionTests extends FlatSpec with Matchers {
 
     // making sure that the status is reflected in zk
     val actionStatus = client.getData.forPath(s"/$jobId/task-0000000000")
-    new String(actionStatus) should be("started")
-
+    new String(actionStatus) should be("Started")
   }
 
-  it should "be marked as complete when the actionComplete method is called" in {
+  it should "not be out of actions when an action is still Pending" in {
+    job.getOutOfActions should be (false)
+  }
+
+  it should "be marked as Complete when the actionComplete method is called" in {
 
     job.actionComplete("0000000000")
 
     // making sure that the status is reflected in zk
     val actionStatus = client.getData.forPath(s"/$jobId/task-0000000000")
 
-    new String(new String(actionStatus)) should be("complete")
+    new String(new String(actionStatus)) should be("Complete")
 
   }
 
-  "the next step2 job" should "be queued as a result of the completion" in {
+  "the next step2 job" should "be Queued as a result of the completion" in {
 
     queue.peek.getName should be("step2")
 
     // making sure that the status is reflected in zk
     val actionStatus = client.getData.forPath(s"/$jobId/task-0000000001")
-    new String(actionStatus) should be("queued")
+    new String(actionStatus) should be("Queued")
 
   }
 
-  it should "be marked as started when JobManager.getNextActionData is called" in {
+  it should "be marked as Started when JobManager.getNextActionData is called" in {
 
     val data = job.getNextActionData
 
@@ -106,17 +109,17 @@ class JobExecutionTests extends FlatSpec with Matchers {
 
     // making sure that the status is reflected in zk
     val actionStatus = client.getData.forPath(s"/$jobId/task-0000000001")
-    new String(actionStatus) should be("started")
+    new String(actionStatus) should be("Started")
   }
 
-  it should "be marked as failed when JobManager. is called" in {
+  it should "be marked as Failed when JobManager. is called" in {
 
     job.actionFailed("0000000001", "test failure")
     queue.peek.getName should be("error-action")
 
     // making sure that the status is reflected in zk
     val actionStatus = client.getData.forPath(s"/$jobId/task-0000000001-error")
-    new String(actionStatus) should be("queued")
+    new String(actionStatus) should be("Queued")
 
     // and returned by getNextActionData
     val data = job.getNextActionData

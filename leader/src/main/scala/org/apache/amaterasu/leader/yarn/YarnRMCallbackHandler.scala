@@ -67,9 +67,9 @@ class YarnRMCallbackHandler(nmClient: NMClientAsync,
         val taskId = containersIdsToTaskIds(containerId)
         if (status.getExitStatus == 0) {
           completedContainersAndTaskIds.put(containerId, taskId)
-          log.info(s"Container $containerId complete with task $taskId with success.")
+          log.info(s"Container $containerId Complete with task $taskId with success.")
         } else {
-          log.warn(s"Container $containerId complete with task $taskId with failed status code (${status.getExitStatus}.")
+          log.warn(s"Container $containerId Complete with task $taskId with Failed status code (${status.getExitStatus}.")
           val failedTries = failedTasksCounter.getOrElse(taskId, 0)
           if (failedTries < MAX_ATTEMPTS_PER_TASK) {
             // TODO: notify and ask for a new container
@@ -121,7 +121,7 @@ class YarnRMCallbackHandler(nmClient: NMClientAsync,
 
       containerTask onComplete {
         case Failure(t) => {
-          println(s"launching container failed: ${t.getMessage}")
+          println(s"launching container Failed: ${t.getMessage}")
         }
 
         case Success(actionDataId) => {

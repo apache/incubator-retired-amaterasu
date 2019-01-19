@@ -104,7 +104,7 @@ class ApplicationMaster extends Logging with AMRMClientAsync.CallbackHandler {
 
   def execute(arguments: Args): Unit = {
 
-    log.info(s"started AM with args $arguments")
+    log.info(s"Started AM with args $arguments")
 
     propPath = System.getenv("PWD") + "/amaterasu.properties"
     props = new FileInputStream(new File(propPath))
@@ -122,7 +122,7 @@ class ApplicationMaster extends Logging with AMRMClientAsync.CallbackHandler {
       case e: Exception => log.error("error initializing ", e.getMessage)
     }
 
-    // now that the job was initiated, the curator client is started and we can
+    // now that the job was initiated, the curator client is Started and we can
     // register the broker's address
     client.create().withMode(CreateMode.PERSISTENT).forPath(s"/${jobManager.getJobId}/broker")
     client.setData().forPath(s"/${jobManager.getJobId}/broker", address.getBytes)
@@ -303,7 +303,7 @@ class ApplicationMaster extends Logging with AMRMClientAsync.CallbackHandler {
 
       containerTask onComplete {
         case Failure(t) =>
-          log.error(s"launching container failed", t)
+          log.error(s"launching container Failed", t)
           askContainer(actionData)
 
         case Success(requestedActionData) =>
@@ -378,11 +378,11 @@ class ApplicationMaster extends Logging with AMRMClientAsync.CallbackHandler {
 
           //completedContainersAndTaskIds.put(containerId, task.id)
           jobManager.actionComplete(taskId)
-          log.info(s"Container $containerId complete with task ${taskId} with success.")
+          log.info(s"Container $containerId Complete with task ${taskId} with success.")
         } else {
           // TODO: Check the getDiagnostics value and see if appropriate
           jobManager.actionFailed(taskId, status.getDiagnostics)
-          log.warn(s"Container $containerId complete with task ${taskId} with failed status code (${status.getExitStatus})")
+          log.warn(s"Container $containerId Complete with task ${taskId} with Failed status code (${status.getExitStatus})")
         }
       }
     }
@@ -455,7 +455,7 @@ class ApplicationMaster extends Logging with AMRMClientAsync.CallbackHandler {
     }
 
     jobManager.start()
-    log.info("started jobManager")
+    log.info("Started jobManager")
   }
 }
 
@@ -472,7 +472,7 @@ object ApplicationMaster extends Logging with App {
       appMaster.broker.addConnector(appMaster.address)
       appMaster.broker.start()
 
-      log.info(s"broker started with address ${appMaster.address}")
+      log.info(s"broker Started with address ${appMaster.address}")
       appMaster.execute(arguments)
 
     case None =>

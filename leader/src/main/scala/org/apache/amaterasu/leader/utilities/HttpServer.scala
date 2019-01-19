@@ -57,7 +57,7 @@ object HttpServer extends Logging {
   }
 
   def stop() {
-    if (server == null) throw new IllegalStateException("Server not started")
+    if (server == null) throw new IllegalStateException("Server not Started")
 
     server.stop()
     server = null

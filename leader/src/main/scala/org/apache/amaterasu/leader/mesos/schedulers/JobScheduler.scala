@@ -17,13 +17,10 @@
 package org.apache.amaterasu.leader.mesos.schedulers
 
 import java.io.{File, PrintWriter, StringWriter}
-import java.nio.file.Files.copy
-import java.nio.file.Paths.get
-import java.nio.file.StandardCopyOption.REPLACE_EXISTING
 import java.util
+import java.util.UUID
 import java.util.concurrent.locks.ReentrantLock
 import java.util.concurrent.{ConcurrentHashMap, LinkedBlockingQueue}
-import java.util.{Collections, UUID}
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
@@ -35,17 +32,15 @@ import org.apache.amaterasu.common.execution.actions.NotificationLevel.Notificat
 import org.apache.amaterasu.common.execution.actions.{Notification, NotificationLevel, NotificationType}
 import org.apache.amaterasu.leader.common.configuration.ConfigManager
 import org.apache.amaterasu.leader.common.execution.JobManager
-import org.apache.amaterasu.leader.common.utilities.DataLoader
 import org.apache.amaterasu.leader.common.execution.frameworks.FrameworkProvidersFactory
+import org.apache.amaterasu.leader.common.utilities.DataLoader
 import org.apache.amaterasu.leader.execution.JobLoader
 import org.apache.amaterasu.leader.utilities.HttpServer
 import org.apache.curator.framework.{CuratorFramework, CuratorFrameworkFactory}
 import org.apache.curator.retry.ExponentialBackoffRetry
 import org.apache.log4j.LogManager
 import org.apache.mesos.Protos.CommandInfo.URI
-import org.apache.mesos.Protos.Environment.Variable
 import org.apache.mesos.Protos._
-import org.apache.mesos.protobuf.ByteString
 import org.apache.mesos.{Protos, SchedulerDriver}
 
 import scala.collection.JavaConverters._
@@ -100,21 +95,22 @@ class JobScheduler extends AmaterasuScheduler {
 
   def frameworkMessage(driver: SchedulerDriver, executorId: ExecutorID, slaveId: SlaveID, data: Array[Byte]): Unit = {
 
-//    val notification = mapper.readValue(data, classOf[Notification])
-//
-//    reportLevel match {
-//      case NotificationLevel.code => printNotification(notification)
-//      case NotificationLevel.execution =>
-//        if (notification.notLevel != NotificationLevel.code)
-//          printNotification(notification)
-//      case _ =>
-//    }
+    //    val notification = mapper.readValue(data, classOf[Notification])
+    //
+    //    reportLevel match {
+    //      case NotificationLevel.code => printNotification(notification)
+    //      case NotificationLevel.execution =>
+    //        if (notification.notLevel != NotificationLevel.code)
+    //          printNotification(notification)
+    //      case _ =>
+    //    }
 
   }
 
   def statusUpdate(driver: SchedulerDriver, status: TaskStatus): Unit = {
 
     status.getState match {
+      case TaskState.TASK_STARTING => log.info("Task starting ...")
       case TaskState.TASK_RUNNING => jobManager.actionStarted(status.getTaskId.getValue)
       case TaskState.TASK_FINISHED => jobManager.actionComplete(status.getTaskId.getValue)
       case TaskState.TASK_FAILED |
@@ -142,6 +138,9 @@ class JobScheduler extends AmaterasuScheduler {
   }
 
   def resourceOffers(driver: SchedulerDriver, offers: util.List[Offer]): Unit = {
+
+    println(s"===> number of actions ${jobManager.getRegisteredActions.size()}")
+    println(jobManager.toString)
 
     for (offer <- offers.asScala) {
 
@@ -177,7 +176,7 @@ class JobScheduler extends AmaterasuScheduler {
             executionMap.putIfAbsent(offer.getSlaveId.toString, new ConcurrentHashMap[String, ActionStatus].asScala)
 
             val slaveActions = executionMap(offer.getSlaveId.toString)
-            slaveActions.put(taskId.getValue, ActionStatus.started)
+            slaveActions.put(taskId.getValue, ActionStatus.Started)
 
 
             val frameworkProvider = frameworkFactory.providers(actionData.getGroupId)
@@ -185,90 +184,92 @@ class JobScheduler extends AmaterasuScheduler {
 
             // searching for an executor that already exist on the slave, if non exist
             // we create a new one
-//            var executor: ExecutorInfo = null
+            //            var executor: ExecutorInfo = null
 
-//            val slaveId = offer.getSlaveId.getValue
-//            slavesExecutors.synchronized {
+            //            val slaveId = offer.getSlaveId.getValue
+            //            slavesExecutors.synchronized {
 
-//              val execData = DataLoader.getExecutorDataBytes(env, config)
-              val executorId = taskId.getValue + "-" + UUID.randomUUID()
-              //creating the command
+            //              val execData = DataLoader.getExecutorDataBytes(env, config)
+            val executorId = taskId.getValue + "-" + UUID.randomUUID()
+            //creating the command
 
-//              // TODO: move this into the runner provider somehow
-//              if(!actionData.getSrc.isEmpty){
-//                copy(get(s"repo/src/${actionData.getSrc}"), get(s"dist/${jobManager.getJobId}/${actionData.getName}/${actionData.getSrc}"), REPLACE_EXISTING)
-//              }
+//                          // TODO: move this into the runner provider somehow
+//                          if(!actionData.getSrc.isEmpty){
+//                            copy(get(s"repo/src/${actionData.getSrc}"), get(s"dist/${jobManager.getJobId}/${actionData.getName}/${actionData.getSrc}"), REPLACE_EXISTING)
+//                          }
+            val commandStr = runnerProvider.getCommand(jobManager.getJobId, actionData, env, executorId, "")
+            println(s"===> $commandStr")
+            val command = CommandInfo
+              .newBuilder
+              .setValue(commandStr)
+            //                .addUris(URI.newBuilder
+            //                  .setValue(s"http://${sys.env("AMA_NODE")}:${config.Webserver.Port}/executor-${config.version}-all.jar")
+            //                  .setExecutable(false)
+            //                  .setExtract(false)
+            //                  .build())
 
-              println(s"===> ${runnerProvider.getCommand(jobManager.getJobId, actionData, env, executorId, "")}")
-              val command = CommandInfo
-                .newBuilder
-                .setValue(runnerProvider.getCommand(jobManager.getJobId, actionData, env, executorId, ""))
-//                .addUris(URI.newBuilder
-//                  .setValue(s"http://${sys.env("AMA_NODE")}:${config.Webserver.Port}/executor-${config.version}-all.jar")
-//                  .setExecutable(false)
-//                  .setExtract(false)
-//                  .build())
+            // Getting framework (group) resources
+//            frameworkProvider.getGroupResources.foreach(f => command.addUris(URI.newBuilder
+//              .setValue(s"http://${sys.env("AMA_NODE")}:${config.Webserver.Port}/${f.getName}")
+//              .setExecutable(false)
+//              .setExtract(false)
+//              .build()
+//            ))
 
-              // Getting framework resources
-              frameworkProvider.getGroupResources.foreach(f => command.addUris(URI.newBuilder
-                .setValue(s"http://${sys.env("AMA_NODE")}:${config.Webserver.Port}/${f.getName}")
-                .setExecutable(false)
-                .setExtract(true)
-                .build()))
-
-              // Getting runner resources
-              runnerProvider.getRunnerResources.foreach(r => {
-                command.addUris(URI.newBuilder
+            // Getting runner resources
+            runnerProvider.getRunnerResources.foreach(r => {
+              command.addUris(URI.newBuilder
                 .setValue(s"http://${sys.env("AMA_NODE")}:${config.Webserver.Port}/$r")
                 .setExecutable(false)
                 .setExtract(false)
                 .build())
-              })
+            }
+            )
 
-              // Getting runner resources
-              runnerProvider.getActionDependencies(jobManager.getJobId, actionData).foreach(r => {
-                println(s"===> jar pat: $r")
-                command.addUris(URI.newBuilder
-                  .setValue(s"http://${sys.env("AMA_NODE")}:${config.Webserver.Port}/$r")
-                  .setExecutable(false)
-                  .setExtract(false)
-                  .build())
-              })
-
-              // Getting action specific resources
-              runnerProvider.getActionResources(jobManager.getJobId, actionData).foreach(r => command.addUris(URI.newBuilder
+            // Getting runner resources
+            runnerProvider.getActionDependencies(jobManager.getJobId, actionData).foreach(r => {
+              command.addUris(URI.newBuilder
                 .setValue(s"http://${sys.env("AMA_NODE")}:${config.Webserver.Port}/$r")
                 .setExecutable(false)
                 .setExtract(false)
-                .build()))
+                .build())
+            }
+            )
 
-              command
-                .addUris(URI.newBuilder()
-                  .setValue(s"http://${sys.env("AMA_NODE")}:${config.Webserver.Port}/miniconda.sh") //TODO: Nadav needs to clean this on the executor side
-                  .setExecutable(true)
-                  .setExtract(false)
-                  .build())
-                .addUris(URI.newBuilder()
-                  .setValue(s"http://${sys.env("AMA_NODE")}:${config.Webserver.Port}/amaterasu.properties")
-                  .setExecutable(false)
-                  .setExtract(false)
-                  .build())
+            // Getting action specific resources
+            runnerProvider.getActionResources(jobManager.getJobId, actionData).foreach(r => command.addUris(URI.newBuilder
+              .setValue(s"http://${sys.env("AMA_NODE")}:${config.Webserver.Port}/$r")
+              .setExecutable(false)
+              .setExtract(false)
+              .build()))
 
-              // setting the processes environment variables
-//              val envVarsList = frameworkProvider.getEnvironmentVariables.asScala.toList.map(x => Variable.newBuilder().setName(x._1).setValue(x._2).build()).asJava
-//              command.setEnvironment(Environment.newBuilder().addAllVariables(envVarsList))
+            command
+              .addUris(URI.newBuilder()
+                .setValue(s"http://${sys.env("AMA_NODE")}:${config.Webserver.Port}/miniconda.sh") //TODO: Nadav needs to clean this on the executor side
+                .setExecutable(true)
+                .setExtract(false)
+                .build())
+              .addUris(URI.newBuilder()
+                .setValue(s"http://${sys.env("AMA_NODE")}:${config.Webserver.Port}/amaterasu.properties")
+                .setExecutable(false)
+                .setExtract(false)
+                .build())
 
-//              executor = ExecutorInfo
-//                .newBuilder
-//                .setData(ByteString.copyFrom(execData))
-//                .setName(taskId.getValue)
-//                .setExecutorId(ExecutorID.newBuilder().setValue(executorId))
-//                .setCommand(command)
-//
-//                .build()
+            // setting the processes environment variables
+            //              val envVarsList = frameworkProvider.getEnvironmentVariables.asScala.toList.map(x => Variable.newBuilder().setName(x._1).setValue(x._2).build()).asJava
+            //              command.setEnvironment(Environment.newBuilder().addAllVariables(envVarsList))
 
-//              slavesExecutors.put(offer.getSlaveId.getValue, executor)
-//            }
+            //              executor = ExecutorInfo
+            //                .newBuilder
+            //                .setData(ByteString.copyFrom(execData))
+            //                .setName(taskId.getValue)
+            //                .setExecutorId(ExecutorID.newBuilder().setValue(executorId))
+            //                .setCommand(command)
+            //
+            //                .build()
+
+            //              slavesExecutors.put(offer.getSlaveId.getValue, executor)
+            //            }
 
             val driverConfiguration = frameworkProvider.getDriverConfiguration
 

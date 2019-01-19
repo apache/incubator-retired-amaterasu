@@ -34,26 +34,26 @@ abstract class Action : KLogging() {
 
     fun announceStart() {
         log.debug("Starting action ${data.name} of group ${data.groupId} and type ${data.typeId}")
-        client.setData().forPath(actionPath, ActionStatus.started.value.toByteArray())
-        data.status = ActionStatus.started
+        client.setData().forPath(actionPath, ActionStatus.Started.value.toByteArray())
+        data.status = ActionStatus.Started
     }
 
     fun announceQueued() {
-        log.debug("Action ${data.name} of group ${data.groupId} and of type ${data.typeId} is queued for execution")
-        client.setData().forPath(actionPath, ActionStatus.queued.value.toByteArray())
-        data.status = ActionStatus.queued
+        log.debug("Action ${data.name} of group ${data.groupId} and of type ${data.typeId} is Queued for execution")
+        client.setData().forPath(actionPath, ActionStatus.Queued.value.toByteArray())
+        data.status = ActionStatus.Queued
     }
 
     fun announceComplete() {
-        log.debug("Action ${data.name} of group ${data.groupId} and of type ${data.typeId} complete")
-        client.setData().forPath(actionPath, ActionStatus.complete.value.toByteArray())
-        data.status = ActionStatus.complete
+        log.debug("Action ${data.name} of group ${data.groupId} and of type ${data.typeId} Complete")
+        client.setData().forPath(actionPath, ActionStatus.Complete.value.toByteArray())
+        data.status = ActionStatus.Complete
     }
 
     fun announceCanceled() {
-        log.debug("Action ${data.name} of group ${data.groupId} and of type ${data.typeId} was canceled")
-        client.setData().forPath(actionPath, ActionStatus.canceled.value.toByteArray())
-        data.status = ActionStatus.canceled
+        log.debug("Action ${data.name} of group ${data.groupId} and of type ${data.typeId} was Canceled")
+        client.setData().forPath(actionPath, ActionStatus.Canceled.value.toByteArray())
+        data.status = ActionStatus.Canceled
     }
 
     protected fun announceFailure() {}
