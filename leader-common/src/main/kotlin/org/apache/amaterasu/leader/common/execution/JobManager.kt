@@ -51,8 +51,8 @@ data class JobManager(var name: String = "",
 
     val outOfActions: Boolean =
             registeredActions.values.map { it.data.status }.contains(ActionStatus.Pending) ||
-            registeredActions.values.map { it.data.status }.contains(ActionStatus.Queued) ||
-            registeredActions.values.map { it.data.status }.contains(ActionStatus.Started)
+                    registeredActions.values.map { it.data.status }.contains(ActionStatus.Queued) ||
+                    registeredActions.values.map { it.data.status }.contains(ActionStatus.Started)
 
     /**
      * getNextActionData returns the data of the next action to be executed if such action
@@ -60,16 +60,17 @@ data class JobManager(var name: String = "",
      *
      * @return the ActionData of the next action, returns null if no such action exists
      */
-    fun getNextActionData(): ActionData? {
+    val nextActionData: ActionData?
+        get() {
 
-        val nextAction: ActionData? = executionQueue.poll()
+            val nextAction: ActionData? = executionQueue.poll()
 
-        if (nextAction != null) {
-            registeredActions[nextAction.id]!!.announceStart()
+            if (nextAction != null) {
+                registeredActions[nextAction.id]!!.announceStart()
+            }
+
+            return nextAction
         }
-
-        return nextAction
-    }
 
     fun reQueueAction(actionId: String) {
 

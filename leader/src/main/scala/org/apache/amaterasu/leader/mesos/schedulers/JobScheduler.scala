@@ -40,6 +40,7 @@ import org.apache.curator.framework.{CuratorFramework, CuratorFrameworkFactory}
 import org.apache.curator.retry.ExponentialBackoffRetry
 import org.apache.log4j.LogManager
 import org.apache.mesos.Protos.CommandInfo.URI
+import org.apache.mesos.Protos.Environment.Variable
 import org.apache.mesos.Protos._
 import org.apache.mesos.{Protos, SchedulerDriver}
 
@@ -193,28 +194,28 @@ class JobScheduler extends AmaterasuScheduler {
             val executorId = taskId.getValue + "-" + UUID.randomUUID()
             //creating the command
 
-//                          // TODO: move this into the runner provider somehow
-//                          if(!actionData.getSrc.isEmpty){
-//                            copy(get(s"repo/src/${actionData.getSrc}"), get(s"dist/${jobManager.getJobId}/${actionData.getName}/${actionData.getSrc}"), REPLACE_EXISTING)
-//                          }
+            //                          // TODO: move this into the runner provider somehow
+            //                          if(!actionData.getSrc.isEmpty){
+            //                            copy(get(s"repo/src/${actionData.getSrc}"), get(s"dist/${jobManager.getJobId}/${actionData.getName}/${actionData.getSrc}"), REPLACE_EXISTING)
+            //                          }
             val commandStr = runnerProvider.getCommand(jobManager.getJobId, actionData, env, executorId, "")
             println(s"===> $commandStr")
             val command = CommandInfo
               .newBuilder
               .setValue(commandStr)
-            //                .addUris(URI.newBuilder
-            //                  .setValue(s"http://${sys.env("AMA_NODE")}:${config.Webserver.Port}/executor-${config.version}-all.jar")
-            //                  .setExecutable(false)
-            //                  .setExtract(false)
-            //                  .build())
+              .addUris(URI.newBuilder
+                .setValue(s"http://${sys.env("AMA_NODE")}:${config.Webserver.Port}/executor-${config.version}-all.jar")
+                .setExecutable(false)
+                .setExtract(false)
+                .build())
 
             // Getting framework (group) resources
-//            frameworkProvider.getGroupResources.foreach(f => command.addUris(URI.newBuilder
-//              .setValue(s"http://${sys.env("AMA_NODE")}:${config.Webserver.Port}/${f.getName}")
-//              .setExecutable(false)
-//              .setExtract(false)
-//              .build()
-//            ))
+            frameworkProvider.getGroupResources.foreach(f => command.addUris(URI.newBuilder
+              .setValue(s"http://${sys.env("AMA_NODE")}:${config.Webserver.Port}/${f.getName}")
+              .setExecutable(false)
+              .setExtract(true)
+              .build()
+            ))
 
             // Getting runner resources
             runnerProvider.getRunnerResources.foreach(r => {
@@ -256,8 +257,8 @@ class JobScheduler extends AmaterasuScheduler {
                 .build())
 
             // setting the processes environment variables
-            //              val envVarsList = frameworkProvider.getEnvironmentVariables.asScala.toList.map(x => Variable.newBuilder().setName(x._1).setValue(x._2).build()).asJava
-            //              command.setEnvironment(Environment.newBuilder().addAllVariables(envVarsList))
+            val envVarsList = frameworkProvider.getEnvironmentVariables.asScala.toList.map(x => Variable.newBuilder().setName(x._1).setValue(x._2).build()).asJava
+            command.setEnvironment(Environment.newBuilder().addAllVariables(envVarsList))
 
             //              executor = ExecutorInfo
             //                .newBuilder
