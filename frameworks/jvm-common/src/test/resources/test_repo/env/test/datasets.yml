@@ -1,0 +1,18 @@
+datasets:
+  hive:
+    transactions:
+      uri: /user/somepath
+      format: parquet
+      database: transations_daily
+      table: transx
+
+    second_transactions:
+      uri: /seconduser/somepath
+      format: avro
+      database: transations_monthly
+      table: avro_table
+  file:
+    users:
+      uri: s3://filestore
+      format: parquet
+      mode: overwrite
