@@ -40,7 +40,7 @@ class DataSetManager(private val env: String, private val repoPath: String, priv
     }
 
     fun getConfigsByName(typee: String, dataSetName: String): Map<String,String>? {
-        return config.get<Map<String, Map<String,Map<String,String>>>>(DATASETS_PREFIX).get(typee)?.get(dataSetName)
+        return getConfigsByType(type)?.get(dataSetName)
     }
 
     companion object {
