@@ -6,7 +6,7 @@
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *    http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -14,26 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.amaterasu.executor.yarn.executors
+package org.apache.amaterasu.common.execution.actions.enums
 
-import org.apache.amaterasu.common.execution.actions.Notifier
-import org.apache.amaterasu.common.logging.Logging
-import org.apache.hadoop.yarn.conf.YarnConfiguration
-import org.apache.hadoop.yarn.ipc.YarnRPC
-
-class YarnNotifier(conf: YarnConfiguration) extends Notifier {
-
-  var rpc: YarnRPC = YarnRPC.create(conf)
-
-  override def info(msg: String): Unit = {
-    getLog.info(s"""-> ${msg}""")
-  }
-
-  override def success(line: String): Unit = {
-    getLog.info(s"""SUCCESS: ${line}""")
-  }
-
-  override def error(line: String, msg: String): Unit = {
-    getLog.error(s"""ERROR: ${line}: ${msg}""")
-  }
+enum class NotificationType(val value: String) {
+    Success("Success"),
+    Error("Error"),
+    Info("Info")
 }

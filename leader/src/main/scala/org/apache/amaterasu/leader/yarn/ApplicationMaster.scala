@@ -22,15 +22,14 @@ import java.nio.ByteBuffer
 import java.util
 import java.util.concurrent.{ConcurrentHashMap, LinkedBlockingQueue}
 
-import javax.jms.Session
-import org.apache.activemq.ActiveMQConnectionFactory
+import javax.jms.MessageConsumer
 import org.apache.activemq.broker.BrokerService
 import org.apache.amaterasu.common.configuration.ClusterConfig
 import org.apache.amaterasu.common.dataobjects.ActionData
 import org.apache.amaterasu.common.logging.Logging
 import org.apache.amaterasu.leader.common.execution.JobManager
 import org.apache.amaterasu.leader.common.execution.frameworks.FrameworkProvidersFactory
-import org.apache.amaterasu.leader.common.utilities.ActiveReportListener
+import org.apache.amaterasu.leader.common.utilities.MessagingClientUtil
 import org.apache.amaterasu.leader.execution.JobLoader
 import org.apache.amaterasu.leader.utilities.Args
 import org.apache.curator.framework.recipes.barriers.DistributedBarrier
@@ -79,12 +78,14 @@ class ApplicationMaster extends Logging with AMRMClientAsync.CallbackHandler {
   private var allocListener: YarnRMCallbackHandler = _
   private var rmClient: AMRMClientAsync[ContainerRequest] = _
   private var address: String = _
+  private var consumer: MessageConsumer = _
 
   private val containersIdsToTask: concurrent.Map[Long, ActionData] = new ConcurrentHashMap[Long, ActionData].asScala
   private val completedContainersAndTaskIds: concurrent.Map[Long, String] = new ConcurrentHashMap[Long, String].asScala
   private val actionsBuffer: java.util.concurrent.ConcurrentLinkedQueue[ActionData] = new java.util.concurrent.ConcurrentLinkedQueue[ActionData]()
   private val host: String = InetAddress.getLocalHost.getHostName
   private val broker: BrokerService = new BrokerService()
+
 
   def setLocalResourceFromPath(path: Path): LocalResource = {
 
@@ -132,7 +133,7 @@ class ApplicationMaster extends Logging with AMRMClientAsync.CallbackHandler {
     val barrier = new DistributedBarrier(client, s"/${jobManager.getJobId}-report-barrier")
     barrier.removeBarrier()
 
-    setupMessaging(jobManager.getJobId)
+    consumer = MessagingClientUtil.setupMessaging(address)
 
     log.info(s"Job ${jobManager.getJobId} initiated with ${jobManager.getRegisteredActions.size} actions")
 
@@ -205,20 +206,20 @@ class ApplicationMaster extends Logging with AMRMClientAsync.CallbackHandler {
     registrationResponse
   }
 
-  private def setupMessaging(jobId: String): Unit = {
-
-    val cf = new ActiveMQConnectionFactory(address)
-    val conn = cf.createConnection()
-    conn.start()
-
-    val session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE)
-    //TODO: move to a const in common
-    val destination = session.createTopic("JOB.REPORT")
-
-    val consumer = session.createConsumer(destination)
-    consumer.setMessageListener(new ActiveReportListener)
-
-  }
+//  private def setupMessaging(jobId: String): Unit = {
+//
+//    val cf = new ActiveMQConnectionFactory(address)
+//    val conn = cf.createConnection()
+//    conn.start()
+//
+//    val session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE)
+//    //TODO: move to a const in common
+//    val destination = session.createTopic("JOB.REPORT")
+//
+//    val consumer = session.createConsumer(destination)
+//    consumer.setMessageListener(new ActiveReportListener)
+//
+//  }
 
   private def askContainer(actionData: ActionData): Unit = {
 
@@ -468,7 +469,7 @@ object ApplicationMaster extends Logging with App {
     case Some(arguments: Args) =>
       val appMaster = new ApplicationMaster()
 
-      appMaster.address = s"tcp://${appMaster.host}:$generatePort"
+      appMaster.address = MessagingClientUtil.getBorkerAddress
       appMaster.broker.addConnector(appMaster.address)
       appMaster.broker.start()
 
@@ -478,10 +479,5 @@ object ApplicationMaster extends Logging with App {
     case None =>
   }
 
-  private def generatePort: Int = {
-    val socket = new ServerSocket(0)
-    val port = socket.getLocalPort
-    socket.close()
-    port
-  }
+
 }

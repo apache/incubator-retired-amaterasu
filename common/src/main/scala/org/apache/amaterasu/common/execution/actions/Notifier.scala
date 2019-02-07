@@ -14,43 +14,43 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.amaterasu.common.execution.actions
+//package org.apache.amaterasu.common.execution.actions
+//
+//import com.fasterxml.jackson.annotation.JsonProperty
+//import org.apache.amaterasu.common.execution.actions.NotificationLevel.NotificationLevel
+//import org.apache.amaterasu.common.execution.actions.NotificationType.NotificationType
+//import org.apache.amaterasu.common.logging.Logging
 
-import com.fasterxml.jackson.annotation.JsonProperty
-import org.apache.amaterasu.common.execution.actions.NotificationLevel.NotificationLevel
-import org.apache.amaterasu.common.execution.actions.NotificationType.NotificationType
-import org.apache.amaterasu.common.logging.Logging
-
-abstract class Notifier extends Logging {
-
-  def info(msg: String)
-
-  def success(line: String)
-
-  def error(line: String, msg: String)
-
-}
+//abstract class Notifier extends Logging {
+//
+//  def info(msg: String)
+//
+//  def success(line: String)
+//
+//  def error(line: String, msg: String)
+//
+//}
 
 
-object NotificationType extends Enumeration {
+//object NotificationType extends Enumeration {
+//
+//  type NotificationType = Value
+//  val success: NotificationType.Value = Value("success")
+//  val error: NotificationType.Value = Value("error")
+//  val info: NotificationType.Value = Value("info")
+//
+//}
 
-  type NotificationType = Value
-  val success: NotificationType.Value = Value("success")
-  val error: NotificationType.Value = Value("error")
-  val info: NotificationType.Value = Value("info")
+//object NotificationLevel extends Enumeration {
+//
+//  type NotificationLevel = Value
+//  val execution: NotificationLevel.Value = Value("execution")
+//  val code: NotificationLevel.Value = Value("code")
+//  val none: NotificationLevel.Value = Value("none")
+//
+//}
 
-}
-
-object NotificationLevel extends Enumeration {
-
-  type NotificationLevel = Value
-  val execution: NotificationLevel.Value = Value("execution")
-  val code: NotificationLevel.Value = Value("code")
-  val none: NotificationLevel.Value = Value("none")
-
-}
-
-case class Notification(@JsonProperty("line") line: String,
-                        @JsonProperty("msg") msg: String,
-                        @JsonProperty("notType") notType: NotificationType,
-                        @JsonProperty("notLevel") notLevel: NotificationLevel)
+//case class Notification(@JsonProperty("line") line: String,
+//                        @JsonProperty("msg") msg: String,
+//                        @JsonProperty("notType") notType: NotificationType,
+//                        @JsonProperty("notLevel") notLevel: NotificationLevel)

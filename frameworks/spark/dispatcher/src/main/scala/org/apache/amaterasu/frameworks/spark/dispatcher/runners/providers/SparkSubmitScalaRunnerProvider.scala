@@ -33,6 +33,8 @@ class SparkSubmitScalaRunnerProvider extends RunnerSetupProvider {
     util.getLocalArtifacts(actionData.getArtifact).toArray().map(x => amaDist.toPath.relativize(x.asInstanceOf[File].toPath).toString)
   }
 
+  override def getHasExecutor: Boolean = false
+
 }
 
 object SparkSubmitScalaRunnerProvider {
