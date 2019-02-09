@@ -3,6 +3,8 @@ package org.apache.amaterasu.sdk.frameworks
 import org.apache.amaterasu.common.dataobjects.ActionData
 
 class TestRunnerProvider() : RunnerSetupProvider() {
+    override val hasExecutor: Boolean
+        get() = false
 
     override val runnerResources: Array<String>
         get() = arrayOf()

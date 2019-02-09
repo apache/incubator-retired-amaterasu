@@ -77,8 +77,8 @@ dependencies {
     compile group: 'org.eclipse.jgit', name: 'org.eclipse.jgit', version: '4.2.0.201601211800-r'
     compile group: 'org.apache.activemq', name: 'activemq-broker', version: '5.15.3'
     runtime group: 'org.apache.activemq', name: 'activemq-kahadb-store', version: '5.15.3'
+    compile group: 'com.andreapivetta.kolor', name: 'kolor', version: '0.0.2'
     compile group: 'com.beust', name: 'klaxon', version: '5.0.1'
-    compile group: 'com.andreapivetta.kolor', mame: 'kolor', version: '0.0.2'
 
     compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
     compile "org.jetbrains.kotlin:kotlin-reflect"
