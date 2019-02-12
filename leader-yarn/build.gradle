@@ -15,36 +15,5 @@
  * limitations under the License.
  */
 
-// Core
-include 'leader'
-project(':leader')
-
-include 'leader-common'
-project(':leader-common')
-
-include 'leader-mesos'
-project(':leader-mesos')
-
-
-include 'leader-yarn'
-project(':leader-yarn')
-
-include 'common'
-project(':common')
-
-include 'executor'
-project(':executor')
-
-include 'sdk'
-findProject(':sdk')?.name = 'amaterasu-sdk'
-
-// Frameworks
-// Spark
-include 'spark-runner'
-project(':spark-runner').projectDir=file("frameworks/spark/runner")
-include 'spark-runtime'
-project(':spark-runtime').projectDir=file("frameworks/spark/runtime")
-include 'spark-dispatcher'
-project(':spark-dispatcher').projectDir=file("frameworks/spark/dispatcher")
 
 
