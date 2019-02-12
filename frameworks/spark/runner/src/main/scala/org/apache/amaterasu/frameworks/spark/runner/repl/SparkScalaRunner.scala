@@ -71,7 +71,6 @@ class SparkScalaRunner(var env: Environment,
           interpreter.interpret(line)
         }
         else {
-
           val intresult = interpreter.interpret(line)
 
           val result = interpreter.prevRequestList.last.lineRep.call("$result")

@@ -18,15 +18,13 @@ package org.apache.amaterasu.leader.mesos.schedulers
 
 import java.io.{File, PrintWriter, StringWriter}
 import java.util
-import java.util.{Collections, UUID}
+import java.util.UUID
 import java.util.concurrent.locks.ReentrantLock
 import java.util.concurrent.{ConcurrentHashMap, LinkedBlockingQueue}
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
-import javax.jms.MessageConsumer
-import org.apache.activemq.broker.BrokerService
 import org.apache.amaterasu.common.configuration.ClusterConfig
 import org.apache.amaterasu.common.configuration.enums.ActionStatus
 import org.apache.amaterasu.common.dataobjects.ActionData
@@ -35,7 +33,7 @@ import org.apache.amaterasu.common.execution.actions.enums.{NotificationLevel, N
 import org.apache.amaterasu.leader.common.configuration.ConfigManager
 import org.apache.amaterasu.leader.common.execution.JobManager
 import org.apache.amaterasu.leader.common.execution.frameworks.FrameworkProvidersFactory
-import org.apache.amaterasu.leader.common.utilities.{DataLoader, MessagingClientUtil}
+import org.apache.amaterasu.leader.common.utilities.DataLoader
 import org.apache.amaterasu.leader.execution.JobLoader
 import org.apache.amaterasu.leader.utilities.HttpServer
 import org.apache.curator.framework.{CuratorFramework, CuratorFrameworkFactory}
@@ -71,8 +69,7 @@ class JobScheduler extends AmaterasuScheduler {
   private var branch: String = _
   private var resume: Boolean = false
   private var reportLevel: NotificationLevel = _
-  private val broker: BrokerService = new BrokerService()
-  private var consumer: MessageConsumer = _
+
   val slavesExecutors = new TrieMap[String, ExecutorInfo]
   private var awsEnv: String = ""
 
@@ -100,15 +97,15 @@ class JobScheduler extends AmaterasuScheduler {
 
   def frameworkMessage(driver: SchedulerDriver, executorId: ExecutorID, slaveId: SlaveID, data: Array[Byte]): Unit = {
 
-    val notification = mapper.readValue(data, classOf[Notification])
+        val notification = mapper.readValue(data, classOf[Notification])
 
-    reportLevel match {
-      case NotificationLevel.Code => printNotification(notification)
-      case NotificationLevel.Execution =>
-        if (notification.getNotLevel != NotificationLevel.Code)
-          printNotification(notification)
-      case _ =>
-    }
+        reportLevel match {
+          case NotificationLevel.Code => printNotification(notification)
+          case NotificationLevel.Execution =>
+            if (notification.getNotLevel != NotificationLevel.Code)
+              printNotification(notification)
+          case _ =>
+        }
 
   }
 
@@ -144,7 +141,6 @@ class JobScheduler extends AmaterasuScheduler {
 
   def resourceOffers(driver: SchedulerDriver, offers: util.List[Offer]): Unit = {
 
-    println(s"===> number of actions ${jobManager.getRegisteredActions.size()}")
     println(jobManager.toString)
 
     for (offer <- offers.asScala) {
@@ -189,7 +185,7 @@ class JobScheduler extends AmaterasuScheduler {
 
             // searching for an executor that already exist on the slave, if non exist
             // we create a new one
-            //            var executor: ExecutorInfo = null
+            var executor: ExecutorInfo = null
 
             //            val slaveId = offer.getSlaveId.getValue
             //            slavesExecutors.synchronized {
@@ -203,7 +199,6 @@ class JobScheduler extends AmaterasuScheduler {
             //                            copy(get(s"repo/src/${actionData.getSrc}"), get(s"dist/${jobManager.getJobId}/${actionData.getName}/${actionData.getSrc}"), REPLACE_EXISTING)
             //                          }
             val commandStr = runnerProvider.getCommand(jobManager.getJobId, actionData, env, executorId, "")
-            println(s"===> $commandStr")
             val command = CommandInfo
               .newBuilder
               .setValue(commandStr)
@@ -264,46 +259,56 @@ class JobScheduler extends AmaterasuScheduler {
             val envVarsList = frameworkProvider.getEnvironmentVariables.asScala.toList.map(x => Variable.newBuilder().setName(x._1).setValue(x._2).build()).asJava
             command.setEnvironment(Environment.newBuilder().addAllVariables(envVarsList))
 
-            var executor: ExecutorInfo = null
-            if (runnerProvider.getHasExecutor) {
+            executor = ExecutorInfo
+              .newBuilder
+              .setData(ByteString.copyFrom(execData))
+              .setName(taskId.getValue)
+              .setExecutorId(ExecutorID.newBuilder().setValue(executorId))
+              .setCommand(command)
 
-              println(s"===> executor created for ${runnerProvider.getClass}")
-              val executor = ExecutorInfo
-                .newBuilder
-                .setData(ByteString.copyFrom(execData))
-                .setName(taskId.getValue)
-                .setExecutorId(ExecutorID.newBuilder().setValue(executorId))
-                .setCommand(command)
+              .build()
 
-                .build()
+            slavesExecutors.put(offer.getSlaveId.getValue, executor)
 
-              //slavesExecutors.put(offer.getSlaveId.getValue, executor)
-
-            }
 
             val driverConfiguration = frameworkProvider.getDriverConfiguration
 
-            val actionTask = TaskInfo
-              .newBuilder
-              .setName(taskId.getValue)
-              .setTaskId(taskId)
-              if(runnerProvider.getHasExecutor){
-                println(s"===> executor added for ${runnerProvider.getClass}")
-                actionTask
-                  .setExecutor(executor)
-                  .setData(ByteString.copyFrom(DataLoader.getTaskDataBytes(actionData, env)))
-              } else{
-                actionTask.setCommand(command)
-              }
+            var actionTask: TaskInfo = null
 
-            actionTask.addResources(createScalarResource("cpus", driverConfiguration.getCpus))
-              .addResources(createScalarResource("mem", driverConfiguration.getMemory))
-              .addResources(createScalarResource("disk", config.Jobs.repoSize))
-              .setSlaveId(offer.getSlaveId)
-              .build()
+            if (runnerProvider.getHasExecutor) {
+              actionTask = TaskInfo
+                .newBuilder
+                .setName(taskId.getValue)
+                .setTaskId(taskId)
+                .setExecutor(executor)
 
-            driver.launchTasks(Collections.singleton(offer.getId), Collections.singleton(actionTask).asInstanceOf[util.Collection[Protos.TaskInfo]])
-            //driver.launchTasks(offer.getId, List(actionTask).asJava)
+                .setData(ByteString.copyFrom(DataLoader.getTaskDataBytes(actionData, env)))
+                .addResources(createScalarResource("cpus", driverConfiguration.getCpus))
+                .addResources(createScalarResource("mem", driverConfiguration.getMemory))
+                .addResources(createScalarResource("disk", config.Jobs.repoSize))
+                .setSlaveId(offer.getSlaveId)
+                .build()
+
+              //driver.launchTasks(Collections.singleton(offer.getId), List(actionTask).asJava)
+            }
+            else {
+              actionTask = TaskInfo
+                .newBuilder
+                .setName(taskId.getValue)
+                .setTaskId(taskId)
+                .setCommand(command)
+
+                //.setData(ByteString.copyFrom(DataLoader.getTaskDataBytes(actionData, env)))
+                .addResources(createScalarResource("cpus", driverConfiguration.getCpus))
+                .addResources(createScalarResource("mem", driverConfiguration.getMemory))
+                .addResources(createScalarResource("disk", config.Jobs.repoSize))
+                .setSlaveId(offer.getSlaveId)
+                .build()
+
+              //driver.launchTasks(Collections.singleton(offer.getId), List(actionTask).asJava)
+            }
+            driver.launchTasks(offer.getId, List(actionTask).asJava)
+
           }
           else if (jobManager.getOutOfActions) {
             log.info(s"framework ${jobManager.getJobId} execution finished")
@@ -311,9 +316,10 @@ class JobScheduler extends AmaterasuScheduler {
             val repo = new File("repo/")
             repo.delete()
 
-            //HttpServer.stop()
+            HttpServer.stop()
             driver.declineOffer(offer.getId)
             driver.stop()
+            sys.exit()
           }
           else {
             log.info("Declining offer, no action ready for execution")
@@ -452,12 +458,6 @@ object JobScheduler {
     scheduler.branch = branch
     scheduler.env = env
     scheduler.reportLevel = NotificationLevel.valueOf(report.capitalize)
-
-    // setting up the activeMQ based messaging
-    val address = MessagingClientUtil.getBorkerAddress
-    scheduler.broker.addConnector(address)
-    scheduler.broker.start()
-    scheduler.consumer = MessagingClientUtil.setupMessaging(address)
 
     val retryPolicy = new ExponentialBackoffRetry(1000, 3)
     scheduler.client = CuratorFrameworkFactory.newClient(config.zk, retryPolicy)

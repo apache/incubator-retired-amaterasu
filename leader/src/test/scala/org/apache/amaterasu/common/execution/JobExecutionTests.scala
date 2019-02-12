@@ -20,6 +20,7 @@ import java.util.concurrent.LinkedBlockingQueue
 
 import org.apache.amaterasu.common.dataobjects.ActionData
 import org.apache.amaterasu.leader.common.dsl.JobParser
+import org.apache.amaterasu.leader.common.execution.actions.Action
 import org.apache.curator.framework.CuratorFrameworkFactory
 import org.apache.curator.retry.ExponentialBackoffRetry
 import org.apache.curator.test.TestingServer
@@ -48,12 +49,6 @@ class JobExecutionTests extends FlatSpec with Matchers {
 
   val job = JobParser.parse(jobId, yaml, queue, client, 1)
 
-  queue.toArray.foreach(it => {
-    val d = it.asInstanceOf[ActionData]
-    println(s"+++++++> ${d.getName}")
-    println(s"  +++++++> ${d.getErrorActionId}")
-  })
-
   "a job" should "queue the first action when the JobManager.start method is called " in {
 
     job.start
@@ -77,7 +72,7 @@ class JobExecutionTests extends FlatSpec with Matchers {
   }
 
   it should "not be out of actions when an action is still Pending" in {
-    job.getOutOfActions should be (false)
+    job.getOutOfActions should be(false)
   }
 
   it should "be marked as Complete when the actionComplete method is called" in {
@@ -112,11 +107,13 @@ class JobExecutionTests extends FlatSpec with Matchers {
     new String(actionStatus) should be("Started")
   }
 
-  it should "be marked as Failed when JobManager. is called" in {
+  it should "be marked as Failed when JobManager.actionFailed is called" in {
 
     job.actionFailed("0000000001", "test failure")
     queue.peek.getName should be("error-action")
+  }
 
+  "an ErrorAction" should "be queued if one exist" in {
     // making sure that the status is reflected in zk
     val actionStatus = client.getData.forPath(s"/$jobId/task-0000000001-error")
     new String(actionStatus) should be("Queued")
@@ -124,5 +121,21 @@ class JobExecutionTests extends FlatSpec with Matchers {
     // and returned by getNextActionData
     val data = job.getNextActionData
 
+  }
+
+  it should "be marked as Complete when the actionComplete method is called" in {
+
+    job.actionComplete("0000000001-error")
+
+    // making sure that the status is reflected in zk
+    val actionStatus = client.getData.forPath(s"/$jobId/task-0000000001-error")
+
+    new String(new String(actionStatus)) should be("Complete")
+
+  }
+
+  it should " be out of actions when all actions have been executed" in {
+
+    job.getOutOfActions should be(true)
   }
 }

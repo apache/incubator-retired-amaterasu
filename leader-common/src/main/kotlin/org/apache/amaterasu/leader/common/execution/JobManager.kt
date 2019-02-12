@@ -30,10 +30,6 @@ data class JobManager(var name: String = "",
 
     override fun toString(): String {
         val result = StringBuilder()
-        registeredActions.values.forEach {
-            result.append("===> ${it.actionId} | ${it.data.status} \n\r")
-        }
-
         return result.toString()
     }
 
@@ -49,10 +45,12 @@ data class JobManager(var name: String = "",
      */
     fun start(): Unit = head.execute()
 
-    val outOfActions: Boolean =
-            registeredActions.values.map { it.data.status }.contains(ActionStatus.Pending) ||
-                    registeredActions.values.map { it.data.status }.contains(ActionStatus.Queued) ||
-                    registeredActions.values.map { it.data.status }.contains(ActionStatus.Started)
+    val outOfActions: Boolean
+        get() {
+            return !(registeredActions.values.map { it.data.status }.contains(ActionStatus.Pending)) &&
+                    !(registeredActions.values.map { it.data.status }.contains(ActionStatus.Queued)) &&
+                    !(registeredActions.values.map { it.data.status }.contains(ActionStatus.Started))
+        }
 
     /**
      * getNextActionData returns the data of the next action to be executed if such action
