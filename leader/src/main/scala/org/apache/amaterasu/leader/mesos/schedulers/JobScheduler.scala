@@ -226,7 +226,7 @@ class JobScheduler extends AmaterasuScheduler {
             }
             )
 
-            // Getting runner resources
+            // Getting action dependencies
             runnerProvider.getActionDependencies(jobManager.getJobId, actionData).foreach(r => {
               command.addUris(URI.newBuilder
                 .setValue(s"http://${sys.env("AMA_NODE")}:${config.Webserver.Port}/$r")

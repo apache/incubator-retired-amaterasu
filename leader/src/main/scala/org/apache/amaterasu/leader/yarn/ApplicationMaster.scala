@@ -261,7 +261,7 @@ class ApplicationMaster extends Logging with AMRMClientAsync.CallbackHandler {
 
         val yarnJarPath = new Path(config.YARN.hdfsJarsPath)
 
-        //TODO Arun - Remove the hardcoding of the dist path
+        //TODO Eyal - Remove the hardcoding of the dist path
         /*  val resources = mutable.Map[String, LocalResource]()
           val binaryFileIter = fs.listFiles(new Path(s"${config.YARN.hdfsJarsPath}/dist"), false)
           while (binaryFileIter.hasNext) {
