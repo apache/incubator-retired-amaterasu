@@ -15,19 +15,11 @@
   ~ limitations under the License.
   -->
 
-# Apache Amaterasu [![Build Status](https://travis-ci.org/apache/incubator-amaterasu.svg?branch=master)](https://travis-ci.org/apache/incubator-amaterasu)
+# Apache Amaterasu (incubating) [![Build Status](https://travis-ci.org/apache/incubator-amaterasu.svg?branch=master)](https://travis-ci.org/apache/incubator-amaterasu)
 
+![Apache Amaterasu](images/amaterasu-logo-web.png)                                                        
 
-                                               /\
-                                              /  \ /\
-                                             / /\ /  \
-        _                 _                 / /  / /\ \   
-       /_\   _ __   __ _ | |_  ___  _ _  __(_( _(_(_ )_) 
-      / _ \ | '  \ / _` ||  _|/ -_)| '_|/ _` |(_-<| || |
-     /_/ \_\|_|_|_|\__,_| \__|\___||_|  \__,_|/__/ \_,_|
-                                                        
-
-Apache Amaterasu is an open-source, deployment tool for data pipelines. Amaterasu allows developers to write and easily deploy data pipelines, and clusters manage their configuration and dependencies.
+Apache Amaterasu is an open-source framework providing configuration management and deployment for Data pipelines. Amaterasu allows developers and data scientists to write, collaborate and easily deploy data pipelines to different cluster environments. Amaterasu allows them manage configuration and dependencies for different environments.
 
 ## Download
 
@@ -41,13 +33,7 @@ For more details, visit the [amaterasu-vagrant](https://github.com/shintoio/amat
 
 ## Configuration
 
-Configuring amaterasu is very simple. Before running amaterasu, open the `amaterasu.properties` file in the top-level amaterasu directory, and verify the following properties:
 
-| property   | Description                | Default value  |
-| ---------- | -------------------------- | -------------- |
-| zk         | The ZooKeeper connection<br> string to be used by<br> amaterasu | 192.168.33.11  |
-| master     | The clusters' Mesos master | 192.168.33.11  |
-| user       | The user that will be used<br> to run amaterasu | root           |
 
 ## Running a Job
 
