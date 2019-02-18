@@ -89,15 +89,3 @@ dependencies {
     compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
 }
 
-test {
-    useJUnitPlatform()
-}
-
-
-junitPlatform {
-    filters {
-        engines {
-            include 'spek'
-        }
-    }
-}
