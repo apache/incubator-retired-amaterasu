@@ -87,5 +87,36 @@ repositories {
 
 dependencies {
     compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+
+
+    testCompile(
+            'org.junit.jupiter:junit-jupiter-api:5.2.0'
+    )
+    testRuntime(
+            'org.junit.jupiter:junit-jupiter-engine:5.2.0'
+    )
+
+    testImplementation(
+            'org.junit.jupiter:junit-jupiter-api:5.2.0'
+    )
+    testRuntimeOnly(
+            'org.junit.jupiter:junit-jupiter-engine:5.2.0',
+            'org.junit.vintage:junit-vintage-engine:5.2.0',
+            'org.junit.platform:junit-platform-launcher:1.1.0',
+            'org.junit.platform:junit-platform-runner:1.1.0'
+    )
+
+
 }
 
+
+compileTestKotlin {
+    kotlinOptions {
+        freeCompilerArgs = ["-Xjsr305=strict"]
+        jvmTarget = "1.8"
+    }
+}
+
+test {
+    useJUnitPlatform()
+}
