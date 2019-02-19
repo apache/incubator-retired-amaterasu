@@ -1,3 +1,19 @@
+"""
+ Licensed to the Apache Software Foundation (ASF) under one or more
+ contributor license agreements.  See the NOTICE file distributed with
+ this work for additional information regarding copyright ownership.
+ The ASF licenses this file to You under the Apache License, Version 2.0
+ (the "License"); you may not use this file except in compliance with
+ the License.  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+"""
 from setuptools import setup, find_packages
 
 setup(
@@ -9,7 +25,7 @@ setup(
     author='Apache Amaterasu (incubating)',
     author_email="dev@amaterasu.incubator.apache.org",
     description='Apache Amaterasu (incubating) is an open source, configuration managment and deployment framework for big data pipelines',
-    python_requires='!=3.0.*, !=3.1.*, !=3.2.*, <4',
+    python_requires='>=3.4.*, <4',
     install_requires=['stomp.py', 'pyYaml', 'munch'],
     entry_points={
         'console_scripts': [
@@ -28,7 +44,6 @@ setup(
         'Programming Language :: Java',
         'Programming Language :: Python',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.3',
         'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
