@@ -1,5 +1,0 @@
-generic:
-  - name: mydataset
-
-dynamodb:
-  - name: unsupported

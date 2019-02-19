@@ -1,0 +1,14 @@
+generic:
+  - name: mydataset
+
+dynamodb:
+  - name: unsupported
+
+file:
+  - name: input_file
+    uri: input_data.csv
+    format: csv
+
+  - name: output_file
+    uri: output_data.json
+    format: json

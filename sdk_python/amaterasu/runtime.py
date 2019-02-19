@@ -8,8 +8,9 @@ import os
 import atexit
 import abc
 from munch import Munch, munchify
+from typing import Any
 
-from amaterasu.datastores import DatasetManager
+from amaterasu.datastores import BaseDatasetManager
 
 
 class ImproperlyConfiguredError(Exception):
@@ -39,15 +40,25 @@ class AmaActiveMQNotificationHandler(logging.Handler):
 class BaseAmaContext(abc.ABC):
 
     instance = None
-    _dataset_manager = DatasetManager()
 
-    def persist(self, dataset_name, dataset):
-        self._dataset_manager.persist_dataset(dataset_name, dataset)
+    @property
+    @abc.abstractmethod
+    def dataset_manager(self) -> BaseDatasetManager:
+        pass
 
-    def get_dataset(self, dataset_name):
-        self._dataset_manager.load_dataset(dataset_name)
+    def persist(self, dataset_name: str, dataset: Any, overwrite: bool = False):
+        self.dataset_manager.persist_dataset(dataset_name, dataset, overwrite)
 
-    def __new__(cls, *args, **kwargs):
+    def get_dataset(self, dataset_name: str):
+        self.dataset_manager.load_dataset(dataset_name)
+
+    def __new__(cls, *args, **kwargs) -> 'BaseAmaContext':
+        '''
+        This is a little ugly hack, but we need LazyProxy to implement a singleton ama_context.
+        :param args:
+        :param kwargs:
+        :return:
+        '''
         if not cls.instance:
             cls.instance = _LazyProxy(cls, *args, **kwargs)
         return cls.instance

@@ -1,9 +1,7 @@
-from abc import ABC
-from typing import Any
-
 import yaml
 import enum
 import abc
+from typing import Dict, Any, Type
 
 
 class DatasetTypes(enum.Enum):
@@ -13,53 +11,49 @@ class DatasetTypes(enum.Enum):
 
 
 class DatasetNotFoundError(Exception):
-    def __init__(self, msg):
+    def __init__(self, msg: str):
         super(DatasetNotFoundError, self).__init__(msg)
 
 
-class _BaseDatastore(abc.ABC):
+class DatasetTypeNotSupported(Exception):
+    pass
 
-    def __init__(self, dataset_conf):
+class BaseDatastore(abc.ABC):
+
+    def __init__(self, dataset_conf: Dict):
         self.dataset_conf = dataset_conf
 
     @abc.abstractmethod
-    def load_dataset(self):
+    def load_dataset(self) -> Any:
         pass
 
     @abc.abstractmethod
-    def persist_dataset(self, dataset):
+    def persist_dataset(self, dataset: Any, overwrite: bool):
         pass
 
 
-class _GenericDatastore(_BaseDatastore):
+class GenericDatastore(BaseDatastore):
 
-    def __init__(self, dataset_conf):
-        super(_GenericDatastore, self).__init__(dataset_conf)
+    def __init__(self, dataset_conf, *args):
+        super(GenericDatastore, self).__init__(dataset_conf)
 
     def load_dataset(self):
         raise NotImplementedError("Loading generic datasets is not supported")
 
-    def persist_dataset(self, dataset):
+    def persist_dataset(self, dataset, overwrite):
         raise NotImplementedError("Persisting generic datasets is not supported")
 
 
-class DatasetMeta(type):
+class BaseDatasetManager(abc.ABC):
 
-    def __init__(cls, cls_name, cls_bases, cls_attrs) -> None:
-        if cls_bases:
-            cls._registered_datastores[DatasetTypes.Generic] = _GenericDatastore
-        super().__init__(cls_name, cls_bases, cls_attrs)
-
-
-class DatasetManager(metaclass=DatasetMeta):
-
-    _registered_datastores = {}
+    _registered_datastores: Dict[str, Type[BaseDatastore]] = {}
 
     def __init__(self):
+        self._registered_datastores[DatasetTypes.Generic.value] = GenericDatastore
         with open('datasets.yml', 'r', encoding='utf-8') as f:
             self._datasets_conf = yaml.load(f)
 
-    def _find_dataset_config(self, dataset_name):
+    def _find_dataset_config(self, dataset_name: str) -> Dict:
         for dataset_type, dataset_configurations in self._datasets_conf.items():
             for config in dataset_configurations:
                 if config['name'] == dataset_name:
@@ -69,23 +63,37 @@ class DatasetManager(metaclass=DatasetMeta):
         else:
             raise DatasetNotFoundError("No dataset by name \"{}\" defined".format(dataset_name))
 
-    def _get_datastore(self, dataset_conf):
+    @abc.abstractmethod
+    def get_datastore(self, datastore_cls: Type[BaseDatastore], dataset_conf: Dict) -> BaseDatastore:
+        """
+        Get the concrete datastore required to handle this type of dataset.
+        The reason this is an abstract method is to provide different runtime types the ability to inject their
+        own logic and dependencies for handling their specific datastores.
+        e.g. - A spark related datastore would need the SparkSession object available.
+        :param dataset_conf: The dataset configuration loaded from the datasets yml
+        :param datastore_cls: A concrete datastore class
+        :return:
+        """
+        pass
+
+    def _get_datastore_cls(self, dataset_conf: Dict) -> Type[BaseDatastore]:
         try:
             datastore_cls = self._registered_datastores[dataset_conf['type']]
-            datastore = datastore_cls(dataset_conf)
-            return datastore
+            return datastore_cls
         except KeyError:
-            raise NotImplementedError("Unsupported dataset type: {}".format(dataset_conf['type']))
+            raise DatasetTypeNotSupported("Unsupported dataset type: {}".format(dataset_conf['type']))
 
-    def load_dataset(self, dataset_name):
+    def load_dataset(self, dataset_name: str) -> Any:
         dataset_conf = self._find_dataset_config(dataset_name)
-        datastore = self._get_datastore(dataset_conf)
+        datastore_cls = self._get_datastore_cls(dataset_conf)
+        datastore = self.get_datastore(datastore_cls, dataset_conf)
         return datastore.load_dataset()
 
-    def persist_dataset(self, dataset_name, dataset):
+    def persist_dataset(self, dataset_name: str, dataset: Any, overwrite: bool):
         dataset_conf = self._find_dataset_config(dataset_name)
-        datastore = self._get_datastore(dataset_conf)
-        datastore.persist_dataset(dataset)
+        datastore_cls = self._get_datastore_cls(dataset_conf)
+        datastore = self.get_datastore(datastore_cls, dataset_conf)
+        datastore.persist_dataset(dataset, overwrite)
 
-    def get_dataset_configuration(self, dataset_name):
+    def get_dataset_configuration(self, dataset_name: str) -> Dict:
         return self._find_dataset_config(dataset_name)
