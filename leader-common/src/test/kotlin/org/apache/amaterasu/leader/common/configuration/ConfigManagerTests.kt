@@ -18,11 +18,13 @@ package org.apache.amaterasu.leader.common.configuration
 
 
 import org.jetbrains.spek.api.Spek
-import org.jetbrains.spek.api.dsl.*
-import kotlin.test.assertEquals
+import org.jetbrains.spek.api.dsl.given
+import org.jetbrains.spek.api.dsl.it
+import org.jetbrains.spek.api.dsl.on
 import java.io.File
+import kotlin.test.assertEquals
 
-object ConfigManagerTests : Spek({
+class ConfigManagerTests : Spek({
 
     val marker = this.javaClass.getResource("/maki.yml").path
 
