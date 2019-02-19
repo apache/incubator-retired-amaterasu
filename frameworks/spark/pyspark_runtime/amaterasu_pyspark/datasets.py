@@ -18,17 +18,17 @@ from abc import ABC
 from pyspark.sql import SparkSession, DataFrame
 from typing import Type, Dict
 
-from amaterasu.datastores import BaseDatastore, BaseDatasetManager, DatasetTypes
+from amaterasu.datasets import BaseDatasetLoader, BaseDatasetManager, DatasetTypes
 
 
-class BaseSparkStore(BaseDatastore, ABC):
+class BaseSparkDatasetLoader(BaseDatasetLoader, ABC):
 
     def __init__(self, dataset_conf: Dict, spark: SparkSession):
-        super(BaseSparkStore, self).__init__(dataset_conf)
+        super(BaseSparkDatasetLoader, self).__init__(dataset_conf)
         self.spark = spark
 
 
-class HiveStore(BaseSparkStore):
+class HiveDatasetLoader(BaseSparkDatasetLoader):
 
     def load_dataset(self) -> DataFrame:
         return self.spark.sql("SELECT * FROM {}".format(self.dataset_conf['table']))
@@ -39,7 +39,7 @@ class HiveStore(BaseSparkStore):
         dataset.write.saveAsTable(self.dataset_conf['table'])
 
 
-class FileStore(BaseSparkStore):
+class FileDatasetLoader(BaseSparkDatasetLoader):
 
     def load_dataset(self) -> DataFrame:
         return self.spark\
@@ -61,13 +61,13 @@ class FileStore(BaseSparkStore):
 
 class DatasetManager(BaseDatasetManager):
 
-    def get_datastore(self, datastore_cls: Type[BaseSparkStore], dataset_conf: Dict):
+    def get_datastore(self, datastore_cls: Type[BaseSparkDatasetLoader], dataset_conf: Dict):
         datastore = datastore_cls(dataset_conf, self.spark)
         return datastore
 
     def __init__(self, spark):
         super(DatasetManager, self).__init__()
         self.spark = spark
-        self._registered_datastores[DatasetTypes.Hive.value] = HiveStore
-        self._registered_datastores[DatasetTypes.File.value] = FileStore
+        self._registered_datastores[DatasetTypes.Hive.value] = HiveDatasetLoader
+        self._registered_datastores[DatasetTypes.File.value] = FileDatasetLoader
 

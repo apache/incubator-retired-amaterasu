@@ -34,7 +34,8 @@ class DatasetNotFoundError(Exception):
 class DatasetTypeNotSupported(Exception):
     pass
 
-class BaseDatastore(abc.ABC):
+
+class BaseDatasetLoader(abc.ABC):
 
     def __init__(self, dataset_conf: Dict):
         self.dataset_conf = dataset_conf
@@ -48,10 +49,10 @@ class BaseDatastore(abc.ABC):
         pass
 
 
-class GenericDatastore(BaseDatastore):
+class GenericDatasetLoader(BaseDatasetLoader):
 
     def __init__(self, dataset_conf, *args):
-        super(GenericDatastore, self).__init__(dataset_conf)
+        super(GenericDatasetLoader, self).__init__(dataset_conf)
 
     def load_dataset(self):
         raise NotImplementedError("Loading generic datasets is not supported")
@@ -62,10 +63,10 @@ class GenericDatastore(BaseDatastore):
 
 class BaseDatasetManager(abc.ABC):
 
-    _registered_datastores: Dict[str, Type[BaseDatastore]] = {}
+    _registered_datastores: Dict[str, Type[BaseDatasetLoader]] = {}
 
     def __init__(self):
-        self._registered_datastores[DatasetTypes.Generic.value] = GenericDatastore
+        self._registered_datastores[DatasetTypes.Generic.value] = GenericDatasetLoader
         with open('datasets.yml', 'r', encoding='utf-8') as f:
             self._datasets_conf = yaml.load(f)
 
@@ -80,7 +81,7 @@ class BaseDatasetManager(abc.ABC):
             raise DatasetNotFoundError("No dataset by name \"{}\" defined".format(dataset_name))
 
     @abc.abstractmethod
-    def get_datastore(self, datastore_cls: Type[BaseDatastore], dataset_conf: Dict) -> BaseDatastore:
+    def get_datastore(self, datastore_cls: Type[BaseDatasetLoader], dataset_conf: Dict) -> BaseDatasetLoader:
         """
         Get the concrete datastore required to handle this type of dataset.
         The reason this is an abstract method is to provide different runtime types the ability to inject their
@@ -92,7 +93,7 @@ class BaseDatasetManager(abc.ABC):
         """
         pass
 
-    def _get_datastore_cls(self, dataset_conf: Dict) -> Type[BaseDatastore]:
+    def _get_datastore_cls(self, dataset_conf: Dict) -> Type[BaseDatasetLoader]:
         try:
             datastore_cls = self._registered_datastores[dataset_conf['type']]
             return datastore_cls
