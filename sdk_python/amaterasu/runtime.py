@@ -9,6 +9,8 @@ import atexit
 import abc
 from munch import Munch, munchify
 
+from amaterasu.datastores import DatasetManager
+
 
 class ImproperlyConfiguredError(Exception):
     pass
@@ -37,15 +39,13 @@ class AmaActiveMQNotificationHandler(logging.Handler):
 class BaseAmaContext(abc.ABC):
 
     instance = None
-    is_initialized = False
+    _dataset_manager = DatasetManager()
 
-    @abc.abstractmethod
-    def persist(self, action_name, dataset_name, dataset):
-        pass
+    def persist(self, dataset_name, dataset):
+        self._dataset_manager.persist_dataset(dataset_name, dataset)
 
-    @abc.abstractmethod
-    def get_dataset(self, action_name, dataset_name):
-        pass
+    def get_dataset(self, dataset_name):
+        self._dataset_manager.load_dataset(dataset_name)
 
     def __new__(cls, *args, **kwargs):
         if not cls.instance:
@@ -119,13 +119,10 @@ class Notifier(logging.Logger):
 def _create_configuration():
     _dict = {
         'job_metadata': None,
-        'env': None,
-        'exports': None
+        'env': None
     }
     with open('env.yml', 'r') as f:
         _dict['env'] = yaml.load(f.read())
-    with open('datastores.yml', 'r') as f:
-        _dict['exports'] = yaml.load(f.read())
     with open('runtime.yml', 'r') as f:
         _dict['job_metadata'] = yaml.load(f.read())
 
