@@ -16,7 +16,6 @@ class SparkSubmitScalaRunnerProvider extends RunnerSetupProvider {
   val amaDist = new File (s"${new File(jarFile.getParent).getParent}/dist")
 
   override def getCommand(jobId: String, actionData: ActionData, env: String, executorId: String, callbackAddress: String): String = {
-    println(s"===> Spark Version 3: ${conf.Webserver.sparkVersion}")
 
     val util = new ArtifactUtil(List(actionData.repo).asJava, jobId)
     val classParam = if (actionData.getHasArtifact)  s" --class ${actionData.entryClass}" else ""
@@ -42,7 +41,6 @@ class SparkSubmitScalaRunnerProvider extends RunnerSetupProvider {
 object SparkSubmitScalaRunnerProvider {
   def apply(conf: ClusterConfig): SparkSubmitScalaRunnerProvider = {
     val result = new SparkSubmitScalaRunnerProvider
-    println(s"===> Spark Version 2: ${conf.Webserver.sparkVersion}")
 
     result.conf = conf
     result

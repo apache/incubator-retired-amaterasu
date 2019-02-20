@@ -51,7 +51,6 @@ class SparkSetupProvider extends FrameworkSetupProvider {
     this.env = env
     this.conf = conf
 
-    println(s"===> Spark Version 1: ${conf.Webserver.sparkVersion}")
     runnerProviders += ("scala" -> SparkScalaRunnerProvider(conf))
     runnerProviders += ("jar" -> SparkSubmitScalaRunnerProvider(conf))
     runnerProviders += ("pyspark" -> PySparkRunnerProvider(conf))

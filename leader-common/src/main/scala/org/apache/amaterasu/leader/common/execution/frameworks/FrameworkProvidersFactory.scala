@@ -49,7 +49,6 @@ object FrameworkProvidersFactory extends Logging {
 
       val provider = Manifest.classType(r).runtimeClass.newInstance.asInstanceOf[FrameworkSetupProvider]
 
-      println(s"===> Spark Version: ${config.Webserver.sparkVersion}")
       provider.init(env, config)
       log.info(s"a provider for group ${provider.getGroupIdentifier} was created")
       (provider.getGroupIdentifier, provider)
