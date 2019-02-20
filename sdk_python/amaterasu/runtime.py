@@ -23,7 +23,7 @@ import abc
 from munch import Munch, munchify
 from typing import Any
 
-from amaterasu.datastores import BaseDatasetManager
+from amaterasu.datasets import BaseDatasetManager
 
 
 class ImproperlyConfiguredError(Exception):

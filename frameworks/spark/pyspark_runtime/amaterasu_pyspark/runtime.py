@@ -20,8 +20,8 @@ from amaterasu import conf, notifier, ImproperlyConfiguredError, BaseAmaContext
 from pyspark import SparkContext, SparkConf
 from pyspark.sql import SparkSession, DataFrame
 
-from amaterasu.datastores import BaseDatasetManager
-from .datastores import DatasetManager
+from amaterasu.datasets import BaseDatasetManager
+from .datasets import DatasetManager
 
 
 def _get_or_create_spark_attributes(sc: SparkContext, spark: SparkSession) -> Tuple[SparkContext, SparkSession]:
