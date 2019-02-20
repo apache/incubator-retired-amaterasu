@@ -6,7 +6,7 @@
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *    http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -14,32 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-//package org.apache.amaterasu.leader.dsl
-//
-//import java.io.File
-//
-//import org.eclipse.jgit.api.Git
-//
-//import scala.reflect.io.Path
+package org.apache.amaterasu.common.execution.actions
 
-/**
-  * The GitUtil class handles getting the job git repository
-  */
-//object GitUtil {
-//
-//  def cloneRepo(repoAddress: String, branch: String) = {
-//
-//    val path = Path("repo")
-//    path.deleteRecursively()
-//
-//    //TODO: add authentication
-//    val git = Git.cloneRepository
-//      .setURI(repoAddress)
-//      .setDirectory(new File("repo"))
-//      .setBranch(branch)
-//      .call
-//
-//    git.close()
-//  }
-//
-//}
+import org.apache.amaterasu.common.logging.KLogging
+
+abstract class Notifier : KLogging() {
+
+    abstract fun info(msg: String)
+
+    abstract fun success(line: String)
+
+    abstract fun error(line: String, msg: String)
+
+}

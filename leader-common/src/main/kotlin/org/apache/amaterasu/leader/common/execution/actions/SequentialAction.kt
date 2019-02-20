@@ -37,13 +37,13 @@ class SequentialAction(name: String,
 
         // creating a znode for the action
         client = zkClient
-        actionPath = client.create().withMode(CreateMode.PERSISTENT_SEQUENTIAL).forPath("/$jobId/task-", ActionStatus.pending.toString().toByteArray())
+        actionPath = client.create().withMode(CreateMode.PERSISTENT_SEQUENTIAL).forPath("/$jobId/task-", ActionStatus.Pending.toString().toByteArray())
         actionId = actionPath.substring(actionPath.indexOf("task-") + 5)
 
         this.attempts = attempts
         this.jobId = jobId
         val javaExports = exports
-        data = ActionData(ActionStatus.pending, name, src, config, groupId, typeId, actionId, javaExports, arrayListOf())
+        data = ActionData(ActionStatus.Pending, name, src, config, groupId, typeId, actionId, javaExports, arrayListOf())
         jobsQueue = queue
         client = zkClient
 

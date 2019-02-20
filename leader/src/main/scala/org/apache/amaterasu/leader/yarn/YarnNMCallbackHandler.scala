@@ -39,7 +39,7 @@ class YarnNMCallbackHandler extends Logging with NMClientAsync.CallbackHandler {
   }
 
   override def onContainerStarted(containerId: ContainerId, allServiceResponse: util.Map[String, ByteBuffer]): Unit = {
-    log.info(s"Container ${containerId.getContainerId} started")
+    log.info(s"Container ${containerId.getContainerId} Started")
   }
 
   override def onStopContainerError(containerId: ContainerId, t: Throwable): Unit = {

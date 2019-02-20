@@ -91,8 +91,8 @@ object JobLoader extends Logging {
     val tasks = client.getChildren.forPath(s"/$jobId").asScala.toSeq.filter(n => n.startsWith("task"))
     for (task <- tasks) {
 
-      if (client.getData.forPath(s"/$jobId/$task").sameElements(ActionStatus.queued.toString.getBytes) ||
-        client.getData.forPath(s"/$jobId/$task").sameElements(ActionStatus.started.toString.getBytes)) {
+      if (client.getData.forPath(s"/$jobId/$task").sameElements(ActionStatus.Queued.toString.getBytes) ||
+        client.getData.forPath(s"/$jobId/$task").sameElements(ActionStatus.Started.toString.getBytes)) {
 
         jobManager.reQueueAction(task.substring(task.indexOf("task-") + 5))
 

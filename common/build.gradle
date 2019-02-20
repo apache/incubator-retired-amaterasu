@@ -46,15 +46,20 @@ dependencies {
     compile group: 'org.slf4j', name: 'slf4j-simple', version: '1.7.9'
     compile group: 'com.fasterxml.jackson.core', name: 'jackson-annotations', version: '2.9.4'
 
-
     compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
     compile "org.jetbrains.kotlin:kotlin-reflect"
 
     // currently we have to use this specific mesos version to prevent from
     // clashing with spark
-    compile('org.apache.mesos:mesos:0.22.2:shaded-protobuf') {
+    compile('org.apache.mesos:mesos:1.7.0:shaded-protobuf') {
         exclude group: 'com.google.protobuf', module: 'protobuf-java'
     }
+
+    compile('com.jcabi:jcabi-aether:0.10.1') {
+        exclude group: 'org.jboss.netty'
+    }
+    compile group: 'org.apache.maven', name: 'maven-core', version: '3.0.5'
+    
     provided group: 'org.apache.hadoop', name: 'hadoop-yarn-client', version: '2.7.3'
     provided group: 'org.apache.hadoop', name: 'hadoop-common', version: '2.7.3'
     provided group: 'org.apache.hadoop', name: 'hadoop-yarn-api', version: '2.7.3'

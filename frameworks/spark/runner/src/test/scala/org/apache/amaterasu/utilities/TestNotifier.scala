@@ -23,14 +23,14 @@ import org.apache.amaterasu.common.logging.Logging
 class TestNotifier extends Notifier  {
 
   override def info(msg: String): Unit = {
-    log.info(msg)
+    getLog.info(msg)
   }
 
   override def success(line: String): Unit = {
-    log.info(s"successfully executed line: $line")
+    getLog.info(s"successfully executed line: $line")
   }
 
   override def error(line: String, msg: String): Unit = {
-    log.error(s"Error executing line: $line message: $msg")
+    getLog.error(s"Error executing line: $line message: $msg")
   }
 }

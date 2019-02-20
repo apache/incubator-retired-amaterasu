@@ -14,18 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.amaterasu.sdk.frameworks;
+package org.apache.amaterasu.sdk.frameworks.configuration
 
-import org.apache.amaterasu.common.dataobjects.ActionData;
-
-public interface RunnerSetupProvider {
-
-    String getCommand(String jobId, ActionData actionData, String env, String executorId, String callbackAddress);
-
-    String[] getRunnerResources();
-
-    String[] getActionResources(String jobId, ActionData actionData);
-
-    String[] getActionDependencies(String jobId, ActionData actionData);
-
-}
+data class DriverConfiguration(val memory: Int = 0, val cpus: Int = 0)

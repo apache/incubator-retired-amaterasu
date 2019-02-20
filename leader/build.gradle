@@ -25,6 +25,10 @@ plugins {
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
+shadowJar {
+    zip64 true
+}
+
 repositories {
     maven {
         url "https://plugins.gradle.org/m2/"
@@ -48,11 +52,11 @@ dependencies {
     compile group: 'com.fasterxml.jackson.core', name: 'jackson-annotations', version: '2.9.4'
     compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.9.4'
     compile group: 'com.fasterxml.jackson.dataformat', name: 'jackson-dataformat-yaml', version: '2.9.4'
-    compile group: 'org.eclipse.jetty', name: 'jetty-plus', version: '9.2.19.v20160908'
-    compile group: 'org.eclipse.jetty', name: 'jetty-server', version: '9.2.19.v20160908'
-    compile group: 'org.eclipse.jetty', name: 'jetty-http', version: '9.2.19.v20160908'
-    compile group: 'org.eclipse.jetty', name: 'jetty-io', version: '9.2.19.v20160908'
-    compile group: 'org.eclipse.jetty', name: 'jetty-servlet', version: '9.2.19.v20160908'
+    compile group: 'org.eclipse.jetty', name: 'jetty-plus', version: '9.4.14.v20181114'
+    compile group: 'org.eclipse.jetty', name: 'jetty-server', version: '9.4.14.v20181114'
+    compile group: 'org.eclipse.jetty', name: 'jetty-http', version: '9.4.14.v20181114'
+    compile group: 'org.eclipse.jetty', name: 'jetty-io', version: '9.4.14.v20181114'
+    compile group: 'org.eclipse.jetty', name: 'jetty-servlet', version: '9.4.14.v20181114'
     compile group: 'org.eclipse.jetty.toolchain', name: 'jetty-test-helper', version: '4.0'
     compile group: 'org.yaml', name: 'snakeyaml', version: '1.23'
     compile group: 'commons-cli', name: 'commons-cli', version: '1.2'

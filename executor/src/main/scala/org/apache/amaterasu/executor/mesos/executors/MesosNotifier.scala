@@ -18,8 +18,8 @@ package org.apache.amaterasu.executor.mesos.executors
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
-import org.apache.amaterasu.common.execution.actions.{Notification, NotificationLevel, NotificationType, Notifier}
-import org.apache.amaterasu.common.logging.Logging
+import org.apache.amaterasu.common.execution.actions.enums.{NotificationLevel, NotificationType}
+import org.apache.amaterasu.common.execution.actions.{Notification, Notifier}
 import org.apache.mesos.ExecutorDriver
 
 
@@ -30,9 +30,10 @@ class MesosNotifier(driver: ExecutorDriver) extends Notifier {
 
   override def success(line: String): Unit = {
 
-    log.info(s"successfully executed line: $line")
 
-    val notification = Notification(line, "", NotificationType.success, NotificationLevel.code)
+    getLog.info(s"successfully executed line: $line")
+
+    val notification = new Notification(line, "", NotificationType.Success, NotificationLevel.Code)
     val msg = mapper.writeValueAsBytes(notification)
 
     driver.sendFrameworkMessage(msg)
@@ -41,9 +42,9 @@ class MesosNotifier(driver: ExecutorDriver) extends Notifier {
 
   override def error(line: String, message: String): Unit = {
 
-    log.error(s"Error executing line: $line message: $message")
+    getLog.error(s"Error executing line: $line message: $message")
 
-    val notification = Notification(line, message, NotificationType.error, NotificationLevel.code)
+    val notification = new Notification(line, message, NotificationType.Error, NotificationLevel.Code)
     val msg = mapper.writeValueAsBytes(notification)
 
     driver.sendFrameworkMessage(msg)
@@ -52,9 +53,9 @@ class MesosNotifier(driver: ExecutorDriver) extends Notifier {
 
   override def info(message: String): Unit = {
 
-    log.info(message)
+    getLog.info(message)
 
-    val notification = Notification("", message, NotificationType.info, NotificationLevel.execution)
+    val notification = new Notification("", message, NotificationType.Info, NotificationLevel.Execution)
     val msg = mapper.writeValueAsBytes(notification)
 
     driver.sendFrameworkMessage(msg)

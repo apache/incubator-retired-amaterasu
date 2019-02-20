@@ -21,6 +21,8 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.ArrayNode
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
 import org.apache.amaterasu.common.dataobjects.ActionData
+import org.apache.amaterasu.common.dataobjects.Artifact
+import org.apache.amaterasu.common.dataobjects.Repo
 import org.apache.amaterasu.leader.common.execution.JobManager
 import org.apache.amaterasu.leader.common.execution.actions.Action
 import org.apache.amaterasu.leader.common.execution.actions.ErrorAction
@@ -131,7 +133,7 @@ object JobParser {
                               client: CuratorFramework,
                               attempts: Int): SequentialAction {
 
-        return SequentialAction(action.path("name").asText(),
+        val result = SequentialAction(action.path("name").asText(),
                 action.path("file").asText(),
                 action.path("config").asText(),
                 action.path("runner").path("group").asText(),
@@ -142,6 +144,30 @@ object JobParser {
                 client,
                 attempts)
 
+        if(!action.path("artifact").isMissingNode){
+            result.data.artifact = parseArtifact(action)
+            result.data.entryClass = action.path("class").asText()
+        }
+
+        if(!action.path("repo").isMissingNode){
+            result.data.repo = parseRepo(action)
+        }
+
+        return result
+    }
+
+    private fun parseRepo(action: JsonNode): Repo {
+        return Repo(
+                action.path("repo").path("id").asText(),
+                action.path("repo").path("type").asText(),
+                action.path("repo").path("url").asText())
+    }
+
+    private fun parseArtifact(action: JsonNode): Artifact {
+        return Artifact(
+                action.path("artifact").path("groupId").asText(),
+                action.path("artifact").path("artifactId").asText(),
+                action.path("artifact").path("version").asText())
     }
 
     @JvmStatic
@@ -151,7 +177,7 @@ object JobParser {
                          actionsQueue: BlockingQueue<ActionData>,
                          client: CuratorFramework): ErrorAction {
 
-        return ErrorAction(
+        val result = ErrorAction(
                 action.path("name").asText(),
                 action.path("file").asText(),
                 parent,
@@ -163,6 +189,16 @@ object JobParser {
                 actionsQueue,
                 client
         )
+
+        if(!action.path("artifact").isMissingNode){
+            result.data.artifact = parseArtifact(action)
+        }
+
+        if(!action.path("repo").isMissingNode){
+            result.data.repo = parseRepo(action)
+        }
+
+        return result
 
     }
 

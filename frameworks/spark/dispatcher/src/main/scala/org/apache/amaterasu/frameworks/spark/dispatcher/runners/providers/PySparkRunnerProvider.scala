@@ -34,11 +34,13 @@ class PySparkRunnerProvider extends RunnerSetupProvider {
   override def getRunnerResources: Array[String] =
     Array[String]("miniconda.sh", "spark_intp.py", "runtime.py", "codegen.py")
 
-  def getActionResources(jobId: String, actionData: ActionData): Array[String] =
+  override def getActionUserResources(jobId: String, actionData: ActionData): Array[String] =
     Array[String]()
 
   override def getActionDependencies(jobId: String, actionData: ActionData): Array[String] =
     Array[String]()
+
+  override def getHasExecutor: Boolean = true
 }
 
 object PySparkRunnerProvider {
