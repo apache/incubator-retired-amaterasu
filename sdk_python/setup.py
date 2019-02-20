@@ -18,10 +18,10 @@ from setuptools import setup, find_packages
 
 setup(
     name='amaterasu-sdk',
-    version='0.2.0-incubating-rc4',
+    version='0.2.1-incubating',
     packages=find_packages(),
     url='https://github.com/apache/incubator-amaterasu',
-    license='Apache License 2.0 ',
+    license='Apache License 2.0',
     author='Apache Amaterasu (incubating)',
     author_email="dev@amaterasu.incubator.apache.org",
     description='Apache Amaterasu (incubating) is an open source, configuration managment and deployment framework for big data pipelines',
