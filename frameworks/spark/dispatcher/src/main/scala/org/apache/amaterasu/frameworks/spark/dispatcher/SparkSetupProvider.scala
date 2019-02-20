@@ -51,6 +51,7 @@ class SparkSetupProvider extends FrameworkSetupProvider {
     this.env = env
     this.conf = conf
 
+    println(s"===> Spark Version 1: ${conf.Webserver.sparkVersion}")
     runnerProviders += ("scala" -> SparkScalaRunnerProvider(conf))
     runnerProviders += ("jar" -> SparkSubmitScalaRunnerProvider(conf))
     runnerProviders += ("pyspark" -> PySparkRunnerProvider(conf))
@@ -67,7 +68,7 @@ class SparkSetupProvider extends FrameworkSetupProvider {
 
 
   override def getEnvironmentVariables: util.Map[String, String] = conf.mode match {
-    case "mesos" => Map[String, String]("SPARK_HOME" ->"spark-2.2.1-bin-hadoop2.7","SPARK_HOME_DOCKER" -> "/opt/spark/")
+    case "mesos" => Map[String, String]("SPARK_HOME" ->s"spark-${conf.Webserver.sparkVersion}","SPARK_HOME_DOCKER" -> "/opt/spark/")
     case "yarn" => Map[String, String]("SPARK_HOME" -> "spark")
     case _ => Map[String, String]()
   }

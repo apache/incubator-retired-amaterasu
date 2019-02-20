@@ -40,7 +40,7 @@ class ClusterConfig extends Logging {
   var distLocation: String = "local"
   var workingFolder: String = ""
   // TODO: get rid of hard-coded version
-  var pysparkPath: String = "spark-2.2.1-bin-hadoop2.7/bin/spark-submit"
+  var pysparkPath: String = _
   var Jar: String = _
   var JarName: String = _
   // the additionalClassPath is currently for testing purposes, when amaterasu is
@@ -209,7 +209,7 @@ class ClusterConfig extends Logging {
     if (props.containsKey("timeout")) timeout = props.getProperty("timeout").asInstanceOf[Double]
     if (props.containsKey("mode")) mode = props.getProperty("mode")
     if (props.containsKey("workingFolder")) workingFolder = props.getProperty("workingFolder", s"/user/$user")
-    if (props.containsKey("pysparkPath")) pysparkPath = props.getProperty("pysparkPath")
+    if (props.containsKey("pysparkPath")) pysparkPath = props.getProperty("pysparkPath") else pysparkPath = s"spark-${props.getProperty("spark.version")}/bin/spark-submit"
     // TODO: rethink this
     Jar = this.getClass.getProtectionDomain.getCodeSource.getLocation.toURI.getPath
     JarName = Paths.get(this.getClass.getProtectionDomain.getCodeSource.getLocation.getPath).getFileName.toString

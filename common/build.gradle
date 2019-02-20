@@ -51,7 +51,6 @@ dependencies {
 
     // currently we have to use this specific mesos version to prevent from
     // clashing with spark
-    //compile('org.apache.mesos:mesos:0.28.0:shaded-protobuf') {
     compile('org.apache.mesos:mesos:1.7.0:shaded-protobuf') {
         exclude group: 'com.google.protobuf', module: 'protobuf-java'
     }

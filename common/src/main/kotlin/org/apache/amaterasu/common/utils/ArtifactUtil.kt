@@ -26,17 +26,14 @@ import java.io.File
 
 class ArtifactUtil(repos: List<Repo> = listOf(), jobId: String) {
 
-    var repo: File
+    private var repo: File
+    private val remoteRepos: MutableList<RemoteRepository> = mutableListOf()
 
     init {
         val jarFile = File(this.javaClass.protectionDomain.codeSource.location.path)
         val amaHome = File(jarFile.parent).parent
         repo = File("$amaHome/dist/$jobId")
-    }
 
-    private val remoteRepos: MutableList<RemoteRepository> = mutableListOf()
-
-    init {
         addRepos(repos)
     }
 
