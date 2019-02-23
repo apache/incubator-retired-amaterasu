@@ -14,7 +14,7 @@
   ~ See the License for the specific language governing permissions and
   ~ limitations under the License.
   -->
-# Working with the Amaterasu SDKs
+# Working with Amaterasu Frameworks
 
 The Amaterasu SDK, provide developers with runtime libraries to consume Amaterasu configuration and the interact with the Amaterasu job which they are running in the context of. 
 

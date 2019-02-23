@@ -19,7 +19,7 @@
 
 ![Apache Amaterasu](images/amaterasu-logo-web.png)                                                        
 
-Apache Amaterasu is an open-source framework providing configuration management and deployment for Data pipelines. Amaterasu allows developers and data scientists to write, collaborate and easily deploy data pipelines to different cluster environments. Amaterasu allows them manage configuration and dependencies for different environments.
+Apache Amaterasu is an open-source framework providing configuration management and deployment of containerized data pipelines. Amaterasu allows developers and data scientists to write, collaborate and easily deploy data pipelines to different cluster environments. Amaterasu allows them manage configuration and dependencies for different environments.
 
 ## Main concepts
 
@@ -29,7 +29,7 @@ Amaterasu jobs are defined within and Amaterasu repository. A repository is a fi
  
 #### Actions
 
-Put simply, an action is a process that is being managed by Amaterasu. In order to deploy and manage an actions Amaterasu is creating a container with the action, its dependencies and configuration, and deploys it on a cluster (currently either only Apache Mesos and YARN clusters are supported).
+Put simply, an action is a process that is being managed by Amaterasu. In order to deploy and manage an actions Amaterasu is creating a container with the action, its dependencies and configuration, and deploys it on a cluster (currently only Apache Mesos and YARN clusters are supported with Kubernetes planned for later version).
 
 #### Frameworks
 
@@ -63,8 +63,8 @@ Because Amaterasu supports several cluster environments (currently it supports A
 | ---------- | ------------------------------ | -------------- |
 | Mode       | The cluster manager to be used | mesos          |
 | zk         | The ZooKeeper connection<br> string to be used by<br> amaterasu | The address of a zookeeper node  |
-| master     | The clusters' Mesos master | The address of the Mesos Master  |
-| user       | The user that will be used<br> to run amaterasu | root           |
+| master     | The clusters' Mesos master | The address of the Mesos Master    |
+| user       | The user that will be used<br> to run amaterasu | root          |
 
 #### Apache YARN
 
@@ -74,7 +74,7 @@ Because Amaterasu supports several cluster environments (currently it supports A
 | property   | Description                    | Value          |
 | ---------- | ------------------------------ | -------------- |
 | Mode       | The cluster manager to be used | mesos          |
-  | zk         | The ZooKeeper connection<br> string to be used by<br> amaterasu | The address of a zookeeper node  |
+| zk         | The ZooKeeper connection<br> string to be used by<br> amaterasu | The address of a zookeeper node  |
 
 
 ## Running a Job
