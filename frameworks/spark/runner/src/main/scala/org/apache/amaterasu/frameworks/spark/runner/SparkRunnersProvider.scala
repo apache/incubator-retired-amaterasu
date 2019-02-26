@@ -22,7 +22,7 @@ import com.jcabi.aether.Aether
 import org.apache.amaterasu.common.configuration.ClusterConfig
 import org.apache.amaterasu.common.dataobjects.ExecData
 import org.apache.amaterasu.common.execution.actions.Notifier
-import org.apache.amaterasu.common.execution.dependencies.{Dependencies, PythonDependencies, PythonPackage}
+import org.apache.amaterasu.common.execution.dependencies.{Dependencies, PythonDependencies}
 import org.apache.amaterasu.common.logging.Logging
 import org.apache.amaterasu.frameworks.spark.runner.repl.{SparkRunnerHelper, SparkScalaRunner}
 import org.apache.amaterasu.frameworks.spark.runner.sparksql.SparkSqlRunner

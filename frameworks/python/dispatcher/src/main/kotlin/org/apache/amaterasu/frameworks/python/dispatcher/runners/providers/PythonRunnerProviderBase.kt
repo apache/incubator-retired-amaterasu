@@ -23,25 +23,31 @@ import org.apache.amaterasu.leader.common.utilities.DataLoader
 import org.apache.amaterasu.sdk.frameworks.RunnerSetupProvider
 import java.io.File
 
-abstract class PythonRunnerProviderBase(env: String?, conf:ClusterConfig?) : RunnerSetupProvider {
+abstract class PythonRunnerProviderBase(env: String?, conf:ClusterConfig?) : RunnerSetupProvider() {
+    override val runnerResources: Array<String>
+        get() = arrayOf("python_sdk.zip")
+
+    override fun getCommand(jobId: String, actionData: ActionData, env: String, executorId: String, callbackAddress: String): String {
+        var cmd = "pip install -r ama-requirements.txt"
+        execData.pyDeps()?.filePaths()?.forEach {
+            path -> cmd += " && pip install -r ${path.split('/').last()}"
+        }
+        return cmd
+    }
+
+    override fun getActionDependencies(jobId: String, actionData: ActionData): Array<String> {
+        File("ama-requirements.txt").appendText("./python_sdk.zip\n")
+        return try {
+            val userRequirements = execData.pyDeps()?.filePaths()
+            arrayOf("ama-requirements.txt") + userRequirements!!
+        } catch (e: NullPointerException) {
+            arrayOf("ama-requirements.txt")
+        }
+
+    }
+
+    override val hasExecutor: Boolean
+        get() = false
 
     private val execData: ExecData = DataLoader.getExecutorData(env, conf)
-
-    override fun getCommand(jobId: String?, actionData: ActionData?, env: String?, executorId: String?, callbackAddress: String?): String {
-        return "pip install -r requirements.txt"
-    }
-
-    override fun getRunnerResources(): Array<String> {
-        return arrayOf("python_sdk.zip")
-    }
-
-    override fun getActionDependencies(jobId: String?, actionData: ActionData?): Array<String> {
-        File("requirements.txt").appendText("./python_sdk.zip\n")
-        for (dep in execData.pyDeps().packages())
-            if (dep.index().isDefined && !dep.index().isEmpty)
-                File("requirements.txt").appendText("-i ${dep.index()} ${dep.packageId()}\n")
-            else
-                File("requirements.txt").appendText("${dep.packageId()}\n")
-        return arrayOf("requirements.txt")
-    }
 }

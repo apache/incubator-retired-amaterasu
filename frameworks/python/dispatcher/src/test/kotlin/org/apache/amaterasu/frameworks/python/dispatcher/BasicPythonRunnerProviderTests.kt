@@ -42,7 +42,7 @@ class BasicPythonRunnerProviderTests: Spek({
         val runner = BasicPythonRunnerProvider("test", ClusterConfig())
         on("Asking to run a simple python script with dummy actionData") {
             val command = runner.getCommand("AAAA",
-                    ActionData(ActionStatus.pending,
+                    ActionData(ActionStatus.Pending,
                             "AAA",
                             "AAA",
                             "AAA",
@@ -63,7 +63,7 @@ class BasicPythonRunnerProviderTests: Spek({
         }
         on("asking to run a simple python script with dependencies") {
             val actionData = ActionData(
-                    ActionStatus.queued,
+                    ActionStatus.Queued,
                     "simple",
                     "simple.py",
                     "python",
@@ -74,14 +74,15 @@ class BasicPythonRunnerProviderTests: Spek({
             val command = runner.getCommand("Test", actionData, "", "", "")
             runner.getActionDependencies("Test", actionData)
             it("Should yield command that runs simple.py") {
-                assertEquals("pip install -r requirements.txt && python simple.py", command)
+                assertEquals("pip install -r ama-requirements.txt && pip install -r requirements.txt && python simple.py", command)
             }
             it("Should create a requirements file with all the dependencies in it") {
-                val requirements = File("requirements.txt").readLines().toTypedArray()
-                assertEquals(arrayOf("./python_sdk.zip", "pandas", "twython").joinToString(","), requirements.joinToString(","))
+                val requirements = File("ama-requirements.txt").readLines().toTypedArray()
+                assertEquals(arrayOf("./python_sdk.zip").joinToString(","), requirements.joinToString(","))
             }
         }
     }
-
-
+    afterGroup {
+        File("ama-requirements.txt").delete()
+    }
 })
