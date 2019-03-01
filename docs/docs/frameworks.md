@@ -27,13 +27,17 @@ Amaterasu supports different processing frameworks to be executed. Amaterasu fra
    The runtime library provide an easy way to consume environment configuration and share data between actions. The main entry point for doing so is using the Amaterasu Context object. Amaterasu Context exposes the following functionality:
    
    **Note:** Each runtime (Java, Python, etc.) and framework have slightly different implementation of the Amaterasu context. To develop using a specific Framework, please consult the frameworks documentation bellow.
-    - **Env**
+   
+   - **Env**
       
-      The `env` object contains the configuration for the current environment.
-      
-    - **Datasets and Dataset configuration**
+    The env object contains the configuration for the current environment.
     
-      While [datasets](config/#datasets/) are configured under an environment, Amaterasu datasets are treated differently from other configurations, as they provide the integration point between different actions. Datasets can be either consumed as a configuration or to be loaded directly into an appropriate data structure for the specific framework and runtime. 
+    
+    
+
+   - **Datasets and Dataset configuration**
+    
+    While [datasets](config/#datasets/) are configured under an environment, Amaterasu datasets are treated differently from other configurations, as they provide the integration point between different actions. Datasets can be either consumed as a configuration or to be loaded directly into an appropriate data structure for the specific framework and runtime. 
 
 # Amaterasu Frameworks
 
