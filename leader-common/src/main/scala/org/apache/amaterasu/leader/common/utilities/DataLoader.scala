@@ -48,7 +48,12 @@ object DataLoader extends Logging {
 
   def getTaskData(actionData: ActionData, env: String): TaskData = {
     val srcFile = actionData.getSrc
-    val src = Source.fromFile(s"repo/src/$srcFile").mkString
+    var src = ""
+
+    if(!srcFile.isEmpty){
+       src = Source.fromFile(s"repo/src/$srcFile").mkString
+    }
+
     val envValue = Source.fromFile(s"repo/env/$env/job.yml").mkString
 
     val envData = ymlMapper.readValue(envValue, classOf[Environment])

@@ -28,6 +28,10 @@ data class JobManager(var name: String = "",
                       var executionQueue: BlockingQueue<ActionData>,
                       var client: CuratorFramework) : KLogging() {
 
+    override fun toString(): String {
+        val result = StringBuilder()
+        return result.toString()
+    }
 
     lateinit var head: Action
 
@@ -41,11 +45,12 @@ data class JobManager(var name: String = "",
      */
     fun start(): Unit = head.execute()
 
-    val outOfActions: Boolean = registeredActions.filterValues { action ->
-        action.data.status == ActionStatus.pending ||
-                action.data.status == ActionStatus.queued ||
-                action.data.status == ActionStatus.started
-    }.isEmpty()
+    val outOfActions: Boolean
+        get() {
+            return !(registeredActions.values.map { it.data.status }.contains(ActionStatus.Pending)) &&
+                    !(registeredActions.values.map { it.data.status }.contains(ActionStatus.Queued)) &&
+                    !(registeredActions.values.map { it.data.status }.contains(ActionStatus.Started))
+        }
 
     /**
      * getNextActionData returns the data of the next action to be executed if such action
@@ -53,16 +58,17 @@ data class JobManager(var name: String = "",
      *
      * @return the ActionData of the next action, returns null if no such action exists
      */
-    fun getNextActionData(): ActionData? {
+    val nextActionData: ActionData?
+        get() {
 
-        val nextAction: ActionData? = executionQueue.poll()
+            val nextAction: ActionData? = executionQueue.poll()
 
-        if (nextAction != null) {
-            registeredActions[nextAction.id]!!.announceStart()
+            if (nextAction != null) {
+                registeredActions[nextAction.id]!!.announceStart()
+            }
+
+            return nextAction
         }
-
-        return nextAction
-    }
 
     fun reQueueAction(actionId: String) {
 
@@ -122,7 +128,7 @@ data class JobManager(var name: String = "",
 
     fun cancelFutureActions(action: Action) {
 
-        if (action.data.status != ActionStatus.failed)
+        if (action.data.status != ActionStatus.Failed)
             action.announceCanceled()
 
         action.data.nextActionIds.forEach { id ->
@@ -148,3 +154,4 @@ data class JobManager(var name: String = "",
     val isInitialized: Boolean
         get() = ::head.isInitialized
 }
+

@@ -77,7 +77,8 @@ dependencies {
     compile group: 'org.eclipse.jgit', name: 'org.eclipse.jgit', version: '4.2.0.201601211800-r'
     compile group: 'org.apache.activemq', name: 'activemq-broker', version: '5.15.3'
     runtime group: 'org.apache.activemq', name: 'activemq-kahadb-store', version: '5.15.3'
-    compile group: 'net.liftweb', name: 'lift-json_2.11', version: '3.2.0'
+    compile group: 'com.andreapivetta.kolor', name: 'kolor', version: '0.0.2'
+    compile group: 'com.beust', name: 'klaxon', version: '5.0.1'
 
     compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
     compile "org.jetbrains.kotlin:kotlin-reflect"
@@ -87,9 +88,10 @@ dependencies {
 
     testCompile 'org.jetbrains.spek:spek-api:1.1.5'
     testCompile "org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version"
+    testCompile 'org.apache.curator:curator-test:2.9.1'
     testRuntime 'org.jetbrains.spek:spek-junit-platform-engine:1.1.5'
 
-    // spek requires kotlin-reflect, can be omitted if already in the classpath
+    // Spek requires kotlin-reflect, can be omitted if already in the classpath
     testRuntimeOnly "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
 
 }
@@ -98,7 +100,6 @@ sourceSets {
     test {
         resources.srcDirs += [file('src/test/resources')]
     }
-
 }
 
 compileKotlin {

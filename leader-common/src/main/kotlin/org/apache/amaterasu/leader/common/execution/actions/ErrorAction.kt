@@ -37,11 +37,11 @@ class ErrorAction(name: String,
 
         // creating a znode for the action
         client = zkClient
-        actionPath = client.create().withMode(CreateMode.PERSISTENT).forPath("/$jobId/task-$parent-error", ActionStatus.pending.toString().toByteArray())
+        actionPath = client.create().withMode(CreateMode.PERSISTENT).forPath("/$jobId/task-$parent-error", ActionStatus.Pending.toString().toByteArray())
         actionId = actionPath.substring(actionPath.indexOf('-') + 1).replace("/", "-")
 
         this.jobId = jobId
-        data = ActionData(ActionStatus.pending, name, src, config, groupId, typeId, actionId)
+        data = ActionData(ActionStatus.Pending, name, src, config, groupId, typeId, actionId)
         jobsQueue = queue
         client = zkClient
     }

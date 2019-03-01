@@ -22,15 +22,14 @@ import java.nio.ByteBuffer
 import java.util
 import java.util.concurrent.{ConcurrentHashMap, LinkedBlockingQueue}
 
-import javax.jms.Session
-import org.apache.activemq.ActiveMQConnectionFactory
+import javax.jms.MessageConsumer
 import org.apache.activemq.broker.BrokerService
 import org.apache.amaterasu.common.configuration.ClusterConfig
 import org.apache.amaterasu.common.dataobjects.ActionData
 import org.apache.amaterasu.common.logging.Logging
 import org.apache.amaterasu.leader.common.execution.JobManager
 import org.apache.amaterasu.leader.common.execution.frameworks.FrameworkProvidersFactory
-import org.apache.amaterasu.leader.common.utilities.ActiveReportListener
+import org.apache.amaterasu.leader.common.utilities.MessagingClientUtil
 import org.apache.amaterasu.leader.execution.JobLoader
 import org.apache.amaterasu.leader.utilities.Args
 import org.apache.curator.framework.recipes.barriers.DistributedBarrier
@@ -79,12 +78,14 @@ class ApplicationMaster extends Logging with AMRMClientAsync.CallbackHandler {
   private var allocListener: YarnRMCallbackHandler = _
   private var rmClient: AMRMClientAsync[ContainerRequest] = _
   private var address: String = _
+  private var consumer: MessageConsumer = _
 
   private val containersIdsToTask: concurrent.Map[Long, ActionData] = new ConcurrentHashMap[Long, ActionData].asScala
   private val completedContainersAndTaskIds: concurrent.Map[Long, String] = new ConcurrentHashMap[Long, String].asScala
   private val actionsBuffer: java.util.concurrent.ConcurrentLinkedQueue[ActionData] = new java.util.concurrent.ConcurrentLinkedQueue[ActionData]()
   private val host: String = InetAddress.getLocalHost.getHostName
   private val broker: BrokerService = new BrokerService()
+
 
   def setLocalResourceFromPath(path: Path): LocalResource = {
 
@@ -104,7 +105,7 @@ class ApplicationMaster extends Logging with AMRMClientAsync.CallbackHandler {
 
   def execute(arguments: Args): Unit = {
 
-    log.info(s"started AM with args $arguments")
+    log.info(s"Started AM with args $arguments")
 
     propPath = System.getenv("PWD") + "/amaterasu.properties"
     props = new FileInputStream(new File(propPath))
@@ -122,7 +123,7 @@ class ApplicationMaster extends Logging with AMRMClientAsync.CallbackHandler {
       case e: Exception => log.error("error initializing ", e.getMessage)
     }
 
-    // now that the job was initiated, the curator client is started and we can
+    // now that the job was initiated, the curator client is Started and we can
     // register the broker's address
     client.create().withMode(CreateMode.PERSISTENT).forPath(s"/${jobManager.getJobId}/broker")
     client.setData().forPath(s"/${jobManager.getJobId}/broker", address.getBytes)
@@ -132,7 +133,7 @@ class ApplicationMaster extends Logging with AMRMClientAsync.CallbackHandler {
     val barrier = new DistributedBarrier(client, s"/${jobManager.getJobId}-report-barrier")
     barrier.removeBarrier()
 
-    setupMessaging(jobManager.getJobId)
+    consumer = MessagingClientUtil.setupMessaging(address)
 
     log.info(s"Job ${jobManager.getJobId} initiated with ${jobManager.getRegisteredActions.size} actions")
 
@@ -179,7 +180,7 @@ class ApplicationMaster extends Logging with AMRMClientAsync.CallbackHandler {
         mem = Math.min(mem, maxMem)
         this.capability.setMemory(mem)
 
-        var cpu = driverConfiguration.getCPUs
+        var cpu = driverConfiguration.getCpus
         cpu = Math.min(cpu, maxVCores)
         this.capability.setVirtualCores(cpu)
 
@@ -205,20 +206,20 @@ class ApplicationMaster extends Logging with AMRMClientAsync.CallbackHandler {
     registrationResponse
   }
 
-  private def setupMessaging(jobId: String): Unit = {
-
-    val cf = new ActiveMQConnectionFactory(address)
-    val conn = cf.createConnection()
-    conn.start()
-
-    val session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE)
-    //TODO: move to a const in common
-    val destination = session.createTopic("JOB.REPORT")
-
-    val consumer = session.createConsumer(destination)
-    consumer.setMessageListener(new ActiveReportListener)
-
-  }
+//  private def setupMessaging(jobId: String): Unit = {
+//
+//    val cf = new ActiveMQConnectionFactory(address)
+//    val conn = cf.createConnection()
+//    conn.start()
+//
+//    val session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE)
+//    //TODO: move to a const in common
+//    val destination = session.createTopic("JOB.REPORT")
+//
+//    val consumer = session.createConsumer(destination)
+//    consumer.setMessageListener(new ActiveReportListener)
+//
+//  }
 
   private def askContainer(actionData: ActionData): Unit = {
 
@@ -260,7 +261,7 @@ class ApplicationMaster extends Logging with AMRMClientAsync.CallbackHandler {
 
         val yarnJarPath = new Path(config.YARN.hdfsJarsPath)
 
-        //TODO Arun - Remove the hardcoding of the dist path
+        //TODO Eyal - Remove the hardcoding of the dist path
         /*  val resources = mutable.Map[String, LocalResource]()
           val binaryFileIter = fs.listFiles(new Path(s"${config.YARN.hdfsJarsPath}/dist"), false)
           while (binaryFileIter.hasNext) {
@@ -303,7 +304,7 @@ class ApplicationMaster extends Logging with AMRMClientAsync.CallbackHandler {
 
       containerTask onComplete {
         case Failure(t) =>
-          log.error(s"launching container failed", t)
+          log.error(s"launching container Failed", t)
           askContainer(actionData)
 
         case Success(requestedActionData) =>
@@ -378,11 +379,11 @@ class ApplicationMaster extends Logging with AMRMClientAsync.CallbackHandler {
 
           //completedContainersAndTaskIds.put(containerId, task.id)
           jobManager.actionComplete(taskId)
-          log.info(s"Container $containerId complete with task ${taskId} with success.")
+          log.info(s"Container $containerId Complete with task ${taskId} with success.")
         } else {
           // TODO: Check the getDiagnostics value and see if appropriate
           jobManager.actionFailed(taskId, status.getDiagnostics)
-          log.warn(s"Container $containerId complete with task ${taskId} with failed status code (${status.getExitStatus})")
+          log.warn(s"Container $containerId Complete with task ${taskId} with Failed status code (${status.getExitStatus})")
         }
       }
     }
@@ -455,7 +456,7 @@ class ApplicationMaster extends Logging with AMRMClientAsync.CallbackHandler {
     }
 
     jobManager.start()
-    log.info("started jobManager")
+    log.info("Started jobManager")
   }
 }
 
@@ -468,20 +469,15 @@ object ApplicationMaster extends Logging with App {
     case Some(arguments: Args) =>
       val appMaster = new ApplicationMaster()
 
-      appMaster.address = s"tcp://${appMaster.host}:$generatePort"
+      appMaster.address = MessagingClientUtil.getBorkerAddress
       appMaster.broker.addConnector(appMaster.address)
       appMaster.broker.start()
 
-      log.info(s"broker started with address ${appMaster.address}")
+      log.info(s"broker Started with address ${appMaster.address}")
       appMaster.execute(arguments)
 
     case None =>
   }
 
-  private def generatePort: Int = {
-    val socket = new ServerSocket(0)
-    val port = socket.getLocalPort
-    socket.close()
-    port
-  }
+
 }

@@ -14,28 +14,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.amaterasu.sdk.frameworks;
+package org.apache.amaterasu.sdk.frameworks
 
-import org.apache.amaterasu.common.configuration.ClusterConfig;
-import org.apache.amaterasu.sdk.frameworks.configuration.DriverConfiguration;
+import org.apache.amaterasu.common.configuration.ClusterConfig
+import org.apache.amaterasu.sdk.frameworks.configuration.DriverConfiguration
 
-import java.io.File;
-import java.util.Map;
+import java.io.File
 
-public interface FrameworkSetupProvider {
+interface FrameworkSetupProvider {
 
-    void init(String env, ClusterConfig conf);
+    val groupIdentifier: String
 
-    String getGroupIdentifier();
+    val groupResources: Array<File>
 
-    File[] getGroupResources();
+    val driverConfiguration: DriverConfiguration
 
-    DriverConfiguration getDriverConfiguration();
+    val environmentVariables: Map<String, String>
 
-    RunnerSetupProvider getRunnerProvider(String runnerId);
+    val configurationItems: Array<String>
 
-    Map<String, String> getEnvironmentVariables();
+    fun init(env: String, conf: ClusterConfig)
 
-    String[] getConfigurationItems();
+    fun getRunnerProvider(runnerId: String): RunnerSetupProvider
 
 }

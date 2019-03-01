@@ -57,7 +57,7 @@ object HttpServer extends Logging {
   }
 
   def stop() {
-    if (server == null) throw new IllegalStateException("Server not started")
+    if (server == null) throw new IllegalStateException("Server not Started")
 
     server.stop()
     server = null
@@ -65,7 +65,7 @@ object HttpServer extends Logging {
 
   def initLogging(): Unit = {
     System.setProperty("org.eclipse.jetty.util.log.class", classOf[StdErrLog].getName)
-    Logger.getLogger("org.eclipse.jetty").setLevel(Level.OFF)
+    Logger.getLogger("org.eclipse.jetty").setLevel(Level.ALL)
     Logger.getLogger("org.eclipse.jetty.websocket").setLevel(Level.OFF)
   }
 

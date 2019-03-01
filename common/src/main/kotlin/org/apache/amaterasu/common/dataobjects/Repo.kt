@@ -6,7 +6,7 @@
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *    http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -14,24 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.amaterasu.sdk.frameworks.configuration;
+package org.apache.amaterasu.common.dataobjects
 
-public class DriverConfiguration {
-
-
-    private int memory = 0;
-    private int cpus = 0;
-
-    public DriverConfiguration(int memory, int cpus) {
-        this.memory = memory;
-        this.cpus = cpus;
-    }
-
-    public int getMemory() {
-        return memory;
-    }
-
-    public int getCPUs() {
-        return cpus;
-    }
-}
+data class Repo(val id: String, val type: String, val url: String)

@@ -51,11 +51,14 @@ class SparkScalaRunnerProvider extends RunnerSetupProvider {
     Array[String]()
 
 
-  def getActionResources(jobId: String, actionData: ActionData): Array[String] =
+  def getActionUserResources(jobId: String, actionData: ActionData): Array[String] =
     Array[String]()
 
   override def getActionDependencies(jobId: String, actionData: ActionData): Array[String] =
     Array[String]()
+
+  override def getHasExecutor: Boolean = true
+
 }
 
 object SparkScalaRunnerProvider {

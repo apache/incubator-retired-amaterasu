@@ -17,10 +17,10 @@
 package org.apache.amaterasu.common.configuration.enums
 
 enum class ActionStatus (val value: String) {
-    pending("pending"),
-    queued("queued"),
-    started("started"),
-    complete("complete"),
-    failed("failed"),
-    canceled("canceled")
+    Pending("Pending"),
+    Queued("Queued"),
+    Started("Started"),
+    Complete("Complete"),
+    Failed("Failed"),
+    Canceled("Canceled")
 }

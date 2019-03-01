@@ -14,19 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.amaterasu.common.dataobjects
+package org.apache.amaterasu.common.execution.actions.enums
 
-import com.google.gson.Gson
-
-/*
-object ActionDataHelper {
-  private val gson = new Gson
-  def toJsonString(actionData: ActionData): String = {
-    gson.toJson(actionData)
-  }
-
-  def fromJsonString(jsonString: String) : ActionData = {
-    gson.fromJson[ActionData](jsonString, new ActionData().getClass)
-  }
+enum class NotificationType(val value: String) {
+    Success("Success"),
+    Error("Error"),
+    Info("Info")
 }
-*/
