@@ -23,14 +23,16 @@ import kotlin.reflect.KClass
 import kotlin.reflect.KParameter
 import kotlin.reflect.full.primaryConstructor
 
-class DataSetManager(env: String, repoPath: String) {
+class DataSetConfigManager(env: String, repoPath: String) {
 
     private val envFolder = "$repoPath/env/$env"
 
     lateinit var config: Map<String, Config>
 
     init {
-        config = File(envFolder).listFiles(DATASET_YAML_FILE_FILTER).fold(mapOf<String, Config>()) { acc, file -> acc + parseConfigs(file!!)}
+        config = File(envFolder)
+                .listFiles(DATASET_YAML_FILE_FILTER)
+                .fold(mapOf<String, Config>()) { acc, file -> acc + parseConfigs(file!!) }
     }
 
     private inline fun parseConfigs(file: File): Map<String, Config> {
@@ -52,13 +54,14 @@ class DataSetManager(env: String, repoPath: String) {
             values: List<Map<String, String>>,
             kClass: KClass<T>
     ): Map<String, T> {
-        val constructor = kClass.primaryConstructor?: throw RuntimeException("A primary constructor must be defined for the config type class")
+        val constructor = kClass.primaryConstructor
+                ?: throw RuntimeException("A primary constructor must be defined for the config type class")
 
         return values.map { eachMap ->
             lateinit var paramKParam: KParameter
             val paramsValue = mutableMapOf<String, String>()
             val arguments = constructor.parameters.map { param ->
-                if (param.name=="params") paramKParam=param
+                if (param.name == "params") paramKParam = param
                 val key = param.name!!
                 val value = eachMap.getOrElse(key) { "" }
                 paramsValue.put(key, value)

@@ -25,7 +25,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
-object DataSetManagerTests : Spek({
+object DataSetConfigManagerTests : Spek({
 
     val marker = this.javaClass.getResource("/maki.yml").path
 
