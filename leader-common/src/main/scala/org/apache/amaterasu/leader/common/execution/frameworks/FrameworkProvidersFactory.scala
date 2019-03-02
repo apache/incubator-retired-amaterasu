@@ -44,7 +44,7 @@ object FrameworkProvidersFactory extends Logging {
 
     val reflections = new Reflections(getClass.getClassLoader)
     val runnerTypes = reflections.getSubTypesOf(classOf[FrameworkSetupProvider]).toSet
-
+    log.info(s">>> $runnerTypes")
     result.providers = runnerTypes.map(r => {
 
       val provider = Manifest.classType(r).runtimeClass.newInstance.asInstanceOf[FrameworkSetupProvider]

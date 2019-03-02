@@ -179,8 +179,9 @@ class JobScheduler extends AmaterasuScheduler {
             val slaveActions = executionMap(offer.getSlaveId.toString)
             slaveActions.put(taskId.getValue, ActionStatus.Started)
 
-
+            log.info(s">>>> Framework: ${actionData.getGroupId}")
             val frameworkProvider = frameworkFactory.providers(actionData.getGroupId)
+            log.info(s">>>> Runner: ${actionData.getTypeId}")
             val runnerProvider = frameworkProvider.getRunnerProvider(actionData.getTypeId)
 
             // searching for an executor that already exist on the slave, if non exist
@@ -202,15 +203,16 @@ class JobScheduler extends AmaterasuScheduler {
             val command = CommandInfo
               .newBuilder
               .setValue(commandStr)
-              .addUris(URI.newBuilder
-                .setValue(s"http://${sys.env("AMA_NODE")}:${config.Webserver.Port}/executor-${config.version}-all.jar")
-                .setExecutable(false)
-                .setExtract(false)
-                .build())
+//              .addUris(URI.newBuilder
+//                .setValue(s"http://${sys.env("AMA_NODE")}:${config.webserver.Port}/executor-${config.version}-all.jar")
+//                .setExecutable(false)
+//                .setExtract(false)
+//                .build())
 
             // Getting framework (group) resources
+            log.info(s">>>> groupResources: ${frameworkProvider.getGroupResources}")
             frameworkProvider.getGroupResources.foreach(f => command.addUris(URI.newBuilder
-              .setValue(s"http://${sys.env("AMA_NODE")}:${config.Webserver.Port}/${f.getName}")
+              .setValue(s"http://${sys.env("AMA_NODE")}:${config.webserver.Port}/${f.getName}")
               .setExecutable(false)
               .setExtract(true)
               .build()
@@ -219,7 +221,7 @@ class JobScheduler extends AmaterasuScheduler {
             // Getting runner resources
             runnerProvider.getRunnerResources.foreach(r => {
               command.addUris(URI.newBuilder
-                .setValue(s"http://${sys.env("AMA_NODE")}:${config.Webserver.Port}/$r")
+                .setValue(s"http://${sys.env("AMA_NODE")}:${config.webserver.Port}/$r")
                 .setExecutable(false)
                 .setExtract(false)
                 .build())
@@ -229,7 +231,7 @@ class JobScheduler extends AmaterasuScheduler {
             // Getting action dependencies
             runnerProvider.getActionDependencies(jobManager.getJobId, actionData).foreach(r => {
               command.addUris(URI.newBuilder
-                .setValue(s"http://${sys.env("AMA_NODE")}:${config.Webserver.Port}/$r")
+                .setValue(s"http://${sys.env("AMA_NODE")}:${config.webserver.Port}/$r")
                 .setExecutable(false)
                 .setExtract(false)
                 .build())
@@ -238,19 +240,14 @@ class JobScheduler extends AmaterasuScheduler {
 
             // Getting action specific resources
             runnerProvider.getActionResources(jobManager.getJobId, actionData).foreach(r => command.addUris(URI.newBuilder
-              .setValue(s"http://${sys.env("AMA_NODE")}:${config.Webserver.Port}/$r")
+              .setValue(s"http://${sys.env("AMA_NODE")}:${config.webserver.Port}/$r")
               .setExecutable(false)
               .setExtract(false)
               .build()))
 
             command
               .addUris(URI.newBuilder()
-                .setValue(s"http://${sys.env("AMA_NODE")}:${config.Webserver.Port}/miniconda.sh") //TODO: Nadav needs to clean this on the executor side
-                .setExecutable(true)
-                .setExtract(false)
-                .build())
-              .addUris(URI.newBuilder()
-                .setValue(s"http://${sys.env("AMA_NODE")}:${config.Webserver.Port}/amaterasu.properties")
+                .setValue(s"http://${sys.env("AMA_NODE")}:${config.webserver.Port}/amaterasu.properties")
                 .setExecutable(false)
                 .setExtract(false)
                 .build())
@@ -422,7 +419,7 @@ class JobScheduler extends AmaterasuScheduler {
 
     val dir = new File(envLocation)
     if (!dir.exists()) {
-      dir.mkdir()
+      dir.mkdirs()
     }
 
     new PrintWriter(s"$envLocation/$fileName") {
@@ -445,10 +442,10 @@ object JobScheduler {
     LogManager.resetConfiguration()
     val scheduler = new JobScheduler()
 
-    HttpServer.start(config.Webserver.Port, s"$home/${config.Webserver.Root}")
+    HttpServer.start(config.webserver.Port, s"$home/${config.webserver.Root}")
 
-    if (!sys.env("AWS_ACCESS_KEY_ID").isEmpty &&
-      !sys.env("AWS_SECRET_ACCESS_KEY").isEmpty) {
+    if (sys.env.get("AWS_ACCESS_KEY_ID").isDefined &&
+      sys.env.get("AWS_SECRET_ACCESS_KEY").isDefined) {
 
       scheduler.awsEnv = s"env AWS_ACCESS_KEY_ID=${sys.env("AWS_ACCESS_KEY_ID")} env AWS_SECRET_ACCESS_KEY=${sys.env("AWS_SECRET_ACCESS_KEY")}"
     }

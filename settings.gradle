@@ -50,5 +50,9 @@ project(':spark-dispatcher').projectDir=file("frameworks/spark/dispatcher")
 // Python
 include 'python-dispatcher'
 project(':python-dispatcher').projectDir=file("frameworks/python/dispatcher")
+include 'pyspark-runtime'
+project(':pyspark-runtime').projectDir=file("frameworks/spark/pyspark_runtime")
+include 'sdk-python'
+project(':sdk-python').projectDir=file("sdk_python")
 
 

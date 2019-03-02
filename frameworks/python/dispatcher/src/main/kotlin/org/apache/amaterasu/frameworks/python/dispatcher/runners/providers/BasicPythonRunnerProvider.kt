@@ -23,8 +23,7 @@ open class BasicPythonRunnerProvider(env: String?, conf: ClusterConfig?): Python
     override val runnerResources: Array<String>
         get() {
             var resources = super.runnerResources
-            resources = resources.copyOf(resources.size + 1).requireNoNulls()
-            resources[resources.size] = "runtime.zip"
+            resources += "runtime.zip"
             return resources
         }
 

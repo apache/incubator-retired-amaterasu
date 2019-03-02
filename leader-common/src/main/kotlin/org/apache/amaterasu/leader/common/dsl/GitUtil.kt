@@ -22,6 +22,8 @@ import java.io.File
 object GitUtil {
     @JvmStatic
     fun cloneRepo(repoAddress: String, branch: String) {
+        if (File("repo").exists())
+            File("repo").deleteRecursively()
         Git.cloneRepository().apply {
             setURI(repoAddress)
             setDirectory(File("repo"))

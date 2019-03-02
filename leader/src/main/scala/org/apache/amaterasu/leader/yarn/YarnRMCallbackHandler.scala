@@ -104,8 +104,8 @@ class YarnRMCallbackHandler(nmClient: NMClientAsync,
 
         val ctx = Records.newRecord(classOf[ContainerLaunchContext])
         val command = s"""$awsEnv env AMA_NODE=${sys.env("AMA_NODE")}
-                         | env SPARK_EXECUTOR_URI=http://${sys.env("AMA_NODE")}:${config.Webserver.Port}/dist/spark-${config.Webserver.sparkVersion}.tgz
-                         | java -cp executor.jar:spark-${config.Webserver.sparkVersion}/lib/*
+                         | env SPARK_EXECUTOR_URI=http://${sys.env("AMA_NODE")}:${config.webserver.Port}/dist/spark-${config.webserver.sparkVersion}.tgz
+                         | java -cp executor.jar:spark-${config.webserver.sparkVersion}/lib/*
                          | -Dscala.usejavacp=true
                          | -Djava.library.path=/usr/lib org.apache.amaterasu.executor.yarn.executors.ActionsExecutorLauncher
                          | ${jobManager.getJobId} ${config.master} ${actionData.getName} ${gson.toJson(taskData)} ${gson.toJson(execData)}""".stripMargin

@@ -137,7 +137,7 @@ class ApplicationMaster extends Logging with AMRMClientAsync.CallbackHandler {
 
     log.info(s"Job ${jobManager.getJobId} initiated with ${jobManager.getRegisteredActions.size} actions")
 
-    jarPath = new Path(config.YARN.hdfsJarsPath)
+    jarPath = new Path(config.YARNConf.hdfsJarsPath)
 
     // TODO: change this to read all dist folder and add to exec path
     executorPath = Path.mergePaths(jarPath, new Path(s"/dist/executor-${config.version}-all.jar"))
@@ -259,7 +259,7 @@ class ApplicationMaster extends Logging with AMRMClientAsync.CallbackHandler {
         ctx.setCommands(commands)
         ctx.setTokens(allTokens)
 
-        val yarnJarPath = new Path(config.YARN.hdfsJarsPath)
+        val yarnJarPath = new Path(config.YARNConf.hdfsJarsPath)
 
         //TODO Eyal - Remove the hardcoding of the dist path
         /*  val resources = mutable.Map[String, LocalResource]()
@@ -291,13 +291,13 @@ class ApplicationMaster extends Logging with AMRMClientAsync.CallbackHandler {
         ctx.setLocalResources(resources)
 
         ctx.setEnvironment(Map[String, String](
-          "HADOOP_CONF_DIR" -> s"${config.YARN.hadoopHomeDir}/conf/",
-          "YARN_CONF_DIR" -> s"${config.YARN.hadoopHomeDir}/conf/",
+          "HADOOP_CONF_DIR" -> s"${config.YARNConf.hadoopHomeDir}/conf/",
+          "YARN_CONF_DIR" -> s"${config.YARNConf.hadoopHomeDir}/conf/",
           "AMA_NODE" -> sys.env("AMA_NODE"),
           "HADOOP_USER_NAME" -> UserGroupInformation.getCurrentUser.getUserName
         ))
 
-        log.info(s"hadoop conf dir is ${config.YARN.hadoopHomeDir}/conf/")
+        log.info(s"hadoop conf dir is ${config.YARNConf.hadoopHomeDir}/conf/")
         nmClient.startContainerAsync(container, ctx)
         actionData
       }

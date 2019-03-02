@@ -53,21 +53,21 @@ class SparkSetupProvider extends FrameworkSetupProvider {
 
     runnerProviders += ("scala" -> SparkScalaRunnerProvider(conf))
     runnerProviders += ("jar" -> SparkSubmitScalaRunnerProvider(conf))
-    runnerProviders += ("pyspark" -> PySparkRunnerProvider(conf))
+    runnerProviders += ("pyspark" -> new PySparkRunnerProvider(env, conf))
 
   }
 
   override def getGroupIdentifier: String = "spark"
 
   override def getGroupResources: Array[File] = conf.mode match {
-      case "mesos" => Array[File](new File(s"spark-${conf.Webserver.sparkVersion}.tgz"), new File(s"spark-runner-${conf.version}-all.jar"), new File(s"spark-runtime-${conf.version}.jar"))
+      case "mesos" => Array[File](new File(s"spark-${conf.webserver.sparkVersion}.tgz"), new File(s"spark-runner-${conf.version}-all.jar"), new File(s"spark-runtime-${conf.version}.jar"))
       case "yarn" => new File(conf.spark.home).listFiles
       case _ => Array[File]()
     }
 
 
   override def getEnvironmentVariables: util.Map[String, String] = conf.mode match {
-    case "mesos" => Map[String, String]("SPARK_HOME" ->s"spark-${conf.Webserver.sparkVersion}","SPARK_HOME_DOCKER" -> "/opt/spark/")
+    case "mesos" => Map[String, String]("SPARK_HOME" ->s"spark-${conf.webserver.sparkVersion}","SPARK_HOME_DOCKER" -> "/opt/spark/")
     case "yarn" => Map[String, String]("SPARK_HOME" -> "spark")
     case _ => Map[String, String]()
   }
@@ -82,8 +82,8 @@ class SparkSetupProvider extends FrameworkSetupProvider {
       cpu = conf.spark.opts("yarn.am.cores").toInt
     } else if (conf.spark.opts.contains("driver.cores")) {
       cpu = conf.spark.opts("driver.cores").toInt
-    } else if (conf.YARN.Worker.cores > 0) {
-      cpu = conf.YARN.Worker.cores
+    } else if (conf.YARNConf.Worker.cores > 0) {
+      cpu = conf.YARNConf.Worker.cores
     } else {
       cpu = 1
     }
@@ -96,8 +96,8 @@ class SparkSetupProvider extends FrameworkSetupProvider {
       mem = MemoryFormatParser.extractMegabytes(conf.spark.opts("yarn.am.memory"))
     } else if (conf.spark.opts.contains("driver.memory")) {
       mem = MemoryFormatParser.extractMegabytes(conf.spark.opts("driver.memory"))
-    } else if (conf.YARN.Worker.memoryMB > 0) {
-      mem = conf.YARN.Worker.memoryMB
+    } else if (conf.YARNConf.Worker.memoryMB > 0) {
+      mem = conf.YARNConf.Worker.memoryMB
     } else if (conf.taskMem > 0) {
       mem = conf.taskMem
     } else {

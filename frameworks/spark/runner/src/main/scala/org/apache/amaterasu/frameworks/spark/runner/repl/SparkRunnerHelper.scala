@@ -75,7 +75,7 @@ object SparkRunnerHelper extends Logging {
       settings.processArguments(interpArguments, processAll = true)
 
       settings.classpath.append(System.getProperty("java.class.path") + java.io.File.pathSeparator +
-        "spark-" + config.Webserver.sparkVersion + "/jars/*" + java.io.File.pathSeparator +
+        "spark-" + config.webserver.sparkVersion + "/jars/*" + java.io.File.pathSeparator +
         jars.mkString(java.io.File.pathSeparator))
 
       settings.usejavacp.value = true
@@ -137,10 +137,10 @@ object SparkRunnerHelper extends Logging {
     config.mode match {
 
       case "mesos" =>
-        conf.set("spark.executor.uri", s"http://$getNode:${config.Webserver.Port}/spark-${config.Webserver.sparkVersion}.tgz")
+        conf.set("spark.executor.uri", s"http://$getNode:${config.webserver.Port}/spark-${config.webserver.sparkVersion}.tgz")
           .setJars(jars)
           .set("spark.master", env.master)
-          .set("spark.home", s"${scala.reflect.io.File(".").toCanonical.toString}/spark-${config.Webserver.sparkVersion}")
+          .set("spark.home", s"${scala.reflect.io.File(".").toCanonical.toString}/spark-${config.webserver.sparkVersion}")
 
       case "yarn" =>
         conf.set("spark.home", config.spark.home)
@@ -158,7 +158,7 @@ object SparkRunnerHelper extends Logging {
           .set("spark.dynamicAllocation.enabled", "false")
           .set("spark.eventLog.enabled", "false")
           .set("spark.history.fs.logDirectory", "hdfs:///spark2-history/")
-          .set("hadoop.home.dir", config.YARN.hadoopHomeDir)
+          .set("hadoop.home.dir", config.YARNConf.hadoopHomeDir)
 
       case _ => throw new Exception(s"mode ${config.mode} is not legal.")
     }

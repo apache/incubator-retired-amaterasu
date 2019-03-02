@@ -21,7 +21,7 @@ import java.util.Properties
 
 class SparkConfig {
   val config = new ClusterConfig()
-  var sparkExecutorUri: String = s"http://${sys.env("AMA_NODE")}:${config.Webserver.Port}/dist/spark-${config.Webserver.sparkVersion}.tgz"
+  var sparkExecutorUri: String = s"http://${sys.env("AMA_NODE")}:${config.webserver.Port}/dist/spark-${config.webserver.sparkVersion}.tgz"
 
   def load(file: InputStream): Unit = {
     val props: Properties = new Properties()

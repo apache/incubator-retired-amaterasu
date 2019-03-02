@@ -97,7 +97,7 @@ public class Client {
             LOGGER.error("Eror creating HDFS client isntance.", e);
             exit(3);
         }
-        Path jarPath = new Path(config.YARN().hdfsJarsPath());
+        Path jarPath = new Path(config.YARNConf().hdfsJarsPath());
         Path jarPathQualified = fs.makeQualified(jarPath);
 
         ApplicationSubmissionContext appContext = app.getApplicationSubmissionContext();
@@ -207,19 +207,19 @@ public class Client {
         // Setup CLASSPATH for ApplicationMaster
         Map<String, String> appMasterEnv = new HashMap<>();
         setupAppMasterEnv(appMasterEnv);
-        appMasterEnv.put("AMA_CONF_PATH", String.format("%s/amaterasu.properties", config.YARN().hdfsJarsPath()));
+        appMasterEnv.put("AMA_CONF_PATH", String.format("%s/amaterasu.properties", config.YARNConf().hdfsJarsPath()));
         amContainer.setEnvironment(appMasterEnv);
 
         // Set up resource type requirements for ApplicationMaster
         Resource capability = Records.newRecord(Resource.class);
-        capability.setMemory(config.YARN().master().memoryMB());
-        capability.setVirtualCores(config.YARN().master().cores());
+        capability.setMemory(config.YARNConf().master().memoryMB());
+        capability.setVirtualCores(config.YARNConf().master().cores());
 
         // Finally, set-up ApplicationSubmissionContext for the application
         appContext.setApplicationName("amaterasu-" + opts.name);
         appContext.setAMContainerSpec(amContainer);
         appContext.setResource(capability);
-        appContext.setQueue(config.YARN().queue());
+        appContext.setQueue(config.YARNConf().queue());
         appContext.setPriority(Priority.newInstance(1));
 
         // Submit application

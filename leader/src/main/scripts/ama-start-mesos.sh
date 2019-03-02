@@ -53,7 +53,7 @@ echo "    / _ \ | '  \ / _\` ||  _|/ -_)| '_|/ _\` |(_-<| || | "
 echo "   /_/ \_\|_|_|_|\__,_| \__|\___||_|  \__,_|/__/ \_,_| "
 echo ""
 echo "    Continuously deployed data pipelines"
-echo "    Version 0.2.0-incubating"
+echo "    Version 0.2.1-incubating"
 echo "${NC}"
 echo ""
 
@@ -131,12 +131,17 @@ if ! ls ${BASEDIR}/dist/spark*.tgz 1> /dev/null 2>&1; then
     #wget https://d3kbcqa49mib13.cloudfront.net/spark-2.2.1-bin-hadoop2.7.tgz -P ${BASEDIR}/dist
     wget https://archive.apache.org/dist/spark/spark-2.2.1/spark-2.2.1-bin-hadoop2.7.tgz -P ${BASEDIR}/dist
 fi
-if [ ! -f ${BASEDIR}/dist/miniconda.sh ]; then
-    echo "${bold}Fetching miniconda distributable ${NC}"
-    wget https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh -O ${BASEDIR}/dist/miniconda.sh
-fi
 cp ${BASEDIR}/amaterasu.properties ${BASEDIR}/dist
-eval $CMD | grep "===>"
+mesosLibConf=`cat amaterasu.properties | grep mesos.libPath`
+mesosLib=`echo "$mesosLibConf" | cut -d "=" -f 2`
+if [[ ! -z "$mesosLib" ]]; then
+    export MESOS_NATIVE_JAVA_LIBRARY="$mesosLib"
+    export AMA_NODE=`hostname`
+    eval $CMD | grep "===>"
+else
+    echo "ERROR: mesos.libPath not specified in amaterasu.properties"
+fi
+
 
 echo ""
 echo ""

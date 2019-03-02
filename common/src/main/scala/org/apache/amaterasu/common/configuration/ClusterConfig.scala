@@ -47,6 +47,8 @@ class ClusterConfig extends Logging {
   // not packaged, there is a need to load the spark-assembly jar
   var additionalClassPath: String = ""
   var spark: Spark = new Spark()
+  val webserver: Webserver = new Webserver()
+  val mesos: Mesos = new Mesos()
 
   //this should be a filesystem path that is reachable by all executors (HDFS, S3, local)
 
@@ -92,7 +94,7 @@ class ClusterConfig extends Logging {
   }
 
 
-  val YARN = new YARN()
+  val YARNConf = new YARN()
 
   class Spark {
     var home: String = ""
@@ -112,16 +114,24 @@ class ClusterConfig extends Logging {
   }
 
 
-  object Webserver {
+  class Webserver {
     var Port: String = ""
     var Root: String = ""
     var sparkVersion: String = ""
 
     def load(props: Properties): Unit = {
 
-      if (props.containsKey("webserver.port")) Webserver.Port = props.getProperty("webserver.port")
-      if (props.containsKey("webserver.root")) Webserver.Root = props.getProperty("webserver.root")
-      if (props.containsKey("spark.version")) Webserver.sparkVersion = props.getProperty("spark.version")
+      if (props.containsKey("webserver.port")) this.Port = props.getProperty("webserver.port")
+      if (props.containsKey("webserver.root")) this.Root = props.getProperty("webserver.root")
+      if (props.containsKey("spark.version")) this.sparkVersion = props.getProperty("spark.version")
+    }
+  }
+
+  class Mesos {
+    var libPath: String = ""
+
+    def load(props: Properties): Unit = {
+      if (props.containsKey("mesos.libPath")) this.libPath = props.getProperty("mesos.libPath")
     }
   }
 
@@ -215,9 +225,10 @@ class ClusterConfig extends Logging {
     JarName = Paths.get(this.getClass.getProtectionDomain.getCodeSource.getLocation.getPath).getFileName.toString
 
     Jobs.load(props)
-    Webserver.load(props)
-    YARN.load(props)
+    webserver.load(props)
+    YARNConf.load(props)
     spark.load(props)
+    mesos.load(props)
 
     distLocation match {
 
