@@ -11,8 +11,6 @@ import org.apache.hadoop.yarn.api.ApplicationConstants
 
 class PySparkRunnerProvider(val env: String, val conf: ClusterConfig) extends PythonRunnerProviderBase(env, conf) {
 
-  private val libPath = System.getProperty("java.library.path")
-
   override def getCommand(jobId: String, actionData: ActionData, env: String, executorId: String, callbackAddress: String): String = {
     val command = super.getCommand(jobId: String, actionData: ActionData, env: String, executorId: String, callbackAddress: String)
     command + conf.mode match {

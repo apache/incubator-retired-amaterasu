@@ -24,11 +24,16 @@ import org.apache.amaterasu.sdk.frameworks.RunnerSetupProvider
 import java.io.File
 
 abstract class PythonRunnerProviderBase(env: String?, conf:ClusterConfig?) : RunnerSetupProvider() {
+
+
+    private val requirementsFileName: String = "ama-requirements.txt"
+    private val requirementsPath: String = "dist/$requirementsFileName"
+
     override val runnerResources: Array<String>
         get() = arrayOf("python_sdk.zip")
 
     override fun getCommand(jobId: String, actionData: ActionData, env: String, executorId: String, callbackAddress: String): String {
-        var cmd = "pip install -r ama-requirements.txt"
+        var cmd = "pip install -r $requirementsFileName"
         execData.pyDeps()?.filePaths()?.forEach {
             path -> cmd += " && pip install -r ${path.split('/').last()}"
         }
@@ -36,12 +41,14 @@ abstract class PythonRunnerProviderBase(env: String?, conf:ClusterConfig?) : Run
     }
 
     override fun getActionDependencies(jobId: String, actionData: ActionData): Array<String> {
-        File("ama-requirements.txt").appendText("./python_sdk.zip\n")
+        val reqFile = File(requirementsPath)
+        if (reqFile.exists()) reqFile.delete()
+        runnerResources.forEach { resource -> reqFile.appendText("$resource\n") }
         return try {
             val userRequirements = execData.pyDeps()?.filePaths()
-            arrayOf("ama-requirements.txt") + userRequirements!!
+            arrayOf(requirementsFileName) + userRequirements!!
         } catch (e: NullPointerException) {
-            arrayOf("ama-requirements.txt")
+            arrayOf(requirementsFileName)
         }
 
     }
