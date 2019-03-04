@@ -17,7 +17,7 @@
 package org.apache.amaterasu.leader.common.utilities
 
 import java.io.{File, FileInputStream}
-import java.nio.file.{Files, Paths}
+import java.nio.file.{Files, Paths, StandardCopyOption}
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
@@ -87,7 +87,8 @@ object DataLoader extends Logging {
       depsData = ymlMapper.readValue(depsValue, classOf[Dependencies])
     }
     if (Files.exists(Paths.get("repo/deps/requirements.txt"))) {
-      pyDepsData = PythonDependencies(Array[String]("repo/deps/requirements.txt"))
+      Files.copy(Paths.get("repo/deps/requirements.txt"), Paths.get("dist/user-requirements.txt"), StandardCopyOption.REPLACE_EXISTING)
+      pyDepsData = PythonDependencies(Array[String]("user-requirements.txt"))
     }
     val data = mapper.writeValueAsBytes(ExecData(envData, depsData, pyDepsData, config))
     ExecData(envData, depsData, pyDepsData, config)

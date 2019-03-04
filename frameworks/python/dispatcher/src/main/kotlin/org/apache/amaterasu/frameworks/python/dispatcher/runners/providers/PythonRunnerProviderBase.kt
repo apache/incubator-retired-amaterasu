@@ -23,14 +23,14 @@ import org.apache.amaterasu.leader.common.utilities.DataLoader
 import org.apache.amaterasu.sdk.frameworks.RunnerSetupProvider
 import java.io.File
 
-abstract class PythonRunnerProviderBase(env: String?, conf:ClusterConfig?) : RunnerSetupProvider() {
+abstract class PythonRunnerProviderBase(env: String?, val conf:ClusterConfig?) : RunnerSetupProvider() {
 
 
     private val requirementsFileName: String = "ama-requirements.txt"
     private val requirementsPath: String = "dist/$requirementsFileName"
 
     override val runnerResources: Array<String>
-        get() = arrayOf("python_sdk.zip")
+    get() = arrayOf("python-sdk-${conf!!.version()}.zip")
 
     override fun getCommand(jobId: String, actionData: ActionData, env: String, executorId: String, callbackAddress: String): String {
         var cmd = "pip install -r $requirementsFileName"
