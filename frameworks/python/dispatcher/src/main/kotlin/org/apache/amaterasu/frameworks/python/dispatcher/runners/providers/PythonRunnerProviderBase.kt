@@ -30,7 +30,7 @@ abstract class PythonRunnerProviderBase(env: String?, val conf:ClusterConfig?) :
     private val requirementsPath: String = "dist/$requirementsFileName"
 
     override val runnerResources: Array<String>
-    get() = arrayOf("python-sdk-${conf!!.version()}.zip")
+    get() = arrayOf("amaterasu-sdk-${conf!!.version()}.zip")
 
     override fun getCommand(jobId: String, actionData: ActionData, env: String, executorId: String, callbackAddress: String): String {
         var cmd = "pip install -r $requirementsFileName"
