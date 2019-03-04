@@ -53,7 +53,7 @@ echo "    / _ \ | '  \ / _\` ||  _|/ -_)| '_|/ _\` |(_-<| || | "
 echo "   /_/ \_\|_|_|_|\__,_| \__|\___||_|  \__,_|/__/ \_,_| "
 echo ""
 echo "    Continuously deployed data pipelines"
-echo "    Version 0.2.1-incubating"
+echo "    Version 0.2.0-incubating-rc4"
 echo "${NC}"
 echo ""
 

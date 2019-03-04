@@ -43,7 +43,6 @@ dependencies {
     compile project(':common')
     compile project(':leader-common')
     compile project(':amaterasu-sdk')
-    compile files('/Users/nadavh/Projects/amaterasu/testing/spark-dispatcher-0.2.1-incubating-rc4-all.jar')
     compile group: 'com.github.scopt', name: 'scopt_2.11', version: '3.3.0'
     compile group: 'com.github.nscala-time', name: 'nscala-time_2.11', version: '2.2.0'
     compile group: 'org.apache.curator', name:'curator-test', version:'2.9.1'

@@ -18,7 +18,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='amaterasu_pyspark',
-    version='0.2.1-incubating',
+    version='0.2.0-incubating-rc4',
     packages=find_packages(),
     url='https://github.com/apache/incubator-amaterasu',
     license='Apache License 2.0 ',
