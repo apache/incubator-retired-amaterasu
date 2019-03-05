@@ -17,8 +17,9 @@
 package org.apache.amaterasu.sdk.frameworks
 
 import org.apache.amaterasu.common.dataobjects.ActionData
+import org.apache.amaterasu.common.logging.Logging
 
-abstract class RunnerSetupProvider {
+abstract class RunnerSetupProvider : Logging() {
 
     private val actionFiles = arrayOf("env.yaml", "runtime.yaml", "datastores.yaml")
 
