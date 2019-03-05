@@ -11,14 +11,15 @@ class PySparkRunnerProvider(val env: String, val conf: ClusterConfig) extends Py
 
     conf.mode match {
       case "mesos" =>
-          command += s" && env AMA_NODE=${sys.env("AMA_NODE")} env MESOS_NATIVE_JAVA_LIBRARY=${conf.mesos.libPath}" +
+          command + s" && env AMA_NODE=${sys.env("AMA_NODE")} env MESOS_NATIVE_JAVA_LIBRARY=${conf.mesos.libPath}" +
           s" && python3 ${actionData.getSrc}"
-      case "yarn" => command += s" && /bin/bash spark/bin/load-spark-env.sh" +
+      case "yarn" =>
+          command + s" && /bin/bash spark/bin/load-spark-env.sh" +
                      s" && python3 ${actionData.getSrc}"
-      case _ => log.warn(s"Received unsupported cluster manager: ${conf.mode}")
+      case _ =>
+          log.warn(s"Received unsupported cluster manager: ${conf.mode}")
+          command
     }
-    log.info(s"===> Runner command: $command")
-    command
   }
 
   override def getRunnerResources: Array[String] = {
