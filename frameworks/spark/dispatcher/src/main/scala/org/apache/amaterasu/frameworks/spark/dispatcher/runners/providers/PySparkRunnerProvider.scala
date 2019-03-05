@@ -1,19 +1,13 @@
 package org.apache.amaterasu.frameworks.spark.dispatcher.runners.providers
-
-import java.net.URLEncoder
-
 import org.apache.amaterasu.common.configuration.ClusterConfig
 import org.apache.amaterasu.common.dataobjects.ActionData
 import org.apache.amaterasu.frameworks.python.dispatcher.runners.providers.PythonRunnerProviderBase
-import org.apache.amaterasu.leader.common.utilities.DataLoader
-import org.apache.amaterasu.sdk.frameworks.RunnerSetupProvider
-import org.apache.hadoop.yarn.api.ApplicationConstants
 
 class PySparkRunnerProvider(val env: String, val conf: ClusterConfig) extends PythonRunnerProviderBase(env, conf) {
 
   override def getCommand(jobId: String, actionData: ActionData, env: String, executorId: String, callbackAddress: String): String = {
-    val command = super.getCommand(jobId: String, actionData: ActionData, env: String, executorId: String, callbackAddress: String)
-    command + conf.mode match {
+    var command = super.getCommand(jobId: String, actionData: ActionData, env: String, executorId: String, callbackAddress: String)
+    command = command + conf.mode match {
       case "mesos" =>
           s" && env AMA_NODE=${sys.env("AMA_NODE")} env MESOS_NATIVE_JAVA_LIBRARY=${conf.mesos.libPath}" +
           s" && python3 ${actionData.getSrc}"
@@ -21,6 +15,7 @@ class PySparkRunnerProvider(val env: String, val conf: ClusterConfig) extends Py
                      s" && python3 ${actionData.getSrc}"
       case _ => ""
     }
+    command
   }
 
   override def getRunnerResources: Array[String] = {

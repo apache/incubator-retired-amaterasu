@@ -18,7 +18,7 @@ package org.apache.amaterasu.leader.mesos.schedulers
 
 import java.io.{File, PrintWriter, StringWriter}
 import java.util
-import java.util.UUID
+import java.util.{Collections, UUID}
 import java.util.concurrent.locks.ReentrantLock
 import java.util.concurrent.{ConcurrentHashMap, LinkedBlockingQueue}
 
@@ -200,6 +200,7 @@ class JobScheduler extends AmaterasuScheduler {
             //                            copy(get(s"repo/src/${actionData.getSrc}"), get(s"dist/${jobManager.getJobId}/${actionData.getName}/${actionData.getSrc}"), REPLACE_EXISTING)
             //                          }
             val commandStr = runnerProvider.getCommand(jobManager.getJobId, actionData, env, executorId, "")
+            log.info(s"===> Command: $commandStr")
             val command = CommandInfo
               .newBuilder
               .setValue(commandStr)
@@ -304,7 +305,8 @@ class JobScheduler extends AmaterasuScheduler {
 
               //driver.launchTasks(Collections.singleton(offer.getId), List(actionTask).asJava)
             }
-            driver.launchTasks(offer.getId, List(actionTask).asJava)
+
+            driver.launchTasks(Collections.singleton(offer.getId), List(actionTask).asJava)
 
           }
           else if (jobManager.getOutOfActions) {
