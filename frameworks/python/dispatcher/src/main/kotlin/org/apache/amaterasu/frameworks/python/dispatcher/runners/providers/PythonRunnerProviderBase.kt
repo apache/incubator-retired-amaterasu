@@ -33,9 +33,9 @@ abstract class PythonRunnerProviderBase(env: String?, val conf:ClusterConfig?) :
     get() = arrayOf("amaterasu-sdk-${conf!!.version()}.zip")
 
     override fun getCommand(jobId: String, actionData: ActionData, env: String, executorId: String, callbackAddress: String): String {
-        var cmd = "pip install -r $requirementsFileName"
+        var cmd = "python3 -m pip install -r $requirementsFileName"
         execData.pyDeps()?.filePaths()?.forEach {
-            path -> cmd += " && pip install -r ${path.split('/').last()}"
+            path -> cmd += " && python3 -m pip install -r ${path.split('/').last()}"
         }
         return cmd
     }
