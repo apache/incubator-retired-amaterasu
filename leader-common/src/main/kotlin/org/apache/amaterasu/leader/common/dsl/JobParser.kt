@@ -87,8 +87,7 @@ object JobParser {
         )
 
         //updating the list of frameworks setup
-        manager.frameworks.getOrPut(action.data.groupId) { HashSet() }
-                .add(action.data.typeId)
+        manager[action.data.groupId] = action.data.typeId
 
 
         if (!manager.isInitialized) {
@@ -116,8 +115,7 @@ object JobParser {
             manager.registerAction(errorAction)
 
             //updating the list of frameworks setup
-            manager.frameworks.getOrPut(errorAction.data.groupId) { HashSet() }
-                    .add(errorAction.data.typeId)
+            manager[errorAction.data.groupId] = errorAction.data.typeId
         }
 
         parseActions(actions.drop(1), manager, actionsQueue, attempts, action)
