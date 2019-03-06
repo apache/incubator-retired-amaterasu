@@ -31,9 +31,9 @@ data class JobManager(var name: String = "",
 
     lateinit var head: Action
 
-    // TODO: this is not private due to tests, fix this!!!
+    // TODO: this is not private due to tests, fix this!!! <---- Eran is correct!
     val registeredActions = HashMap<String, Action>()
-    val frameworks = HashMap<String, HashSet<String>>()
+    private val frameworks = HashMap<String, HashSet<String>>()
 
 
     operator fun set(groupId : String , typeId : String) = frameworks.getOrPut(groupId){HashSet()}.add(typeId)
@@ -63,7 +63,7 @@ data class JobManager(var name: String = "",
         val nextAction: ActionData? = executionQueue.poll()
 
         if (nextAction != null) {
-            registeredActions[nextAction.id]!!.announceStart()
+            registeredActions[nextAction.id]?.announceStart()
         }
 
         return nextAction
@@ -71,8 +71,8 @@ data class JobManager(var name: String = "",
 
     fun reQueueAction(actionId: String) {
 
-        val action = registeredActions[actionId]
-        executionQueue.put(action!!.data)
+        val action : Action = registeredActions[actionId] ?: throw IllegalAccessException()
+        executionQueue.put(action.data)
         registeredActions[actionId]!!.announceQueued()
 
     }
