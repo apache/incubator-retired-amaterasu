@@ -30,10 +30,15 @@ abstract class RunnerSetupProvider : Logging() {
 
     abstract fun getCommand(jobId: String, actionData: ActionData, env: String, executorId: String, callbackAddress: String): String
 
+    protected fun getDownloadableActionSrcPath(jobId: String, actionData: ActionData): String {
+        return "$jobId/${actionData.name}/${actionData.src}"
+    }
+
     open fun getActionUserResources(jobId: String, actionData: ActionData): Array<String> {
-        val actionSrcDistPath = "dist/$jobId/${actionData.name}/${actionData.src}"
+        val downloadableActionSrcPath = getDownloadableActionSrcPath(jobId, actionData)
+        val actionSrcDistPath = "dist/$downloadableActionSrcPath"
         Files.copy(Paths.get("repo/src/${actionData.src}"), Paths.get(actionSrcDistPath), StandardCopyOption.REPLACE_EXISTING)
-        return arrayOf(actionSrcDistPath)
+        return arrayOf(downloadableActionSrcPath)
     }
 
     fun getActionResources(jobId: String, actionData: ActionData): Array<String> =
