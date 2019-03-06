@@ -20,6 +20,7 @@ import org.apache.amaterasu.common.dataobjects.ActionData
 import org.apache.amaterasu.common.logging.Logging
 import java.nio.file.Files
 import java.nio.file.Paths
+import java.nio.file.StandardCopyOption
 
 abstract class RunnerSetupProvider : Logging() {
 
@@ -31,7 +32,7 @@ abstract class RunnerSetupProvider : Logging() {
 
     open fun getActionUserResources(jobId: String, actionData: ActionData): Array<String> {
         val actionSrcDistPath = "dist/$jobId/${actionData.name}/${actionData.src}"
-        Files.copy(Paths.get("repo/src/${actionData.src}"), Paths.get(actionSrcDistPath))
+        Files.copy(Paths.get("repo/src/${actionData.src}"), Paths.get(actionSrcDistPath), StandardCopyOption.REPLACE_EXISTING)
         return arrayOf(actionSrcDistPath)
     }
 
