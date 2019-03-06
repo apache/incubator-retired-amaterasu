@@ -71,9 +71,6 @@ dependencies {
         exclude group: 'org.jboss.netty'
     }
 
-    //compile project(':common')
-    //compile project(':amaterasu-sdk')
-
     //runtime dependency for spark
     provided('org.apache.spark:spark-repl_2.11:2.2.1')
     provided('org.apache.spark:spark-core_2.11:2.2.1')

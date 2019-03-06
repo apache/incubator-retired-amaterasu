@@ -26,14 +26,14 @@ class YarnNotifier(conf: YarnConfiguration) extends Notifier {
   var rpc: YarnRPC = YarnRPC.create(conf)
 
   override def info(msg: String): Unit = {
-    log.info(s"""-> ${msg}""")
+    getLog.info(s"""-> ${msg}""")
   }
 
   override def success(line: String): Unit = {
-    log.info(s"""SUCCESS: ${line}""")
+    getLog.info(s"""SUCCESS: ${line}""")
   }
 
   override def error(line: String, msg: String): Unit = {
-    log.error(s"""ERROR: ${line}: ${msg}""")
+    getLog.error(s"""ERROR: ${line}: ${msg}""")
   }
 }

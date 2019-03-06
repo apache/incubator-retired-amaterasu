@@ -48,7 +48,7 @@ class SparkSqlRunner extends Logging with AmaterasuRunner {
    */
   override def executeSource(actionSource: String, actionName: String, exports: util.Map[String, String]): Unit = {
 
-    notifier.info(s"================= started action $actionName =================")
+    notifier.info(s"================= Started action $actionName =================")
 
     if (!actionSource.isEmpty) {
 

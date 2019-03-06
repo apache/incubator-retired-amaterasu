@@ -49,7 +49,7 @@ class PySparkRunner extends Logging with AmaterasuRunner {
     PySparkEntryPoint.getExecutionQueue.setForExec((source, actionName, exports))
     val resQueue = PySparkEntryPoint.getResultQueue(actionName)
 
-    notifier.info(s"================= started action $actionName =================")
+    notifier.info(s"================= Started action $actionName =================")
 
     var res: PySparkResult = null
 

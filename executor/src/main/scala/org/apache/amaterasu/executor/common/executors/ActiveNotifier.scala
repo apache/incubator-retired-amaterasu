@@ -17,12 +17,11 @@
 package org.apache.amaterasu.executor.common.executors
 
 import javax.jms.{DeliveryMode, MessageProducer, Session}
-
-
 import net.liftweb.json._
 import net.liftweb.json.Serialization.write
 import org.apache.activemq.ActiveMQConnectionFactory
-import org.apache.amaterasu.common.execution.actions.{Notification, NotificationLevel, NotificationType, Notifier}
+import org.apache.amaterasu.common.execution.actions.enums.{NotificationLevel, NotificationType}
+import org.apache.amaterasu.common.execution.actions.{Notification, Notifier}
 import org.apache.amaterasu.common.logging.Logging
 
 class ActiveNotifier extends Notifier {
@@ -34,9 +33,9 @@ class ActiveNotifier extends Notifier {
 
   override def info(message: String): Unit = {
 
-    log.info(message)
+    getLog.info(message)
 
-    val notification = Notification("", message, NotificationType.info, NotificationLevel.execution)
+    val notification = new Notification("", message, NotificationType.Info, NotificationLevel.Execution)
     val notificationJson = write(notification)
     val msg = session.createTextMessage(notificationJson)
     producer.send(msg)
@@ -45,9 +44,9 @@ class ActiveNotifier extends Notifier {
 
   override def success(line: String): Unit = {
 
-    log.info(s"successfully executed line: $line")
+    getLog.info(s"successfully executed line: $line")
 
-    val notification = Notification(line, "", NotificationType.success, NotificationLevel.code)
+    val notification = new Notification(line, "", NotificationType.Success, NotificationLevel.Code)
     val notificationJson = write(notification)
     val msg = session.createTextMessage(notificationJson)
     producer.send(msg)
@@ -56,9 +55,9 @@ class ActiveNotifier extends Notifier {
 
   override def error(line: String, message: String): Unit = {
 
-    log.error(s"Error executing line: $line message: $message")
+    getLog.error(s"Error executing line: $line message: $message")
 
-    val notification = Notification(line, message, NotificationType.error, NotificationLevel.code)
+    val notification = new Notification(line, message, NotificationType.Error, NotificationLevel.Code)
     val notificationJson = write(notification)
     val msg = session.createTextMessage(notificationJson)
     producer.send(msg)

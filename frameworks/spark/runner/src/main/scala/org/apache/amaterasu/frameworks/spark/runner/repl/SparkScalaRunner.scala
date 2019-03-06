@@ -56,7 +56,7 @@ class SparkScalaRunner(var env: Environment,
 
   def interpretSources(source: Source, actionName: String, exports: Map[String, String]): Unit = {
 
-    notifier.info(s"================= started action $actionName =================")
+    notifier.info(s"================= Started action $actionName =================")
     //notifier.info(s"exports is: $exports")
 
     for (line <- source.getLines()) {
@@ -71,7 +71,6 @@ class SparkScalaRunner(var env: Environment,
           interpreter.interpret(line)
         }
         else {
-
           val intresult = interpreter.interpret(line)
 
           val result = interpreter.prevRequestList.last.lineRep.call("$result")
@@ -87,9 +86,6 @@ class SparkScalaRunner(var env: Environment,
 
               val resultName = interpreter.prevRequestList.last.termNames.last
 
-              //notifier.info(s" result name ${resultName.toString}")
-              //notifier.info(s" exist in exports: ${exports.contains(resultName.toString)}")
-
               if (exports.contains(resultName.toString)) {
 
                 val format = exports(resultName.toString)
@@ -104,7 +100,7 @@ class SparkScalaRunner(var env: Environment,
                       if (writeResult != Results.Success) {
                         val err = outStream.toString
                         notifier.error(writeLine, err)
-                        log.error(s"error persisting dataset: $writeLine failed with: $err")
+                        log.error(s"error persisting dataset: $writeLine Failed with: $err")
                         //throw new Exception(err)
                       }
                       log.debug(s"persisted DataFrame: $resultName")
