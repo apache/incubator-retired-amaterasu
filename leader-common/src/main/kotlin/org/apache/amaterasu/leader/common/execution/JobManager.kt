@@ -39,10 +39,7 @@ data class JobManager(var name: String = "",
     val registeredActions = HashMap<String, Action>()
     private val frameworks = HashMap<String, HashSet<String>>()
 
-
     operator fun set(groupId : String , typeId : String) = frameworks.getOrPut(groupId){HashSet()}.add(typeId)
-        //frameworks.getOrPut(action.data.groupId) { HashSet() }
-  //  .add(action.data.typeId)
 
     /**
      * The start method initiates the job execution by executing the first action.
