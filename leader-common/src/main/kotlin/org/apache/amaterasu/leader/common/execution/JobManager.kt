@@ -35,7 +35,7 @@ data class JobManager(var name: String = "",
 
     lateinit var head: Action
 
-    // TODO: this is not private due to tests, fix this!!! <---- Eran is correct!
+    // TODO: this is not private due to tests, fix this!!!
     val registeredActions = HashMap<String, Action>()
     private val frameworks = HashMap<String, HashSet<String>>()
 
