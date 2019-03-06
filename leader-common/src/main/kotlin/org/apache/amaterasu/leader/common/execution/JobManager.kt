@@ -37,7 +37,9 @@ data class JobManager(var name: String = "",
 
     // TODO: this is not private due to tests, fix this!!!
     val registeredActions = HashMap<String, Action>()
-    val frameworks = HashMap<String, HashSet<String>>()
+    private val frameworks = HashMap<String, HashSet<String>>()
+
+    operator fun set(groupId : String , typeId : String) = frameworks.getOrPut(groupId){HashSet()}.add(typeId)
 
     /**
      * The start method initiates the job execution by executing the first action.
@@ -63,17 +65,18 @@ data class JobManager(var name: String = "",
 
             val nextAction: ActionData? = executionQueue.poll()
 
-            if (nextAction != null) {
-                registeredActions[nextAction.id]!!.announceStart()
-            }
+        if (nextAction != null) {
+            registeredActions[nextAction.id]?.announceStart()
+        }
+
 
             return nextAction
         }
 
     fun reQueueAction(actionId: String) {
 
-        val action = registeredActions[actionId]
-        executionQueue.put(action!!.data)
+        val action : Action = registeredActions[actionId] ?: throw IllegalAccessException()
+        executionQueue.put(action.data)
         registeredActions[actionId]!!.announceQueued()
 
     }
