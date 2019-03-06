@@ -50,10 +50,6 @@ class SparkScalaRunnerProvider extends RunnerSetupProvider {
   override def getRunnerResources: Array[String] =
     Array[String]()
 
-
-  def getActionUserResources(jobId: String, actionData: ActionData): Array[String] =
-    Array[String]()
-
   override def getActionDependencies(jobId: String, actionData: ActionData): Array[String] =
     Array[String]()
 

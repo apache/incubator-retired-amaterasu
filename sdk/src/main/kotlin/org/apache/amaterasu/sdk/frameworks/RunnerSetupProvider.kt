@@ -18,6 +18,8 @@ package org.apache.amaterasu.sdk.frameworks
 
 import org.apache.amaterasu.common.dataobjects.ActionData
 import org.apache.amaterasu.common.logging.Logging
+import java.nio.file.Files
+import java.nio.file.Paths
 
 abstract class RunnerSetupProvider : Logging() {
 
@@ -27,7 +29,11 @@ abstract class RunnerSetupProvider : Logging() {
 
     abstract fun getCommand(jobId: String, actionData: ActionData, env: String, executorId: String, callbackAddress: String): String
 
-    abstract fun getActionUserResources(jobId: String, actionData: ActionData): Array<String>
+    open fun getActionUserResources(jobId: String, actionData: ActionData): Array<String> {
+        val actionSrcDistPath = "dist/$jobId/${actionData.name}/${actionData.src}"
+        Files.copy(Paths.get("repo/src/${actionData.src}"), Paths.get(actionSrcDistPath))
+        return arrayOf(actionSrcDistPath)
+    }
 
     fun getActionResources(jobId: String, actionData: ActionData): Array<String> =
             actionFiles.map { f -> "$jobId/${actionData.name}/$f" }.toTypedArray() +
