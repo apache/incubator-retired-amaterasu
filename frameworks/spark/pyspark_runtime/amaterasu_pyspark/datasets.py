@@ -65,8 +65,8 @@ class DatasetManager(BaseDatasetManager):
         datastore = datastore_cls(dataset_conf, self.spark)
         return datastore
 
-    def __init__(self, spark):
-        super(DatasetManager, self).__init__()
+    def __init__(self, dataset_conf, spark):
+        super(DatasetManager, self).__init__(dataset_conf)
         self.spark = spark
         self._registered_datastores[DatasetTypes.Hive.value] = HiveDatasetLoader
         self._registered_datastores[DatasetTypes.File.value] = FileDatasetLoader

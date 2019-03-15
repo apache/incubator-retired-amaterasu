@@ -16,11 +16,12 @@
 """
 from typing import Tuple
 
-from amaterasu import conf, notifier, ImproperlyConfiguredError, BaseAmaContext
+from amaterasu import conf, ImproperlyConfiguredError, BaseAmaContext
 from pyspark import SparkContext, SparkConf
 from pyspark.sql import SparkSession, DataFrame
 
 from amaterasu.datasets import BaseDatasetManager
+from amaterasu.runtime import Environment, AmaContextBuilder
 from .datasets import DatasetManager
 
 
@@ -37,16 +38,43 @@ def _get_or_create_spark_attributes(sc: SparkContext, spark: SparkSession) -> Tu
     return sc, spark
 
 
+class SparkAmaContextBuilder(AmaContextBuilder):
+
+    def __init__(self):
+        super().__init__()
+        self.spark_conf = SparkConf()
+
+    def setMaster(self, master_uri):
+        self.spark_conf.setMaster(master_uri)
+
+    def set(self, key, value):
+        self.spark_conf.set(key, value)
+
+    def build(self):
+        spark = SparkSession.builder.config(conf=self.spark_conf).getOrCreate()
+        sc = spark.sparkContext
+        return AmaContext(self.env, sc, spark)
+
+
 class AmaContext(BaseAmaContext):
+
+
+
+    @classmethod
+    def builder(cls):
+        return SparkAmaContextBuilder()
 
     @property
     def dataset_manager(self) -> BaseDatasetManager:
         return self._dataset_manager
 
-    def __init__(self, sc: SparkContext = None, spark: SparkSession = None):
-        super(AmaContext, self).__init__()
+    def get_member(self, member_name):
+        return
+
+    def __init__(self, env: Environment, sc: SparkContext = None, spark: SparkSession = None):
+        super(AmaContext, self).__init__(env)
         self.sc, self.spark = _get_or_create_spark_attributes(sc, spark)
-        self._dataset_manager = DatasetManager(self.spark)
+        self._dataset_manager = DatasetManager(env.datasets, self.spark)
 
     def get_dataset(self, dataset_name: str) -> DataFrame:
         return self._dataset_manager.load_dataset(dataset_name)
@@ -55,7 +83,3 @@ class AmaContext(BaseAmaContext):
         self._dataset_manager.persist_dataset(dataset_name, dataset, overwrite)
 
 
-try:
-    ama_context = AmaContext(sc, spark)  # When using spark-submit
-except NameError:
-    ama_context = AmaContext()

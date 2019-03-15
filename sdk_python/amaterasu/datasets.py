@@ -65,10 +65,9 @@ class BaseDatasetManager(abc.ABC):
 
     _registered_datastores: Dict[str, Type[BaseDatasetLoader]] = {}
 
-    def __init__(self):
+    def __init__(self, datasets_conf):
         self._registered_datastores[DatasetTypes.Generic.value] = GenericDatasetLoader
-        with open('datasets.yml', 'r', encoding='utf-8') as f:
-            self._datasets_conf = yaml.load(f)
+        self._datasets_conf = datasets_conf
 
     def _find_dataset_config(self, dataset_name: str) -> Dict:
         for dataset_type, dataset_configurations in self._datasets_conf.items():

@@ -17,8 +17,9 @@
 from pyspark.sql.functions import udf
 from pyspark.sql.types import StructType, StructField, IntegerType
 
-from amaterasu.pyspark.runtime import ama_context
+from amaterasu.pyspark.runtime import AmaContext
 
+ama_context = AmaContext.builder().build()
 
 def pow(num):
     return num * num

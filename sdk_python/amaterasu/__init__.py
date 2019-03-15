@@ -17,7 +17,7 @@
 import pkg_resources
 import sys
 
-from .runtime import BaseAmaContext, conf, notifier, ImproperlyConfiguredError, _LazyProxy
+from .runtime import BaseAmaContext, conf, ImproperlyConfiguredError
 
 
 class PluginProxy:
@@ -43,7 +43,7 @@ plugins = {
 }
 
 
-__all__ = ['BaseAmaContext', 'conf', 'notifier', 'ImproperlyConfiguredError']
+__all__ = ['BaseAmaContext', 'conf', 'ImproperlyConfiguredError']
 
 thismodule = sys.modules[__name__]
 for plugin_name, plugin_proxy in plugins.items():

@@ -26,7 +26,19 @@ from typing import Any
 from amaterasu.datasets import BaseDatasetManager
 
 
+def _get_local_file_path(file_name):
+    cwd = os.getcwd()
+    return os.path.join(cwd, file_name)
+
 class ImproperlyConfiguredError(Exception):
+    pass
+
+
+class Environment(Munch):
+    pass
+
+
+class RuntimeNotSupportedError(Exception):
     pass
 
 
@@ -50,9 +62,80 @@ class AmaActiveMQNotificationHandler(logging.Handler):
         self.mq.send(body=record, destination=self.queue_name)
 
 
+class AmaContextBuilder(abc.ABC):
+
+    def __init__(self):
+        self.env_conf_path = _get_local_file_path('env.yml')
+        self.runtime_conf_path = _get_local_file_path('runtime.yml')
+        self.datasets_conf_path = _get_local_file_path('datasets.yml')
+        try:
+            self.env = self._create_env()
+        except:
+            print("Could not load default env parameters!")
+            self.env = None
+        self._frameworks = self._resolve_supported_frameworks()
+
+    def _create_env(self):
+        _dict = {
+            'job_metadata': None,
+            'env': None,
+            'datasets': None
+        }
+        with open(self.env_conf_path, 'r') as f:
+            _dict['env'] = yaml.load(f.read())
+        with open(self.runtime_conf_path, 'r') as f:
+            _dict['job_metadata'] = yaml.load(f.read())
+        with open(self.datasets_conf_path, 'r') as f:
+            _dict['datasets'] = yaml.load(f.read())
+        return munchify(_dict, factory=Environment)
+
+    def _resolve_supported_frameworks(self):
+        supported_frameworks = {}
+        for subclass in self.__class__.__subclasses__():
+            if hasattr(subclass, '_framework_name'):
+                supported_frameworks[subclass._framework_name] = subclass
+        return supported_frameworks
+
+    def set_env_path(self, env_path):
+        self.env_conf_path = self._get_local_file_path(env_path)
+        self.env = self._create_env()
+        return self
+
+    def set_runtime_path(self, runtime_path):
+        self.runtime_conf_path = self._get_local_file_path(runtime_path)
+        self.env = self._create_env()
+        return self
+
+    def set_datasets_path(self, datasets_path):
+        self.datasets_conf_path = self._get_local_file_path(datasets_path)
+        self.env = self._create_env()
+        return self
+
+    def as_type(self, framework_name):
+        try:
+            framework_builder = self._frameworks[framework_name]()
+            framework_builder.set_env_path(self.env_conf_path)
+            framework_builder.set_datasets_path(self.datasets_conf_path)
+            framework_builder.set_runtime_path(self.runtime_conf_path)
+            return framework_builder
+        except KeyError:
+            raise RuntimeNotSupportedError(
+                "Runtime for '{}' is not supported, are you sure it is installed?".format(framework_name))
+
+    @abc.abstractmethod
+    def build(self):
+        pass
+
+
 class BaseAmaContext(abc.ABC):
 
-    instance = None
+    def __init__(self, environment: Environment):
+        self._env = environment
+
+    @classmethod
+    @abc.abstractmethod
+    def builder(cls):
+        pass
 
     @property
     @abc.abstractmethod
@@ -65,79 +148,12 @@ class BaseAmaContext(abc.ABC):
     def get_dataset(self, dataset_name: str):
         self.dataset_manager.load_dataset(dataset_name)
 
-    def __new__(cls, *args, **kwargs) -> 'BaseAmaContext':
-        '''
-        This is a little ugly hack, but we need LazyProxy to implement a singleton ama_context.
-        :param args:
-        :param kwargs:
-        :return:
-        '''
-        if not cls.instance:
-            cls.instance = _LazyProxy(cls, *args, **kwargs)
-        return cls.instance
-
-
-class _LazyProxy:
-
-    instance = None
-
-    def __init__(self, cls, *args, **kwargs):
-        """
-        Utility singleton object that is really instantiated only
-        when it is first accessed. We use it to instantiate our contexts to
-        provide an easier API for users.
-
-        e.g. for the Python SDK developer:
-        Let's say that you have a class "AAAContext" for the framework named
-        "AAA", it is the SDK developer's responsibility to wrap it with
-        a LazyProxy object.
-        An example usage woul be:
-        >>> ama_context = _LazyProxy(AAAContext, *args, **kwargs)
-        At this point, the AAAContext isn't instantiated.
-        When the framework user tries to access the context for the first time,
-        only then the AAAContext is instantiated.
-        e.g. -
-        >>> ama_context.get_dataset("somename", "somevalue") <-- instance is now created.
-        >>> ama_context.get_dataset("anothername", "anothervalue") <-- instance is reused
-
-        :param cls:
-        :param args:
-        :param kwargs:
-        """
-        super(_LazyProxy, self).__setattr__('cls', cls)
-        super(_LazyProxy, self).__setattr__('args', args)
-        super(_LazyProxy, self).__setattr__('kwargs', kwargs)
-
-    def _get_or_create_instance(self):
-        instance = super(_LazyProxy, self).__getattribute__('instance')
-        if not instance:
-            cls = super(_LazyProxy, self).__getattribute__('cls')
-            args = super(_LazyProxy, self).__getattribute__('args')
-            kwargs = super(_LazyProxy, self).__getattribute__('kwargs')
-            instance = object.__new__(cls)
-            instance.__init__(*args, **kwargs)
-            super(_LazyProxy, self).__setattr__('instance', instance)
-        return instance
-
-    def __getattr__(self, item):
-        instance = super(_LazyProxy, self).__getattribute__('_get_or_create_instance')()
-        return getattr(instance, item)
-
-    def __setattr__(self, key, value):
-        instance = self._get_or_create_instance()
-        return setattr(instance, key, value)
-
-
-class Environment(Munch):
-    pass
-
 
 class Notifier(logging.Logger):
 
     def __init__(self, name, level=logging.NOTSET):
         super().__init__(name, level)
-        handler = _LazyProxy(AmaActiveMQNotificationHandler)
-        self.addHandler(handler)
+        self.addHandler(AmaActiveMQNotificationHandler)
 
 
 def _create_configuration():
@@ -154,7 +170,8 @@ def _create_configuration():
 
 
 conf = _create_configuration()
+# ama_context = BaseAmaContext()
 logging.setLoggerClass(Notifier)
-notifier = logging.getLogger(__name__)
-atexit.register(lambda: notifier.info('Action {} finished successfully'.format(conf.job_metadata.actionName)))
-__all__ = ['BaseAmaContext', 'conf', 'notifier']
+# notifier = logging.getLogger(__name__)
+# atexit.register(lambda: notifier.info('Action {} finished successfully'.format(conf.job_metadata.actionName)))
+__all__ = ['BaseAmaContext', 'conf']
