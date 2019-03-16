@@ -159,7 +159,6 @@ class JobScheduler extends AmaterasuScheduler {
           val actionData = jobManager.getNextActionData
           if (actionData != null) {
             val taskId = Protos.TaskID.newBuilder().setValue(actionData.getId).build()
-
             // setting up the configuration files for the container
             val envYaml = configManager.getActionConfigContent(actionData.getName, actionData.getConfig)
             writeConfigFile(envYaml, jobManager.getJobId, actionData.getName, "env.yaml")
@@ -201,7 +200,7 @@ class JobScheduler extends AmaterasuScheduler {
             //                          if(!actionData.getSrc.isEmpty){
             //                            copy(get(s"repo/src/${actionData.getSrc}"), get(s"dist/${jobManager.getJobId}/${actionData.getName}/${actionData.getSrc}"), REPLACE_EXISTING)
             //                          }
-            val commandStr = runnerProvider.getCommand(jobManager.getJobId, actionData, env, executorId, "")
+            val commandStr = s"env TASK_ID=${taskId.getValue} &&" + runnerProvider.getCommand(jobManager.getJobId, actionData, env, executorId, "")
             log.info(s"===> Command: $commandStr")
             val command = CommandInfo
               .newBuilder
