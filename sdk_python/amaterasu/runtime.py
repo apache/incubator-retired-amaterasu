@@ -23,13 +23,14 @@ import atexit
 import abc
 from munch import Munch, munchify
 from typing import Any
-
+from ._utils import hooks as _hooks
 from amaterasu.datasets import BaseDatasetManager
 
 
 def _get_local_file_path(file_name):
     cwd = os.getcwd()
     return os.path.join(cwd, file_name)
+
 
 class ImproperlyConfiguredError(Exception):
     pass
@@ -169,6 +170,7 @@ def _create_configuration():
 
     return munchify(_dict, factory=Environment)
 
+
 def _send_mesos_task_finished_event():
     mesos_agent_ep = os.getenv('MESOS_AGENT_ENDPOINT')
     executor_dir = os.getenv('MESOS_DIRECTORY')
@@ -195,12 +197,13 @@ def _send_mesos_task_finished_event():
         }
     })
 
-def send_completion_event():
-    if os.getenv('MESOS_EXECUTOR_ID'):
-        _send_mesos_task_finished_event()
 
-# conf = _create_configuration()
-# ama_context = BaseAmaContext()
+def send_completion_event():
+    if (_hooks.exit_code is None or _hooks.exit_code == 0) and _hooks.exception is None:
+        if os.getenv('MESOS_EXECUTOR_ID'):
+            _send_mesos_task_finished_event()
+
+
 logging.setLoggerClass(Notifier)
 # notifier = logging.getLogger(__name__)
 atexit.register(send_completion_event)
