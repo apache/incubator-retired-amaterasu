@@ -28,9 +28,10 @@ abstract class PythonRunnerProviderBase(env: String?, val conf:ClusterConfig?) :
 
     private val requirementsFileName: String = "ama-requirements.txt"
     private val requirementsPath: String = "dist/$requirementsFileName"
+    private val mandatoryPYPIPackages: Array<String> = arrayOf("requests")
 
     override val runnerResources: Array<String>
-    get() = arrayOf("amaterasu-sdk-${conf!!.version()}.zip", "requests")
+    get() = arrayOf("amaterasu-sdk-${conf!!.version()}.zip")
 
     override fun getCommand(jobId: String, actionData: ActionData, env: String, executorId: String, callbackAddress: String): String {
         var cmd = "python3 -m pip install --upgrade --force-reinstall -r $requirementsFileName"
@@ -43,7 +44,8 @@ abstract class PythonRunnerProviderBase(env: String?, val conf:ClusterConfig?) :
     override fun getActionDependencies(jobId: String, actionData: ActionData): Array<String> {
         val reqFile = File(requirementsPath)
         if (reqFile.exists()) reqFile.delete()
-        runnerResources.forEach { resource ->
+        val dependencies = runnerResources + mandatoryPYPIPackages
+        dependencies.forEach { resource ->
             println("====> RESOURCESSSSSS: $resource")
             reqFile.appendText("$resource\n")
         }
