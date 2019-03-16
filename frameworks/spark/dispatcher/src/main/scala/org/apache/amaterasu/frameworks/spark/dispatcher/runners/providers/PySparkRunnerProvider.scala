@@ -2,15 +2,17 @@ package org.apache.amaterasu.frameworks.spark.dispatcher.runners.providers
 import org.apache.amaterasu.common.configuration.ClusterConfig
 import org.apache.amaterasu.common.dataobjects.ActionData
 import org.apache.amaterasu.frameworks.python.dispatcher.runners.providers.PythonRunnerProviderBase
+import sys.process._
 
 class PySparkRunnerProvider(val env: String, val conf: ClusterConfig) extends PythonRunnerProviderBase(env, conf) {
 
   override def getCommand(jobId: String, actionData: ActionData, env: String, executorId: String, callbackAddress: String): String = {
     var command = super.getCommand(jobId: String, actionData: ActionData, env: String, executorId: String, callbackAddress: String)
     log.info(s"===> Cluster manager: ${conf.mode}")
+    val pyhtonBinPath = "python3 -c \"import sys; print(sys.executable)\"".!
     conf.mode match {
       case "mesos" =>
-          command + s" && env AMA_NODE=${sys.env("AMA_NODE")} && env MESOS_NATIVE_JAVA_LIBRARY=${conf.mesos.libPath}" +
+          command + s"env PYSPARK_PYTHON=$pyhtonBinPath && env AMA_NODE=${sys.env("AMA_NODE")} && env MESOS_NATIVE_JAVA_LIBRARY=${conf.mesos.libPath}" +
           s" && python3 ${actionData.getSrc}"
       case "yarn" =>
           command + s" && /bin/bash spark/bin/load-spark-env.sh" +
