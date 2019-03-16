@@ -27,8 +27,8 @@ spark_env_content = '''
 #!/usr/bin/env bash
 
 export PYSPARK_PYTHON={}
-'''.format(os.getenv("PYSPARK_PYTHON"))
-pyspark_env_path = '{}/conf/spark_env.sh'.format(os.getenv('_'))
+'''.format(os.getenv("_"))
+pyspark_env_path = '{}/conf/spark_env.sh'.format(os.getenv('SPARK_HOME'))
 
 with open(pyspark_env_path, 'w') as f:
     f.write(spark_env_content)
