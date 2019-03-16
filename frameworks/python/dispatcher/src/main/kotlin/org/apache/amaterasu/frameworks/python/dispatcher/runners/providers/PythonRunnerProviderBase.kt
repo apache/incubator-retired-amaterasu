@@ -43,7 +43,7 @@ abstract class PythonRunnerProviderBase(env: String?, val conf:ClusterConfig?) :
     override fun getActionDependencies(jobId: String, actionData: ActionData): Array<String> {
         val reqFile = File(requirementsPath)
         if (reqFile.exists()) reqFile.delete()
-        runnerResources.forEach { resource -> reqFile.appendText("$resource\n") }
+        runnerResources.forEach { resource -> reqFile.appendText("-U $resource\n") }
         return try {
             val userRequirements = execData.pyDeps()?.filePaths()
             arrayOf(requirementsFileName) + userRequirements!!
