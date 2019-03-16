@@ -54,5 +54,6 @@ include 'pyspark-runtime'
 project(':pyspark-runtime').projectDir=file("frameworks/spark/pyspark_runtime")
 include 'sdk-python'
 project(':sdk-python').projectDir=file("sdk_python")
-
+include 'python-runtime'
+project(':python-runtime').projectDir=file("frameworks/python/python_runtime")
 

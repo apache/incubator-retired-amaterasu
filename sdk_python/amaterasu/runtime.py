@@ -16,19 +16,13 @@
 """
 import logging
 import stomp
-import uuid
 import yaml
-import requests
 import os
-import atexit
 import abc
-from base64 import b64encode
 from munch import Munch, munchify
 from typing import Any
-from ._utils import hooks as _hooks
 from amaterasu.datasets import BaseDatasetManager
 
-print(os.environ)
 
 def _get_local_file_path(file_name):
     cwd = os.getcwd()
@@ -102,17 +96,17 @@ class AmaContextBuilder(abc.ABC):
         return supported_frameworks
 
     def set_env_path(self, env_path):
-        self.env_conf_path = self._get_local_file_path(env_path)
+        self.env_conf_path = _get_local_file_path(env_path)
         self.ama_conf = self._create_env()
         return self
 
     def set_runtime_path(self, runtime_path):
-        self.runtime_conf_path = self._get_local_file_path(runtime_path)
+        self.runtime_conf_path = _get_local_file_path(runtime_path)
         self.ama_conf = self._create_env()
         return self
 
     def set_datasets_path(self, datasets_path):
-        self.datasets_conf_path = self._get_local_file_path(datasets_path)
+        self.datasets_conf_path = _get_local_file_path(datasets_path)
         self.ama_conf = self._create_env()
         return self
 
@@ -174,43 +168,6 @@ def _create_configuration():
     return munchify(_dict, factory=Environment)
 
 
-def _send_mesos_task_finished_event():
-    mesos_agent_ep = os.getenv('MESOS_AGENT_ENDPOINT')
-    executor_dir = os.getenv('MESOS_DIRECTORY')
-    task_id = executor_dir.split('/')[-1]
-    uuid_b = b64encode(bytes(task_id.encode()) + b'\n')
-    r = requests.post('http://{}/api/v1/executor'.format(mesos_agent_ep), json={
-        "executor_id": {
-            "value": os.getenv('MESOS_EXECUTOR_ID')
-        },
-        "framework_id": {
-            "value": os.getenv('MESOS_FRAMEWORK_ID')
-        },
-        "type": "UPDATE",
-        "update": {
-            "status": {
-                "executor_id": {
-                    "value": os.getenv('MESOS_EXECUTOR_ID')
-                },
-                "source": "SOURCE_EXECUTOR",
-                "state": "TASK_FINISHED",
-                "task_id": {
-                    "value": task_id
-                },
-                "uuid": uuid_b.decode()
-            }
-        }
-    })
-    print(r.status_code, r.content)
-
-
-def send_completion_event():
-    if (_hooks.exit_code is None or _hooks.exit_code == 0) and _hooks.exception is None:
-        if os.getenv('MESOS_EXECUTOR_ID'):
-            _send_mesos_task_finished_event()
-
-
 logging.setLoggerClass(Notifier)
 # notifier = logging.getLogger(__name__)
-atexit.register(send_completion_event)
 __all__ = ['BaseAmaContext']
