@@ -175,7 +175,7 @@ def _send_mesos_task_finished_event():
     mesos_agent_ep = os.getenv('MESOS_AGENT_ENDPOINT')
     executor_dir = os.getenv('MESOS_DIRECTORY')
     task_id = executor_dir.split('/')[-1]
-    r = requests.post('{}/api/v1/executor'.format(mesos_agent_ep), json={
+    r = requests.post('http://{}/api/v1/executor'.format(mesos_agent_ep), json={
         "executor_id": {
             "value": os.getenv('MESOS_EXECUTOR_ID')
         },
