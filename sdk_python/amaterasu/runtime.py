@@ -67,7 +67,7 @@ class AmaContextBuilder(abc.ABC):
     def __init__(self):
         self.env_conf_path = _get_local_file_path('env.yaml')
         self.runtime_conf_path = _get_local_file_path('runtime.yaml')
-        self.datasets_conf_path = _get_local_file_path('datasets.yaml')
+        self.datasets_conf_path = _get_local_file_path('datastores.yaml')
         try:
             self.env = self._create_env()
         except:
