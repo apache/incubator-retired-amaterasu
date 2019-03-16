@@ -23,16 +23,7 @@ from amaterasu.runtime import AmaContextBuilder
 from .datasets import DatasetManager
 import os
 
-spark_env_content = '''
-#!/usr/bin/env bash
-
-export PYSPARK_PYTHON={}
-'''.format(os.getenv("_"))
-pyspark_env_path = '{}/conf/spark_env.sh'.format(os.getenv('SPARK_HOME'))
-
-with open(pyspark_env_path, 'w') as f:
-    f.write(spark_env_content)
-
+os.environ['PYSPARK_PYTHON'] = os.environ['_']
 
 class SparkAmaContextBuilder(AmaContextBuilder):
 
