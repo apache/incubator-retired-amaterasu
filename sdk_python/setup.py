@@ -27,11 +27,6 @@ setup(
     description='Apache Amaterasu (incubating) is an open source, configuration managment and deployment framework for big data pipelines',
     python_requires='>=3.4.*, <4',
     install_requires=['stomp.py', 'pyYaml', 'munch'],
-    entry_points={
-        'console_scripts': [
-            'ama-runner=amaterasu.main:main '
-        ]
-    },
     classifiers=[
         'Development Status :: 3 - Alpha',
         'Environment :: Console',

@@ -44,13 +44,15 @@ class SparkAmaContextBuilder(AmaContextBuilder):
         super().__init__()
         self.spark_conf = SparkConf()
 
-    def setMaster(self, master_uri):
+    def setMaster(self, master_uri) -> "AmaContextBuilder":
         self.spark_conf.setMaster(master_uri)
+        return self
 
-    def set(self, key, value):
+    def set(self, key, value) -> "AmaContextBuilder":
         self.spark_conf.set(key, value)
+        return self
 
-    def build(self):
+    def build(self) -> "AmaContext":
         spark = SparkSession.builder.config(conf=self.spark_conf).getOrCreate()
         sc = spark.sparkContext
         return AmaContext(self.env, sc, spark)
@@ -58,22 +60,25 @@ class SparkAmaContextBuilder(AmaContextBuilder):
 
 class AmaContext(BaseAmaContext):
 
-
-
     @classmethod
-    def builder(cls):
+    def builder(cls) -> AmaContextBuilder:
         return SparkAmaContextBuilder()
 
     @property
     def dataset_manager(self) -> BaseDatasetManager:
         return self._dataset_manager
 
-    def get_member(self, member_name):
-        return
+    @property
+    def sc(self) -> SparkContext:
+        return self._sc
+
+    @property
+    def spark(self) -> SparkSession:
+        return self._spark
 
     def __init__(self, env: Environment, sc: SparkContext = None, spark: SparkSession = None):
         super(AmaContext, self).__init__(env)
-        self.sc, self.spark = _get_or_create_spark_attributes(sc, spark)
+        self._sc, self._spark = sc, spark
         self._dataset_manager = DatasetManager(env.datasets, self.spark)
 
     def get_dataset(self, dataset_name: str) -> DataFrame:
