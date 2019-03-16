@@ -29,9 +29,11 @@ class SparkAmaContextBuilder(AmaContextBuilder):
 
     def __init__(self):
         super().__init__()
-        try:
-            self.spark_conf = sc.getConf() #  When running through spark-submit
-        except UnboundLocalError:
+        if self.env:
+            self.spark_conf = SparkConf()\
+                .setAppName('amaterasu-{}-{}'.format(self.env.runtime.jobId, self.env.runtime.actionName))\
+                .setMaster(self.env.runtime.master)
+        else:
             self.spark_conf = SparkConf()
 
     def setMaster(self, master_uri) -> "AmaContextBuilder":
@@ -44,7 +46,7 @@ class SparkAmaContextBuilder(AmaContextBuilder):
 
     def build(self) -> "AmaContext":
         spark = SparkSession.builder.config(conf=self.spark_conf).getOrCreate()
-        sc: SparkContext = spark.sparkContext
+        sc = spark.sparkContext
         return AmaContext(self.env, sc, spark)
 
 
