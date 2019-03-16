@@ -87,7 +87,9 @@ class JobScheduler extends AmaterasuScheduler {
   private val yamlMapper = new ObjectMapper(new YAMLFactory())
   yamlMapper.registerModule(DefaultScalaModule)
 
-  def error(driver: SchedulerDriver, message: String) {}
+  def error(driver: SchedulerDriver, message: String): Unit = {
+    log.error(s"===> $message")
+  }
 
   def executorLost(driver: SchedulerDriver, executorId: ExecutorID, slaveId: SlaveID, status: Int) {}
 
