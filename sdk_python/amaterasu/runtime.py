@@ -28,6 +28,7 @@ from typing import Any
 from ._utils import hooks as _hooks
 from amaterasu.datasets import BaseDatasetManager
 
+print(os.environ)
 
 def _get_local_file_path(file_name):
     cwd = os.getcwd()
@@ -177,7 +178,7 @@ def _send_mesos_task_finished_event():
     mesos_agent_ep = os.getenv('MESOS_AGENT_ENDPOINT')
     executor_dir = os.getenv('MESOS_DIRECTORY')
     task_id = executor_dir.split('/')[-1]
-    uuid_b = b64encode(bytes(str(uuid.uuid4()).encode()) + b'\n')
+    uuid_b = b64encode(bytes(task_id.encode()) + b'\n')
     r = requests.post('http://{}/api/v1/executor'.format(mesos_agent_ep), json={
         "executor_id": {
             "value": os.getenv('MESOS_EXECUTOR_ID')
