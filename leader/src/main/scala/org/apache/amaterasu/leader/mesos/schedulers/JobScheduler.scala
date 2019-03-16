@@ -200,7 +200,7 @@ class JobScheduler extends AmaterasuScheduler {
             //                          if(!actionData.getSrc.isEmpty){
             //                            copy(get(s"repo/src/${actionData.getSrc}"), get(s"dist/${jobManager.getJobId}/${actionData.getName}/${actionData.getSrc}"), REPLACE_EXISTING)
             //                          }
-            val commandStr = s"env TASK_ID=${taskId.getValue} &&" + runnerProvider.getCommand(jobManager.getJobId, actionData, env, executorId, "")
+            val commandStr = runnerProvider.getCommand(jobManager.getJobId, actionData, env, executorId, "")
             log.info(s"===> Command: $commandStr")
             val command = CommandInfo
               .newBuilder
@@ -260,6 +260,7 @@ class JobScheduler extends AmaterasuScheduler {
 
             executor = ExecutorInfo
               .newBuilder
+              .setType(ExecutorInfo.Type.DEFAULT)
               .setData(ByteString.copyFrom(execData))
               .setName(taskId.getValue)
               .setExecutorId(ExecutorID.newBuilder().setValue(executorId))
