@@ -31,7 +31,7 @@ class PySparkRunnerProvider(val env: String, val conf: ClusterConfig) extends Py
   }
 
 
-  override def getHasExecutor: Boolean = true
+  override def getHasExecutor: Boolean = false
 }
 
 object PySparkRunnerProvider {
