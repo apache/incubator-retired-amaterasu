@@ -9,7 +9,7 @@ class PySparkRunnerProvider(val env: String, val conf: ClusterConfig) extends Py
   override def getCommand(jobId: String, actionData: ActionData, env: String, executorId: String, callbackAddress: String): String = {
     var command = super.getCommand(jobId: String, actionData: ActionData, env: String, executorId: String, callbackAddress: String)
     log.info(s"===> Cluster manager: ${conf.mode}")
-    val pyhtonBinPath = "python3 -c \"import sys; print(sys.executable)\"".!
+    val pyhtonBinPath = Seq("python3", "-c", "import sys; print(sys.executable)").!!.trim()
     conf.mode match {
       case "mesos" =>
           command + s"env PYSPARK_PYTHON=$pyhtonBinPath && env AMA_NODE=${sys.env("AMA_NODE")} && env MESOS_NATIVE_JAVA_LIBRARY=${conf.mesos.libPath}" +
