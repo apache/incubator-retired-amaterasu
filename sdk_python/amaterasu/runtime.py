@@ -17,6 +17,7 @@
 import logging
 import stomp
 import yaml
+import requests
 import os
 import atexit
 import abc
@@ -168,10 +169,39 @@ def _create_configuration():
 
     return munchify(_dict, factory=Environment)
 
+def _send_mesos_task_finished_event():
+    mesos_agent_ep = os.getenv('MESOS_AGENT_ENDPOINT')
+    executor_dir = os.getenv('MESOS_DIRECTORY')
+    task_id = executor_dir.split('/')[-1]
+    r = requests.post('{}/api/v1/executor'.format(mesos_agent_ep), json={
+        "executor_id": {
+            "value": os.getenv('MESOS_EXECUTOR_ID')
+        },
+        "framework_id": {
+            "value": os.getenv('MESOS_FRAMEWORK_ID')
+        },
+        "type": "UPDATE",
+        "update": {
+            "status": {
+                "executor_id": {
+                    "value": os.getenv('MESOS_EXECUTOR_ID')
+                },
+                "source": "SOURCE_EXECUTOR",
+                "state": "TASK_FINISHED",
+                "task_id": {
+                    "value": task_id
+                }
+            }
+        }
+    })
+
+def send_completion_event():
+    if os.getenv('MESOS_EXECUTOR_ID'):
+        _send_mesos_task_finished_event()
 
 # conf = _create_configuration()
 # ama_context = BaseAmaContext()
 logging.setLoggerClass(Notifier)
 # notifier = logging.getLogger(__name__)
-# atexit.register(lambda: notifier.info('Action {} finished successfully'.format(conf.job_metadata.actionName)))
+atexit.register(send_completion_event)
 __all__ = ['BaseAmaContext']
