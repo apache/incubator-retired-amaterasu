@@ -69,10 +69,10 @@ class AmaContextBuilder(abc.ABC):
         self.runtime_conf_path = _get_local_file_path('runtime.yaml')
         self.datasets_conf_path = _get_local_file_path('datastores.yaml')
         try:
-            self.env = self._create_env()
+            self.ama_conf = self._create_env()
         except:
             print("Could not load default env parameters!")
-            self.env = None
+            self.ama_conf = None
         self._frameworks = self._resolve_supported_frameworks()
 
     def _create_env(self):
@@ -98,17 +98,17 @@ class AmaContextBuilder(abc.ABC):
 
     def set_env_path(self, env_path):
         self.env_conf_path = self._get_local_file_path(env_path)
-        self.env = self._create_env()
+        self.ama_conf = self._create_env()
         return self
 
     def set_runtime_path(self, runtime_path):
         self.runtime_conf_path = self._get_local_file_path(runtime_path)
-        self.env = self._create_env()
+        self.ama_conf = self._create_env()
         return self
 
     def set_datasets_path(self, datasets_path):
         self.datasets_conf_path = self._get_local_file_path(datasets_path)
-        self.env = self._create_env()
+        self.ama_conf = self._create_env()
         return self
 
     def as_type(self, framework_name):
@@ -129,8 +129,8 @@ class AmaContextBuilder(abc.ABC):
 
 class BaseAmaContext(abc.ABC):
 
-    def __init__(self, environment: Environment):
-        self._env = environment
+    def __init__(self, ama_conf: Munch):
+        self._ama_conf = ama_conf
 
     @classmethod
     @abc.abstractmethod
