@@ -77,14 +77,14 @@ class AmaContextBuilder(abc.ABC):
 
     def _create_env(self):
         _dict = {
-            'job_metadata': None,
-            'env': None,
-            'datasets': None
+            'runtime': {},
+            'env': {},
+            'datasets': {}
         }
         with open(self.env_conf_path, 'r') as f:
             _dict['env'] = yaml.load(f.read())
         with open(self.runtime_conf_path, 'r') as f:
-            _dict['job_metadata'] = yaml.load(f.read())
+            _dict['runtime'] = yaml.load(f.read())
         with open(self.datasets_conf_path, 'r') as f:
             _dict['datasets'] = yaml.load(f.read())
         return munchify(_dict, factory=Environment)
