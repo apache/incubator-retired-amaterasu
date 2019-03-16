@@ -196,6 +196,7 @@ def _send_mesos_task_finished_event():
             }
         }
     })
+    print(r.status_code, r.content)
 
 
 def send_completion_event():
