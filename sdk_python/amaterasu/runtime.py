@@ -65,9 +65,9 @@ class AmaActiveMQNotificationHandler(logging.Handler):
 class AmaContextBuilder(abc.ABC):
 
     def __init__(self):
-        self.env_conf_path = _get_local_file_path('env.yml')
-        self.runtime_conf_path = _get_local_file_path('runtime.yml')
-        self.datasets_conf_path = _get_local_file_path('datasets.yml')
+        self.env_conf_path = _get_local_file_path('env.yaml')
+        self.runtime_conf_path = _get_local_file_path('runtime.yaml')
+        self.datasets_conf_path = _get_local_file_path('datasets.yaml')
         try:
             self.env = self._create_env()
         except:
