@@ -47,7 +47,7 @@ class SparkAmaContextBuilder(AmaContextBuilder):
     def build(self) -> "AmaContext":
         spark = SparkSession.builder.config(conf=self.spark_conf).getOrCreate()
         sc = spark.sparkContext
-        return AmaContext(self.env, sc, spark)
+        return AmaContext(self.ama_conf, sc, spark)
 
 
 class AmaContext(BaseAmaContext):
@@ -68,10 +68,10 @@ class AmaContext(BaseAmaContext):
     def spark(self) -> SparkSession:
         return self._spark
 
-    def __init__(self, env: Environment, sc: SparkContext = None, spark: SparkSession = None):
-        super(AmaContext, self).__init__(env)
+    def __init__(self, ama_conf, sc: SparkContext = None, spark: SparkSession = None):
+        super(AmaContext, self).__init__(ama_conf)
         self._sc, self._spark = sc, spark
-        self._dataset_manager = DatasetManager(env.datasets, self.spark)
+        self._dataset_manager = DatasetManager(ama_conf.datasets, self.spark)
 
     def get_dataset(self, dataset_name: str) -> DataFrame:
         return self._dataset_manager.load_dataset(dataset_name)
