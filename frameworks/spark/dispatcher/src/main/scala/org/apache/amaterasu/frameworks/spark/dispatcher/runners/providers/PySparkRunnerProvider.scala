@@ -22,8 +22,9 @@ class PySparkRunnerProvider(val env: String, val conf: ClusterConfig) extends Py
   }
 
   override def getRunnerResources: Array[String] = {
-    val resources = super.getRunnerResources
-    resources :+ s"amaterasu_pyspark-${conf.version}.zip"
+    var resources = super.getRunnerResources
+    resources = resources :+ s"amaterasu_pyspark-${conf.version}.zip"
+    log.info(s"PYSPARK RESOURCES ==> ${resources.toSet}")
     resources
   }
 
