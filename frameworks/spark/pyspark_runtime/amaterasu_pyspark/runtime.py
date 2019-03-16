@@ -14,15 +14,24 @@
  See the License for the specific language governing permissions and
  limitations under the License.
 """
-from typing import Tuple
-
-from amaterasu import ImproperlyConfiguredError, BaseAmaContext
+from amaterasu import BaseAmaContext
 from pyspark import SparkContext, SparkConf
 from pyspark.sql import SparkSession, DataFrame
 
 from amaterasu.datasets import BaseDatasetManager
-from amaterasu.runtime import Environment, AmaContextBuilder
+from amaterasu.runtime import AmaContextBuilder
 from .datasets import DatasetManager
+import os
+
+spark_env_content = '''
+#!/usr/bin/env bash
+
+export PYSPARK_PYTHON={}
+'''.format(os.getenv("PYSPARK_PYTHON"))
+pyspark_env_path = '{}/conf/spark_env.sh'.format(os.getenv('SPARK_HOME'))
+
+with open(pyspark_env_path, 'w') as f:
+    f.write(spark_env_content)
 
 
 class SparkAmaContextBuilder(AmaContextBuilder):
@@ -32,7 +41,8 @@ class SparkAmaContextBuilder(AmaContextBuilder):
         if self.ama_conf:
             self.spark_conf = SparkConf()\
                 .setAppName('amaterasu-{}-{}'.format(self.ama_conf.runtime.jobId, self.ama_conf.runtime.actionName))\
-                .setMaster(self.ama_conf.env.master)
+                .setMaster(self.ama_conf.env.master)\
+                .set("spark.pyspark.python", os.getenv("PYSPARK_PYTHON"))
         else:
             self.spark_conf = SparkConf()
 
