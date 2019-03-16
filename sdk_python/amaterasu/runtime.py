@@ -195,7 +195,7 @@ def _send_mesos_task_finished_event():
                 "task_id": {
                     "value": task_id
                 },
-                "uuid": b32encode(str(uuid.uuid4()))
+                "uuid": b32encode(bytes(str(uuid.uuid4()).encode()))
             }
         }
     })
