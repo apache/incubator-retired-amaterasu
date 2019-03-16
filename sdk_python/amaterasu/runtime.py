@@ -169,9 +169,9 @@ def _create_configuration():
     return munchify(_dict, factory=Environment)
 
 
-conf = _create_configuration()
+# conf = _create_configuration()
 # ama_context = BaseAmaContext()
 logging.setLoggerClass(Notifier)
 # notifier = logging.getLogger(__name__)
 # atexit.register(lambda: notifier.info('Action {} finished successfully'.format(conf.job_metadata.actionName)))
-__all__ = ['BaseAmaContext', 'conf']
+__all__ = ['BaseAmaContext']
