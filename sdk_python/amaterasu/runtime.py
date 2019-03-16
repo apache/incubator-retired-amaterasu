@@ -87,7 +87,7 @@ class AmaContextBuilder(abc.ABC):
             _dict['runtime'] = yaml.load(f.read())
         with open(self.datasets_conf_path, 'r') as f:
             _dict['datasets'] = yaml.load(f.read())
-        return munchify(_dict, factory=Environment)
+        return munchify(_dict)
 
     def _resolve_supported_frameworks(self):
         supported_frameworks = {}
