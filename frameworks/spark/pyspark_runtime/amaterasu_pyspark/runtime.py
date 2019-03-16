@@ -16,26 +16,13 @@
 """
 from typing import Tuple
 
-from amaterasu import conf, ImproperlyConfiguredError, BaseAmaContext
+from amaterasu import ImproperlyConfiguredError, BaseAmaContext
 from pyspark import SparkContext, SparkConf
 from pyspark.sql import SparkSession, DataFrame
 
 from amaterasu.datasets import BaseDatasetManager
 from amaterasu.runtime import Environment, AmaContextBuilder
 from .datasets import DatasetManager
-
-
-def _get_or_create_spark_attributes(sc: SparkContext, spark: SparkSession) -> Tuple[SparkContext, SparkSession]:
-    if not sc or not spark:
-        try:
-            master = conf.env.master
-        except AttributeError:
-            raise ImproperlyConfiguredError("No SPARK_MASTER environment variable was defined!")
-        else:
-            spark_conf = SparkConf().setAppName(conf.env.name).setMaster(master)
-            sc = SparkContext.getOrCreate(spark_conf)
-            spark = SparkSession(sc)
-    return sc, spark
 
 
 class SparkAmaContextBuilder(AmaContextBuilder):
