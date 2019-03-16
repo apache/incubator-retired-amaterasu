@@ -12,7 +12,7 @@ class PySparkRunnerProvider(val env: String, val conf: ClusterConfig) extends Py
     val pyhtonBinPath = Seq("python3", "-c", "import sys; print(sys.executable)").!!.trim()
     conf.mode match {
       case "mesos" =>
-          command + s"env PYSPARK_PYTHON=$pyhtonBinPath && env AMA_NODE=${sys.env("AMA_NODE")} && env MESOS_NATIVE_JAVA_LIBRARY=${conf.mesos.libPath}" +
+          command + s" && env PYSPARK_PYTHON=$pyhtonBinPath && env AMA_NODE=${sys.env("AMA_NODE")} && env MESOS_NATIVE_JAVA_LIBRARY=${conf.mesos.libPath}" +
           s" && python3 ${actionData.getSrc}"
       case "yarn" =>
           command + s" && /bin/bash spark/bin/load-spark-env.sh" +
