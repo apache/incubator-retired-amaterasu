@@ -16,11 +16,13 @@
 """
 import logging
 import stomp
+import uuid
 import yaml
 import requests
 import os
 import atexit
 import abc
+from base64 import b32encode
 from munch import Munch, munchify
 from typing import Any
 from ._utils import hooks as _hooks
@@ -192,7 +194,8 @@ def _send_mesos_task_finished_event():
                 "state": "TASK_FINISHED",
                 "task_id": {
                     "value": task_id
-                }
+                },
+                "uuid": b32encode(str(uuid.uuid4()))
             }
         }
     })
