@@ -264,7 +264,7 @@ class JobScheduler extends AmaterasuScheduler {
               .setData(ByteString.copyFrom(execData))
               .setName(taskId.getValue)
               .setExecutorId(ExecutorID.newBuilder().setValue(executorId))
-              .setCommand(command)
+//              .setCommand(command)
 
               .build()
 
@@ -281,7 +281,7 @@ class JobScheduler extends AmaterasuScheduler {
                 .setName(taskId.getValue)
                 .setTaskId(taskId)
                 .setExecutor(executor)
-
+                  .setCommand(command)
                 .setData(ByteString.copyFrom(DataLoader.getTaskDataBytes(actionData, env)))
                 .addResources(createScalarResource("cpus", driverConfiguration.getCpus))
                 .addResources(createScalarResource("mem", driverConfiguration.getMemory))
