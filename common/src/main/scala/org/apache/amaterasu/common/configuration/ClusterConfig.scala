@@ -92,7 +92,7 @@ class ClusterConfig extends Logging {
   }
 
 
-  val YARN = new YARN()
+  val yarn = new YARN()
 
   class Spark {
     var home: String = ""
@@ -125,7 +125,7 @@ class ClusterConfig extends Logging {
     }
   }
 
-  object Jobs {
+  class Jobs {
 
     var cpus: Double = 1
     var mem: Long = 1024
@@ -137,10 +137,10 @@ class ClusterConfig extends Logging {
       if (props.containsKey("jobs.mem")) mem = props.getProperty("jobs.mem").toLong
       if (props.containsKey("jobs.repoSize")) repoSize = props.getProperty("jobs.repoSize").toLong
 
-      Tasks.load(props)
+      tasks.load(props)
     }
 
-    object Tasks {
+    class Tasks {
 
       var attempts: Int = 3
       var cpus: Int = 1
@@ -154,6 +154,8 @@ class ClusterConfig extends Logging {
 
       }
     }
+
+    val tasks = new Tasks()
 
   }
 
@@ -214,9 +216,11 @@ class ClusterConfig extends Logging {
     Jar = this.getClass.getProtectionDomain.getCodeSource.getLocation.toURI.getPath
     JarName = Paths.get(this.getClass.getProtectionDomain.getCodeSource.getLocation.getPath).getFileName.toString
 
-    Jobs.load(props)
+    val jobsss = new Jobs()
+    jobsss.load(props)
+
     Webserver.load(props)
-    YARN.load(props)
+    yarn.load(props)
     spark.load(props)
 
     distLocation match {

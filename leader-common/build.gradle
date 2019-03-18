@@ -79,6 +79,7 @@ dependencies {
     runtime group: 'org.apache.activemq', name: 'activemq-kahadb-store', version: '5.15.3'
     compile group: 'com.andreapivetta.kolor', name: 'kolor', version: '0.0.2'
     compile group: 'com.beust', name: 'klaxon', version: '5.0.1'
+    compile group: 'com.github.ajalt', name: 'clikt', version: '1.6.0'
 
     compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
     compile "org.jetbrains.kotlin:kotlin-reflect"

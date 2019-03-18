@@ -14,15 +14,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.amaterasu.leader.yarn;
+package org.apache.amaterasu.leader.common.launcher
 
-public class JobOpts {
-    public String repo = "";
-    public String branch = "master";
-    public String env = "default";
-    public String name = "amaterasu-job";
-    public String jobId = null;
-    public String newJobId = null;
-    public String report ="code";
-    public String home ="";
+data class AmaOpts(
+        var repo: String = "",
+        var branch: String = "master",
+        var env: String = "default",
+        var name: String = "amaterasu-job",
+        var jobId: String = "",
+        var newJobId: String = "",
+        var report: String = "code",
+        var home: String = "") {
+
+    fun toCmdString(): String {
+
+        var cmd = " --repo $repo --branch $branch --env $env --name $name --report $report --home $home"
+        if (jobId.isNotEmpty()) {
+            cmd += " --job-id $jobId"
+        }
+        return cmd
+    }
+
+    override fun toString(): String {
+        return toCmdString()
+    }
 }
