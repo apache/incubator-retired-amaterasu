@@ -23,7 +23,7 @@ import java.util.Properties
 import org.apache.amaterasu.common.logging.Logging
 import org.apache.commons.configuration.ConfigurationException
 
-import scala.collection.mutable
+import   scala.collection.mutable
 
 class ClusterConfig extends Logging {
 
@@ -91,7 +91,6 @@ class ClusterConfig extends Logging {
 
   }
 
-
   val yarn = new YARN()
 
   class Spark {
@@ -110,7 +109,6 @@ class ClusterConfig extends Logging {
       }
     }
   }
-
 
   object Webserver {
     var Port: String = ""
@@ -158,6 +156,8 @@ class ClusterConfig extends Logging {
     val tasks = new Tasks()
 
   }
+
+  val jobs = new Jobs()
 
   object AWS {
 
@@ -222,6 +222,7 @@ class ClusterConfig extends Logging {
     Webserver.load(props)
     yarn.load(props)
     spark.load(props)
+    jobs.load(props)
 
     distLocation match {
 

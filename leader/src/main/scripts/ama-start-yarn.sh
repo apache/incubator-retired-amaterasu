@@ -104,36 +104,36 @@ echo "force-bin: ${FORCE_BIN}"
 export HADOOP_USER_CLASSPATH_FIRST=true
 export YARN_USER_CLASSPATH=${YARN_USER_CLASSPATH}:bin/*
 
-CMD="yarn jar ${BASEDIR}/bin/leader-0.2.0-incubating-rc4-all.jar org.apache.amaterasu.leader.yarn.Client --home ${BASEDIR}"
+CMD="yarn jar ${BASEDIR}/bin/leader-yarn-0.2.0-incubating-rc4-all.jar org.apache.amaterasu.leader.yarn.Client --home ${BASEDIR}"
 
 if [ -n "$REPO" ]; then
     echo "repo is ${REPO}"
-    CMD+=" --repo ${REPO}"
+    CMD+=" --repo=${REPO}"
 fi
 
 if [ -n "$BRANCH" ]; then
     echo "branch is ${BRANCH}"
-    CMD+=" --branch ${BRANCH}"
+    CMD+=" --branch=${BRANCH}"
 fi
 
 if [ -n "$ENV" ]; then
-    CMD+=" --env ${ENV}"
+    CMD+=" --env=${ENV}"
 fi
 
 if [ -n "$NAME" ]; then
-    CMD+=" --name ${NAME}"
+    CMD+=" --name=${NAME}"
 fi
 
 if [ -n "$JOBID" ]; then
-    CMD+=" --job-id ${JOBID}"
+    CMD+=" --job-id=${JOBID}"
 fi
 
 if [ -n "$REPORT" ]; then
-    CMD+=" --report ${REPORT}"
+    CMD+=" --report=${REPORT}"
 fi
 
 if [ -n "$JARPATH" ]; then
-    CMD+=" --jar-path ${JARPATH}"
+    CMD+=" --jar-path=${JARPATH}"
 fi
 
 echo $CMD
@@ -151,6 +151,7 @@ if [ "$FORCE_BIN" = true ] ; then
     #eval "hdfs dfs -chmod -R 777 /apps/amaterasu/"
     #eval "hdfs dfs -copyFromLocal ${BASEDIR}/* /apps/amaterasu/"
 fi
+
 
 eval $CMD | grep "===>"
 kill $SERVER_PID

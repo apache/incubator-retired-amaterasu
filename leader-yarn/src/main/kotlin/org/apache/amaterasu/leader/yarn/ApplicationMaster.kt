@@ -51,48 +51,48 @@ import javax.jms.MessageConsumer
 import kotlinx.coroutines.*
 import org.apache.hadoop.io.DataOutputBuffer
 import org.apache.hadoop.security.UserGroupInformation
+import org.apache.hadoop.yarn.exceptions.YarnException
 import org.apache.hadoop.yarn.security.AMRMTokenIdentifier
+import java.io.IOException
 import java.nio.ByteBuffer
+import java.util.concurrent.ConcurrentHashMap
+import kotlin.concurrent.thread
 
 class ApplicationMaster : KLogging(), AMRMClientAsync.CallbackHandler {
-    override fun onNodesUpdated(updatedNodes: MutableList<NodeReport>?) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
 
-    override fun onShutdownRequest() {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
-
-    override fun getProgress(): Float {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
-
-    override fun onError(e: Throwable?) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
-
-    override fun onContainersCompleted(statuses: MutableList<ContainerStatus>?) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
 
     lateinit var address: String
 
     val broker: BrokerService = BrokerService()
     private val conf = YarnConfiguration()
-    private val fs = FileSystem.get(conf)
-    private val propPath = System.getenv("PWD") + "/amaterasu.properties"
-    private val props = FileInputStream(File(propPath))
-    private val config = ClusterConfig.apply(props)
+
+
     private val nmClient: NMClientAsync = NMClientAsyncImpl(YarnNMCallbackHandler())
     private val actionsBuffer = ConcurrentLinkedQueue<ActionData>()
+    private val completedContainersAndTaskIds = ConcurrentHashMap<Long, String>()
+    private val containersIdsToTask = ConcurrentHashMap<Long, ActionData>()
 
+    private lateinit var propPath: String
+    private lateinit var props: FileInputStream
     private lateinit var jobManager: JobManager
     private lateinit var client: CuratorFramework
     private lateinit var env: String
     private lateinit var consumer: MessageConsumer
     private lateinit var rmClient: AMRMClientAsync<AMRMClient.ContainerRequest>
+    private lateinit var frameworkFactory: FrameworkProvidersFactory
+    private lateinit var config: ClusterConfig
+    private lateinit var fs: FileSystem
+
 
     fun execute(opts: AmaOpts) {
+
+        propPath = System.getenv("PWD") + "/amaterasu.properties"
+        props = FileInputStream(File(propPath))
+
+        // no need for hdfs double check (nod to Aaron Rodgers)
+        // jars on HDFS should have been verified by the YARN client
+        config = ClusterConfig.apply(props)
+        fs = FileSystem.get(conf)
 
         try {
             initJob(opts)
@@ -122,9 +122,6 @@ class ApplicationMaster : KLogging(), AMRMClientAsync.CallbackHandler {
         val maxMem = registrationResponse.maximumResourceCapability.memory
         val maxVCores = registrationResponse.maximumResourceCapability.virtualCores
 
-
-        val frameworkFactory = FrameworkProvidersFactory.apply(env, config)
-
         while (!jobManager.outOfActions) {
             val capability = Records.newRecord(Resource::class.java)
 
@@ -143,6 +140,7 @@ class ApplicationMaster : KLogging(), AMRMClientAsync.CallbackHandler {
                 capability.virtualCores = cpu
 
                 requestContainer(actionData, capability)
+
             }
         }
     }
@@ -150,6 +148,7 @@ class ApplicationMaster : KLogging(), AMRMClientAsync.CallbackHandler {
     private fun initJob(opts: AmaOpts) {
 
         this.env = opts.env
+        frameworkFactory = FrameworkProvidersFactory.apply(env, config)
 
         try {
             val retryPolicy = ExponentialBackoffRetry(1000, 3)
@@ -193,23 +192,30 @@ class ApplicationMaster : KLogging(), AMRMClientAsync.CallbackHandler {
     override fun onContainersAllocated(containers: MutableList<Container>?) = runBlocking {
         containers?.let {
             for (container in it) {
+
+                log.info("container ${container.id} allocated")
                 if (actionsBuffer.isNotEmpty()) {
                     val actionData = actionsBuffer.poll()
-                    val result = async {
-                        val frameworkFactory = FrameworkProvidersFactory.apply(env, config)
+                    val cd = async {
+                        log.info("container ${container.id} allocated")
+
                         val framework = frameworkFactory.getFramework(actionData.groupId)
                         val runnerProvider = framework.getRunnerProvider(actionData.typeId)
                         val ctx = Records.newRecord(ContainerLaunchContext::class.java)
                         val commands: List<String> = listOf(runnerProvider.getCommand(jobManager.jobId, actionData, env, "${actionData.id}-${container.id.containerId}", address))
 
+                        log.info("container command ${commands.joinToString(prefix = " ", postfix = " ")}")
                         ctx.commands = commands
                         ctx.tokens = allTokens()
                         ctx.localResources = setupContainerResources(framework, runnerProvider)
+                        ctx.environment = framework.environmentVariables
 
                         nmClient.startContainerAsync(container, ctx)
 
+                        jobManager.actionStarted(actionData.id)
+                        containersIdsToTask.put(container.id.containerId, actionData)
+                        log.info("launching container succeeded: ${container.id.containerId}; task: ${actionData.id}")
                     }
-
 
 
                 }
@@ -252,10 +258,13 @@ class ApplicationMaster : KLogging(), AMRMClientAsync.CallbackHandler {
         result["amaterasu.properties"] = createLocalResourceFromPath(Path.mergePaths(yarnJarPath, Path("/amaterasu.properties")))
         result["log4j.properties"] = createLocalResourceFromPath(Path.mergePaths(yarnJarPath, Path("/log4j.properties")))
 
-        return result
+
+
+        result.forEach { x-> println("local resource ${x.key} with value ${x.value}") }
+        return result.map { x-> x.key.removePrefix("/") to x.value }.toMap()
     }
 
-    private fun createDistPath(path: String): Path = Path.mergePaths(Path("dist/"), Path(path))
+    private fun createDistPath(path: String): Path = Path("/dist/$path")
 
     private fun startRMClient(): AMRMClientAsync<AMRMClient.ContainerRequest> {
         val client = AMRMClientAsync.createAMRMClientAsync<AMRMClient.ContainerRequest>(1000, this)
@@ -283,7 +292,7 @@ class ApplicationMaster : KLogging(), AMRMClientAsync.CallbackHandler {
     private fun requestContainer(actionData: ActionData, capability: Resource) {
 
         actionsBuffer.add(actionData)
-        log.info("About to ask container for action ${actionData.id}. Action buffer size is: ${actionsBuffer.size}")
+        log.info("About to ask container for action ${actionData.id} with mem ${capability.memory} and cores ${capability.virtualCores}. Action buffer size is: ${actionsBuffer.size}")
 
         // we have an action to schedule, let's request a container
         val priority: Priority = Records.newRecord(Priority::class.java)
@@ -294,9 +303,72 @@ class ApplicationMaster : KLogging(), AMRMClientAsync.CallbackHandler {
 
     }
 
+    override fun onNodesUpdated(updatedNodes: MutableList<NodeReport>?) {
+        log.info("Nodes change. Nothing to report.")
+    }
+
+    override fun onShutdownRequest() {
+        log.error("Shutdown requested.")
+        stopApplication(FinalApplicationStatus.KILLED, "Shutdown requested")
+    }
+
+    override fun getProgress(): Float {
+        return jobManager.registeredActions.size.toFloat() / completedContainersAndTaskIds.size
+    }
+
+    override fun onError(e: Throwable?) {
+        log.error("Error on AM", e)
+        stopApplication(FinalApplicationStatus.FAILED, "Error on AM")
+    }
+
+    override fun onContainersCompleted(statuses: MutableList<ContainerStatus>?) {
+        for (status in statuses!!) {
+            if (status.state == ContainerState.COMPLETE) {
+
+                val containerId = status.containerId.containerId
+                val task = containersIdsToTask[containerId]
+                rmClient.releaseAssignedContainer(status.containerId)
+
+                val taskId = task!!.id
+                if (status.exitStatus == 0) {
+
+                    //completedContainersAndTaskIds.put(containerId, task.id)
+                    jobManager.actionComplete(taskId)
+                    log.info("Container $containerId Complete with task $taskId with success.")
+                } else {
+                    // TODO: Check the getDiagnostics value and see if appropriate
+                    jobManager.actionFailed(taskId, status.diagnostics)
+                    log.warn("Container $containerId Complete with task $taskId with Failed status code (${status.exitStatus})")
+                }
+            }
+        }
+
+        if (jobManager.outOfActions) {
+            log.info("Finished all tasks successfully! Wow!")
+            jobManager.actionsCount()
+            stopApplication(FinalApplicationStatus.SUCCEEDED, "SUCCESS")
+        } else {
+            log.info("jobManager.registeredActions.size: ${jobManager.registeredActions.size}; completedContainersAndTaskIds.size: ${completedContainersAndTaskIds.size}")
+        }
+    }
+
+    fun stopApplication(finalApplicationStatus: FinalApplicationStatus, appMessage: String) {
+
+        try {
+            rmClient.unregisterApplicationMaster(finalApplicationStatus, appMessage, null)
+        } catch (ex: YarnException) {
+
+            log.error("Failed to unregister application", ex)
+        } catch (e: IOException) {
+            log.error("Failed to unregister application", e)
+        }
+        rmClient.stop()
+        nmClient.stop()
+    }
+
     companion object {
         @JvmStatic
-        fun main(args: Array<String>) = AppMasterArgsParser(args).main(args)
+        fun main(args: Array<String>) = AppMasterArgsParser().main(args)
 
     }
 }

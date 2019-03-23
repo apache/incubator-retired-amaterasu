@@ -173,7 +173,7 @@
 //      val actionData = jobManager.getNextActionData
 //      if (actionData != null) {
 //
-//        val frameworkProvider = frameworkFactory.providers(actionData.getGroupId)
+//        val framework Provider = frameworkFactory.providers(actionData.getGroupId)
 //        val driverConfiguration = frameworkProvider.getDriverConfiguration
 //
 //        var mem: Int = driverConfiguration.getMemory

@@ -16,13 +16,16 @@
  */
 package org.apache.amaterasu.leader.yarn
 
+import org.apache.amaterasu.leader.common.launcher.AmaOpts
 import org.apache.amaterasu.leader.common.launcher.ArgsParser
 import org.apache.amaterasu.leader.common.utilities.MessagingClientUtil
 
-class AppMasterArgsParser(val args: Array<String>): ArgsParser() {
+class AppMasterArgsParser: ArgsParser() {
 
 
     override fun run() {
+
+        var opts = AmaOpts(repo, branch, env, name, jobId, newJobId, report, home)
 
         val appMaster = ApplicationMaster()
         appMaster.address = MessagingClientUtil.borkerAddress
@@ -32,4 +35,3 @@ class AppMasterArgsParser(val args: Array<String>): ArgsParser() {
         appMaster.execute(opts)
     }
 }
-

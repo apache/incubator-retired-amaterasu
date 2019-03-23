@@ -114,7 +114,7 @@ object PySparkRunner {
     var sparkCmd: Seq[String] = Seq()
     config.mode match {
       case "yarn" =>
-        pysparkPath = s"spark/bin/spark-submit"
+        pysparkPath = s"${config.spark.home}/bin/spark-submit"
         sparkCmd = Seq(pysparkPath, "--py-files", condaPkgs, "--master", "yarn", intpPath, port.toString)
         val proc = Process(sparkCmd, None,
           "PYTHONPATH" -> pypath,

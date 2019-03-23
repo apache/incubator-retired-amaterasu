@@ -97,6 +97,7 @@ class Client {
 
         val jarPath = Path(config.yarn().hdfsJarsPath())
         val jarPathQualified = fs!!.makeQualified(jarPath)
+        val distPath = Path.mergePaths(jarPathQualified, Path("/dist/"))
 
         val appContext = app!!.applicationSubmissionContext
 
@@ -142,14 +143,17 @@ class Client {
                     val framework = frameworkFactory.getFramework(group)
 
                     //creating a group folder
-                    val frameworkPath = Path.mergePaths(jarPathQualified, Path("/" + framework.groupIdentifier))
-                    println("===> $frameworkPath")
+//                    val frameworkPath = Path.mergePaths(jarPathQualified, Path("/" + framework.groupIdentifier))
+//                    println("===> $frameworkPath")
 
-                    fs!!.mkdirs(frameworkPath)
+                    //  fs!!.mkdirs(frameworkPath)
                     for (file in framework.groupResources) {
+                        println("===> ${file.absolutePath}")
                         if (file.exists())
                             file.let {
-                                fs!!.copyFromLocalFile(false, true, Path(file.absolutePath), Path(it.path))
+                                val target = Path.mergePaths(distPath, Path(it.path))
+                                fs!!.copyFromLocalFile(false, true, Path(file.absolutePath), target)
+                                println("===> copying $target")
                             }
 
                     }
@@ -157,11 +161,11 @@ class Client {
             }
 
         } catch (e: IOException) {
-            println("===>" + e.message)
+            println("===> error " + e.message)
             LOGGER.error("Error uploading ama folder to HDFS.", e)
             exit(3)
         } catch (ne: NullPointerException) {
-            println("===>" + ne.message)
+            println("===> ne error " + ne.message)
             LOGGER.error("No files in home dir.", ne)
             exit(4)
         }
@@ -181,7 +185,6 @@ class Client {
         var log4jPropFile: LocalResource? = null
 
         try {
-            leaderJar = setLocalResourceFromPath(mergedPath)
             propFile = setLocalResourceFromPath(Path.mergePaths(jarPath, Path("/amaterasu.properties")))
             log4jPropFile = setLocalResourceFromPath(Path.mergePaths(jarPath, Path("/log4j.properties")))
         } catch (e: IOException) {
@@ -301,7 +304,7 @@ class Client {
         val destination = session.createTopic("JOB.REPORT")
 
         val consumer = session.createConsumer(destination)
-        consumer.messageListener =ActiveReportListener()
+        consumer.messageListener = ActiveReportListener()
 
     }
 

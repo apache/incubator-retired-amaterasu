@@ -145,7 +145,7 @@ object SparkRunnerHelper extends Logging {
       case "yarn" =>
         conf.set("spark.home", config.spark.home)
           // TODO: parameterize those
-          .setJars(Seq("executor.jar", "spark-runner.jar", "spark-runtime.jar") ++ jars)
+          .setJars(Seq(s"executor-${config.version}-all.jar",s"spark-runner-${config.version}-all.jar",s"spark-runtime-${config.version}.jar") ++ jars)
           .set("spark.history.kerberos.keytab", "/etc/security/keytabs/spark.headless.keytab")
           .set("spark.driver.extraLibraryPath", "/usr/hdp/current/hadoop-client/lib/native:/usr/hdp/current/hadoop-client/lib/native/Linux-amd64-64")
           .set("spark.yarn.queue", "default")
@@ -158,7 +158,7 @@ object SparkRunnerHelper extends Logging {
           .set("spark.dynamicAllocation.enabled", "false")
           .set("spark.eventLog.enabled", "false")
           .set("spark.history.fs.logDirectory", "hdfs:///spark2-history/")
-          .set("hadoop.home.dir", config.YARN.hadoopHomeDir)
+          .set("hadoop.home.dir", config.yarn.hadoopHomeDir)
 
       case _ => throw new Exception(s"mode ${config.mode} is not legal.")
     }
