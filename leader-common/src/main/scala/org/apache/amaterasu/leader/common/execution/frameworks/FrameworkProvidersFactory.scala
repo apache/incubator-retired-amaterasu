@@ -51,6 +51,7 @@ object FrameworkProvidersFactory extends Logging {
 
       provider.init(env, config)
       log.info(s"a provider for group ${provider.getGroupIdentifier} was created")
+      log.info(s"config = $config")
       (provider.getGroupIdentifier, provider)
 
     }).toMap
