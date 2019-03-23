@@ -142,11 +142,6 @@ class Client {
                     println("===> setting up $group")
                     val framework = frameworkFactory.getFramework(group)
 
-                    //creating a group folder
-//                    val frameworkPath = Path.mergePaths(jarPathQualified, Path("/" + framework.groupIdentifier))
-//                    println("===> $frameworkPath")
-
-                    //  fs!!.mkdirs(frameworkPath)
                     for (file in framework.groupResources) {
                         println("===> ${file.absolutePath}")
                         if (file.exists())
@@ -180,7 +175,6 @@ class Client {
 
         // System.out.println("===> path: " + jarPathQualified);
         LOGGER.info("Leader merged jar path is: {}", mergedPath)
-        var leaderJar: LocalResource? = null
         var propFile: LocalResource? = null
         var log4jPropFile: LocalResource? = null
 

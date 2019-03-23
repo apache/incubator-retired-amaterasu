@@ -33,7 +33,7 @@ class SparkSetupProvider extends FrameworkSetupProvider {
 
   private var env: String = _
   private var conf: ClusterConfig = _
-  private lazy val sparkExecConfigurations: mutable.Map[String, Any] = loadSparkConfig
+  private var sparkExecConfigurations: mutable.Map[String, Any] = _
 
   private val runnerProviders: mutable.Map[String, RunnerSetupProvider] = mutable.Map[String, RunnerSetupProvider]()
 
@@ -52,6 +52,7 @@ class SparkSetupProvider extends FrameworkSetupProvider {
     this.env = env
     this.conf = conf
 
+    this.sparkExecConfigurations = loadSparkConfig
     runnerProviders += ("scala" -> SparkScalaRunnerProvider(conf))
     runnerProviders += ("jar" -> SparkSubmitScalaRunnerProvider(conf))
     runnerProviders += ("pyspark" -> PySparkRunnerProvider(conf))
