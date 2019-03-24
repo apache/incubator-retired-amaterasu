@@ -30,8 +30,8 @@ import org.apache.amaterasu.common.dataobjects.TaskData
 import org.apache.amaterasu.common.dataobjects.ActionData
 import org.apache.amaterasu.common.dataobjects.ExecData
 
-import org.apache.amaterasu.common.execution.dependencise.Dependencies
-import org.apache.amaterasu.common.execution.dependencise.PythonDependencies
+import org.apache.amaterasu.common.execution.dependencies.Dependencies
+import org.apache.amaterasu.common.execution.dependencies.PythonDependencies
 import org.apache.amaterasu.common.logging.KLogging
 
 import org.apache.amaterasu.common.runtime.Environment
