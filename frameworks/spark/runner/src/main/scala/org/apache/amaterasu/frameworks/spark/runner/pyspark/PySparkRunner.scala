@@ -21,7 +21,7 @@ import java.util
 
 import org.apache.amaterasu.common.configuration.ClusterConfig
 import org.apache.amaterasu.common.execution.actions.Notifier
-import org.apache.amaterasu.common.execution.dependencies.PythonDependencies
+import org.apache.amaterasu.common.execution.dependencise.PythonDependencies
 import org.apache.amaterasu.common.logging.Logging
 import org.apache.amaterasu.common.runtime.Environment
 import org.apache.amaterasu.sdk.AmaterasuRunner
@@ -101,8 +101,8 @@ object PySparkRunner {
     PySparkEntryPoint.start(spark, jobId, env, SparkEnv.get)
     val port = PySparkEntryPoint.getPort
     var intpPath = ""
-    if (env.configuration.contains("cwd")) {
-      val cwd = new File(env.configuration("cwd"))
+    if (env.getConfiguration.containsKey("cwd")) {
+      val cwd = new File(env.getConfiguration.get("cwd"))
       intpPath = s"${cwd.getAbsolutePath}/spark_intp.py" // This is to support test environment
     } else {
       intpPath = s"spark_intp.py"
@@ -132,7 +132,7 @@ object PySparkRunner {
         var pysparkPython = "/usr/bin/python"
 
         if (pyDeps != null &&
-          pyDeps.packages.nonEmpty) {
+          !pyDeps.getPackages.isEmpty) {
           pysparkPython = "./miniconda/bin/python"
         }
         val proc = Process(sparkCmd, None,

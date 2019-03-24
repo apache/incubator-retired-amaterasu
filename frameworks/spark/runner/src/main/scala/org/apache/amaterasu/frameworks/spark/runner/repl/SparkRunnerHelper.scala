@@ -128,10 +128,10 @@ object SparkRunnerHelper extends Logging {
       .set("spark.submit.pyFiles", pyfiles.mkString(","))
 
 
-    val master: String = if (env.master.isEmpty) {
+    val master: String = if (env.getMaster.isEmpty) {
       "yarn"
     } else {
-      env.master
+      env.getMaster
     }
 
     config.mode match {
@@ -139,7 +139,7 @@ object SparkRunnerHelper extends Logging {
       case "mesos" =>
         conf.set("spark.executor.uri", s"http://$getNode:${config.Webserver.Port}/spark-${config.Webserver.sparkVersion}.tgz")
           .setJars(jars)
-          .set("spark.master", env.master)
+          .set("spark.master", env.getMaster)
           .set("spark.home", s"${scala.reflect.io.File(".").toCanonical.toString}/spark-${config.Webserver.sparkVersion}")
 
       case "yarn" =>
@@ -196,7 +196,7 @@ object SparkRunnerHelper extends Logging {
 
     sparkSession = SparkSession.builder
       .appName(sparkAppName)
-      .master(env.master)
+      .master(env.getMaster)
 
       //.enableHiveSupport()
       .config(conf).getOrCreate()

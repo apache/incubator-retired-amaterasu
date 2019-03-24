@@ -16,7 +16,6 @@
  */
 package org.apache.amaterasu.common.dataobjects
 
-import org.apache.amaterasu.common.execution.dependencies.{Dependencies, PythonDependencies}
 import org.apache.amaterasu.common.runtime.Environment
 
-case class ExecData(env: Environment, deps: Dependencies, pyDeps: PythonDependencies, configurations: Map[String, Map[String, Any]])
+data class TaskData(val src: String, val env: Environment, val groupId: String, val typeId: String, val exports: Map<String, String>)

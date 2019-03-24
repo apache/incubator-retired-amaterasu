@@ -39,12 +39,14 @@ class SparkSetupProvider extends FrameworkSetupProvider {
 
   private def loadSparkConfig: mutable.Map[String, Any] = {
 
+    println(s"===> env=$env")
+
     val execData = DataLoader.getExecutorData(env, conf)
-    val sparkExecConfiguration = execData.configurations.get("spark")
+    val sparkExecConfiguration = execData.getConfigurations.get("spark")
     if (sparkExecConfiguration.isEmpty) {
       throw new Exception(s"Spark configuration files could not be loaded for the environment $env")
     }
-    collection.mutable.Map(sparkExecConfiguration.get.toSeq: _*)
+    collection.mutable.Map(sparkExecConfiguration.toSeq: _*)
 
   }
 

@@ -162,7 +162,7 @@ class JobScheduler extends AmaterasuScheduler {
             val envYaml = configManager.getActionConfigContent(actionData.getName, actionData.getConfig)
             writeConfigFile(envYaml, jobManager.getJobId, actionData.getName, "env.yaml")
 
-            val dataStores = DataLoader.getTaskData(actionData, env).exports
+            val dataStores = DataLoader.getTaskData(actionData, env).getExports
             val writer = new StringWriter()
             yamlMapper.writeValue(writer, dataStores)
             val dataStoresYaml = writer.toString

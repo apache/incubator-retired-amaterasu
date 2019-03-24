@@ -14,17 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-//package org.apache.amaterasu.common.runtime
-//
-//case class Environment() {
-//
-//  var name: String = ""
-//  var master: String = ""
-//
-//  var inputRootPath: String = ""
-//  var outputRootPath: String = ""
-//  var workingDir: String = ""
-//
-//  var configuration: Map[String, String] = _
-//
-//}
+package org.apache.amaterasu.common.runtime
+
+data class Environment (
+        var name: String = "",
+        var master: String = "",
+        var inputRootPath: String = "",
+        var outputRootPath: String = "",
+        var workingDir: String = "",
+
+        var configuration: Map<String, String> )

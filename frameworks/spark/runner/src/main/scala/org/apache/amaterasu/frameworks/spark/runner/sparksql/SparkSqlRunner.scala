@@ -120,7 +120,7 @@ class SparkSqlRunner extends Logging with AmaterasuRunner {
         val exportName = exportsBuff.head._1
         val exportFormat = exportsBuff.head._2
         //notifier.info(s"exporting to -> ${env.workingDir}/$jobId/$actionName/$exportName")
-        result.write.mode(SaveMode.Overwrite).format(exportFormat).save(s"${env.workingDir}/$jobId/$actionName/$exportName")
+        result.write.mode(SaveMode.Overwrite).format(exportFormat).save(s"${env.getWorkingDir}/$jobId/$actionName/$exportName")
       }
       notifier.info(s"================= finished action $actionName =================")
     }

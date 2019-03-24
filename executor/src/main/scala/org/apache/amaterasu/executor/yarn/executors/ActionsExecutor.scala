@@ -38,11 +38,11 @@ class ActionsExecutor extends Logging {
   var providersFactory: ProvidersFactory = _
 
   def execute(): Unit = {
-    val runner = providersFactory.getRunner(taskData.groupId, taskData.typeId)
+    val runner = providersFactory.getRunner(taskData.getGroupId, taskData.getTypeId)
     runner match {
       case Some(r) => {
         try {
-          r.executeSource(taskData.src, actionName, taskData.exports.asJava)
+          r.executeSource(taskData.getSrc, actionName, taskData.getExports)
           log.info("Completed action")
           System.exit(0)
         } catch {
@@ -53,7 +53,7 @@ class ActionsExecutor extends Logging {
         }
       }
       case None =>
-        log.error("", s"Runner not found for group: ${taskData.groupId}, type ${taskData.typeId}. Please verify the tasks")
+        log.error("", s"Runner not found for group: ${taskData.getGroupId}, type ${taskData.getTypeId}. Please verify the tasks")
         System.exit(101)
     }
   }

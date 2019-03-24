@@ -22,9 +22,8 @@ import com.jcabi.aether.Aether
 import org.apache.amaterasu.common.configuration.ClusterConfig
 import org.apache.amaterasu.common.dataobjects.ExecData
 import org.apache.amaterasu.common.execution.actions.Notifier
-import org.apache.amaterasu.common.execution.dependencies.{Dependencies, PythonDependencies, PythonPackage}
+import org.apache.amaterasu.common.execution.dependencise.{Dependencies, PythonDependencies, PythonPackage}
 import org.apache.amaterasu.common.logging.Logging
-import org.apache.amaterasu.frameworks.spark.runner.repl.{SparkRunnerHelper, SparkScalaRunner}
 import org.apache.amaterasu.frameworks.spark.runner.sparksql.SparkSqlRunner
 import org.apache.amaterasu.frameworks.spark.runner.pyspark.PySparkRunner
 import org.apache.amaterasu.frameworks.spark.runner.repl.{SparkRunnerHelper, SparkScalaRunner}
@@ -46,8 +45,8 @@ class SparkRunnersProvider extends Logging with RunnersProvider {
     (e: String) => log.error(e)
 
   )
-  private var conf: Option[Map[String, Any]] = _
-  private var executorEnv: Option[Map[String, Any]] = _
+  private var conf: Map[String, AnyRef] = _
+  private var executorEnv: Map[String, AnyRef] = _
   private var clusterConfig: ClusterConfig = _
 
   override def init(execData: ExecData,
@@ -65,24 +64,24 @@ class SparkRunnersProvider extends Logging with RunnersProvider {
     clusterConfig = config
     var jars = Seq.empty[String]
 
-    if (execData.deps != null) {
-      jars ++= getDependencies(execData.deps)
+    if (execData.getDeps != null) {
+      jars ++= getDependencies(execData.getDeps)
     }
 
-    if (execData.pyDeps != null &&
-      execData.pyDeps.packages.nonEmpty) {
-      loadPythonDependencies(execData.pyDeps, notifier)
+    if (execData.getPyDeps != null &&
+      execData.getPyDeps.getPackages.nonEmpty) {
+      loadPythonDependencies(execData.getPyDeps, notifier)
     }
 
-    conf = execData.configurations.get("spark")
-    executorEnv = execData.configurations.get("spark_exec_env")
+    conf = execData.getConfigurations.get("spark").toMap
+    executorEnv = execData.getConfigurations.get("spark_exec_env").toMap
     val sparkAppName = s"job_${jobId}_executor_$executorId"
 
     SparkRunnerHelper.notifier = notifier
-    val spark = SparkRunnerHelper.createSpark(execData.env, sparkAppName, jars, conf, executorEnv, config, hostName)
+    val spark = SparkRunnerHelper.createSpark(execData.getEnv, sparkAppName, jars, Some(conf), Some(executorEnv), config, hostName)
 
-    lazy val sparkScalaRunner = SparkScalaRunner(execData.env, jobId, spark, outStream, notifier, jars)
-    sparkScalaRunner.initializeAmaContext(execData.env)
+    lazy val sparkScalaRunner = SparkScalaRunner(execData.getEnv, jobId, spark, outStream, notifier, jars)
+    sparkScalaRunner.initializeAmaContext(execData.getEnv)
 
     runners.put(sparkScalaRunner.getIdentifier, sparkScalaRunner)
     var pypath = ""
@@ -93,19 +92,19 @@ class SparkRunnersProvider extends Logging with RunnersProvider {
       case "mesos" =>
         pypath = s"${new File(".").getAbsolutePath}/miniconda/pkgs:${new File(".").getAbsolutePath}"
     }
-    lazy val pySparkRunner = PySparkRunner(execData.env, jobId, notifier, spark, pypath, execData.pyDeps, config)
+    lazy val pySparkRunner = PySparkRunner(execData.getEnv, jobId, notifier, spark, pypath, execData.getPyDeps, config)
     runners.put(pySparkRunner.getIdentifier, pySparkRunner)
 
-    lazy val sparkSqlRunner = SparkSqlRunner(execData.env, jobId, notifier, spark)
+    lazy val sparkSqlRunner = SparkSqlRunner(execData.getEnv, jobId, notifier, spark)
     runners.put(sparkSqlRunner.getIdentifier, sparkSqlRunner)
   }
 
   private def installAnacondaPackage(pythonPackage: PythonPackage): Unit = {
-    val channel = pythonPackage.channel.getOrElse("anaconda")
+    val channel = pythonPackage.getChannel
     if (channel == "anaconda") {
-      Seq("bash", "-c", s"export HOME=$$PWD && ./miniconda/bin/python -m conda install -y ${pythonPackage.packageId}") ! shellLoger
+      Seq("bash", "-c", s"export HOME=$$PWD && ./miniconda/bin/python -m conda install -y ${pythonPackage.getPackageId}") ! shellLoger
     } else {
-      Seq("bash", "-c", s"export HOME=$$PWD && ./miniconda/bin/python -m conda install -y -c $channel ${pythonPackage.packageId}") ! shellLoger
+      Seq("bash", "-c", s"export HOME=$$PWD && ./miniconda/bin/python -m conda install -y -c $channel ${pythonPackage.getPackageId}") ! shellLoger
     }
   }
 
@@ -124,12 +123,12 @@ class SparkRunnersProvider extends Logging with RunnersProvider {
   private def loadPythonDependencies(deps: PythonDependencies, notifier: Notifier): Unit = {
     notifier.info("loading anaconda evn")
     installAnacondaOnNode()
-    val codegenPackage = PythonPackage("codegen", channel = Option("auto"))
+    val codegenPackage = new PythonPackage( "codegen", "", "auto")
     installAnacondaPackage(codegenPackage)
     try {
       // notifier.info("loadPythonDependencies #5")
-      deps.packages.foreach(pack => {
-        pack.index.getOrElse("anaconda").toLowerCase match {
+      deps.getPackages.foreach(pack => {
+        pack.getIndex.toLowerCase match {
           case "anaconda" => installAnacondaPackage(pack)
           // case "pypi" => installPyPiPackage(pack)
         }
@@ -157,18 +156,18 @@ class SparkRunnersProvider extends Logging with RunnersProvider {
     // adding a local repo because Aether needs one
     val repo = new File(System.getProperty("java.io.tmpdir"), "ama-repo")
 
-    val remotes = deps.repos.map(r =>
+    val remotes = deps.getRepos.map(r =>
       new RemoteRepository(
-        r.id,
-        r.`type`,
-        r.url
+        r.getId,
+        r.getType,
+        r.getUrl
       )).toList.asJava
 
     val aether = new Aether(remotes, repo)
 
-    deps.artifacts.flatMap(a => {
+    deps.getArtifacts.flatMap(a => {
       aether.resolve(
-        new DefaultArtifact(a.groupId, a.artifactId, "", "jar", a.version),
+        new DefaultArtifact(a.getGroupId, a.getArtifactId, "", "jar", a.getVersion),
         JavaScopes.RUNTIME
       ).map(a => a)
     }).map(x => x.getFile.getAbsolutePath)
