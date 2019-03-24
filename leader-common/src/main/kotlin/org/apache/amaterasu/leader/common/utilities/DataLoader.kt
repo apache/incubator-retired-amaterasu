@@ -94,8 +94,9 @@ object DataLoader : KLogging() {
         val config = files.map { yamlToMap(it) }.toMap()
 
         // loading the job's dependencies
-        lateinit var depsData: Dependencies
-        lateinit var pyDepsData: PythonDependencies
+        var depsData: Dependencies? = null
+        var pyDepsData: PythonDependencies? = null
+
         if (Files.exists(Paths.get("repo/deps/jars.yml"))) {
             val depsValue = File("repo/deps/jars.yml").readText()
             depsData = ymlMapper.readValue(depsValue)
@@ -104,7 +105,7 @@ object DataLoader : KLogging() {
             val pyDepsValue = File("repo/deps/python.yml").readText()
             pyDepsData = ymlMapper.readValue(pyDepsValue)
         }
-        val data = mapper.writeValueAsBytes(ExecData(envData, depsData, pyDepsData, config))
+
         return ExecData(envData, depsData, pyDepsData, config)
     }
 

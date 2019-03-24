@@ -20,4 +20,4 @@ import org.apache.amaterasu.common.execution.dependencies.Dependencies
 import org.apache.amaterasu.common.execution.dependencies.PythonDependencies
 import org.apache.amaterasu.common.runtime.Environment
 
-data class ExecData(val env: Environment, val deps: Dependencies, val pyDeps: PythonDependencies, val configurations: Map<String, Map<String, Any>>)
+data class ExecData(val env: Environment, val deps: Dependencies?, val pyDeps: PythonDependencies?, val configurations: Map<String, Map<String, Any>>)
