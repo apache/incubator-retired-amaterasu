@@ -119,6 +119,8 @@ class Client {
                 " 2>" + ApplicationConstants.LOG_DIR_EXPANSION_VAR + "/stderr")
 
 
+        println("===> command ${commands.joinToString("==")}")
+
         // Set up the container launch context for the application master
         val amContainer = Records.newRecord(ContainerLaunchContext::class.java)
         amContainer.commands = commands
