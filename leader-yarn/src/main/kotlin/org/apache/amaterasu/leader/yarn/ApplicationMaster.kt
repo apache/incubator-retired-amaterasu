@@ -159,7 +159,10 @@ class ApplicationMaster : KLogging(), AMRMClientAsync.CallbackHandler {
             throw e
         }
 
-        if (opts.jobId.isNotEmpty()) {
+        val zkPath = client.checkExists().forPath("/${opts.newJobId}")
+
+        log.info("zkPath is $zkPath")
+        if (zkPath != null) {
             log.info("resuming job" + opts.jobId)
             jobManager = JobLoader.reloadJob(
                     opts.jobId,
