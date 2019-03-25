@@ -15,16 +15,60 @@
  limitations under the License.
 """
 import unittest
+from unittest import mock
 
 from pyspark.sql import DataFrame
 
 from amaterasu_pyspark.runtime import AmaContext
 from amaterasu.datasets import DatasetNotFoundError, DatasetTypeNotSupported
 
+def create_test_env():
+    env = {
+        'runtime': {},
+        'env': {},
+        'datasets': {
+            'hive': [
+                {
+                    'name': 'test_hive',
+                    'uri': 'localmock',
+                    'table': 'mockering'
+                }
+            ],
+            'file': [
+                {
+                    'name': 'json_mock',
+                    'uri': 'mock.json',
+                    'format': 'json',
+                    'args': {
+                        'pandas__orient': 'records'
+                    }
+                },
+                {
+                    'name': 'csv_mock',
+                    'uri': 'mock.csv',
+                    'format': 'csv'
+                },
+                {
+                    'name': 'tsv_mock',
+                    'uri': 'mock.tsv',
+                    'format': 'csv',
+                    'separator': '\t'
+                },
+                {
+                    'name': 'pickle_mock',
+                    'uri': 'mock.pickle',
+                    'format': 'pickle'
+                }
+            ]
+        }
+    }
 
+
+@mock.patch('amaterasu_pyspark.runtime.Amacontext._create_env', side_effect=)
 class DatastoresTests(unittest.TestCase):
 
     def setUp(self):
+
         self.ama_context = AmaContext.builder().build()
 
     def test_loading_an_existing_generic_dataset_should_not_be_implemented(self):

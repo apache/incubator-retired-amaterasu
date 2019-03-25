@@ -61,7 +61,7 @@ class AmaActiveMQNotificationHandler(logging.Handler):
         self.mq.send(body=record, destination=self.queue_name)
 
 
-class AmaContextBuilder(abc.ABC):
+class BaseAmaContextBuilder(abc.ABC):
 
     def __init__(self):
         self.env_conf_path = _get_local_file_path('env.yaml')
@@ -136,6 +136,8 @@ class BaseAmaContext(abc.ABC):
     def builder(cls):
         pass
 
+
+class LoaderAmaContext(BaseAmaContext, abc.ABC):
     @property
     @abc.abstractmethod
     def dataset_manager(self) -> BaseDatasetManager:
@@ -145,7 +147,8 @@ class BaseAmaContext(abc.ABC):
         self.dataset_manager.persist_dataset(dataset_name, dataset, overwrite)
 
     def get_dataset(self, dataset_name: str):
-        self.dataset_manager.load_dataset(dataset_name)
+        return self.dataset_manager.load_dataset(dataset_name)
+
 
 
 class Notifier(logging.Logger):
@@ -170,4 +173,4 @@ def _create_configuration():
 
 logging.setLoggerClass(Notifier)
 # notifier = logging.getLogger(__name__)
-__all__ = ['BaseAmaContext']
+__all__ = ['BaseAmaContext', 'BaseAmaContextBuilder', 'LoaderAmaContext']

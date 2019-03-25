@@ -41,7 +41,7 @@ class BaseDatasetLoader(abc.ABC):
         self.dataset_conf = dataset_conf
 
     @abc.abstractmethod
-    def load_dataset(self) -> Any:
+    def load_dataset(self, *args, **kwargs) -> Any:
         pass
 
     @abc.abstractmethod

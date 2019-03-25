@@ -47,6 +47,11 @@ abstract class RunnerSetupProvider : Logging() {
 
     abstract fun getActionDependencies(jobId: String, actionData: ActionData): Array<String>
 
+    /**
+     * Legacy parameter, to be deprecated!
+     * Defines whether the runner has a mesos executor dedicated to it or not.
+     * New runners should have this parameter set to false.
+     */
     abstract val hasExecutor: Boolean
        get
 }

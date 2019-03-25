@@ -23,19 +23,16 @@ open class BasicPythonRunnerProvider(env: String?, conf: ClusterConfig?): Python
     override val runnerResources: Array<String>
         get() {
             var resources = super.runnerResources
-            resources += "runtime.zip"
+            resources += "amaterasu_python-${conf!!.version()}.zip"
             return resources
         }
 
     override fun getCommand(jobId: String, actionData: ActionData, env: String, executorId: String, callbackAddress: String): String {
-        return super.getCommand(jobId, actionData, env, executorId, callbackAddress) + " && python ${actionData.src}"
+        return super.getCommand(jobId, actionData, env, executorId, callbackAddress) + " && python3 ${actionData.src}"
     }
 
     override fun getActionUserResources(jobId: String, actionData: ActionData): Array<String> {
         return arrayOf()
     }
-
-    override val hasExecutor: Boolean
-        get() = true
 
 }

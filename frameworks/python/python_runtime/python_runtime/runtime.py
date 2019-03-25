@@ -15,16 +15,10 @@
  limitations under the License.
 """
 from amaterasu import BaseAmaContext
-from pyspark import SparkContext, SparkConf
-from pyspark.sql import SparkSession, DataFrame
-
-from amaterasu.datasets import BaseDatasetManager
-from amaterasu.runtime import AmaContextBuilder
-from .datasets import DatasetManager
-import os
+from amaterasu.runtime import BaseAmaContextBuilder
 
 
-class PythonAmaContextBuilder(AmaContextBuilder):
+class AmaContextBuilder(BaseAmaContextBuilder):
 
     def build(self) -> "AmaContext":
         return AmaContext(self.ama_conf)
@@ -34,20 +28,6 @@ class AmaContext(BaseAmaContext):
 
     @classmethod
     def builder(cls) -> AmaContextBuilder:
-        return PythonAmaContextBuilder()
-
-    @property
-    def dataset_manager(self) -> BaseDatasetManager:
-        return self._dataset_manager
-
-    def __init__(self, ama_conf):
-        super(AmaContext, self).__init__(ama_conf)
-        self._dataset_manager = DatasetManager(ama_conf.datasets)
-
-    def get_dataset(self, dataset_name: str) -> DataFrame:
-        return self._dataset_manager.load_dataset(dataset_name)
-
-    def persist(self, dataset_name: str, dataset: DataFrame, overwrite: bool = True):
-        self._dataset_manager.persist_dataset(dataset_name, dataset, overwrite)
+        return AmaContextBuilder()
 
 

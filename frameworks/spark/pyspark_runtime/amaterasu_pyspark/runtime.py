@@ -14,18 +14,20 @@
  See the License for the specific language governing permissions and
  limitations under the License.
 """
-from amaterasu import BaseAmaContext
 from pyspark import SparkContext, SparkConf
 from pyspark.sql import SparkSession, DataFrame
 
 from amaterasu.datasets import BaseDatasetManager
-from amaterasu.runtime import AmaContextBuilder
+from amaterasu.runtime import BaseAmaContextBuilder, LoaderAmaContext
 from .datasets import DatasetManager
 import os
+import sys
 
-os.environ['PYSPARK_PYTHON'] = os.environ['_']
+# For some reason, the leader passes "_" as the PYSPARK_PYTHON env variable
+os.environ['PYSPARK_PYTHON'] = os.environ.get('_') or os.environ.get('PYSPARK_PYTHON') or sys.executable
 
-class SparkAmaContextBuilder(AmaContextBuilder):
+
+class AmaContextBuilder(BaseAmaContextBuilder):
 
     def __init__(self):
         super().__init__()
@@ -50,11 +52,11 @@ class SparkAmaContextBuilder(AmaContextBuilder):
         return AmaContext(self.ama_conf, sc, spark)
 
 
-class AmaContext(BaseAmaContext):
+class AmaContext(LoaderAmaContext):
 
     @classmethod
     def builder(cls) -> AmaContextBuilder:
-        return SparkAmaContextBuilder()
+        return AmaContextBuilder()
 
     @property
     def dataset_manager(self) -> BaseDatasetManager:

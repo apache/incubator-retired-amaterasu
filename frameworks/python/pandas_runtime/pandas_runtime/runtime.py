@@ -14,3 +14,22 @@
  See the License for the specific language governing permissions and
  limitations under the License.
 """
+from amaterasu import BaseDatasetManager
+from amaterasu.runtime import LoaderAmaContext, BaseAmaContextBuilder
+
+
+class AmaContextBuilder(BaseAmaContextBuilder):
+
+    def build(self):
+        return AmaContext(self.ama_conf)
+
+
+class AmaContext(LoaderAmaContext):
+
+    @property
+    def dataset_manager(self) -> BaseDatasetManager:
+        pass
+
+    @classmethod
+    def builder(cls):
+        return AmaContextBuilder()

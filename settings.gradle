@@ -56,4 +56,6 @@ include 'sdk-python'
 project(':sdk-python').projectDir=file("sdk_python")
 include 'python-runtime'
 project(':python-runtime').projectDir=file("frameworks/python/python_runtime")
+include 'python-pandas'
+project(':python-pandas').projectDir=file("frameworks/python/pandas_runtime")
 

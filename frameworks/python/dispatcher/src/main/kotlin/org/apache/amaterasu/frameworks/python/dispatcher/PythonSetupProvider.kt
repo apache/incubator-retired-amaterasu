@@ -18,6 +18,7 @@ package org.apache.amaterasu.frameworks.python.dispatcher
 
 import org.apache.amaterasu.common.configuration.ClusterConfig
 import org.apache.amaterasu.frameworks.python.dispatcher.runners.providers.BasicPythonRunnerProvider
+import org.apache.amaterasu.frameworks.python.dispatcher.runners.providers.PandasRunnerProvider
 import org.apache.amaterasu.sdk.frameworks.FrameworkSetupProvider
 import org.apache.amaterasu.sdk.frameworks.RunnerSetupProvider
 import org.apache.amaterasu.sdk.frameworks.configuration.DriverConfiguration
@@ -42,10 +43,11 @@ class PythonSetupProvider : FrameworkSetupProvider {
     override fun init(env: String, conf: ClusterConfig) {
         this.env = env
         this.conf = conf
-        runnerProviders += "python" to BasicPythonRunnerProvider(env, conf)
+        runnerProviders = runnerProviders + ("python" to BasicPythonRunnerProvider(env, conf))
+        runnerProviders = runnerProviders + ("pandas" to PandasRunnerProvider(env, conf))
     }
     override fun getRunnerProvider(runnerId: String): RunnerSetupProvider {
-        return runnerProviders[runnerId]!!
+        return runnerProviders.getValue(runnerId)
     }
 }
 

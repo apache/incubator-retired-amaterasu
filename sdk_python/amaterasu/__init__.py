@@ -17,7 +17,7 @@
 import pkg_resources
 import sys
 
-from .runtime import BaseAmaContext, ImproperlyConfiguredError
+from .runtime import BaseAmaContext, ImproperlyConfiguredError, LoaderAmaContext, BaseDatasetManager, BaseAmaContextBuilder
 
 
 class PluginProxy:
@@ -43,7 +43,7 @@ plugins = {
 }
 
 
-__all__ = ['BaseAmaContext', 'ImproperlyConfiguredError']
+__all__ = ['BaseAmaContext', 'AmaContextBuilder', 'BaseDatasetManager', 'LoaderAmaContext', 'ImproperlyConfiguredError']
 
 thismodule = sys.modules[__name__]
 for plugin_name, plugin_proxy in plugins.items():
