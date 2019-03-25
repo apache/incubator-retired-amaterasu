@@ -37,7 +37,7 @@ class SparkScalaRunnerProvider extends RunnerSetupProvider {
       s"-Dscala.usejavacp=true -Djava.library.path=$libPath " +
       s"org.apache.amaterasu.executor.mesos.executors.MesosActionsExecutor $jobId ${conf.master} ${actionData.getName}".stripMargin
     case "yarn" =>
-      //s"/bin/bash ${StringUtils.stripStart(conf.spark.home,"/")}/bin/load-spark-env.sh && " +
+      s"/bin/bash ${StringUtils.stripStart(conf.spark.home,"/")}/conf/spark-env.sh && " +
       s"java -cp ${StringUtils.stripStart(conf.spark.home,"/")}/jars/*:executor-${conf.version}-all.jar:spark-runner-${conf.version}-all.jar:spark-runtime-${conf.version}.jar:${StringUtils.stripStart(conf.spark.home,"/")}/conf/:${conf.yarn.hadoopHomeDir}/conf/ " +
       "-Xmx2G " +
       "-Dscala.usejavacp=true " +
