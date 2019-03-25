@@ -94,11 +94,11 @@ class ApplicationMaster : KLogging(), AMRMClientAsync.CallbackHandler {
         config = ClusterConfig.apply(props)
         fs = FileSystem.get(conf)
 
-        try {
+        //try {
             initJob(opts)
-        } catch (e: Exception) {
-            log.error("error initializing ", e.message)
-        }
+        //} catch (e: Exception) {
+          //  log.error("error initializing ${e.message}, ${e.stackTrace}", e.message)
+        //}
 
         // now that the job was initiated, the curator client is Started and we can
         // register the broker's address
