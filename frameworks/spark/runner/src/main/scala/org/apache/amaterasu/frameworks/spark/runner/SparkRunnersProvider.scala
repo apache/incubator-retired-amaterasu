@@ -74,7 +74,9 @@ class SparkRunnersProvider extends Logging with RunnersProvider {
     }
 
     conf = execData.getConfigurations.get("spark").toMap
-    executorEnv = execData.getConfigurations.get("spark_exec_env").toMap
+    if (execData.getConfigurations.containsKey("spark_exec_env")) {
+      executorEnv = execData.getConfigurations.get("spark_exec_env").toMap
+    }
     val sparkAppName = s"job_${jobId}_executor_$executorId"
 
     SparkRunnerHelper.notifier = notifier
@@ -123,7 +125,7 @@ class SparkRunnersProvider extends Logging with RunnersProvider {
   private def loadPythonDependencies(deps: PythonDependencies, notifier: Notifier): Unit = {
     notifier.info("loading anaconda evn")
     installAnacondaOnNode()
-    val codegenPackage = new PythonPackage( "codegen", "", "auto")
+    val codegenPackage = new PythonPackage("codegen", "", "auto")
     installAnacondaPackage(codegenPackage)
     try {
       // notifier.info("loadPythonDependencies #5")
