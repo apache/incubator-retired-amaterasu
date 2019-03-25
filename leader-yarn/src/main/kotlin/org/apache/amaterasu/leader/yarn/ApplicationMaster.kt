@@ -122,7 +122,7 @@ class ApplicationMaster : KLogging(), AMRMClientAsync.CallbackHandler {
         val maxMem = registrationResponse.maximumResourceCapability.memory
         val maxVCores = registrationResponse.maximumResourceCapability.virtualCores
 
-        while (!jobManager.outOfActions && rmClient.) {
+        while (!jobManager.outOfActions) {
             val capability = Records.newRecord(Resource::class.java)
 
             val actionData = jobManager.nextActionData
