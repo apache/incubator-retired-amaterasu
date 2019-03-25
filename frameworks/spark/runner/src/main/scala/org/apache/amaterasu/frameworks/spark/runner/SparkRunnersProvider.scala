@@ -45,8 +45,8 @@ class SparkRunnersProvider extends Logging with RunnersProvider {
     (e: String) => log.error(e)
 
   )
-  private var conf: Map[String, AnyRef] = _
-  private var executorEnv: Map[String, AnyRef] = _
+  private var conf: Option[Map[String, AnyRef]] = None
+  private var executorEnv: Option[Map[String, AnyRef]] = None
   private var clusterConfig: ClusterConfig = _
 
   override def init(execData: ExecData,
@@ -73,14 +73,17 @@ class SparkRunnersProvider extends Logging with RunnersProvider {
       loadPythonDependencies(execData.getPyDeps, notifier)
     }
 
-    conf = execData.getConfigurations.get("spark").toMap
+    if(execData.getConfigurations.containsKey("spark")){
+      conf = Some(execData.getConfigurations.get("spark").toMap)
+    }
+
     if (execData.getConfigurations.containsKey("spark_exec_env")) {
-      executorEnv = execData.getConfigurations.get("spark_exec_env").toMap
+      executorEnv = Some( execData.getConfigurations.get("spark_exec_env").toMap)
     }
     val sparkAppName = s"job_${jobId}_executor_$executorId"
 
     SparkRunnerHelper.notifier = notifier
-    val spark = SparkRunnerHelper.createSpark(execData.getEnv, sparkAppName, jars, Some(conf), Some(executorEnv), config, hostName)
+    val spark = SparkRunnerHelper.createSpark(execData.getEnv, sparkAppName, jars, conf, executorEnv, config, hostName)
 
     lazy val sparkScalaRunner = SparkScalaRunner(execData.getEnv, jobId, spark, outStream, notifier, jars)
     sparkScalaRunner.initializeAmaContext(execData.getEnv)

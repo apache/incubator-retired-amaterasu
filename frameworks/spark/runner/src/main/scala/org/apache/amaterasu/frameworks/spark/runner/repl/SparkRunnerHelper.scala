@@ -145,7 +145,7 @@ object SparkRunnerHelper extends Logging {
       case "yarn" =>
         conf.set("spark.home", config.spark.home)
           // TODO: parameterize those
-          .setJars(Seq(s"executor-${config.version}-all.jar",s"spark-runner-${config.version}-all.jar",s"spark-runtime-${config.version}.jar") ++ jars)
+          .setJars(Seq(s"executor-${config.version}-all.jar", s"spark-runner-${config.version}-all.jar", s"spark-runtime-${config.version}.jar") ++ jars)
           .set("spark.history.kerberos.keytab", "/etc/security/keytabs/spark.headless.keytab")
           .set("spark.driver.extraLibraryPath", "/usr/hdp/current/hadoop-client/lib/native:/usr/hdp/current/hadoop-client/lib/native/Linux-amd64-64")
           .set("spark.yarn.queue", "default")
@@ -182,16 +182,17 @@ object SparkRunnerHelper extends Logging {
     }
 
     // setting the executor env from spark_exec.yml
-    executorEnv match {
-      case Some(env) => {
-        for (c <- env) {
-          if (c._2.isInstanceOf[String])
-            conf.setExecutorEnv(c._1, c._2.toString)
+    if (executorEnv != null) {
+      executorEnv match {
+        case Some(env) => {
+          for (c <- env) {
+            if (c._2.isInstanceOf[String])
+              conf.setExecutorEnv(c._1, c._2.toString)
+          }
         }
+        case None =>
       }
-      case None =>
     }
-
     conf.set("spark.repl.class.outputDir", outputDir.getAbsolutePath)
 
     sparkSession = SparkSession.builder
