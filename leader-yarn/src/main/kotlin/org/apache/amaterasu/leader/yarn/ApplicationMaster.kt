@@ -163,7 +163,7 @@ class ApplicationMaster : KLogging(), AMRMClientAsync.CallbackHandler {
 
         log.info("zkPath is $zkPath")
         if (zkPath != null) {
-            log.info("resuming job" + opts.jobId)
+            log.info("resuming job" + opts.newJobId)
             jobManager = JobLoader.reloadJob(
                     opts.jobId,
                     client,
