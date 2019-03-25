@@ -165,7 +165,7 @@ class ApplicationMaster : KLogging(), AMRMClientAsync.CallbackHandler {
         if (zkPath != null) {
             log.info("resuming job" + opts.newJobId)
             jobManager = JobLoader.reloadJob(
-                    opts.jobId,
+                    opts.newJobId,
                     client,
                     config.Jobs().tasks().attempts(),
                     LinkedBlockingQueue<ActionData>())
