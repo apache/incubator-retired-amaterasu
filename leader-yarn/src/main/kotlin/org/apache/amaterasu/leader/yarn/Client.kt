@@ -103,7 +103,7 @@ class Client {
 
         var newId = ""
         if (opts.jobId.isEmpty()) {
-            newId = "--new-job-id " + appContext.applicationId.toString() + "-" + UUID.randomUUID().toString()
+            newId = "--new-job-id=" + appContext.applicationId.toString() + "-" + UUID.randomUUID().toString()
         }
 
 

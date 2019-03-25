@@ -104,7 +104,7 @@ echo "force-bin: ${FORCE_BIN}"
 export HADOOP_USER_CLASSPATH_FIRST=true
 export YARN_USER_CLASSPATH=${YARN_USER_CLASSPATH}:bin/*
 
-CMD="yarn jar ${BASEDIR}/bin/leader-yarn-0.2.0-incubating-rc4-all.jar org.apache.amaterasu.leader.yarn.Client --home ${BASEDIR}"
+CMD="yarn jar ${BASEDIR}/bin/leader-yarn-0.2.0-incubating-rc4-all.jar org.apache.amaterasu.leader.yarn.Client --home=${BASEDIR}"
 
 if [ -n "$REPO" ]; then
     echo "repo is ${REPO}"
