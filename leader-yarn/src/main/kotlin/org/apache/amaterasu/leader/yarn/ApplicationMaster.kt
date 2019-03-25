@@ -66,7 +66,6 @@ class ApplicationMaster : KLogging(), AMRMClientAsync.CallbackHandler {
     val broker: BrokerService = BrokerService()
     private val conf = YarnConfiguration()
 
-
     private val nmClient: NMClientAsync = NMClientAsyncImpl(YarnNMCallbackHandler())
     private val actionsBuffer = ConcurrentLinkedQueue<ActionData>()
     private val completedContainersAndTaskIds = ConcurrentHashMap<Long, String>()
@@ -94,11 +93,7 @@ class ApplicationMaster : KLogging(), AMRMClientAsync.CallbackHandler {
         config = ClusterConfig.apply(props)
         fs = FileSystem.get(conf)
 
-        //try {
-            initJob(opts)
-        //} catch (e: Exception) {
-          //  log.error("error initializing ${e.message}, ${e.stackTrace}", e.message)
-        //}
+        initJob(opts)
 
         // now that the job was initiated, the curator client is Started and we can
         // register the broker's address
@@ -264,8 +259,8 @@ class ApplicationMaster : KLogging(), AMRMClientAsync.CallbackHandler {
         result["amaterasu.properties"] = createLocalResourceFromPath(Path.mergePaths(yarnJarPath, Path("/amaterasu.properties")))
         result["log4j.properties"] = createLocalResourceFromPath(Path.mergePaths(yarnJarPath, Path("/log4j.properties")))
 
-        result.forEach { x-> println("local resource ${x.key} with value ${x.value}") }
-        return result.map { x-> x.key.removePrefix("/") to x.value }.toMap()
+        result.forEach { x -> println("local resource ${x.key} with value ${x.value}") }
+        return result.map { x -> x.key.removePrefix("/") to x.value }.toMap()
     }
 
     private fun createDistPath(path: String): Path = Path("/dist/$path")
