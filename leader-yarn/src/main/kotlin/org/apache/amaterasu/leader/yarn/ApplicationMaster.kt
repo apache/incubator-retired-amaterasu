@@ -122,7 +122,7 @@ class ApplicationMaster : KLogging(), AMRMClientAsync.CallbackHandler {
         val maxMem = registrationResponse.maximumResourceCapability.memory
         val maxVCores = registrationResponse.maximumResourceCapability.virtualCores
 
-        while (!jobManager.outOfActions) {
+        while (!jobManager.outOfActions && rmClient.) {
             val capability = Records.newRecord(Resource::class.java)
 
             val actionData = jobManager.nextActionData
@@ -143,6 +143,9 @@ class ApplicationMaster : KLogging(), AMRMClientAsync.CallbackHandler {
 
             }
         }
+
+        log.info("Finished requesting containers")
+        readLine()
     }
 
     private fun initJob(opts: AmaOpts) {
@@ -260,8 +263,6 @@ class ApplicationMaster : KLogging(), AMRMClientAsync.CallbackHandler {
         // Adding the Amaterasu configuration files
         result["amaterasu.properties"] = createLocalResourceFromPath(Path.mergePaths(yarnJarPath, Path("/amaterasu.properties")))
         result["log4j.properties"] = createLocalResourceFromPath(Path.mergePaths(yarnJarPath, Path("/log4j.properties")))
-
-
 
         result.forEach { x-> println("local resource ${x.key} with value ${x.value}") }
         return result.map { x-> x.key.removePrefix("/") to x.value }.toMap()

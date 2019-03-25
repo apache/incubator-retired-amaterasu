@@ -75,6 +75,7 @@ data class JobManager(var name: String = "",
 
     fun reQueueAction(actionId: String) {
 
+        log.info("requeing action $actionId")
         val action : Action = registeredActions[actionId] ?: throw IllegalAccessException()
         executionQueue.put(action.data)
         registeredActions[actionId]!!.announceQueued()
