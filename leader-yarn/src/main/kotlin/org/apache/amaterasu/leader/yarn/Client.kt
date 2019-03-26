@@ -203,7 +203,7 @@ class Client {
         val dist = fs!!.listFiles(Path.mergePaths(jarPath, Path("/dist")), true)
 
         while (dist.hasNext()) {
-            val distFile = bin.next()
+            val distFile = dist.next()
             localResources[distFile.path.name] = setLocalResourceFromPath(distFile.path)
         }
 
