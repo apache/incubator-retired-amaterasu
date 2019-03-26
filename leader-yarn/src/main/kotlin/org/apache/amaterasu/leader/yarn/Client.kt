@@ -200,12 +200,12 @@ class Client {
         }
 
         // making the dist folder's content available to the appMaster
-        val dist = fs!!.listFiles(Path.mergePaths(jarPath, Path("/dist")), true)
-
-        while (dist.hasNext()) {
-            val distFile = dist.next()
-            localResources[distFile.path.name] = setLocalResourceFromPath(distFile.path)
-        }
+//        val dist = fs!!.listFiles(Path.mergePaths(jarPath, Path("/dist")), true)
+//
+//        while (dist.hasNext()) {
+//            val distFile = dist.next()
+//            localResources[distFile.path.name] = setLocalResourceFromPath(distFile.path)
+//        }
 
         localResources["amaterasu.properties"] = propFile!!
         localResources["log4j.properties"] = log4jPropFile!!
@@ -276,6 +276,7 @@ class Client {
                 exit(0)
                 break
             }
+
             //LOGGER.info("Application not finished ({})", appReport.getProgress());
             try {
                 Thread.sleep(100)
