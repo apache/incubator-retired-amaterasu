@@ -25,6 +25,7 @@ import org.apache.amaterasu.common.execution.dependencies.PythonDependencies
 import org.apache.amaterasu.common.logging.Logging
 import org.apache.amaterasu.common.runtime.Environment
 import org.apache.amaterasu.sdk.AmaterasuRunner
+import org.apache.commons.lang.StringUtils
 import org.apache.spark.SparkEnv
 import org.apache.spark.sql.SparkSession
 
@@ -114,7 +115,7 @@ object PySparkRunner {
     var sparkCmd: Seq[String] = Seq()
     config.mode match {
       case "yarn" =>
-        pysparkPath = s"${config.spark.home}/bin/spark-submit"
+        pysparkPath = s"${StringUtils.stripStart(config.spark.home,"/")}/bin/spark-submit"
         sparkCmd = Seq(pysparkPath, "--py-files", condaPkgs, "--master", "yarn", intpPath, port.toString)
         val proc = Process(sparkCmd, None,
           "PYTHONPATH" -> pypath,

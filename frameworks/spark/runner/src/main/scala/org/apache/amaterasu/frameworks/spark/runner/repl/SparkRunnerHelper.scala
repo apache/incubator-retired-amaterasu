@@ -24,6 +24,7 @@ import org.apache.amaterasu.common.execution.actions.Notifier
 import org.apache.amaterasu.common.logging.Logging
 import org.apache.amaterasu.common.runtime.Environment
 import org.apache.amaterasu.common.utils.FileUtils
+import org.apache.commons.lang.StringUtils
 import org.apache.spark.SparkConf
 import org.apache.spark.sql.SparkSession
 
@@ -143,7 +144,7 @@ object SparkRunnerHelper extends Logging {
           .set("spark.home", s"${scala.reflect.io.File(".").toCanonical.toString}/spark-${config.Webserver.sparkVersion}")
 
       case "yarn" =>
-        conf.set("spark.home", config.spark.home)
+        conf.set("spark.home", StringUtils.stripStart(config.spark.home,"/"))
           // TODO: parameterize those
           .setJars(Seq(s"executor-${config.version}-all.jar", s"spark-runner-${config.version}-all.jar", s"spark-runtime-${config.version}.jar") ++ jars)
           .set("spark.history.kerberos.keytab", "/etc/security/keytabs/spark.headless.keytab")
@@ -153,7 +154,7 @@ object SparkRunnerHelper extends Logging {
 
           .set("spark.master", master)
           .set("spark.executor.instances", config.spark.opts.getOrElse("executor.instances", "1"))
-          .set("spark.yarn.jars", s"spark/jars/*")
+          .set("spark.yarn.jars", s"${StringUtils.stripStart(config.spark.home,"/")}/jars/*")
           .set("spark.executor.memory", config.spark.opts.getOrElse("executor.memory", "1g"))
           .set("spark.dynamicAllocation.enabled", "false")
           .set("spark.eventLog.enabled", "false")
