@@ -102,8 +102,10 @@ class Client {
         val appContext = app!!.applicationSubmissionContext
 
         var newId = ""
+
+        val newIdVal = appContext.applicationId.toString() + "-" + UUID.randomUUID().toString()
         if (opts.jobId.isEmpty()) {
-            newId = "--new-job-id=" + appContext.applicationId.toString() + "-" + UUID.randomUUID().toString()
+            newId = "--new-job-id=" + newIdVal
         }
 
 
@@ -137,6 +139,7 @@ class Client {
                     fs!!.copyFromLocalFile(false, true, Path(f.getAbsolutePath()), jarPathQualified)
                 }
 
+                // setup frameworks
                 // setup frameworks
                 println("===> setting up frameworks")
                 val frameworkFactory = FrameworkProvidersFactory.apply(opts.env, config)
@@ -239,13 +242,12 @@ class Client {
                 ExponentialBackoffRetry(1000, 3))
         client.start()
 
-        val newJobId = newId.replace("--new-job-id ", "")
-        println("===> /$newJobId-report-barrier")
-        val reportBarrier = DistributedBarrier(client, "/$newJobId-report-barrier")
+        println("===> /$newIdVal-report-barrier")
+        val reportBarrier = DistributedBarrier(client, "/$newIdVal-report-barrier")
         reportBarrier.setBarrier()
         reportBarrier.waitOnBarrier()
 
-        val address = String(client.data.forPath("/$newJobId/broker"))
+        val address = String(client.data.forPath("/$newIdVal/broker"))
         println("===> $address")
         setupReportListener(address)
 
