@@ -190,13 +190,21 @@ class Client {
 
         // set local resource on master container
         val localResources = HashMap<String, LocalResource>()
-        //localResources.put("leader.jar", leaderJar);
+
         // making the bin folder's content available to the appMaster
         val bin = fs!!.listFiles(Path.mergePaths(jarPath, Path("/bin")), true)
 
         while (bin.hasNext()) {
             val binFile = bin.next()
             localResources[binFile.path.name] = setLocalResourceFromPath(binFile.path)
+        }
+
+        // making the dist folder's content available to the appMaster
+        val dist = fs!!.listFiles(Path.mergePaths(jarPath, Path("/dist")), true)
+
+        while (dist.hasNext()) {
+            val distFile = bin.next()
+            localResources[distFile.path.name] = setLocalResourceFromPath(distFile.path)
         }
 
         localResources["amaterasu.properties"] = propFile!!
