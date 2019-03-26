@@ -145,11 +145,11 @@ class Client {
                     val framework = frameworkFactory.getFramework(group)
 
                     for (file in framework.groupResources) {
-                        println("===> ${file.absolutePath}")
+                        println("===> ${file.path}")
                         if (file.exists())
                             file.let {
                                 val target = Path.mergePaths(distPath, Path(it.path))
-                                fs!!.copyFromLocalFile(false, true, Path(file.absolutePath), target)
+                                fs!!.copyFromLocalFile(false, true, Path(file.path), target)
                                 println("===> copying $target")
                             }
 
