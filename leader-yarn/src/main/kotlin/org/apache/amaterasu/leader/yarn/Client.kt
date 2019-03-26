@@ -199,14 +199,6 @@ class Client {
             localResources[binFile.path.name] = setLocalResourceFromPath(binFile.path)
         }
 
-        // making the dist folder's content available to the appMaster
-//        val dist = fs!!.listFiles(Path.mergePaths(jarPath, Path("/dist")), true)
-//
-//        while (dist.hasNext()) {
-//            val distFile = dist.next()
-//            localResources[distFile.path.name] = setLocalResourceFromPath(distFile.path)
-//        }
-
         localResources["amaterasu.properties"] = propFile!!
         localResources["log4j.properties"] = log4jPropFile!!
         amContainer.localResources = localResources
