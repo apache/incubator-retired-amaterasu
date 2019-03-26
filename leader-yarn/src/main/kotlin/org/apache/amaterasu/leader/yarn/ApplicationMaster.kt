@@ -24,7 +24,6 @@ import org.apache.amaterasu.leader.common.execution.JobLoader
 import org.apache.amaterasu.leader.common.execution.JobManager
 import org.apache.amaterasu.leader.common.execution.frameworks.FrameworkProvidersFactory
 import org.apache.amaterasu.leader.common.launcher.AmaOpts
-import org.apache.amaterasu.leader.common.utilities.MessagingClientUtil
 import org.apache.amaterasu.sdk.frameworks.FrameworkSetupProvider
 import org.apache.amaterasu.sdk.frameworks.RunnerSetupProvider
 import org.apache.curator.framework.CuratorFramework
@@ -46,7 +45,6 @@ import java.io.File
 import java.io.FileInputStream
 import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.LinkedBlockingQueue
-import javax.jms.MessageConsumer
 
 import kotlinx.coroutines.*
 import org.apache.hadoop.io.DataOutputBuffer
@@ -76,7 +74,6 @@ class ApplicationMaster : KLogging(), AMRMClientAsync.CallbackHandler {
     private lateinit var jobManager: JobManager
     private lateinit var client: CuratorFramework
     private lateinit var env: String
-    private lateinit var consumer: MessageConsumer
     private lateinit var rmClient: AMRMClientAsync<AMRMClient.ContainerRequest>
     private lateinit var frameworkFactory: FrameworkProvidersFactory
     private lateinit var config: ClusterConfig
@@ -104,8 +101,6 @@ class ApplicationMaster : KLogging(), AMRMClientAsync.CallbackHandler {
         log.info("/${jobManager.jobId}-report-barrier")
         val barrier = DistributedBarrier(client, "/${jobManager.jobId}-report-barrier")
         barrier.removeBarrier()
-
-        consumer = MessagingClientUtil.setupMessaging(address)
 
         // Initialize clients to ResourceManager and NodeManagers
         nmClient.init(conf)
