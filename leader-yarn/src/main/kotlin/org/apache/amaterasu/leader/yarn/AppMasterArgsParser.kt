@@ -22,13 +22,13 @@ import org.apache.amaterasu.leader.common.utilities.MessagingClientUtil
 
 class AppMasterArgsParser: ArgsParser() {
 
-
     override fun run() {
 
         var opts = AmaOpts(repo, branch, env, name, jobId, newJobId, report, home)
 
         val appMaster = ApplicationMaster()
         appMaster.address = MessagingClientUtil.borkerAddress
+        println("broker address is ${appMaster.address}")
         appMaster.broker.addConnector(appMaster.address)
         appMaster.broker.start()
 

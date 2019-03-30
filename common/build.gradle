@@ -45,6 +45,7 @@ dependencies {
     compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.9'
     compile group: 'org.slf4j', name: 'slf4j-simple', version: '1.7.9'
     compile group: 'com.fasterxml.jackson.core', name: 'jackson-annotations', version: '2.9.4'
+    compile group: 'com.fasterxml.jackson.module', name: 'jackson-module-kotlin', version: '2.9.8'
 
     compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
     compile "org.jetbrains.kotlin:kotlin-reflect"
@@ -58,13 +59,19 @@ dependencies {
     compile('com.jcabi:jcabi-aether:0.10.1') {
         exclude group: 'org.jboss.netty'
     }
+
+    compile('org.apache.activemq:activemq-client:5.15.2') {
+        exclude group: 'org.jboss.netty'
+    }
+
     compile group: 'org.apache.maven', name: 'maven-core', version: '3.0.5'
-    
+    compile group: 'net.liftweb', name: 'lift-json_2.11', version: '3.2.0'
+
     provided group: 'org.apache.hadoop', name: 'hadoop-yarn-client', version: '2.8.4'
     provided group: 'org.apache.hadoop', name: 'hadoop-common', version: '2.8.4'
     provided group: 'org.apache.hadoop', name: 'hadoop-yarn-api', version: '2.8.4'
     provided group: 'org.apache.hadoop', name: 'hadoop-hdfs', version: '2.8.4'
-
+    compile group: 'net.liftweb', name: 'lift-json_2.11', version: '3.2.0'
     testCompile "gradle.plugin.com.github.maiflai:gradle-scalatest:0.14"
     testRuntime 'org.pegdown:pegdown:1.1.0'
     testCompile 'junit:junit:4.11'

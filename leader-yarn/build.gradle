@@ -51,6 +51,10 @@ junitPlatform {
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
+shadowJar {
+    zip64 true
+}
+
 repositories {
     maven { url "https://plugins.gradle.org/m2/" }
     maven { url 'http://repository.jetbrains.com/all' }

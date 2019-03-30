@@ -21,6 +21,7 @@ import org.apache.amaterasu.common.configuration.ClusterConfig
 import org.apache.amaterasu.leader.common.launcher.AmaOpts
 import org.apache.amaterasu.leader.common.execution.frameworks.FrameworkProvidersFactory
 import org.apache.amaterasu.leader.common.utilities.ActiveReportListener
+import org.apache.amaterasu.leader.common.utilities.MessagingClientUtil
 import org.apache.curator.framework.CuratorFrameworkFactory
 import org.apache.curator.framework.recipes.barriers.DistributedBarrier
 import org.apache.curator.retry.ExponentialBackoffRetry
@@ -49,6 +50,7 @@ import java.lang.System.exit
 class Client {
     private val conf = YarnConfiguration()
     private var fs: FileSystem? = null
+    private lateinit var consumer: MessageConsumer
 
     @Throws(IOException::class)
     private fun setLocalResourceFromPath(path: Path): LocalResource {
@@ -148,14 +150,11 @@ class Client {
                     val framework = frameworkFactory.getFramework(group)
 
                     for (file in framework.groupResources) {
-                        println("===> ${file.path}")
                         if (file.exists())
                             file.let {
                                 val target = Path.mergePaths(distPath, Path(it.path))
                                 fs!!.copyFromLocalFile(false, true, Path(file.path), target)
-                                println("===> copying $target")
                             }
-
                     }
                 }
             }
@@ -238,18 +237,17 @@ class Client {
             exit(7)
         }
 
-        val client = CuratorFrameworkFactory.newClient(config.zk(),
+        val zkClient = CuratorFrameworkFactory.newClient(config.zk(),
                 ExponentialBackoffRetry(1000, 3))
-        client.start()
+        zkClient.start()
 
-        println("===> /$newIdVal-report-barrier")
-        val reportBarrier = DistributedBarrier(client, "/$newIdVal-report-barrier")
+         val reportBarrier = DistributedBarrier(zkClient, "/$newIdVal-report-barrier")
         reportBarrier.setBarrier()
         reportBarrier.waitOnBarrier()
 
-        val address = String(client.data.forPath("/$newIdVal/broker"))
+        val address = String(zkClient.data.forPath("/$newIdVal/broker"))
         println("===> $address")
-        setupReportListener(address)
+        consumer = MessagingClientUtil.setupMessaging(address)
 
         var appReport: ApplicationReport? = null
         var appState: YarnApplicationState
@@ -288,23 +286,6 @@ class Client {
         return appState == YarnApplicationState.FINISHED ||
                 appState == YarnApplicationState.KILLED ||
                 appState == YarnApplicationState.FAILED
-    }
-
-    @Throws(JMSException::class)
-    private fun setupReportListener(address: String) {
-
-        val cf = ActiveMQConnectionFactory(address)
-        val conn = cf.createConnection()
-        conn.start()
-
-        val session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE)
-
-        //TODO: move to a const in common
-        val destination = session.createTopic("JOB.REPORT")
-
-        val consumer = session.createConsumer(destination)
-        consumer.messageListener = ActiveReportListener()
-
     }
 
     private fun setupAppMasterEnv(appMasterEnv: Map<String, String>) {

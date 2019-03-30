@@ -47,6 +47,8 @@ import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.LinkedBlockingQueue
 
 import kotlinx.coroutines.*
+import org.apache.amaterasu.common.utils.ActiveNotifier
+import org.apache.amaterasu.leader.common.utilities.MessagingClientUtil
 import org.apache.hadoop.io.DataOutputBuffer
 import org.apache.hadoop.security.UserGroupInformation
 import org.apache.hadoop.yarn.exceptions.YarnException
@@ -54,7 +56,7 @@ import org.apache.hadoop.yarn.security.AMRMTokenIdentifier
 import java.io.IOException
 import java.nio.ByteBuffer
 import java.util.concurrent.ConcurrentHashMap
-import kotlin.concurrent.thread
+import javax.jms.MessageConsumer
 
 class ApplicationMaster : KLogging(), AMRMClientAsync.CallbackHandler {
 
@@ -72,13 +74,13 @@ class ApplicationMaster : KLogging(), AMRMClientAsync.CallbackHandler {
     private lateinit var propPath: String
     private lateinit var props: FileInputStream
     private lateinit var jobManager: JobManager
-    private lateinit var client: CuratorFramework
+    private lateinit var zkClient: CuratorFramework
     private lateinit var env: String
     private lateinit var rmClient: AMRMClientAsync<AMRMClient.ContainerRequest>
     private lateinit var frameworkFactory: FrameworkProvidersFactory
     private lateinit var config: ClusterConfig
     private lateinit var fs: FileSystem
-
+    private lateinit var consumer: MessageConsumer
 
     fun execute(opts: AmaOpts) {
 
@@ -86,21 +88,26 @@ class ApplicationMaster : KLogging(), AMRMClientAsync.CallbackHandler {
         props = FileInputStream(File(propPath))
 
         // no need for hdfs double check (nod to Aaron Rodgers)
-        // jars on HDFS should have been verified by the YARN client
+        // jars on HDFS should have been verified by the YARN zkClient
         config = ClusterConfig.apply(props)
         fs = FileSystem.get(conf)
 
         initJob(opts)
 
-        // now that the job was initiated, the curator client is Started and we can
+        // now that the job was initiated, the curator zkClient is Started and we can
         // register the broker's address
-        client.create().withMode(CreateMode.PERSISTENT).forPath("/${jobManager.jobId}/broker")
-        client.setData().forPath("/${jobManager.jobId}/broker", address.toByteArray())
+        zkClient.create().withMode(CreateMode.PERSISTENT).forPath("/${jobManager.jobId}/broker")
+        zkClient.setData().forPath("/${jobManager.jobId}/broker", address.toByteArray())
 
         // once the broker is registered, we can remove the barrier so clients can connect
         log.info("/${jobManager.jobId}-report-barrier")
-        val barrier = DistributedBarrier(client, "/${jobManager.jobId}-report-barrier")
+        val barrier = DistributedBarrier(zkClient, "/${jobManager.jobId}-report-barrier")
         barrier.removeBarrier()
+
+        consumer = MessagingClientUtil.setupMessaging(address)
+
+        val notifier = ActiveNotifier(address)
+        log.info("number of messages ${broker.adminView.totalMessageCount}")
 
         // Initialize clients to ResourceManager and NodeManagers
         nmClient.init(conf)
@@ -145,21 +152,21 @@ class ApplicationMaster : KLogging(), AMRMClientAsync.CallbackHandler {
 
         try {
             val retryPolicy = ExponentialBackoffRetry(1000, 3)
-            client = CuratorFrameworkFactory.newClient(config.zk(), retryPolicy)
-            client.start()
+            zkClient = CuratorFrameworkFactory.newClient(config.zk(), retryPolicy)
+            zkClient.start()
         } catch (e: Exception) {
             log.error("Error connecting to zookeeper", e)
             throw e
         }
 
-        val zkPath = client.checkExists().forPath("/${opts.newJobId}")
+        val zkPath = zkClient.checkExists().forPath("/${opts.newJobId}")
 
         log.info("zkPath is $zkPath")
         if (zkPath != null) {
             log.info("resuming job" + opts.newJobId)
             jobManager = JobLoader.reloadJob(
                     opts.newJobId,
-                    client,
+                    zkClient,
                     config.Jobs().tasks().attempts(),
                     LinkedBlockingQueue<ActionData>())
 
@@ -171,7 +178,7 @@ class ApplicationMaster : KLogging(), AMRMClientAsync.CallbackHandler {
                         opts.repo,
                         opts.branch,
                         opts.newJobId,
-                        client,
+                        zkClient,
                         config.Jobs().tasks().attempts(),
                         LinkedBlockingQueue<ActionData>())
             } catch (e: Exception) {
@@ -203,17 +210,15 @@ class ApplicationMaster : KLogging(), AMRMClientAsync.CallbackHandler {
                         log.info("container command ${commands.joinToString(prefix = " ", postfix = " ")}")
                         ctx.commands = commands
                         ctx.tokens = allTokens()
-                        ctx.localResources = setupContainerResources(framework, runnerProvider)
-                        ctx.environment = framework.environmentVariables
+                        ctx.setLocalResources(setupContainerResources(framework, runnerProvider))
+                        ctx.setEnvironment(framework.environmentVariables)
 
                         nmClient.startContainerAsync(container, ctx)
 
                         jobManager.actionStarted(actionData.id)
-                        containersIdsToTask.put(container.id.containerId, actionData)
+                        containersIdsToTask[container.id.containerId] = actionData
                         log.info("launching container succeeded: ${container.id.containerId}; task: ${actionData.id}")
                     }
-
-
                 }
             }
         }
@@ -254,7 +259,6 @@ class ApplicationMaster : KLogging(), AMRMClientAsync.CallbackHandler {
         result["amaterasu.properties"] = createLocalResourceFromPath(Path.mergePaths(yarnJarPath, Path("/amaterasu.properties")))
         result["log4j.properties"] = createLocalResourceFromPath(Path.mergePaths(yarnJarPath, Path("/log4j.properties")))
 
-        result.forEach { x -> println("local resource ${x.key} with value ${x.value}") }
         return result.map { x -> x.key.removePrefix("/") to x.value }.toMap()
     }
 

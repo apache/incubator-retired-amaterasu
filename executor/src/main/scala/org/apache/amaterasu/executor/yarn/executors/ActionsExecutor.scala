@@ -23,7 +23,8 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
 import org.apache.amaterasu.common.dataobjects.{ExecData, TaskData}
 import org.apache.amaterasu.common.logging.Logging
-import org.apache.amaterasu.executor.common.executors.{ActiveNotifier, ProvidersFactory}
+import org.apache.amaterasu.common.utils.ActiveNotifier
+import org.apache.amaterasu.executor.common.executors.ProvidersFactory
 
 import scala.collection.JavaConverters._
 
@@ -59,13 +60,11 @@ class ActionsExecutor extends Logging {
   }
 }
 
-// launched with args:
-//s"'${jobManager.jobId}' '${config.master}' '${actionData.name}' '${URLEncoder.encode(gson.toJson(taskData), "UTF-8")}' '${URLEncoder.encode(gson.toJson(execData), "UTF-8")}' '${actionData.id}-${container.getId.getContainerId}'"
 object ActionsExecutorLauncher extends Logging with App {
 
   val hostName = InetAddress.getLocalHost.getHostName
 
-  log.info(s"Hostname resolved to: $hostName")
+  println(s"Hostname resolved to: $hostName")
   val mapper = new ObjectMapper()
   mapper.registerModule(DefaultScalaModule)
 
@@ -90,7 +89,7 @@ object ActionsExecutorLauncher extends Logging with App {
 
   log.info("Setup executor")
   val baos = new ByteArrayOutputStream()
-  val notifier = ActiveNotifier(notificationsAddress)
+  val notifier = new ActiveNotifier(notificationsAddress)
 
   notifier.info(s"Setup notifier for action $taskIdAndContainerId")
   actionsExecutor.providersFactory = ProvidersFactory(execData, jobId, baos, notifier, taskIdAndContainerId, hostName, propFile = "./amaterasu.properties")

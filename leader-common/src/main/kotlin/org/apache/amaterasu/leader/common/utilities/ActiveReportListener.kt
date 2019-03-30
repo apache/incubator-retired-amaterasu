@@ -16,21 +16,19 @@
  */
 package org.apache.amaterasu.leader.common.utilities
 
-import com.andreapivetta.kolor.green
-import com.andreapivetta.kolor.lightWhite
-import com.andreapivetta.kolor.red
+
 import com.beust.klaxon.Klaxon
+import com.importre.crayon.bold
+import com.importre.crayon.brightWhite
+import com.importre.crayon.green
+import com.importre.crayon.red
 import org.apache.amaterasu.common.execution.actions.Notification
 import org.apache.amaterasu.common.execution.actions.enums.NotificationType
 import javax.jms.Message
 import javax.jms.MessageListener
 import javax.jms.TextMessage
 
-//import org.apache.amaterasu.common.execution.actions
-
 class ActiveReportListener : MessageListener {
-
-    //implicit val formats = DefaultFormats
 
     override fun onMessage(message: Message): Unit = when (message) {
         is TextMessage -> try {
@@ -46,12 +44,12 @@ class ActiveReportListener : MessageListener {
     private fun printNotification(notification: Notification) = when (notification.notType) {
 
         NotificationType.Info ->
-            println("===> ${notification.msg} ".lightWhite())
+            println("===> ${notification.msg} ".brightWhite().bold())
         NotificationType.Success ->
-            println("===> ${notification.line}".green())
+            println("===> ${notification.line}".green().bold())
         NotificationType.Error -> {
-            println("===> ${notification.line}".red())
-            println("===> ${notification.msg} ".red())
+            println("===> ${notification.line}".red().bold())
+            println("===> ${notification.msg} ".red().bold())
 
         }
 
