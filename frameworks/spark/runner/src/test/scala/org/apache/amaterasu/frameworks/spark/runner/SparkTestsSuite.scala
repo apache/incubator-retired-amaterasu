@@ -18,7 +18,7 @@ package org.apache.amaterasu.frameworks.spark.runner
 
 import java.io.{ByteArrayOutputStream, File}
 
-import org.apache.amaterasu.common.dataobjects.ExecData
+import org.apache.amaterasu.common.dataobjects.{Artifact, ExecData, Repo}
 import org.apache.amaterasu.common.execution.dependencies._
 import org.apache.amaterasu.common.runtime.Environment
 import org.apache.amaterasu.executor.common.executors.ProvidersFactory
@@ -30,7 +30,7 @@ import org.apache.spark.sql.SparkSession
 import org.scalatest._
 
 import scala.collection.mutable.ListBuffer
-
+import scala.collection.JavaConverters._
 
 class SparkTestsSuite extends Suites(
   new PySparkRunnerTests,
@@ -54,26 +54,26 @@ class SparkTestsSuite extends Suites(
     val resources = new File(getClass.getResource("/spark_intp.py").getPath).getParent
     val workDir = new File(resources).getParentFile.getParent
 
-    env = Environment()
-    env.workingDir = s"file://$workDir"
+    env = new Environment()
+    env.setWorkingDir(s"file://$workDir")
 
-    env.master = "local[1]"
-    if (env.configuration != null) env.configuration ++ "pysparkPath" -> "/usr/bin/python" else env.configuration = Map(
+    env.setMaster("local[1]")
+    if (env.getConfiguration != null) env.setConfiguration(Map("pysparkPath" -> "/usr/bin/python").asJava) else env.setConfiguration( Map(
       "pysparkPath" -> "/usr/bin/python",
       "cwd" -> resources
-    )
+    ).asJava)
 
     val excEnv = Map[String, Any](
       "PYTHONPATH" -> resources
     )
     createTestMiniconda()
-    env.configuration ++ "spark_exec_env" -> excEnv
-    factory = ProvidersFactory(ExecData(env,
-      Dependencies(ListBuffer.empty[Repo], List.empty[Artifact]),
-      PythonDependencies(List.empty[PythonPackage]),
+    env.setConfiguration(Map( "spark_exec_env" -> excEnv).asJava)
+    factory = ProvidersFactory(new ExecData(env,
+      new Dependencies(ListBuffer.empty[Repo].asJava, List.empty[Artifact].asJava),
+      new PythonDependencies(List.empty[PythonPackage].asJava),
       Map(
-        "spark" -> Map.empty[String, Any],
-        "spark_exec_env" -> Map("PYTHONPATH" -> resources))),
+        "spark" -> Map.empty[String, Any].asJava,
+        "spark_exec_env" -> Map("PYTHONPATH" -> resources).asJava).asJava),
       "test",
       new ByteArrayOutputStream(),
       new TestNotifier(),

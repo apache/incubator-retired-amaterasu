@@ -25,7 +25,7 @@ import kotlin.test.assertEquals
 
 class ConfigManagerTests : Spek({
 
-    val marker = this.javaClass.getResource("/maki.yml").path
+    val marker = this.javaClass.getResource("/maki.yml")!!.path
 
     given("a ConfigManager for a job ") {
 

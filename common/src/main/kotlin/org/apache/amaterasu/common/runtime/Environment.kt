@@ -16,11 +16,11 @@
  */
 package org.apache.amaterasu.common.runtime
 
-data class Environment (
+data class Environment(
         var name: String = "",
         var master: String = "",
         var inputRootPath: String = "",
         var outputRootPath: String = "",
         var workingDir: String = "",
 
-        var configuration: Map<String, String> )
+        var configuration: Map<String, Any> = mapOf())
