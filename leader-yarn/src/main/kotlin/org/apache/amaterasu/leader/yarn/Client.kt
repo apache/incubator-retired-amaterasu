@@ -122,9 +122,6 @@ class Client {
                 " 1>" + ApplicationConstants.LOG_DIR_EXPANSION_VAR + "/stdout" +
                 " 2>" + ApplicationConstants.LOG_DIR_EXPANSION_VAR + "/stderr")
 
-
-        println("===> command ${commands.joinToString("==")}")
-
         // Set up the container launch context for the application master
         val amContainer = Records.newRecord(ContainerLaunchContext::class.java)
         amContainer.commands = commands
@@ -132,7 +129,6 @@ class Client {
         // Setup local ama folder on hdfs.
         try {
 
-            println("===> $jarPathQualified")
             if (!fs!!.exists(jarPathQualified)) {
                 val home = File(opts.home)
                 fs!!.mkdirs(jarPathQualified)
@@ -142,11 +138,8 @@ class Client {
                 }
 
                 // setup frameworks
-                // setup frameworks
-                println("===> setting up frameworks")
                 val frameworkFactory = FrameworkProvidersFactory.apply(opts.env, config)
                 for (group in frameworkFactory.groups()) {
-                    println("===> setting up $group")
                     val framework = frameworkFactory.getFramework(group)
 
                     for (file in framework.groupResources) {

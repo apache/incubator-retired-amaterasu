@@ -16,46 +16,58 @@
  */
 package org.apache.amaterasu.leader.yarn
 
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
+import com.fasterxml.jackson.module.kotlin.KotlinModule
+
+import kotlinx.coroutines.async
+import kotlinx.coroutines.runBlocking
+
 import org.apache.activemq.broker.BrokerService
+
 import org.apache.amaterasu.common.configuration.ClusterConfig
 import org.apache.amaterasu.common.dataobjects.ActionData
 import org.apache.amaterasu.common.logging.KLogging
+import org.apache.amaterasu.leader.common.configuration.ConfigManager
 import org.apache.amaterasu.leader.common.execution.JobLoader
 import org.apache.amaterasu.leader.common.execution.JobManager
 import org.apache.amaterasu.leader.common.execution.frameworks.FrameworkProvidersFactory
 import org.apache.amaterasu.leader.common.launcher.AmaOpts
+import org.apache.amaterasu.leader.common.utilities.DataLoader
+import org.apache.amaterasu.leader.common.utilities.MessagingClientUtil
 import org.apache.amaterasu.sdk.frameworks.FrameworkSetupProvider
 import org.apache.amaterasu.sdk.frameworks.RunnerSetupProvider
+
 import org.apache.curator.framework.CuratorFramework
 import org.apache.curator.framework.CuratorFrameworkFactory
 import org.apache.curator.framework.recipes.barriers.DistributedBarrier
 import org.apache.curator.retry.ExponentialBackoffRetry
+
 import org.apache.hadoop.fs.FileSystem
 import org.apache.hadoop.fs.Path
+import org.apache.hadoop.io.DataOutputBuffer
+import org.apache.hadoop.security.UserGroupInformation
 import org.apache.hadoop.yarn.api.records.*
 import org.apache.hadoop.yarn.client.api.AMRMClient
 import org.apache.hadoop.yarn.client.api.async.AMRMClientAsync
 import org.apache.hadoop.yarn.client.api.async.NMClientAsync
 import org.apache.hadoop.yarn.client.api.async.impl.NMClientAsyncImpl
 import org.apache.hadoop.yarn.conf.YarnConfiguration
-import org.apache.hadoop.yarn.util.ConverterUtils
-import org.apache.hadoop.yarn.util.Records
-import org.apache.zookeeper.CreateMode
-import java.io.File
-import java.io.FileInputStream
-import java.util.concurrent.ConcurrentLinkedQueue
-import java.util.concurrent.LinkedBlockingQueue
-
-import kotlinx.coroutines.*
-import org.apache.amaterasu.common.utils.ActiveNotifier
-import org.apache.amaterasu.leader.common.utilities.MessagingClientUtil
-import org.apache.hadoop.io.DataOutputBuffer
-import org.apache.hadoop.security.UserGroupInformation
 import org.apache.hadoop.yarn.exceptions.YarnException
 import org.apache.hadoop.yarn.security.AMRMTokenIdentifier
+import org.apache.hadoop.yarn.util.ConverterUtils
+import org.apache.hadoop.yarn.util.Records
+
+import org.apache.zookeeper.CreateMode
+
+import java.io.File
+import java.io.FileInputStream
 import java.io.IOException
 import java.nio.ByteBuffer
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.ConcurrentLinkedQueue
+import java.util.concurrent.LinkedBlockingQueue
+
 import javax.jms.MessageConsumer
 
 class ApplicationMaster : KLogging(), AMRMClientAsync.CallbackHandler {
@@ -70,6 +82,7 @@ class ApplicationMaster : KLogging(), AMRMClientAsync.CallbackHandler {
     private val actionsBuffer = ConcurrentLinkedQueue<ActionData>()
     private val completedContainersAndTaskIds = ConcurrentHashMap<Long, String>()
     private val containersIdsToTask = ConcurrentHashMap<Long, ActionData>()
+    private val yamlMapper = ObjectMapper(YAMLFactory())
 
     private lateinit var propPath: String
     private lateinit var props: FileInputStream
@@ -81,13 +94,18 @@ class ApplicationMaster : KLogging(), AMRMClientAsync.CallbackHandler {
     private lateinit var config: ClusterConfig
     private lateinit var fs: FileSystem
     private lateinit var consumer: MessageConsumer
+    private lateinit var configManager: ConfigManager
+
+    init {
+        yamlMapper.registerModule(KotlinModule())
+    }
 
     fun execute(opts: AmaOpts) {
 
         propPath = System.getenv("PWD") + "/amaterasu.properties"
         props = FileInputStream(File(propPath))
 
-        // no need for hdfs double check (nod to Aaron Rodgers)
+        // no need for HDFS double check (nod to Aaron Rodgers)
         // jars on HDFS should have been verified by the YARN zkClient
         config = ClusterConfig.apply(props)
         fs = FileSystem.get(conf)
@@ -106,7 +124,6 @@ class ApplicationMaster : KLogging(), AMRMClientAsync.CallbackHandler {
 
         consumer = MessagingClientUtil.setupMessaging(address)
 
-        val notifier = ActiveNotifier(address)
         log.info("number of messages ${broker.adminView.totalMessageCount}")
 
         // Initialize clients to ResourceManager and NodeManagers
@@ -115,8 +132,17 @@ class ApplicationMaster : KLogging(), AMRMClientAsync.CallbackHandler {
 
         rmClient = startRMClient()
 
+        val items = mutableListOf<FrameworkSetupProvider>()
+
+        for (p in frameworkFactory.providers().values()) {
+            items.add(p)
+        }
+        val configItems = items.flatMap { it.configurationItems.asIterable() }
+        configManager = ConfigManager(env, "repo", configItems)
+
+
         val registrationResponse = rmClient.registerApplicationMaster("", 0, "")
-        val maxMem = registrationResponse.maximumResourceCapability.memory
+        val maxMem = registrationResponse.maximumResourceCapability.memorySize
         val maxVCores = registrationResponse.maximumResourceCapability.virtualCores
 
         while (!jobManager.outOfActions) {
@@ -128,14 +154,15 @@ class ApplicationMaster : KLogging(), AMRMClientAsync.CallbackHandler {
                 val frameworkProvider = frameworkFactory.getFramework(actionData.groupId)
                 val driverConfiguration = frameworkProvider.driverConfiguration
 
-                var mem: Int = driverConfiguration.memory
+                var mem: Long = driverConfiguration.memory.toLong()
                 mem = Math.min(mem, maxMem)
-                capability.memory = mem
+                capability.memorySize = mem
 
                 var cpu = driverConfiguration.cpus
                 cpu = Math.min(cpu, maxVCores)
                 capability.virtualCores = cpu
 
+                createTaskConfiguration(actionData)
                 requestContainer(actionData, capability)
 
             }
@@ -210,8 +237,8 @@ class ApplicationMaster : KLogging(), AMRMClientAsync.CallbackHandler {
                         log.info("container command ${commands.joinToString(prefix = " ", postfix = " ")}")
                         ctx.commands = commands
                         ctx.tokens = allTokens()
-                        ctx.setLocalResources(setupContainerResources(framework, runnerProvider))
-                        ctx.setEnvironment(framework.environmentVariables)
+                        ctx.localResources = setupContainerResources(framework, runnerProvider, actionData)
+                        ctx.environment = framework.environmentVariables
 
                         nmClient.startContainerAsync(container, ctx)
 
@@ -245,7 +272,7 @@ class ApplicationMaster : KLogging(), AMRMClientAsync.CallbackHandler {
      * @framework The frameworkSetupProvider for the action
      * @runnerProvider the actions runner provider
      */
-    private fun setupContainerResources(framework: FrameworkSetupProvider, runnerProvider: RunnerSetupProvider): Map<String, LocalResource> {
+    private fun setupContainerResources(framework: FrameworkSetupProvider, runnerProvider: RunnerSetupProvider, actionData: ActionData): Map<String, LocalResource> {
 
         val yarnJarPath = Path(config.yarn().hdfsJarsPath())
 
@@ -255,11 +282,61 @@ class ApplicationMaster : KLogging(), AMRMClientAsync.CallbackHandler {
         // Getting runner resources
         result.putAll(runnerProvider.runnerResources.map { it to createLocalResourceFromPath(Path.mergePaths(yarnJarPath, createDistPath(it))) }.toMap())
 
+        // getting the action specific resources
+        result.putAll(runnerProvider.getActionResources(jobManager.jobId, actionData).map { it.removePrefix("${jobManager.jobId}/${actionData.name}/") to createLocalResourceFromPath(Path.mergePaths(yarnJarPath, createDistPath(it))) })
+
+        // getting the action specific dependencies
+        runnerProvider.getActionDependencies(jobManager.jobId, actionData).forEach { distributeFile(it, "${jobManager.jobId}/${actionData.name}/") }
+        result.putAll(runnerProvider.getActionDependencies(jobManager.jobId, actionData).map { File(it).name to createLocalResourceFromPath(Path.mergePaths(yarnJarPath, createDistPath("${jobManager.jobId}/${actionData.name}/$it"))) })
+
         // Adding the Amaterasu configuration files
         result["amaterasu.properties"] = createLocalResourceFromPath(Path.mergePaths(yarnJarPath, Path("/amaterasu.properties")))
         result["log4j.properties"] = createLocalResourceFromPath(Path.mergePaths(yarnJarPath, Path("/log4j.properties")))
 
+        result.forEach { println("entry ${it.key} with value ${it.value}") }
         return result.map { x -> x.key.removePrefix("/") to x.value }.toMap()
+    }
+
+    private fun createTaskConfiguration(actionData: ActionData) {
+
+        // setting up the configuration files for the container
+        val envYaml = configManager.getActionConfigContent(actionData.name, actionData.config)
+        writeConfigFile(envYaml, jobManager.jobId, actionData.name, "env.yaml")
+
+        val dataStores = DataLoader.getTaskData(actionData, env).exports
+        val dataStoresYaml = yamlMapper.writeValueAsString(dataStores)
+
+        writeConfigFile(dataStoresYaml, jobManager.jobId, actionData.name, "datastores.yaml")
+
+        writeConfigFile("jobId: ${jobManager.jobId}\nactionName: ${actionData.name}", jobManager.jobId, actionData.name, "runtime.yaml")
+
+    }
+
+    private fun writeConfigFile(content: String, jobId: String, actionName: String, fileName: String) {
+
+        val actionDistPath = createDistPath("$jobId/$actionName/$fileName")
+        val yarnJarPath = Path(config.yarn().hdfsJarsPath())
+        val targetPath = Path.mergePaths(yarnJarPath, actionDistPath)
+
+        val outputStream = fs.create(targetPath)
+        outputStream.writeUTF(content)
+        outputStream.close()
+        log.info("written file $targetPath")
+
+    }
+
+    private fun distributeFile(file: String, distributionPath: String) {
+
+        log.info("copying file $file, file status ${File(file).exists()}")
+
+        val actionDistPath = createDistPath("$distributionPath/$file")
+        val yarnJarPath = Path(config.yarn().hdfsJarsPath())
+        val targetPath = Path.mergePaths(yarnJarPath, actionDistPath)
+
+        log.info("target is $targetPath")
+
+        fs.copyFromLocalFile(false, true, Path(file), targetPath)
+
     }
 
     private fun createDistPath(path: String): Path = Path("/dist/$path")
@@ -350,7 +427,7 @@ class ApplicationMaster : KLogging(), AMRMClientAsync.CallbackHandler {
         }
     }
 
-    fun stopApplication(finalApplicationStatus: FinalApplicationStatus, appMessage: String) {
+    private fun stopApplication(finalApplicationStatus: FinalApplicationStatus, appMessage: String) {
 
         try {
             rmClient.unregisterApplicationMaster(finalApplicationStatus, appMessage, null)

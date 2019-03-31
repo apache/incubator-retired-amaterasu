@@ -91,7 +91,6 @@ object ActionsExecutorLauncher extends Logging with App {
   val baos = new ByteArrayOutputStream()
   val notifier = new ActiveNotifier(notificationsAddress)
 
-  notifier.info(s"Setup notifier for action $taskIdAndContainerId")
   actionsExecutor.providersFactory = ProvidersFactory(execData, jobId, baos, notifier, taskIdAndContainerId, hostName, propFile = "./amaterasu.properties")
   actionsExecutor.execute()
 }
