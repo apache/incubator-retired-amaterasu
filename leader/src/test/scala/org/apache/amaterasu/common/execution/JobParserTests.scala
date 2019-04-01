@@ -30,9 +30,9 @@ import scala.io.Source
 
 class JobParserTests extends FlatSpec with Matchers {
 
-  private val retryPolicy = new ExponentialBackoffRetry(1000, 3)
-  private val server = new TestingServer(2182, true)
-  private val client = CuratorFrameworkFactory.newClient(server.getConnectString, retryPolicy)
+  val retryPolicy = new ExponentialBackoffRetry(1000, 3)
+  val server = new TestingServer(2187, true)
+  val client = CuratorFrameworkFactory.newClient(server.getConnectString, retryPolicy)
   client.start()
 
   private val jobId = s"job_${System.currentTimeMillis}"

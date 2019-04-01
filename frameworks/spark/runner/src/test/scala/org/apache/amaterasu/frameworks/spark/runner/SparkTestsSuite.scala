@@ -33,7 +33,7 @@ import scala.collection.mutable.ListBuffer
 import scala.collection.JavaConverters._
 
 class SparkTestsSuite extends Suites(
-  new PySparkRunnerTests,
+  //new PySparkRunnerTests,
   new RunnersLoadingTests,
   new SparkSqlRunnerTests,
   new SparkScalaRunnerTests
