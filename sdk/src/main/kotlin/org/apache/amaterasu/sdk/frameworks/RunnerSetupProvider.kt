@@ -34,6 +34,8 @@ abstract class RunnerSetupProvider {
 
     abstract fun getActionDependencies(jobId: String, actionData: ActionData): Array<String>
 
+    abstract fun getActionExecutable(jobId: String, actionData: ActionData): String
+
     abstract val hasExecutor: Boolean
        get
 }
