@@ -41,7 +41,7 @@ class SparkSubmitScalaRunnerProvider extends RunnerSetupProvider {
   override def getHasExecutor: Boolean = false
 
   override def getActionExecutable(jobId: String, actionData: ActionData): String = {
-    if (actionData.getHasArtifact) {
+//    if (actionData.getHasArtifact) {
 
       val util = new ArtifactUtil(List(actionData.repo).asJava, jobId)
       val result = conf.mode match {
@@ -49,10 +49,10 @@ class SparkSubmitScalaRunnerProvider extends RunnerSetupProvider {
         case "yarn" => util.getLocalArtifacts(actionData.getArtifact).toArray().map(x => x.asInstanceOf[File].getPath)
       }
       result(0)
-    } else {
-
-
-    }
+//    } else {
+//
+//
+//    }
   }
 }
 
