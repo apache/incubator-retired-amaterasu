@@ -31,18 +31,18 @@ import scala.io.Source
 class JobParserTests extends FlatSpec with Matchers {
 
   val retryPolicy = new ExponentialBackoffRetry(1000, 3)
-  val server = new TestingServer(2182, true)
+  val server = new TestingServer(2187, true)
   val client = CuratorFrameworkFactory.newClient(server.getConnectString, retryPolicy)
   client.start()
 
-  val jobId = s"job_${System.currentTimeMillis}"
-  val yaml = Source.fromURL(getClass.getResource("/simple-maki.yml")).mkString
-  val queue = new LinkedBlockingQueue[ActionData]()
+  private val jobId = s"job_${System.currentTimeMillis}"
+  private val yaml = Source.fromURL(getClass.getResource("/simple-maki.yml")).mkString
+  private val queue = new LinkedBlockingQueue[ActionData]()
 
   // this will be performed by the job bootstrapper
   client.create().withMode(CreateMode.PERSISTENT).forPath(s"/$jobId")
 
-  val job = JobParser.parse(jobId, yaml, queue, client, 1)
+  private val job = JobParser.parse(jobId, yaml, queue, client, 1)
 
   "JobParser" should "parse the simple-maki.yml" in {
 

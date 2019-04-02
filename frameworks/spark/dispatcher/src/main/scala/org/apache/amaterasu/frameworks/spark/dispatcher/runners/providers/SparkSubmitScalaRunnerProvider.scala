@@ -13,13 +13,14 @@ class SparkSubmitScalaRunnerProvider extends RunnerSetupProvider {
 
   private var conf: ClusterConfig = _
   val jarFile = new File(this.getClass.getProtectionDomain.getCodeSource.getLocation.getPath)
-  val amaDist = new File (s"${new File(jarFile.getParent).getParent}/dist")
+  val amaDist = new File(s"${new File(jarFile.getParent).getParent}/dist")
+  val amalocation = new File(s"${new File(jarFile.getParent).getParent}")
 
   override def getCommand(jobId: String, actionData: ActionData, env: String, executorId: String, callbackAddress: String): String = {
 
     val util = new ArtifactUtil(List(actionData.repo).asJava, jobId)
-    val classParam = if (actionData.getHasArtifact)  s" --class ${actionData.entryClass}" else ""
-    s"spark-${conf.Webserver.sparkVersion}/bin/spark-submit $classParam ${util.getLocalArtifacts(actionData.getArtifact).get(0).getName} --deploy-mode client --jars spark-runtime-${conf.version}.jar >&1"
+    val classParam = if (actionData.getHasArtifact) s" --class ${actionData.entryClass}" else ""
+    s"$$SPARK_HOME/bin/spark-submit $classParam ${util.getLocalArtifacts(actionData.getArtifact).get(0).getName} --deploy-mode client --jars spark-runtime-${conf.version}.jar >&1"
   }
 
   override def getRunnerResources: Array[String] =
@@ -31,7 +32,10 @@ class SparkSubmitScalaRunnerProvider extends RunnerSetupProvider {
 
   override def getActionDependencies(jobId: String, actionData: ActionData): Array[String] = {
     val util = new ArtifactUtil(List(actionData.repo).asJava, jobId)
-    util.getLocalArtifacts(actionData.getArtifact).toArray().map(x => amaDist.toPath.relativize(x.asInstanceOf[File].toPath).toString)
+    conf.mode match {
+      case "mesos" => util.getLocalArtifacts(actionData.getArtifact).toArray().map(x => amaDist.toPath.relativize(x.asInstanceOf[File].toPath).toString)
+      case "yarn" => util.getLocalArtifacts(actionData.getArtifact).toArray().map(x => x.asInstanceOf[File].getPath)
+    }
   }
 
   override def getHasExecutor: Boolean = false

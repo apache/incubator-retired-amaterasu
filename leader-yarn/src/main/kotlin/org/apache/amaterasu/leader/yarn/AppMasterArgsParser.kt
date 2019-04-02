@@ -14,26 +14,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.amaterasu.executor.yarn.executors
+package org.apache.amaterasu.leader.yarn
 
-import org.apache.amaterasu.common.execution.actions.Notifier
-import org.apache.amaterasu.common.logging.Logging
-import org.apache.hadoop.yarn.conf.YarnConfiguration
-import org.apache.hadoop.yarn.ipc.YarnRPC
+import org.apache.amaterasu.leader.common.launcher.AmaOpts
+import org.apache.amaterasu.leader.common.launcher.ArgsParser
+import org.apache.amaterasu.leader.common.utilities.MessagingClientUtil
 
-class YarnNotifier(conf: YarnConfiguration) extends Notifier {
+class AppMasterArgsParser: ArgsParser() {
 
-  var rpc: YarnRPC = YarnRPC.create(conf)
+    override fun run() {
 
-  override def info(msg: String): Unit = {
-    getLog.info(s"""-> ${msg}""")
-  }
+        var opts = AmaOpts(repo, branch, env, name, jobId, newJobId, report, home)
 
-  override def success(line: String): Unit = {
-    getLog.info(s"""SUCCESS: ${line}""")
-  }
+        val appMaster = ApplicationMaster()
+        appMaster.address = MessagingClientUtil.borkerAddress
+        println("broker address is ${appMaster.address}")
+        appMaster.broker.addConnector(appMaster.address)
+        appMaster.broker.start()
 
-  override def error(line: String, msg: String): Unit = {
-    getLog.error(s"""ERROR: ${line}: ${msg}""")
-  }
+        appMaster.execute(opts)
+    }
 }

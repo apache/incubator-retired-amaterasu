@@ -39,7 +39,7 @@ data class JobManager(var name: String = "",
     val registeredActions = HashMap<String, Action>()
     private val frameworks = HashMap<String, HashSet<String>>()
 
-    operator fun set(groupId : String , typeId : String) = frameworks.getOrPut(groupId){HashSet()}.add(typeId)
+    operator fun set(groupId: String, typeId: String) = frameworks.getOrPut(groupId) { HashSet() }.add(typeId)
 
     /**
      * The start method initiates the job execution by executing the first action.
@@ -65,17 +65,19 @@ data class JobManager(var name: String = "",
 
             val nextAction: ActionData? = executionQueue.poll()
 
-        if (nextAction != null) {
-            registeredActions[nextAction.id]?.announceStart()
-        }
-
+            if (nextAction != null) {
+                registeredActions[nextAction.id]?.announceStart()
+            }
 
             return nextAction
         }
 
     fun reQueueAction(actionId: String) {
 
-        val action : Action = registeredActions[actionId] ?: throw IllegalAccessException()
+        log.info("requeing action $actionId")
+        registeredActions.forEach { log.info("key ${it.key}") }
+
+        val action: Action = registeredActions[actionId] ?: throw IllegalAccessException()
         executionQueue.put(action.data)
         registeredActions[actionId]!!.announceQueued()
 

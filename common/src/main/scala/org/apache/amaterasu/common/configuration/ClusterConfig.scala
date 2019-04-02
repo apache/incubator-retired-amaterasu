@@ -23,7 +23,7 @@ import java.util.Properties
 import org.apache.amaterasu.common.logging.Logging
 import org.apache.commons.configuration.ConfigurationException
 
-import scala.collection.mutable
+import   scala.collection.mutable
 
 class ClusterConfig extends Logging {
 
@@ -91,8 +91,7 @@ class ClusterConfig extends Logging {
 
   }
 
-
-  val YARN = new YARN()
+  val yarn = new YARN()
 
   class Spark {
     var home: String = ""
@@ -111,7 +110,6 @@ class ClusterConfig extends Logging {
     }
   }
 
-
   object Webserver {
     var Port: String = ""
     var Root: String = ""
@@ -125,7 +123,7 @@ class ClusterConfig extends Logging {
     }
   }
 
-  object Jobs {
+  class Jobs {
 
     var cpus: Double = 1
     var mem: Long = 1024
@@ -137,10 +135,10 @@ class ClusterConfig extends Logging {
       if (props.containsKey("jobs.mem")) mem = props.getProperty("jobs.mem").toLong
       if (props.containsKey("jobs.repoSize")) repoSize = props.getProperty("jobs.repoSize").toLong
 
-      Tasks.load(props)
+      tasks.load(props)
     }
 
-    object Tasks {
+    class Tasks {
 
       var attempts: Int = 3
       var cpus: Int = 1
@@ -155,7 +153,11 @@ class ClusterConfig extends Logging {
       }
     }
 
+    val tasks = new Tasks()
+
   }
+
+  val jobs = new Jobs()
 
   object AWS {
 
@@ -214,10 +216,13 @@ class ClusterConfig extends Logging {
     Jar = this.getClass.getProtectionDomain.getCodeSource.getLocation.toURI.getPath
     JarName = Paths.get(this.getClass.getProtectionDomain.getCodeSource.getLocation.getPath).getFileName.toString
 
-    Jobs.load(props)
+    val jobsss = new Jobs()
+    jobsss.load(props)
+
     Webserver.load(props)
-    YARN.load(props)
+    yarn.load(props)
     spark.load(props)
+    jobs.load(props)
 
     distLocation match {
 

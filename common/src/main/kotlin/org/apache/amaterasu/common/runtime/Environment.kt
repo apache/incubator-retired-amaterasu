@@ -14,9 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.amaterasu.common.dataobjects
+package org.apache.amaterasu.common.runtime
 
-import org.apache.amaterasu.common.execution.dependencies.{Dependencies, PythonDependencies}
-import org.apache.amaterasu.common.runtime.Environment
+data class Environment(
+        var name: String = "",
+        var master: String = "",
+        var inputRootPath: String = "",
+        var outputRootPath: String = "",
+        var workingDir: String = "",
 
-case class ExecData(env: Environment, deps: Dependencies, pyDeps: PythonDependencies, configurations: Map[String, Map[String, Any]])
+        var configuration: Map<String, Any> = mapOf())

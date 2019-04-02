@@ -36,7 +36,7 @@ object MessagingClientUtil {
         val destination = session.createTopic("JOB.REPORT")
 
         val consumer = session.createConsumer(destination)
-        consumer.messageListener = ActiveReportListener()
+        consumer.setMessageListener(ActiveReportListener())
 
         return consumer
     }

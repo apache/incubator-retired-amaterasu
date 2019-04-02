@@ -128,8 +128,8 @@ class JobScheduler extends AmaterasuScheduler {
 
     val resources = offer.getResourcesList.asScala
 
-    resources.count(r => r.getName == "cpus" && r.getScalar.getValue >= config.Jobs.Tasks.cpus) > 0 &&
-      resources.count(r => r.getName == "mem" && r.getScalar.getValue >= config.Jobs.Tasks.mem) > 0
+    resources.count(r => r.getName == "cpus" && r.getScalar.getValue >= config.jobs.tasks.cpus) > 0 &&
+      resources.count(r => r.getName == "mem" && r.getScalar.getValue >= config.jobs.tasks.mem) > 0
   }
 
   def offerRescinded(driver: SchedulerDriver, offerId: OfferID): Unit = {
@@ -162,7 +162,7 @@ class JobScheduler extends AmaterasuScheduler {
             val envYaml = configManager.getActionConfigContent(actionData.getName, actionData.getConfig)
             writeConfigFile(envYaml, jobManager.getJobId, actionData.getName, "env.yaml")
 
-            val dataStores = DataLoader.getTaskData(actionData, env).exports
+            val dataStores = DataLoader.getTaskData(actionData, env).getExports
             val writer = new StringWriter()
             yamlMapper.writeValue(writer, dataStores)
             val dataStoresYaml = writer.toString
@@ -285,7 +285,7 @@ class JobScheduler extends AmaterasuScheduler {
                 .setData(ByteString.copyFrom(DataLoader.getTaskDataBytes(actionData, env)))
                 .addResources(createScalarResource("cpus", driverConfiguration.getCpus))
                 .addResources(createScalarResource("mem", driverConfiguration.getMemory))
-                .addResources(createScalarResource("disk", config.Jobs.repoSize))
+                .addResources(createScalarResource("disk", config.jobs.repoSize))
                 .setSlaveId(offer.getSlaveId)
                 .build()
 
@@ -301,7 +301,7 @@ class JobScheduler extends AmaterasuScheduler {
                 //.setData(ByteString.copyFrom(DataLoader.getTaskDataBytes(actionData, env)))
                 .addResources(createScalarResource("cpus", driverConfiguration.getCpus))
                 .addResources(createScalarResource("mem", driverConfiguration.getMemory))
-                .addResources(createScalarResource("disk", config.Jobs.repoSize))
+                .addResources(createScalarResource("disk", config.jobs.repoSize))
                 .setSlaveId(offer.getSlaveId)
                 .build()
 
@@ -348,7 +348,7 @@ class JobScheduler extends AmaterasuScheduler {
         branch,
         frameworkId.getValue,
         client,
-        config.Jobs.Tasks.attempts,
+        config.jobs.tasks.attempts,
         new LinkedBlockingQueue[ActionData]()
       )
     }
@@ -357,7 +357,7 @@ class JobScheduler extends AmaterasuScheduler {
       JobLoader.reloadJob(
         frameworkId.getValue,
         client,
-        config.Jobs.Tasks.attempts,
+        config.jobs.tasks.attempts,
         new LinkedBlockingQueue[ActionData]()
       )
 

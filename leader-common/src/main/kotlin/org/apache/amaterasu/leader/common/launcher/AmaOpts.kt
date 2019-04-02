@@ -6,7 +6,7 @@
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
- *    http://www.apache.org/licenses/LICENSE-2.0
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -14,12 +14,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.amaterasu.common.execution.dependencies
+package org.apache.amaterasu.leader.common.launcher
 
-import scala.collection.mutable.ListBuffer
+data class AmaOpts(
+        var repo: String = "",
+        var branch: String = "master",
+        var env: String = "default",
+        var name: String = "amaterasu-job",
+        var jobId: String = "",
+        var newJobId: String = "",
+        var report: String = "code",
+        var home: String = "") {
 
-case class Dependencies(repos: ListBuffer[Repo], artifacts: List[Artifact])
-case class PythonDependencies(packages: List[PythonPackage])
-case class Repo(id: String, `type`: String, url: String)
-case class Artifact(groupId: String, artifactId: String, version: String)
-case class PythonPackage(packageId: String, index: Option[String] = None, channel: Option[String] = None) // Not really sure about this, basically I want default values but the ObjectMapper apparently doesn't support them
+    fun toCmdString(): String {
+
+        var cmd = " --repo $repo --branch $branch --env $env --name $name --report $report --home $home"
+        if (jobId.isNotEmpty()) {
+            cmd += " --job-id $jobId"
+        }
+        return cmd
+    }
+
+    override fun toString(): String {
+        return toCmdString()
+    }
+}

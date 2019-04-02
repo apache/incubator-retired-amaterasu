@@ -24,6 +24,7 @@ import org.apache.amaterasu.frameworks.spark.dispatcher.runners.providers._
 import org.apache.amaterasu.leader.common.utilities.{DataLoader, MemoryFormatParser}
 import org.apache.amaterasu.sdk.frameworks.configuration.DriverConfiguration
 import org.apache.amaterasu.sdk.frameworks.{FrameworkSetupProvider, RunnerSetupProvider}
+import org.apache.commons.lang.StringUtils
 
 import scala.collection.mutable
 import collection.JavaConversions._
@@ -38,12 +39,14 @@ class SparkSetupProvider extends FrameworkSetupProvider {
 
   private def loadSparkConfig: mutable.Map[String, Any] = {
 
+    println(s"===> env=$env")
+
     val execData = DataLoader.getExecutorData(env, conf)
-    val sparkExecConfiguration = execData.configurations.get("spark")
+    val sparkExecConfiguration = execData.getConfigurations.get("spark")
     if (sparkExecConfiguration.isEmpty) {
       throw new Exception(s"Spark configuration files could not be loaded for the environment $env")
     }
-    collection.mutable.Map(sparkExecConfiguration.get.toSeq: _*)
+    collection.mutable.Map(sparkExecConfiguration.toSeq: _*)
 
   }
 
@@ -51,6 +54,7 @@ class SparkSetupProvider extends FrameworkSetupProvider {
     this.env = env
     this.conf = conf
 
+//    this.sparkExecConfigurations = loadSparkConfig
     runnerProviders += ("scala" -> SparkScalaRunnerProvider(conf))
     runnerProviders += ("jar" -> SparkSubmitScalaRunnerProvider(conf))
     runnerProviders += ("pyspark" -> PySparkRunnerProvider(conf))
@@ -60,15 +64,15 @@ class SparkSetupProvider extends FrameworkSetupProvider {
   override def getGroupIdentifier: String = "spark"
 
   override def getGroupResources: Array[File] = conf.mode match {
-      case "mesos" => Array[File](new File(s"spark-${conf.Webserver.sparkVersion}.tgz"), new File(s"spark-runner-${conf.version}-all.jar"), new File(s"spark-runtime-${conf.version}.jar"))
-      case "yarn" => new File(conf.spark.home).listFiles
-      case _ => Array[File]()
-    }
+    case "mesos" => Array[File](new File(s"spark-${conf.Webserver.sparkVersion}.tgz"), new File(s"spark-runner-${conf.version}-all.jar"), new File(s"spark-runtime-${conf.version}.jar"))
+    case "yarn" => Array[File](new File(s"spark-runner-${conf.version}-all.jar"), new File(s"spark-runtime-${conf.version}.jar"), new File(s"executor-${conf.version}-all.jar"), new File(conf.spark.home))
+    case _ => Array[File]()
+  }
 
 
   override def getEnvironmentVariables: util.Map[String, String] = conf.mode match {
-    case "mesos" => Map[String, String]("SPARK_HOME" ->s"spark-${conf.Webserver.sparkVersion}","SPARK_HOME_DOCKER" -> "/opt/spark/")
-    case "yarn" => Map[String, String]("SPARK_HOME" -> "spark")
+    case "mesos" => Map[String, String]("SPARK_HOME" -> s"spark-${conf.Webserver.sparkVersion}", "SPARK_HOME_DOCKER" -> "/opt/spark/")
+    case "yarn" => Map[String, String]("SPARK_HOME" -> StringUtils.stripStart(conf.spark.home, "/"))
     case _ => Map[String, String]()
   }
 
@@ -82,8 +86,8 @@ class SparkSetupProvider extends FrameworkSetupProvider {
       cpu = conf.spark.opts("yarn.am.cores").toInt
     } else if (conf.spark.opts.contains("driver.cores")) {
       cpu = conf.spark.opts("driver.cores").toInt
-    } else if (conf.YARN.Worker.cores > 0) {
-      cpu = conf.YARN.Worker.cores
+    } else if (conf.yarn.Worker.cores > 0) {
+      cpu = conf.yarn.Worker.cores
     } else {
       cpu = 1
     }
@@ -96,8 +100,8 @@ class SparkSetupProvider extends FrameworkSetupProvider {
       mem = MemoryFormatParser.extractMegabytes(conf.spark.opts("yarn.am.memory"))
     } else if (conf.spark.opts.contains("driver.memory")) {
       mem = MemoryFormatParser.extractMegabytes(conf.spark.opts("driver.memory"))
-    } else if (conf.YARN.Worker.memoryMB > 0) {
-      mem = conf.YARN.Worker.memoryMB
+    } else if (conf.yarn.Worker.memoryMB > 0) {
+      mem = conf.yarn.Worker.memoryMB
     } else if (conf.taskMem > 0) {
       mem = conf.taskMem
     } else {

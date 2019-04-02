@@ -69,16 +69,19 @@ dependencies {
     compile project(':amaterasu-sdk')
 
     compile group: 'com.fasterxml.jackson.module', name: 'jackson-module-scala_2.11', version: '2.6.3'
-    compile group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: '2.6.4'
-    compile group: 'com.fasterxml.jackson.core', name: 'jackson-annotations', version: '2.6.4'
-    compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.6.4'
-    compile group: 'com.fasterxml.jackson.dataformat', name: 'jackson-dataformat-yaml', version: '2.6.4'
+    compile group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: '2.9.8'
+    compile group: 'com.fasterxml.jackson.core', name: 'jackson-annotations', version: '2.9.8'
+    compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.9.8'
+    compile group: 'com.fasterxml.jackson.dataformat', name: 'jackson-dataformat-yaml', version: '2.9.8'
+    compile group: 'com.fasterxml.jackson.module', name: 'jackson-module-kotlin', version: '2.9.8'
+    
     compile group: 'org.reflections', name: 'reflections', version: '0.9.11'
     compile group: 'org.eclipse.jgit', name: 'org.eclipse.jgit', version: '4.2.0.201601211800-r'
     compile group: 'org.apache.activemq', name: 'activemq-broker', version: '5.15.3'
     runtime group: 'org.apache.activemq', name: 'activemq-kahadb-store', version: '5.15.3'
-    compile group: 'com.andreapivetta.kolor', name: 'kolor', version: '0.0.2'
+    compile group: 'com.importre', name: 'crayon', version: '0.1.0'
     compile group: 'com.beust', name: 'klaxon', version: '5.0.1'
+    compile group: 'com.github.ajalt', name: 'clikt', version: '1.6.0'
 
     compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
     compile "org.jetbrains.kotlin:kotlin-reflect"

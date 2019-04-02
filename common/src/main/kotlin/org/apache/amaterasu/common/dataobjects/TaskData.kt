@@ -18,8 +18,4 @@ package org.apache.amaterasu.common.dataobjects
 
 import org.apache.amaterasu.common.runtime.Environment
 
-
-/* TODO: Future eyal and yaniv - The TaskData class should support overriding configurations for execData configurations
-// more specifiably, if execData holds configurations for spark setup (vcores/memory) a task should be able to override those
-*/
-case class TaskData(src: String, env: Environment, groupId: String, typeId: String, exports: Map[String, String])
+data class TaskData(val src: String, val env: Environment, val groupId: String, val typeId: String, val exports: Map<String, String>)
