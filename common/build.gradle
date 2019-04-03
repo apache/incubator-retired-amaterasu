@@ -17,6 +17,7 @@
 plugins {
     id 'com.github.johnrengelman.shadow' version '1.2.4'
     id "org.jetbrains.kotlin.jvm"
+    id "io.spring.dependency-management" version "1.0.7.RELEASE"
     id 'scala'
 }
 
@@ -34,9 +35,23 @@ repositories {
     mavenCentral()
 }
 
+junitPlatform {
+    filters {
+        engines {
+            include 'spek'
+        }
+    }
+}
+
 configurations {
     provided
     compile.extendsFrom provided
+}
+
+dependencyManagement {
+    imports {
+        mavenBom 'software.amazon.awssdk:bom:2.5.20'
+    }
 }
 
 dependencies {
@@ -47,6 +62,8 @@ dependencies {
     compile group: 'com.fasterxml.jackson.core', name: 'jackson-annotations', version: '2.9.4'
     compile group: 'com.fasterxml.jackson.module', name: 'jackson-module-kotlin', version: '2.9.8'
     compile group: 'commons-validator', name: 'commons-validator', version: '1.6'
+
+    compile 'software.amazon.awssdk:s3'
 
     compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
     compile "org.jetbrains.kotlin:kotlin-reflect"
