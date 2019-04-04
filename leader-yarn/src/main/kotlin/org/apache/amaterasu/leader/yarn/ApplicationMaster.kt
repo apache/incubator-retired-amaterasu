@@ -293,6 +293,13 @@ class ApplicationMaster : KLogging(), AMRMClientAsync.CallbackHandler {
         result["amaterasu.properties"] = createLocalResourceFromPath(Path.mergePaths(yarnJarPath, Path("/amaterasu.properties")))
         result["log4j.properties"] = createLocalResourceFromPath(Path.mergePaths(yarnJarPath, Path("/log4j.properties")))
 
+        // getting the action executable
+        val executable = runnerProvider.getActionExecutable(jobManager.jobId, actionData)
+
+        // setting the action executable
+        distributeFile(executable, "${jobManager.jobId}/${actionData.name}/")
+        result[executable] = createLocalResourceFromPath(Path.mergePaths(yarnJarPath, createDistPath("${jobManager.jobId}/${actionData.name}/$executable")))
+
         result.forEach { println("entry ${it.key} with value ${it.value}") }
         return result.map { x -> x.key.removePrefix("/") to x.value }.toMap()
     }
