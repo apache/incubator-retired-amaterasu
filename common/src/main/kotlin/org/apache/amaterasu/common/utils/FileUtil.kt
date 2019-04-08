@@ -16,6 +16,7 @@
  */
 package org.apache.amaterasu.common.utils
 
+import org.apache.commons.io.FilenameUtils
 import software.amazon.awssdk.services.s3.S3Client
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider
 import org.apache.commons.validator.routines.UrlValidator
@@ -43,10 +44,11 @@ class FileUtil(accessKeyId: String = "", secretAccessKey: String = "") {
         InstanceProfileCredentialsProvider.builder().build()
     }
 
-    fun downloadFile(remote: String, destination: String): Boolean {
+    fun downloadFile(remote: String): String {
 
         assert(isSupportedUrl(remote))
         val url = URL(remote)
+        var result = ""
 
         try {
 
@@ -78,10 +80,9 @@ class FileUtil(accessKeyId: String = "", secretAccessKey: String = "") {
                     .key(key)
                     .build()
 
-            s3.getObject(request, ResponseTransformer.toFile(Paths.get(destination)))
+            s3.getObject(request, ResponseTransformer.toFile(Paths.get(FilenameUtils.getName(URL(remote).file))))
+            result = FilenameUtils.getName(URL(remote).file)
 
-
-            return true
         } catch (e: S3ServiceException) {
             System.err.println(e.message)
         } catch (e: FileNotFoundException) {
@@ -89,10 +90,10 @@ class FileUtil(accessKeyId: String = "", secretAccessKey: String = "") {
         } catch (e: IOException) {
             System.err.println(e.message)
         }
-        return false
+        return result
     }
 
-    private fun isSupportedUrl(string: String): Boolean {
+    fun isSupportedUrl(string: String): Boolean {
         return urlValidator.isValid(string)
     }
 

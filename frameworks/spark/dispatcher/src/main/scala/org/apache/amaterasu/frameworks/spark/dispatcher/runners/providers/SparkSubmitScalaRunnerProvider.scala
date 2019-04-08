@@ -31,29 +31,17 @@ class SparkSubmitScalaRunnerProvider extends RunnerSetupProvider {
   }
 
   override def getActionDependencies(jobId: String, actionData: ActionData): Array[String] = {
-    val util = new ArtifactUtil(List(actionData.repo).asJava, jobId)
-    conf.mode match {
-      case "mesos" => util.getLocalArtifacts(actionData.getArtifact).toArray().map(x => amaDist.toPath.relativize(x.asInstanceOf[File].toPath).toString)
-      case "yarn" => util.getLocalArtifacts(actionData.getArtifact).toArray().map(x => x.asInstanceOf[File].getPath)
-    }
+//    val util = new ArtifactUtil(List(actionData.repo).asJava, jobId)
+//    conf.mode match {
+//      case "mesos" => util.getLocalArtifacts(actionData.getArtifact).toArray().map(x => amaDist.toPath.relativize(x.asInstanceOf[File].toPath).toString)
+//      case "yarn" => util.getLocalArtifacts(actionData.getArtifact).toArray().map(x => x.asInstanceOf[File].getPath)
+//    }
+    Array[String]()
   }
 
   override def getHasExecutor: Boolean = false
 
-  override def getActionExecutable(jobId: String, actionData: ActionData): String = {
-//    if (actionData.getHasArtifact) {
 
-      val util = new ArtifactUtil(List(actionData.repo).asJava, jobId)
-      val result = conf.mode match {
-        case "mesos" => util.getLocalArtifacts(actionData.getArtifact).toArray().map(x => amaDist.toPath.relativize(x.asInstanceOf[File].toPath).toString)
-        case "yarn" => util.getLocalArtifacts(actionData.getArtifact).toArray().map(x => x.asInstanceOf[File].getPath)
-      }
-      result(0)
-//    } else {
-//
-//
-//    }
-  }
 }
 
 object SparkSubmitScalaRunnerProvider {
