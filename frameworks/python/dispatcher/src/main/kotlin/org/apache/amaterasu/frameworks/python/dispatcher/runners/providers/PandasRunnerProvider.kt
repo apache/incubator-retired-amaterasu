@@ -14,8 +14,4 @@ open class PandasRunnerProvider(env: String?, conf: ClusterConfig?): PythonRunne
     override fun getCommand(jobId: String, actionData: ActionData, env: String, executorId: String, callbackAddress: String): String {
         return super.getCommand(jobId, actionData, env, executorId, callbackAddress) + " && python3 ${actionData.src}"
     }
-
-    override fun getActionUserResources(jobId: String, actionData: ActionData): Array<String> {
-        return arrayOf()
-    }
 }

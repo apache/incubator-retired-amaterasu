@@ -31,8 +31,4 @@ open class BasicPythonRunnerProvider(env: String?, conf: ClusterConfig?): Python
         return super.getCommand(jobId, actionData, env, executorId, callbackAddress) + " && python3 ${actionData.src}"
     }
 
-    override fun getActionUserResources(jobId: String, actionData: ActionData): Array<String> {
-        return arrayOf()
-    }
-
 }

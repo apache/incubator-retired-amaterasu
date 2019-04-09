@@ -14,8 +14,13 @@
  See the License for the specific language governing permissions and
  limitations under the License.
 """
-from setuptools import setup, find_packages
+import os
+import sys
 
+import pathlib
+from setuptools import setup, find_packages
+for p in pathlib.Path('./amaterasu').glob('**/*.pyi'):
+    print(str(p))
 setup(
     name='amaterasu-sdk',
     version='0.2.0-incubating-rc4',
@@ -27,6 +32,9 @@ setup(
     description='Apache Amaterasu (incubating) is an open source, configuration managment and deployment framework for big data pipelines',
     python_requires='>=3.4.*, <4',
     install_requires=['stomp.py', 'pyYaml', 'munch'],
+    package_data={
+        'amaterasu.pyspark': ['py.typed']
+    },
     classifiers=[
         'Development Status :: 3 - Alpha',
         'Environment :: Console',

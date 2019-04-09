@@ -26,7 +26,7 @@ setup(
     author_email="dev@amaterasu.incubator.apache.org",
     description='Apache Amaterasu (incubating) is an open source, configuration managment and deployment framework for big data pipelines',
     python_requires='>=3.4.*, <4',
-    install_requires=['amaterasu-sdk==0.2.0-incubating-rc4', 'pandas', 'PyHive'],
+    install_requires=['amaterasu-sdk==0.2.0-incubating-rc4', 'pandas', 'PyHive', 's3fs', 'sasl', 'thrift', 'thrift-sasl', 'pyarrow'],
     test_requires=['virtualenv'],
     entry_points={'amaterasu.plugins': 'python=python_pandas'},
     classifiers=[

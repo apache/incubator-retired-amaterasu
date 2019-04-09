@@ -20,13 +20,22 @@ import yaml
 import os
 import abc
 from munch import Munch, munchify
-from typing import Any
-from amaterasu.datasets import BaseDatasetManager
+from typing import Any, Dict
+from amaterasu.datasets import BaseDatasetManager, DatasetTypes
+
+logger = logging.root
+formatter = logging.Formatter()
+handler = logging.StreamHandler()
+handler.formatter = formatter
+logger.addHandler(handler)
 
 
-def _get_local_file_path(file_name):
-    cwd = os.getcwd()
-    return os.path.join(cwd, file_name)
+def _get_absolute_file_path(file_name):
+    if not os.path.isabs(file_name):
+        cwd = os.getcwd()
+        return os.path.join(cwd, file_name)
+    else:
+        return file_name
 
 
 class ImproperlyConfiguredError(Exception):
@@ -64,29 +73,29 @@ class AmaActiveMQNotificationHandler(logging.Handler):
 class BaseAmaContextBuilder(abc.ABC):
 
     def __init__(self):
-        self.env_conf_path = _get_local_file_path('env.yaml')
-        self.runtime_conf_path = _get_local_file_path('runtime.yaml')
-        self.datasets_conf_path = _get_local_file_path('datastores.yaml')
-        try:
-            self.ama_conf = self._create_env()
-        except:
-            print("Could not load default env parameters!")
-            self.ama_conf = None
+        self.env_conf_path = _get_absolute_file_path('env.yaml')
+        self.runtime_conf_path = _get_absolute_file_path('runtime.yaml')
+        self.datasets_conf_path = _get_absolute_file_path('datastores.yaml')
+        self.ama_conf = self._create_env()
         self._frameworks = self._resolve_supported_frameworks()
 
     def _create_env(self):
-        _dict = {
-            'runtime': {},
-            'env': {},
-            'datasets': {}
-        }
-        with open(self.env_conf_path, 'r') as f:
-            _dict['env'] = yaml.load(f.read())
-        with open(self.runtime_conf_path, 'r') as f:
-            _dict['runtime'] = yaml.load(f.read())
-        with open(self.datasets_conf_path, 'r') as f:
-            _dict['datasets'] = yaml.load(f.read())
-        return munchify(_dict)
+        try:
+            _dict = {
+                'runtime': {},
+                'env': {},
+                'datasets': {}
+            }
+            with open(self.env_conf_path, 'r') as f:
+                _dict['env'] = yaml.load(f.read())
+            with open(self.runtime_conf_path, 'r') as f:
+                _dict['runtime'] = yaml.load(f.read())
+            with open(self.datasets_conf_path, 'r') as f:
+                _dict['datasets'] = yaml.load(f.read())
+            return munchify(_dict)
+        except FileNotFoundError:
+            logger.exception("Could not load env data!")
+            return None
 
     def _resolve_supported_frameworks(self):
         supported_frameworks = {}
@@ -96,17 +105,17 @@ class BaseAmaContextBuilder(abc.ABC):
         return supported_frameworks
 
     def set_env_path(self, env_path):
-        self.env_conf_path = _get_local_file_path(env_path)
+        self.env_conf_path = _get_absolute_file_path(env_path)
         self.ama_conf = self._create_env()
         return self
 
     def set_runtime_path(self, runtime_path):
-        self.runtime_conf_path = _get_local_file_path(runtime_path)
+        self.runtime_conf_path = _get_absolute_file_path(runtime_path)
         self.ama_conf = self._create_env()
         return self
 
     def set_datasets_path(self, datasets_path):
-        self.datasets_conf_path = _get_local_file_path(datasets_path)
+        self.datasets_conf_path = _get_absolute_file_path(datasets_path)
         self.ama_conf = self._create_env()
         return self
 
