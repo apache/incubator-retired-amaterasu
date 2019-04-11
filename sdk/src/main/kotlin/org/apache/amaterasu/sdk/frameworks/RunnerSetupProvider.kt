@@ -17,8 +17,10 @@
 package org.apache.amaterasu.sdk.frameworks
 
 import org.apache.amaterasu.common.dataobjects.ActionData
+import org.apache.amaterasu.common.logging.KLogging
+import org.apache.amaterasu.common.logging.Logging
 
-abstract class RunnerSetupProvider {
+abstract class RunnerSetupProvider : Logging() {
 
     private val actionFiles = arrayOf("env.yaml", "runtime.yaml", "datastores.yaml")
 
@@ -26,7 +28,16 @@ abstract class RunnerSetupProvider {
 
     abstract fun getCommand(jobId: String, actionData: ActionData, env: String, executorId: String, callbackAddress: String): String
 
-    abstract fun getActionUserResources(jobId: String, actionData: ActionData): Array<String>
+    protected fun getDownloadableActionSrcPath(jobId: String, actionData: ActionData): String {
+        return "$jobId/${actionData.name}/${actionData.src}"
+    }
+
+    abstract fun getActionUserResources(jobId: String, actionData: ActionData): Array<String> //{
+//        val downloadableActionSrcPath = getDownloadableActionSrcPath(jobId, actionData)
+//        val actionSrcDistPath = "dist/$downloadableActionSrcPath"
+//        Files.copy(Paths.get("repo/src/${actionData.src}"), Paths.get(actionSrcDistPath), StandardCopyOption.REPLACE_EXISTING)
+//        return arrayOf(downloadableActionSrcPath)
+//    }
 
     fun getActionResources(jobId: String, actionData: ActionData): Array<String> =
             actionFiles.map { f -> "$jobId/${actionData.name}/$f" }.toTypedArray() +
@@ -34,6 +45,11 @@ abstract class RunnerSetupProvider {
 
     abstract fun getActionDependencies(jobId: String, actionData: ActionData): Array<String>
 
+    /**
+     * Legacy parameter, to be deprecated!
+     * Defines whether the runner has a mesos executor dedicated to it or not.
+     * New runners should have this parameter set to false.
+     */
     abstract val hasExecutor: Boolean
        get
 }

@@ -14,6 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+buildscript {
+    repositories {
+        mavenCentral()
+        maven {
+            url 'http://repository.jetbrains.com/all'
+        }
+        maven {
+            url "https://jetbrains.jfrog.io/jetbrains/spek-snapshots"
+        }
+    }
+
+    dependencies {
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+        classpath 'org.junit.platform:junit-platform-gradle-plugin:1.0.0'
+    }
+}
+
 plugins {
     id 'com.github.johnrengelman.shadow' version '1.2.4'
     id 'com.github.maiflai.scalatest' version '0.22'
@@ -31,6 +48,9 @@ repositories {
     mavenCentral()
 }
 
+apply plugin: 'kotlin'
+
+
 dependencies {
     compile 'org.scala-lang:scala-library:2.11.8'
 //    compile group: 'org.scala-lang', name: 'scala-reflect', version: '2.11.8'
@@ -39,6 +59,9 @@ dependencies {
     compile project(':common')
     compile project(':leader-common')
     compile project(':amaterasu-sdk')
+    compile project(':python-dispatcher')
+    compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
+    compile "org.jetbrains.kotlin:kotlin-reflect"
     compile 'com.uchuhimo:konf:0.11'
 }
 

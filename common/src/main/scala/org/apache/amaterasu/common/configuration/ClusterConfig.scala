@@ -23,7 +23,7 @@ import java.util.Properties
 import org.apache.amaterasu.common.logging.Logging
 import org.apache.commons.configuration.ConfigurationException
 
-import   scala.collection.mutable
+import scala.collection.mutable
 
 class ClusterConfig extends Logging {
 
@@ -47,6 +47,8 @@ class ClusterConfig extends Logging {
   // not packaged, there is a need to load the spark-assembly jar
   var additionalClassPath: String = ""
   var spark: Spark = new Spark()
+  val webserver: Webserver = new Webserver()
+  val mesos: Mesos = new Mesos()
 
   //this should be a filesystem path that is reachable by all executors (HDFS, S3, local)
 
@@ -110,16 +112,25 @@ class ClusterConfig extends Logging {
     }
   }
 
-  object Webserver {
+
+  class Webserver {
     var Port: String = ""
     var Root: String = ""
     var sparkVersion: String = ""
 
     def load(props: Properties): Unit = {
 
-      if (props.containsKey("webserver.port")) Webserver.Port = props.getProperty("webserver.port")
-      if (props.containsKey("webserver.root")) Webserver.Root = props.getProperty("webserver.root")
-      if (props.containsKey("spark.version")) Webserver.sparkVersion = props.getProperty("spark.version")
+      if (props.containsKey("webserver.port")) this.Port = props.getProperty("webserver.port")
+      if (props.containsKey("webserver.root")) this.Root = props.getProperty("webserver.root")
+      if (props.containsKey("spark.version")) this.sparkVersion = props.getProperty("spark.version")
+    }
+  }
+
+  class Mesos {
+    var libPath: String = ""
+
+    def load(props: Properties): Unit = {
+      if (props.containsKey("mesos.libPath")) this.libPath = props.getProperty("mesos.libPath")
     }
   }
 
@@ -219,10 +230,10 @@ class ClusterConfig extends Logging {
     val jobsss = new Jobs()
     jobsss.load(props)
 
-    Webserver.load(props)
+    webserver.load(props)
     yarn.load(props)
     spark.load(props)
-    jobs.load(props)
+    mesos.load(props)
 
     distLocation match {
 

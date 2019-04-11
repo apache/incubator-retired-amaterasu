@@ -32,10 +32,10 @@ import kotlin.test.assertEquals
 /*
 this Spek tests how the JobParser handles artifacts and repositories
  */
-object JobParserArtifactTests : Spek({
+class JobParserArtifactTests : Spek({
 
     val retryPolicy =  ExponentialBackoffRetry(1000, 3)
-    val server = TestingServer(2182, true)
+    val server = TestingServer(2192, true)
     val client = CuratorFrameworkFactory.newClient(server.connectString, retryPolicy)
     client.start()
 

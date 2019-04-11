@@ -39,8 +39,6 @@ class SparkSetupProvider extends FrameworkSetupProvider {
 
   private def loadSparkConfig: mutable.Map[String, Any] = {
 
-    println(s"===> env=$env")
-
     val execData = DataLoader.getExecutorData(env, conf)
     val sparkExecConfiguration = execData.getConfigurations.get("spark")
     if (sparkExecConfiguration.isEmpty) {
@@ -57,21 +55,21 @@ class SparkSetupProvider extends FrameworkSetupProvider {
 //    this.sparkExecConfigurations = loadSparkConfig
     runnerProviders += ("scala" -> SparkScalaRunnerProvider(conf))
     runnerProviders += ("jar" -> SparkSubmitScalaRunnerProvider(conf))
-    runnerProviders += ("pyspark" -> PySparkRunnerProvider(conf))
+    runnerProviders += ("pyspark" -> PySparkRunnerProvider(env, conf))
 
   }
 
   override def getGroupIdentifier: String = "spark"
 
   override def getGroupResources: Array[File] = conf.mode match {
-    case "mesos" => Array[File](new File(s"spark-${conf.Webserver.sparkVersion}.tgz"), new File(s"spark-runner-${conf.version}-all.jar"), new File(s"spark-runtime-${conf.version}.jar"))
+    case "mesos" => Array[File](new File(s"spark-${conf.webserver.sparkVersion}.tgz"), new File(s"spark-runner-${conf.version}-all.jar"), new File(s"spark-runtime-${conf.version}.jar"))
     case "yarn" => Array[File](new File(s"spark-runner-${conf.version}-all.jar"), new File(s"spark-runtime-${conf.version}.jar"), new File(s"executor-${conf.version}-all.jar"), new File(conf.spark.home))
     case _ => Array[File]()
   }
 
 
   override def getEnvironmentVariables: util.Map[String, String] = conf.mode match {
-    case "mesos" => Map[String, String]("SPARK_HOME" -> s"spark-${conf.Webserver.sparkVersion}", "SPARK_HOME_DOCKER" -> "/opt/spark/")
+    case "mesos" => Map[String, String]("SPARK_HOME" -> s"spark-${conf.webserver.sparkVersion}", "SPARK_HOME_DOCKER" -> "/opt/spark/")
     case "yarn" => Map[String, String]("SPARK_HOME" -> StringUtils.stripStart(conf.spark.home, "/"))
     case _ => Map[String, String]()
   }

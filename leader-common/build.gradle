@@ -41,12 +41,15 @@ apply plugin: 'kotlin'
 apply plugin: 'org.junit.platform.gradle.plugin'
 
 junitPlatform {
+    enableStandardTestTask = true
+    
     filters {
         engines {
             include 'spek'
         }
     }
 }
+
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
@@ -76,7 +79,8 @@ dependencies {
     compile group: 'com.fasterxml.jackson.module', name: 'jackson-module-kotlin', version: '2.9.8'
     
     compile group: 'org.reflections', name: 'reflections', version: '0.9.11'
-    compile group: 'org.eclipse.jgit', name: 'org.eclipse.jgit', version: '4.2.0.201601211800-r'
+    //compile group: 'org.eclipse.jgit', name: 'org.eclipse.jgit', version: '4.2.0.201601211800-r'
+    compile group: 'org.eclipse.jgit', name: 'org.eclipse.jgit', version: '5.3.0.201903130848-r'
     compile group: 'org.apache.activemq', name: 'activemq-broker', version: '5.15.3'
     runtime group: 'org.apache.activemq', name: 'activemq-kahadb-store', version: '5.15.3'
     compile group: 'com.importre', name: 'crayon', version: '0.1.0'

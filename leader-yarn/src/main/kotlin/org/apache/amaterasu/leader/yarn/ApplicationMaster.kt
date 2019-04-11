@@ -28,6 +28,7 @@ import org.apache.activemq.broker.BrokerService
 import org.apache.amaterasu.common.configuration.ClusterConfig
 import org.apache.amaterasu.common.dataobjects.ActionData
 import org.apache.amaterasu.common.logging.KLogging
+import org.apache.amaterasu.common.utils.ActiveNotifier
 import org.apache.amaterasu.leader.common.configuration.ConfigManager
 import org.apache.amaterasu.leader.common.execution.JobLoader
 import org.apache.amaterasu.leader.common.execution.JobManager
@@ -95,6 +96,7 @@ class ApplicationMaster : KLogging(), AMRMClientAsync.CallbackHandler {
     private lateinit var fs: FileSystem
     private lateinit var consumer: MessageConsumer
     private lateinit var configManager: ConfigManager
+    private lateinit var notifier: ActiveNotifier
 
     init {
         yamlMapper.registerModule(KotlinModule())
@@ -123,6 +125,7 @@ class ApplicationMaster : KLogging(), AMRMClientAsync.CallbackHandler {
         barrier.removeBarrier()
 
         consumer = MessagingClientUtil.setupMessaging(address)
+        notifier = ActiveNotifier(address)
 
         log.info("number of messages ${broker.adminView.totalMessageCount}")
 
@@ -151,6 +154,7 @@ class ApplicationMaster : KLogging(), AMRMClientAsync.CallbackHandler {
             val actionData = jobManager.nextActionData
             if (actionData != null) {
 
+                notifier.info("requesting container fo ${actionData.name}")
                 val frameworkProvider = frameworkFactory.getFramework(actionData.groupId)
                 val driverConfiguration = frameworkProvider.driverConfiguration
 
@@ -244,6 +248,8 @@ class ApplicationMaster : KLogging(), AMRMClientAsync.CallbackHandler {
 
                         jobManager.actionStarted(actionData.id)
                         containersIdsToTask[container.id.containerId] = actionData
+                        notifier.info("created container for ${actionData.name} created")
+                        ctx.localResources.forEach { t: String, u: LocalResource ->  notifier.info("resource: $t = ${u.resource}") }
                         log.info("launching container succeeded: ${container.id.containerId}; task: ${actionData.id}")
                     }
                 }
@@ -392,7 +398,7 @@ class ApplicationMaster : KLogging(), AMRMClientAsync.CallbackHandler {
     }
 
     override fun onError(e: Throwable?) {
-        log.error("Error on AM", e)
+        notifier.error("Error on AM", e!!.message!!)
         stopApplication(FinalApplicationStatus.FAILED, "Error on AM")
     }
 
@@ -409,11 +415,11 @@ class ApplicationMaster : KLogging(), AMRMClientAsync.CallbackHandler {
 
                     //completedContainersAndTaskIds.put(containerId, task.id)
                     jobManager.actionComplete(taskId)
-                    log.info("Container $containerId Complete with task $taskId with success.")
+                    notifier.info("Container $containerId Complete with task $taskId with success.")
                 } else {
                     // TODO: Check the getDiagnostics value and see if appropriate
                     jobManager.actionFailed(taskId, status.diagnostics)
-                    log.warn("Container $containerId Complete with task $taskId with Failed status code (${status.exitStatus})")
+                    notifier.error("---", "Container $containerId Complete with task $taskId with Failed status code (${status.exitStatus})")
                 }
             }
         }

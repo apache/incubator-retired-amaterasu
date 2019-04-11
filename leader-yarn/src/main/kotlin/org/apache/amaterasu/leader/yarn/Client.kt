@@ -141,7 +141,6 @@ class Client {
                 val frameworkFactory = FrameworkProvidersFactory.apply(opts.env, config)
                 for (group in frameworkFactory.groups()) {
                     val framework = frameworkFactory.getFramework(group)
-
                     for (file in framework.groupResources) {
                         if (file.exists())
                             file.let {
@@ -153,7 +152,7 @@ class Client {
             }
 
         } catch (e: IOException) {
-            println("===> error " + e.message)
+            println("===> error " + e.message + e.stackTrace)
             LOGGER.error("Error uploading ama folder to HDFS.", e)
             exit(3)
         } catch (ne: NullPointerException) {

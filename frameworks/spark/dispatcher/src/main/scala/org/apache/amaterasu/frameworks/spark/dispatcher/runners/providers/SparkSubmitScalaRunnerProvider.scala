@@ -21,6 +21,7 @@ class SparkSubmitScalaRunnerProvider extends RunnerSetupProvider {
     val util = new ArtifactUtil(List(actionData.repo).asJava, jobId)
     val classParam = if (actionData.getHasArtifact) s" --class ${actionData.entryClass}" else ""
     s"$$SPARK_HOME/bin/spark-submit $classParam ${util.getLocalArtifacts(actionData.getArtifact).get(0).getName} --deploy-mode client --jars spark-runtime-${conf.version}.jar >&1"
+
   }
 
   override def getRunnerResources: Array[String] =

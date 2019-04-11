@@ -1,0 +1,13 @@
+task createDistributable(type: Exec) {
+    commandLine 'python3', 'setup.py', 'sdist', '--formats=zip'
+}
+
+task copyToHomeBin(type: Copy) {
+    dependsOn createDistributable
+    from 'dist'
+    into '../../../build/amaterasu/dist'
+}
+
+task copyToHome() {
+    dependsOn copyToHomeBin
+}

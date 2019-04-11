@@ -47,4 +47,25 @@ project(':spark-runtime').projectDir=file("frameworks/spark/runtime")
 include 'spark-dispatcher'
 project(':spark-dispatcher').projectDir=file("frameworks/spark/dispatcher")
 
+// Python
+include 'python-dispatcher'
+project(':python-dispatcher').projectDir=file("frameworks/python/dispatcher")
+include 'pyspark-runtime'
+project(':pyspark-runtime').projectDir=file("frameworks/spark/pyspark_runtime")
+include 'sdk-python'
+project(':sdk-python').projectDir=file("sdk_python")
+include 'python-runtime'
+project(':python-runtime').projectDir=file("frameworks/python/python_runtime")
+include 'python-pandas'
+project(':python-pandas').projectDir=file("frameworks/python/pandas_runtime")
 
+File spekProject = file("../../kotlin/spek")
+if (spekProject.exists()) {
+    // Composite build
+    includeBuild(spekProject) {
+        dependencySubstitution {
+            substitute module('org.jetbrains.spek:spek-api') with project(':spek-api')
+            substitute module('org.jetbrains.spek:spek-junit-platform-engine') with project(':spek-junit-platform-engine')
+        }
+    }
+}

@@ -31,7 +31,6 @@ object MesosJobLauncher extends BaseJobLauncher {
 
   override def run(arguments: Args, config: ClusterConfig, resume: Boolean): Unit = {
     LogManager.resetConfiguration()
-
     val frameworkBuilder = Protos.FrameworkInfo.newBuilder()
       .setName(s"${arguments.name} - Amaterasu Job")
       .setFailoverTimeout(config.timeout)
