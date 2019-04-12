@@ -25,15 +25,17 @@ import java.io.File
 abstract class PythonRunnerProviderBase(val env: String, val conf: ClusterConfig) : RunnerSetupProvider() {
 
     private val requirementsFileName: String = "ama-requirements.txt"
-    //private val requirementsPath: String = "dist/$requirementsFileName"
     private val mandatoryPYPIPackages: Array<String> = arrayOf("requests")
+    protected val virtualPythonPath = "./amaterasu_env/bin/python"
 
     override val runnerResources: Array<String>
         get() = arrayOf("amaterasu-sdk-${conf.version()}.zip")
 
     override fun getCommand(jobId: String, actionData: ActionData, env: String, executorId: String, callbackAddress: String): String {
         val pythonPath = conf!!.pythonPath()
-        var cmd = "sudo $pythonPath -m pip install --upgrade --force-reinstall -r $requirementsFileName"
+        val virtualEnvCmd = "$pythonPath -m venv amaterasu_env"
+        val installBaseRequirementsCmd = "$virtualPythonPath -m pip install --upgrade --force-reinstall -r $requirementsFileName"
+        var cmd = "$virtualEnvCmd && $installBaseRequirementsCmd"
         val execData = DataLoader.getExecutorData(env, conf)
         execData.pyDeps?.filePaths?.forEach {
             path -> cmd += " && $pythonPath -m pip install -r ${path.split('/').last()}"

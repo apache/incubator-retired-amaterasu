@@ -10,7 +10,7 @@ class PySparkRunnerProvider(val env: String, val conf: ClusterConfig) extends Py
   override def getCommand(jobId: String, actionData: ActionData, env: String, executorId: String, callbackAddress: String): String = {
     var command = super.getCommand(jobId: String, actionData: ActionData, env: String, executorId: String, callbackAddress: String)
     log.info(s"===> Cluster manager: ${conf.mode}")
-    val pythonBinPath = Seq(conf.pythonPath, "-c", "import sys; print(sys.executable)").!!.trim()
+    val pythonBinPath = Seq(getVirtualPythonPath, "-c", "import sys; print(sys.executable)").!!.trim()
     command + s" && /bin/bash $$SPARK_HOME/bin/load-spark-env.sh && env PYSPARK_PYTHON=$pythonBinPath " +
       s" && $$SPARK_HOME/bin/spark-submit ${actionData.getSrc}"
   }

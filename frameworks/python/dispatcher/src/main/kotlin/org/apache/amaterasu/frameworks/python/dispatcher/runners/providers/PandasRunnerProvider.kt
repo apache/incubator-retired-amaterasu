@@ -14,6 +14,6 @@ import org.apache.amaterasu.common.dataobjects.ActionData
         }
 
     override fun getCommand(jobId: String, actionData: ActionData, env: String, executorId: String, callbackAddress: String): String {
-        return super.getCommand(jobId, actionData, env, executorId, callbackAddress) + " && python3 ${actionData.src}"
+        return super.getCommand(jobId, actionData, env, executorId, callbackAddress) + " && $virtualPythonPath ${actionData.src}"
     }
 }
