@@ -32,7 +32,7 @@ class PythonSetupProvider : FrameworkSetupProvider {
     override val groupIdentifier: String
         get() = "python"
     override val groupResources: Array<File>
-        get() = arrayOf(File("requirements.txt"))
+        get() = arrayOf()
     override val driverConfiguration: DriverConfiguration
         get() = DriverConfiguration(conf!!.taskMem(), 1)
     override val environmentVariables: Map<String, String>

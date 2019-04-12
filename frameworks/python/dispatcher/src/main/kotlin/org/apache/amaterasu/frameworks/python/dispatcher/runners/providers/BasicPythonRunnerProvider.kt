@@ -19,7 +19,7 @@ package org.apache.amaterasu.frameworks.python.dispatcher.runners.providers
 import org.apache.amaterasu.common.configuration.ClusterConfig
 import org.apache.amaterasu.common.dataobjects.ActionData
 
-open class BasicPythonRunnerProvider(env: String, conf: ClusterConfig): PythonRunnerProviderBase(env, conf) {
+ class BasicPythonRunnerProvider(env: String, conf: ClusterConfig) : PythonRunnerProviderBase(env, conf) {
     override val runnerResources: Array<String>
         get() {
             var resources = super.runnerResources
@@ -27,12 +27,10 @@ open class BasicPythonRunnerProvider(env: String, conf: ClusterConfig): PythonRu
             return resources
         }
 
+    override fun getActionUserResources(jobId: String, actionData: ActionData): Array<String> = arrayOf()
+
     override fun getCommand(jobId: String, actionData: ActionData, env: String, executorId: String, callbackAddress: String): String {
         return super.getCommand(jobId, actionData, env, executorId, callbackAddress) + " && python3 ${actionData.src}"
-    }
-
-    override fun getActionUserResources(jobId: String, actionData: ActionData): Array<String> {
-        return arrayOf()
     }
 
 }

@@ -32,12 +32,7 @@ abstract class RunnerSetupProvider : Logging() {
         return "$jobId/${actionData.name}/${actionData.src}"
     }
 
-    abstract fun getActionUserResources(jobId: String, actionData: ActionData): Array<String> //{
-//        val downloadableActionSrcPath = getDownloadableActionSrcPath(jobId, actionData)
-//        val actionSrcDistPath = "dist/$downloadableActionSrcPath"
-//        Files.copy(Paths.get("repo/src/${actionData.src}"), Paths.get(actionSrcDistPath), StandardCopyOption.REPLACE_EXISTING)
-//        return arrayOf(downloadableActionSrcPath)
-//    }
+    abstract fun getActionUserResources(jobId: String, actionData: ActionData): Array<String>
 
     fun getActionResources(jobId: String, actionData: ActionData): Array<String> =
             actionFiles.map { f -> "$jobId/${actionData.name}/$f" }.toTypedArray() +

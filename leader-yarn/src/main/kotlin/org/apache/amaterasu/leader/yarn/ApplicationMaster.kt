@@ -79,7 +79,7 @@ class ApplicationMaster : KLogging(), AMRMClientAsync.CallbackHandler {
     val broker: BrokerService = BrokerService()
     private val conf = YarnConfiguration()
 
-    private val nmClient: NMClientAsync = NMClientAsyncImpl(YarnNMCallbackHandler())
+
     private val actionsBuffer = ConcurrentLinkedQueue<ActionData>()
     private val completedContainersAndTaskIds = ConcurrentHashMap<Long, String>()
     private val containersIdsToTask = ConcurrentHashMap<Long, ActionData>()
@@ -97,6 +97,7 @@ class ApplicationMaster : KLogging(), AMRMClientAsync.CallbackHandler {
     private lateinit var consumer: MessageConsumer
     private lateinit var configManager: ConfigManager
     private lateinit var notifier: ActiveNotifier
+    private lateinit var nmClient: NMClientAsync
 
     init {
         yamlMapper.registerModule(KotlinModule())
@@ -130,6 +131,7 @@ class ApplicationMaster : KLogging(), AMRMClientAsync.CallbackHandler {
         log.info("number of messages ${broker.adminView.totalMessageCount}")
 
         // Initialize clients to ResourceManager and NodeManagers
+        nmClient = NMClientAsyncImpl(YarnNMCallbackHandler(notifier))
         nmClient.init(conf)
         nmClient.start()
 
@@ -249,7 +251,7 @@ class ApplicationMaster : KLogging(), AMRMClientAsync.CallbackHandler {
                         jobManager.actionStarted(actionData.id)
                         containersIdsToTask[container.id.containerId] = actionData
                         notifier.info("created container for ${actionData.name} created")
-                        ctx.localResources.forEach { t: String, u: LocalResource ->  notifier.info("resource: $t = ${u.resource}") }
+                        //ctx.localResources.forEach { t: String, u: LocalResource ->  notifier.info("resource: $t = ${u.resource}") }
                         log.info("launching container succeeded: ${container.id.containerId}; task: ${actionData.id}")
                     }
                 }
@@ -419,7 +421,7 @@ class ApplicationMaster : KLogging(), AMRMClientAsync.CallbackHandler {
                 } else {
                     // TODO: Check the getDiagnostics value and see if appropriate
                     jobManager.actionFailed(taskId, status.diagnostics)
-                    notifier.error("---", "Container $containerId Complete with task $taskId with Failed status code (${status.exitStatus})")
+                    notifier.error("", "Container $containerId Complete with task $taskId with Failed status code (${status.exitStatus})")
                 }
             }
         }
