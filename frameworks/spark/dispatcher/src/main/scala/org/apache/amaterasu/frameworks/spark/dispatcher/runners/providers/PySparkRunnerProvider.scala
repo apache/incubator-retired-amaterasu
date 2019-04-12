@@ -10,17 +10,8 @@ class PySparkRunnerProvider(val env: String, val conf: ClusterConfig) extends Py
     var command = super.getCommand(jobId: String, actionData: ActionData, env: String, executorId: String, callbackAddress: String)
     log.info(s"===> Cluster manager: ${conf.mode}")
     val pythonBinPath = Seq(conf.pythonPath, "-c", "import sys; print(sys.executable)").!!.trim()
-    conf.mode match {
-      case "mesos" =>
-          command + s" && env PYSPARK_PYTHON=$pythonBinPath && env AMA_NODE=${sys.env("AMA_NODE")} && env MESOS_NATIVE_JAVA_LIBRARY=${conf.mesos.libPath}" +
-          s" && spark-submit ${actionData.getSrc}"
-      case "yarn" =>
-          command + s" && /bin/bash spark/bin/load-spark-env.sh" +
-                     s" && spark-submit ${actionData.getSrc}"
-      case _ =>
-          log.warn(s"Received unsupported cluster manager: ${conf.mode}")
-          command
-    }
+    command + s" && /bin/bash $$SPARK_HOME/bin/load-spark-env.sh && env PYSPARK_PYTHON=$pythonBinPath " +
+      s" && $$SPARK_HOME/bin/spark-submit ${actionData.getSrc}"
   }
 
   override def getRunnerResources: Array[String] = {
