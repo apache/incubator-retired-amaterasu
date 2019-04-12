@@ -47,7 +47,7 @@ abstract class PythonRunnerProviderBase(val env: String, val conf: ClusterConfig
         val dependencies = runnerResources + mandatoryPYPIPackages
 
         dependencies.forEach { resource ->
-            println("====> RESOURCESSSSSS: $resource")
+            println("====> RESOURCES: $resource")
             reqFile.appendText("$resource\n")
         }
 

@@ -251,7 +251,7 @@ class ApplicationMaster : KLogging(), AMRMClientAsync.CallbackHandler {
                         jobManager.actionStarted(actionData.id)
                         containersIdsToTask[container.id.containerId] = actionData
                         notifier.info("created container for ${actionData.name} created")
-                        ctx.localResources.forEach { t: String, u: LocalResource ->  notifier.info("resource: $t = ${u.resource}") }
+                        //ctx.localResources.forEach { t: String, u: LocalResource ->  notifier.info("resource: $t = ${u.resource}") }
                         log.info("launching container succeeded: ${container.id.containerId}; task: ${actionData.id}")
                     }
                 }
