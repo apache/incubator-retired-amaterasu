@@ -34,9 +34,10 @@ abstract class PythonRunnerProviderBase(env: String?, val conf:ClusterConfig?) :
     get() = arrayOf("amaterasu-sdk-${conf!!.version()}.zip")
 
     override fun getCommand(jobId: String, actionData: ActionData, env: String, executorId: String, callbackAddress: String): String {
-        var cmd = "python3 -m pip install --upgrade --force-reinstall -r $requirementsFileName"
+        val pythonPath = conf!!.pythonPath()
+        var cmd = "$pythonPath -m pip install --upgrade --force-reinstall -r $requirementsFileName"
         execData.pyDeps()?.filePaths()?.forEach {
-            path -> cmd += " && python3 -m pip install -r ${path.split('/').last()}"
+            path -> cmd += " && $pythonPath -m pip install -r ${path.split('/').last()}"
         }
         return cmd
     }

@@ -9,14 +9,14 @@ class PySparkRunnerProvider(val env: String, val conf: ClusterConfig) extends Py
   override def getCommand(jobId: String, actionData: ActionData, env: String, executorId: String, callbackAddress: String): String = {
     var command = super.getCommand(jobId: String, actionData: ActionData, env: String, executorId: String, callbackAddress: String)
     log.info(s"===> Cluster manager: ${conf.mode}")
-    val pythonBinPath = Seq("python3", "-c", "import sys; print(sys.executable)").!!.trim()
+    val pythonBinPath = Seq(conf.pythonPath, "-c", "import sys; print(sys.executable)").!!.trim()
     conf.mode match {
       case "mesos" =>
           command + s" && env PYSPARK_PYTHON=$pythonBinPath && env AMA_NODE=${sys.env("AMA_NODE")} && env MESOS_NATIVE_JAVA_LIBRARY=${conf.mesos.libPath}" +
-          s" && python3 ${actionData.getSrc}"
+          s" && spark-submit ${actionData.getSrc}"
       case "yarn" =>
           command + s" && /bin/bash spark/bin/load-spark-env.sh" +
-                     s" && python3 ${actionData.getSrc}"
+                     s" && spark-submit ${actionData.getSrc}"
       case _ =>
           log.warn(s"Received unsupported cluster manager: ${conf.mode}")
           command

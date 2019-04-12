@@ -39,6 +39,7 @@ class ClusterConfig extends Logging {
   var taskMem: Int = 1024
   var distLocation: String = "local"
   var workingFolder: String = ""
+  var pythonPath: String = "python3"
   // TODO: get rid of hard-coded version
   var pysparkPath: String = _
   var Jar: String = _
@@ -220,6 +221,7 @@ class ClusterConfig extends Logging {
     if (props.containsKey("mode")) mode = props.getProperty("mode")
     if (props.containsKey("workingFolder")) workingFolder = props.getProperty("workingFolder", s"/user/$user")
     if (props.containsKey("pysparkPath")) pysparkPath = props.getProperty("pysparkPath") else pysparkPath = s"spark-${props.getProperty("spark.version")}/bin/spark-submit"
+    if (props.containsKey("pythonPath")) pythonPath = props.getProperty("pythonPath")
     // TODO: rethink this
     Jar = this.getClass.getProtectionDomain.getCodeSource.getLocation.toURI.getPath
     JarName = Paths.get(this.getClass.getProtectionDomain.getCodeSource.getLocation.getPath).getFileName.toString
