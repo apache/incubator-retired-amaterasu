@@ -32,9 +32,12 @@ setup(
     description='Apache Amaterasu (incubating) is an open source, configuration managment and deployment framework for big data pipelines',
     python_requires='>=3.4.*, <4',
     install_requires=['stomp.py', 'pyYaml', 'munch'],
-    package_data={
-        'amaterasu.pyspark': ['py.typed']
-    },
+    data_files=[
+        (
+            'shared/typehints/python{}.{}'.format(*sys.version_info[:2]),
+            pathlib.Path('./amaterasu').glob('**/*.pyi'),
+        ),
+    ],
     classifiers=[
         'Development Status :: 3 - Alpha',
         'Environment :: Console',

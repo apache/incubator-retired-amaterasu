@@ -20,8 +20,8 @@ import yaml
 import os
 import abc
 from munch import Munch, munchify
-from typing import Any, Dict
-from amaterasu.datasets import BaseDatasetManager, DatasetTypes
+from typing import Any
+from amaterasu.base import BaseDatasetManager
 
 logger = logging.root
 formatter = logging.Formatter()
@@ -145,6 +145,9 @@ class BaseAmaContext(abc.ABC):
     def builder(cls):
         pass
 
+    @property
+    def env(self):
+        return self._ama_conf['env']
 
 class LoaderAmaContext(BaseAmaContext, abc.ABC):
     @property
