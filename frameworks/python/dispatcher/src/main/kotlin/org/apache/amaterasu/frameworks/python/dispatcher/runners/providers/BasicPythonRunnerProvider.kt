@@ -30,7 +30,8 @@ import org.apache.amaterasu.common.dataobjects.ActionData
     override fun getActionUserResources(jobId: String, actionData: ActionData): Array<String> = arrayOf()
 
     override fun getCommand(jobId: String, actionData: ActionData, env: String, executorId: String, callbackAddress: String): String {
-        return super.getCommand(jobId, actionData, env, executorId, callbackAddress) + " && python3 ${actionData.src}"
+        val pythonPath = conf!!.pythonPath()
+        return super.getCommand(jobId, actionData, env, executorId, callbackAddress) + " && $pythonPath ${actionData.src}"
     }
 
 }

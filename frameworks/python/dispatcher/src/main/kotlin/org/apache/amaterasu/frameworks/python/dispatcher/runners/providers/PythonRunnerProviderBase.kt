@@ -25,35 +25,38 @@ import java.io.File
 abstract class PythonRunnerProviderBase(val env: String, val conf: ClusterConfig) : RunnerSetupProvider() {
 
     private val requirementsFileName: String = "ama-requirements.txt"
-    private val requirementsPath: String = "dist/$requirementsFileName"
+    //private val requirementsPath: String = "dist/$requirementsFileName"
     private val mandatoryPYPIPackages: Array<String> = arrayOf("requests")
 
     override val runnerResources: Array<String>
         get() = arrayOf("amaterasu-sdk-${conf.version()}.zip")
 
     override fun getCommand(jobId: String, actionData: ActionData, env: String, executorId: String, callbackAddress: String): String {
-        var cmd = "python3 -m pip install --upgrade --force-reinstall -r $requirementsFileName"
+        val pythonPath = conf!!.pythonPath()
+        var cmd = "sudo $pythonPath -m pip install --upgrade --force-reinstall -r $requirementsFileName"
         val execData = DataLoader.getExecutorData(env, conf)
-        execData.pyDeps?.filePaths?.forEach { path ->
-            cmd += " && python3 -m pip install -r ${path.split('/').last()}"
+        execData.pyDeps?.filePaths?.forEach {
+            path -> cmd += " && $pythonPath -m pip install -r ${path.split('/').last()}"
         }
         return cmd
     }
 
     override fun getActionDependencies(jobId: String, actionData: ActionData): Array<String> {
-        val reqFile = File(requirementsPath)
+        val reqFile = File(requirementsFileName)
         if (reqFile.exists()) reqFile.delete()
         val dependencies = runnerResources + mandatoryPYPIPackages
+
         dependencies.forEach { resource ->
             println("====> RESOURCESSSSSS: $resource")
             reqFile.appendText("$resource\n")
         }
+
         return try {
             val execData = DataLoader.getExecutorData(env, conf)
             val userRequirements = execData.pyDeps?.filePaths
-            arrayOf(requirementsFileName) + userRequirements!!
+            arrayOf(reqFile.path) + userRequirements!!
         } catch (e: NullPointerException) {
-            arrayOf(requirementsFileName)
+            arrayOf(reqFile.path)
         }
 
     }
