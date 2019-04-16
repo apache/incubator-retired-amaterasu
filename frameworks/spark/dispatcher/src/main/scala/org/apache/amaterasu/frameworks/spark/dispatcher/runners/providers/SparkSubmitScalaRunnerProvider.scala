@@ -26,18 +26,13 @@ class SparkSubmitScalaRunnerProvider extends RunnerSetupProvider {
   override def getRunnerResources: Array[String] =
     Array[String]()
 
-  override def getActionUserResources(jobId: String, actionData: ActionData): Array[String] = {
+  override def getActionUserResources(jobId: String, actionData: ActionData): Array[String] =
     Array[String]()
-  }
 
-  override def getActionDependencies(jobId: String, actionData: ActionData): Array[String] = {
-//    val util = new ArtifactUtil(List(actionData.repo).asJava, jobId)
-//    conf.mode match {
-//      case "mesos" => util.getLocalArtifacts(actionData.getArtifact).toArray().map(x => amaDist.toPath.relativize(x.asInstanceOf[File].toPath).toString)
-//      case "yarn" => util.getLocalArtifacts(actionData.getArtifact).toArray().map(x => x.asInstanceOf[File].getPath)
-//    }
+
+  override def getActionDependencies(jobId: String, actionData: ActionData): Array[String] =
     Array[String]()
-  }
+
 
   override def getHasExecutor: Boolean = false
 

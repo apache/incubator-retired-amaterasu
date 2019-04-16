@@ -48,12 +48,6 @@ configurations {
     compile.extendsFrom provided
 }
 
-//dependencyManagement {
-//    imports {
-//        mavenBom 'software.amazon.awssdk:bom:2.5.20'
-//    }
-//}
-
 dependencies {
     compile 'org.scala-lang:scala-library:2.11.8'
     compile group: 'com.github.nscala-time', name: 'nscala-time_2.11', version: '2.2.0'
@@ -62,7 +56,7 @@ dependencies {
     compile group: 'com.fasterxml.jackson.core', name: 'jackson-annotations', version: '2.9.4'
     compile group: 'com.fasterxml.jackson.module', name: 'jackson-module-kotlin', version: '2.9.8'
     compile group: 'commons-validator', name: 'commons-validator', version: '1.6'
-    compile group: 'software.amazon.awssdk', name: 's3', version: '2.5.23'//'software.amazon.awssdk:s3'
+    compile group: 'software.amazon.awssdk', name: 's3', version: '2.5.23'
 
     compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
     compile "org.jetbrains.kotlin:kotlin-reflect"
