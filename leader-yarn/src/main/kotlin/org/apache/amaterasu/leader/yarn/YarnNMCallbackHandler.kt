@@ -18,6 +18,7 @@ package org.apache.amaterasu.leader.yarn
 
 import org.apache.amaterasu.common.logging.KLogging
 import org.apache.amaterasu.common.utils.ActiveNotifier
+import org.apache.commons.lang.exception.ExceptionUtils
 
 import java.nio.ByteBuffer
 
@@ -30,7 +31,7 @@ import org.apache.hadoop.yarn.client.api.async.NMClientAsync
 class YarnNMCallbackHandler(val notifier: ActiveNotifier) : KLogging() , NMClientAsync.CallbackHandler {
 
     override fun onStartContainerError(containerId: ContainerId, t: Throwable) {
-        notifier.error("","Container ${containerId.containerId} couldn't start. message ${t.message}")
+        notifier.error("Error starting a container ${t.message!!}", ExceptionUtils.getStackTrace(t))
     }
 
     override fun onGetContainerStatusError(containerId: ContainerId, t: Throwable) {
@@ -46,7 +47,7 @@ class YarnNMCallbackHandler(val notifier: ActiveNotifier) : KLogging() , NMClien
     }
 
     override fun onStopContainerError(containerId: ContainerId, t: Throwable) {
-        notifier.error("","Container ${containerId.containerId} has thrown an error.  message ${t.message}")
+        notifier.error("Error running a container ${t.message!!}", ExceptionUtils.getStackTrace(t))
     }
 
     override fun onContainerStopped(containerId: ContainerId) {

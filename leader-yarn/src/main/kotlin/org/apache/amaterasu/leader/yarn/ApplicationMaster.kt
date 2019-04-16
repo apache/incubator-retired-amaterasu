@@ -38,6 +38,7 @@ import org.apache.amaterasu.leader.common.utilities.DataLoader
 import org.apache.amaterasu.leader.common.utilities.MessagingClientUtil
 import org.apache.amaterasu.sdk.frameworks.FrameworkSetupProvider
 import org.apache.amaterasu.sdk.frameworks.RunnerSetupProvider
+import org.apache.commons.lang.exception.ExceptionUtils
 
 import org.apache.curator.framework.CuratorFramework
 import org.apache.curator.framework.CuratorFrameworkFactory
@@ -60,10 +61,8 @@ import org.apache.hadoop.yarn.util.ConverterUtils
 import org.apache.hadoop.yarn.util.Records
 
 import org.apache.zookeeper.CreateMode
+import java.io.*
 
-import java.io.File
-import java.io.FileInputStream
-import java.io.IOException
 import java.nio.ByteBuffer
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentLinkedQueue
@@ -240,7 +239,7 @@ class ApplicationMaster : KLogging(), AMRMClientAsync.CallbackHandler {
                         val ctx = Records.newRecord(ContainerLaunchContext::class.java)
                         val commands: List<String> = listOf(runnerProvider.getCommand(jobManager.jobId, actionData, env, "${actionData.id}-${container.id.containerId}", address))
 
-                        log.info("container command ${commands.joinToString(prefix = " ", postfix = " ")}")
+                        notifier.info("container command ${commands.joinToString(prefix = " ", postfix = " ")}")
                         ctx.commands = commands
                         ctx.tokens = allTokens()
                         ctx.localResources = setupContainerResources(framework, runnerProvider, actionData)
@@ -293,7 +292,7 @@ class ApplicationMaster : KLogging(), AMRMClientAsync.CallbackHandler {
         // getting the action specific resources
         result.putAll(runnerProvider.getActionResources(jobManager.jobId, actionData).map { it.removePrefix("${jobManager.jobId}/${actionData.name}/") to createLocalResourceFromPath(Path.mergePaths(yarnJarPath, createDistPath(it))) })
 
-            // getting the action specific dependencies
+        // getting the action specific dependencies
         runnerProvider.getActionDependencies(jobManager.jobId, actionData).forEach { distributeFile(it, "${jobManager.jobId}/${actionData.name}/") }
         result.putAll(runnerProvider.getActionDependencies(jobManager.jobId, actionData).map { File(it).name to createLocalResourceFromPath(Path.mergePaths(yarnJarPath, createDistPath("${jobManager.jobId}/${actionData.name}/$it"))) })
 
@@ -400,7 +399,7 @@ class ApplicationMaster : KLogging(), AMRMClientAsync.CallbackHandler {
     }
 
     override fun onError(e: Throwable?) {
-        notifier.error("Error on AM", e!!.message!!)
+        notifier.error("Error running a container ${e!!.message!!}", ExceptionUtils.getStackTrace(e))
         stopApplication(FinalApplicationStatus.FAILED, "Error on AM")
     }
 
@@ -421,7 +420,7 @@ class ApplicationMaster : KLogging(), AMRMClientAsync.CallbackHandler {
                 } else {
                     // TODO: Check the getDiagnostics value and see if appropriate
                     jobManager.actionFailed(taskId, status.diagnostics)
-                    notifier.error("", "Container $containerId Complete with task $taskId with Failed status code (${status.exitStatus})")
+                    notifier.error( "Container $containerId Complete with task $taskId with Failed status code (${status.exitStatus})", status.diagnostics)
                 }
             }
         }

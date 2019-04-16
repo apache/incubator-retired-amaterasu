@@ -26,7 +26,7 @@ abstract class PythonRunnerProviderBase(val env: String, val conf: ClusterConfig
 
     private val requirementsFileName: String = "ama-requirements.txt"
     private val mandatoryPYPIPackages: Array<String> = arrayOf("requests")
-    protected val virtualPythonPath = "./amaterasu_env/bin/python"
+    protected val virtualPythonPath = "amaterasu_env/bin/python"
 
     override val runnerResources: Array<String>
         get() = arrayOf("amaterasu-sdk-${conf.version()}.zip")
