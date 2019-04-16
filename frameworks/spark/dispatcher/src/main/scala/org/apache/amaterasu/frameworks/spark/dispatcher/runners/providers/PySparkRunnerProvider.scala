@@ -42,6 +42,7 @@ class PySparkRunnerProvider extends RunnerSetupProvider {
     Array[String]()
 
   override def getHasExecutor: Boolean = true
+
 }
 
 object PySparkRunnerProvider {
