@@ -57,7 +57,6 @@ import org.apache.hadoop.yarn.client.api.async.impl.NMClientAsyncImpl
 import org.apache.hadoop.yarn.conf.YarnConfiguration
 import org.apache.hadoop.yarn.exceptions.YarnException
 import org.apache.hadoop.yarn.security.AMRMTokenIdentifier
-import org.apache.hadoop.yarn.util.ConverterUtils
 import org.apache.hadoop.yarn.util.Records
 
 import org.apache.zookeeper.CreateMode
@@ -250,7 +249,7 @@ class ApplicationMaster : KLogging(), AMRMClientAsync.CallbackHandler {
                         jobManager.actionStarted(actionData.id)
                         containersIdsToTask[container.id.containerId] = actionData
                         notifier.info("created container for ${actionData.name} created")
-                        //ctx.localResources.forEach { t: String, u: LocalResource ->  notifier.info("resource: $t = ${u.resource}") }
+                        ctx.localResources.forEach { t: String, u: LocalResource ->  notifier.info("resource: $t = ${u.resource}") }
                         log.info("launching container succeeded: ${container.id.containerId}; task: ${actionData.id}")
                     }
                 }
@@ -299,6 +298,13 @@ class ApplicationMaster : KLogging(), AMRMClientAsync.CallbackHandler {
         // Adding the Amaterasu configuration files
         result["amaterasu.properties"] = createLocalResourceFromPath(Path.mergePaths(yarnJarPath, Path("/amaterasu.properties")))
         result["log4j.properties"] = createLocalResourceFromPath(Path.mergePaths(yarnJarPath, Path("/log4j.properties")))
+
+        // getting the action executable
+        val executable = runnerProvider.getActionExecutable(jobManager.jobId, actionData)
+
+        // setting the action executable
+        distributeFile(executable, "${jobManager.jobId}/${actionData.name}/")
+        result[File(executable).name] = createLocalResourceFromPath(Path.mergePaths(yarnJarPath, createDistPath("${jobManager.jobId}/${actionData.name}/$executable")))
 
         result.forEach { println("entry ${it.key} with value ${it.value}") }
         return result.map { x -> x.key.removePrefix("/") to x.value }.toMap()
@@ -362,7 +368,7 @@ class ApplicationMaster : KLogging(), AMRMClientAsync.CallbackHandler {
 
         fileResource.shouldBeUploadedToSharedCache = true
         fileResource.visibility = LocalResourceVisibility.PUBLIC
-        fileResource.resource = ConverterUtils.getYarnUrlFromPath(path)
+        fileResource.resource = URL.fromPath(path)
         fileResource.size = stat.len
         fileResource.timestamp = stat.modificationTime
         fileResource.type = LocalResourceType.FILE

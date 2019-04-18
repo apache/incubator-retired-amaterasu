@@ -17,6 +17,7 @@
 package org.apache.amaterasu.leader.mesos.schedulers
 
 import java.io.{File, PrintWriter, StringWriter}
+import java.nio.file.{Files, Path, Paths, StandardCopyOption}
 import java.util
 import java.util.{Collections, UUID}
 import java.util.concurrent.locks.ReentrantLock
@@ -36,6 +37,7 @@ import org.apache.amaterasu.leader.common.execution.frameworks.FrameworkProvider
 import org.apache.amaterasu.leader.common.utilities.DataLoader
 import org.apache.amaterasu.leader.execution.JobLoader
 import org.apache.amaterasu.leader.utilities.HttpServer
+import org.apache.commons.io.FileUtils
 import org.apache.curator.framework.{CuratorFramework, CuratorFrameworkFactory}
 import org.apache.curator.retry.ExponentialBackoffRetry
 import org.apache.log4j.LogManager
@@ -70,6 +72,9 @@ class JobScheduler extends AmaterasuScheduler {
   private var resume: Boolean = false
   private var reportLevel: NotificationLevel = _
 
+  private val jarFile = new File(this.getClass.getProtectionDomain.getCodeSource.getLocation.getPath)
+  private val amaDist = new File(s"${new File(jarFile.getParent).getParent}/dist")
+
   val slavesExecutors = new TrieMap[String, ExecutorInfo]
   private var awsEnv: String = ""
 
@@ -99,15 +104,15 @@ class JobScheduler extends AmaterasuScheduler {
 
   def frameworkMessage(driver: SchedulerDriver, executorId: ExecutorID, slaveId: SlaveID, data: Array[Byte]): Unit = {
 
-        val notification = mapper.readValue(data, classOf[Notification])
+    val notification = mapper.readValue(data, classOf[Notification])
 
-        reportLevel match {
-          case NotificationLevel.Code => printNotification(notification)
-          case NotificationLevel.Execution =>
-            if (notification.getNotLevel != NotificationLevel.Code)
-              printNotification(notification)
-          case _ =>
-        }
+    reportLevel match {
+      case NotificationLevel.Code => printNotification(notification)
+      case NotificationLevel.Execution =>
+        if (notification.getNotLevel != NotificationLevel.Code)
+          printNotification(notification)
+      case _ =>
+    }
 
   }
 
@@ -246,6 +251,25 @@ class JobScheduler extends AmaterasuScheduler {
               .setExecutable(false)
               .setExtract(false)
               .build()))
+
+            // setting up action executable
+            val sourcePath = new File(runnerProvider.getActionExecutable(jobManager.getJobId, actionData))
+            var executable: Path = null
+            if (actionData.getHasArtifact) {
+              val relativePath = amaDist.toPath.getRoot.relativize(sourcePath.toPath)
+              executable = relativePath.subpath(amaDist.toPath.getNameCount, relativePath.getNameCount)
+            } else {
+              val dest = new File(s"dist/${jobManager.getJobId}/${sourcePath.toString}")
+              FileUtils.moveFile(sourcePath, dest)
+              executable = Paths.get(jobManager.getJobId, sourcePath.toPath.toString)
+            }
+
+            println(s"===> executable $executable")
+            command.addUris(URI.newBuilder
+              .setValue(s"http://${sys.env("AMA_NODE")}:${config.webserver.Port}/$executable")
+              .setExecutable(false)
+              .setExtract(false)
+              .build())
 
             command
               .addUris(URI.newBuilder()

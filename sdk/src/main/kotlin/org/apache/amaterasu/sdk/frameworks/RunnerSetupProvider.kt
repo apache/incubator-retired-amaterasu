@@ -17,6 +17,8 @@
 package org.apache.amaterasu.sdk.frameworks
 
 import org.apache.amaterasu.common.dataobjects.ActionData
+import org.apache.amaterasu.common.utils.ArtifactUtil
+import org.apache.amaterasu.common.utils.FileUtil
 import org.apache.amaterasu.common.logging.KLogging
 import org.apache.amaterasu.common.logging.Logging
 
@@ -40,11 +42,28 @@ abstract class RunnerSetupProvider : Logging() {
 
     abstract fun getActionDependencies(jobId: String, actionData: ActionData): Array<String>
 
-    /**
-     * Legacy parameter, to be deprecated!
-     * Defines whether the runner has a mesos executor dedicated to it or not.
-     * New runners should have this parameter set to false.
-     */
+    fun getActionExecutable(jobId: String, actionData: ActionData): String {
+
+        // if the action is artifact based
+        return if (actionData.hasArtifact) {
+
+            val util = ArtifactUtil(listOf(actionData.repo), jobId)
+            util.getLocalArtifacts(actionData.artifact).first().path
+
+        } else {
+
+            //action src can be URL based, so we first check if it needs to be downloaded
+            val fileUtil = FileUtil()
+
+            if (fileUtil.isSupportedUrl(actionData.src)) {
+                fileUtil.downloadFile(actionData.src)
+            } else {
+                 //"repo/src/${actionData.name}/${actionData.src}"
+                 "repo/src/${actionData.src}"
+            }
+        }
+    }
+
     abstract val hasExecutor: Boolean
-       get
+        get
 }
