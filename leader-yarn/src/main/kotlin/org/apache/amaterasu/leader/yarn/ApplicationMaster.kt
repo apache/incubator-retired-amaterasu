@@ -332,7 +332,7 @@ class ApplicationMaster : KLogging(), AMRMClientAsync.CallbackHandler {
         val targetPath = Path.mergePaths(yarnJarPath, actionDistPath)
 
         val outputStream = fs.create(targetPath)
-        outputStream.writeUTF(content)
+        outputStream.write(content.toByteArray())
         outputStream.close()
         log.info("written file $targetPath")
 

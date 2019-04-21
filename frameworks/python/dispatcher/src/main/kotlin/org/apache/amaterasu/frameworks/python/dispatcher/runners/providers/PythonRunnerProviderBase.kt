@@ -32,7 +32,7 @@ abstract class PythonRunnerProviderBase(val env: String, val conf: ClusterConfig
         get() = arrayOf("amaterasu-sdk-${conf.version()}.zip")
 
     override fun getCommand(jobId: String, actionData: ActionData, env: String, executorId: String, callbackAddress: String): String {
-        val pythonPath = conf!!.pythonPath()
+        val pythonPath = conf.pythonPath()
         val virtualEnvCmd = "$pythonPath -m venv amaterasu_env"
         val installBaseRequirementsCmd = "$virtualPythonPath -m pip install --upgrade --force-reinstall -r $requirementsFileName"
         var cmd = "$virtualEnvCmd && $installBaseRequirementsCmd"
