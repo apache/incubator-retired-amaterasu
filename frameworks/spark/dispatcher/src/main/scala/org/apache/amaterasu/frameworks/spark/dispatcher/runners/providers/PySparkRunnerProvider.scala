@@ -10,7 +10,7 @@ class PySparkRunnerProvider(val env: String, val conf: ClusterConfig) extends Py
     val command = super.getCommand(jobId: String, actionData: ActionData, env: String, executorId: String, callbackAddress: String)
     log.info(s"===> Cluster manager: ${conf.mode}")
     command +
-      //s" $$SPARK_HOME/conf/spark-env.sh &&" +
+      //s" $$SPARK_HOME/conf/spark-env.sh" +
       s" && env PYSPARK_PYTHON=$getVirtualPythonPath" +
       s" $$SPARK_HOME/bin/spark-submit ${actionData.getSrc}"
   }
