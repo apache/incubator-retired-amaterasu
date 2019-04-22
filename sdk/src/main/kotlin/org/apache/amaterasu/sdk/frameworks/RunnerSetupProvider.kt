@@ -24,7 +24,7 @@ import org.apache.amaterasu.common.logging.Logging
 
 abstract class RunnerSetupProvider : Logging() {
 
-    private val actionFiles = arrayOf("env.yaml", "runtime.yaml", "datastores.yaml")
+    private val actionFiles = arrayOf("env.yaml", "runtime.yaml", "datastores.yaml", "datasets.yaml")
 
     abstract val runnerResources: Array<String>
 

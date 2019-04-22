@@ -73,6 +73,21 @@ object DataLoader : KLogging() {
     }
 
     @JvmStatic
+    fun getDatasets(env: String): String {
+        var file = File("repo/env/$env/datasets.yml")
+        return if (file.exists()) {
+            file.readText()
+        } else {
+            file = File("repo/env/$env/datasets.yaml")
+            if (file.exists()) {
+                file.readText()
+            } else {
+                ""
+            }
+        }
+    }
+
+    @JvmStatic
     fun getTaskDataString(actionData: ActionData, env: String): String {
         return mapper.writeValueAsString(getTaskData(actionData, env))
     }

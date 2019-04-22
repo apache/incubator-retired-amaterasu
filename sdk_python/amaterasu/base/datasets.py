@@ -70,7 +70,9 @@ class BaseDatasetManager(abc.ABC):
 
     def _find_dataset_config(self, dataset_name: str) -> Dict:
         for dataset_type, dataset_configurations in self._datasets_conf.items():
+            print("-->" + dataset_type)
             for config in dataset_configurations:
+                print("---->" + config['name'])
                 if config['name'] == dataset_name:
                     dataset_config = config.copy()
                     dataset_config['type'] = dataset_type

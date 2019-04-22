@@ -249,7 +249,7 @@ class ApplicationMaster : KLogging(), AMRMClientAsync.CallbackHandler {
                         jobManager.actionStarted(actionData.id)
                         containersIdsToTask[container.id.containerId] = actionData
                         notifier.info("created container for ${actionData.name} created")
-                        ctx.localResources.forEach { t: String, u: LocalResource ->  notifier.info("resource: $t = ${u.resource}") }
+                        //ctx.localResources.forEach { t: String, u: LocalResource ->  notifier.info("resource: $t = ${u.resource}") }
                         log.info("launching container succeeded: ${container.id.containerId}; task: ${actionData.id}")
                     }
                 }
@@ -318,8 +318,10 @@ class ApplicationMaster : KLogging(), AMRMClientAsync.CallbackHandler {
 
         val dataStores = DataLoader.getTaskData(actionData, env).exports
         val dataStoresYaml = yamlMapper.writeValueAsString(dataStores)
-
         writeConfigFile(dataStoresYaml, jobManager.jobId, actionData.name, "datastores.yaml")
+
+        val datesets = DataLoader.getDatasets(env)
+        writeConfigFile(datesets, jobManager.jobId, actionData.name, "datasets.yaml")
 
         writeConfigFile("jobId: ${jobManager.jobId}\nactionName: ${actionData.name}", jobManager.jobId, actionData.name, "runtime.yaml")
 

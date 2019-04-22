@@ -75,7 +75,7 @@ class BaseAmaContextBuilder(abc.ABC):
     def __init__(self):
         self.env_conf_path = _get_absolute_file_path('env.yaml')
         self.runtime_conf_path = _get_absolute_file_path('runtime.yaml')
-        self.datasets_conf_path = _get_absolute_file_path('datastores.yaml')
+        self.datasets_conf_path = _get_absolute_file_path('datasets.yaml')
         self.ama_conf = self._create_env()
         self._frameworks = self._resolve_supported_frameworks()
 
