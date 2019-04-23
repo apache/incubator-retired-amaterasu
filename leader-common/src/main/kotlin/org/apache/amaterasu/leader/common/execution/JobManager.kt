@@ -77,7 +77,7 @@ data class JobManager(var name: String = "",
         log.info("requeing action $actionId")
         registeredActions.forEach { log.info("key ${it.key}") }
 
-        val action: Action = registeredActions[actionId] ?: throw IllegalAccessException()
+        val action: Action = registeredActions[actionId] ?: throw IllegalAccessException( )
         executionQueue.put(action.data)
         registeredActions[actionId]!!.announceQueued()
 
