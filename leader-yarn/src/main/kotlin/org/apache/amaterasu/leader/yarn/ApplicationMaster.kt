@@ -230,7 +230,8 @@ class ApplicationMaster : KLogging(), AMRMClientAsync.CallbackHandler {
                 log.info("container ${container.id} allocated")
                 if (actionsBuffer.isNotEmpty()) {
                     val actionData = actionsBuffer.poll()
-                    val cd = async {
+                    //val cd = async {
+                    try {
                         log.info("container ${container.id} allocated")
 
                         val framework = frameworkFactory.getFramework(actionData.groupId)
@@ -251,6 +252,9 @@ class ApplicationMaster : KLogging(), AMRMClientAsync.CallbackHandler {
                         notifier.info("created container for ${actionData.name} created")
                         //ctx.localResources.forEach { t: String, u: LocalResource ->  notifier.info("resource: $t = ${u.resource}") }
                         log.info("launching container succeeded: ${container.id.containerId}; task: ${actionData.id}")
+                    } catch (e: Exception) {
+                        notifier.error("", "error launching container with ${e.message} in ${ExceptionUtils.getStackTrace(e)}")
+                        requestContainer(actionData, container.resource)
                     }
                 }
             }
