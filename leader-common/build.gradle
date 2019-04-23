@@ -95,7 +95,7 @@ dependencies {
 
     testCompile 'org.jetbrains.spek:spek-api:1.1.5'
     testCompile "org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version"
-    testCompile 'org.apache.curator:curator-test:4.2.0'
+    testCompile 'org.apache.curator:curator-test:2.13.0'
     testRuntime 'org.jetbrains.spek:spek-junit-platform-engine:1.1.5'
 
     // Spek requires kotlin-reflect, can be omitted if already in the classpath

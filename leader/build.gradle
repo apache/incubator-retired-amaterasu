@@ -45,7 +45,7 @@ dependencies {
     compile project(':amaterasu-sdk')
     compile group: 'com.github.scopt', name: 'scopt_2.11', version: '3.3.0'
     compile group: 'com.github.nscala-time', name: 'nscala-time_2.11', version: '2.2.0'
-    compile group: 'org.apache.curator', name: 'curator-framework', version: '4.2.0'
+    compile group: 'org.apache.curator', name: 'curator-framework', version: '2.13.0'
     compile group: 'com.fasterxml.jackson.module', name: 'jackson-module-scala_2.11', version: '2.9.4'
     compile group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: '2.9.8'
     compile group: 'com.fasterxml.jackson.core', name: 'jackson-annotations', version: '2.9.8'
@@ -72,7 +72,7 @@ dependencies {
     testCompile 'junit:junit:4.11'
     testCompile 'org.scalatest:scalatest_2.11:3.0.2'
     testCompile 'org.scala-lang:scala-library:2.11.8'
-    testCompile 'org.apache.curator:curator-test:4.2.0'
+    testCompile 'org.apache.curator:curator-test:2.13.0'
 
 }
 
