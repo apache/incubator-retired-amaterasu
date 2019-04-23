@@ -205,7 +205,7 @@ class Client {
 
         // Set up resource type requirements for ApplicationMaster
         val capability = Records.newRecord(Resource::class.java)
-        capability.memory = config.YARN().master().memoryMB()
+        capability.memorySize = config.YARN().master().memoryMB().toLong()
         capability.virtualCores = config.YARN().master().cores()
 
         // Finally, set-up ApplicationSubmissionContext for the application
