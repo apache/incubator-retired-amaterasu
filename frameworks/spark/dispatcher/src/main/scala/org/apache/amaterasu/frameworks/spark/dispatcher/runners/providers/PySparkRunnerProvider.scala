@@ -13,7 +13,7 @@ class PySparkRunnerProvider(val env: String, val conf: ClusterConfig) extends Py
       //s" $$SPARK_HOME/conf/spark-env.sh" +
       s" && env PYSPARK_PYTHON=$getVirtualPythonPath" +
       s" env PYSPARK_DRIVER_PYTHON=$getVirtualPythonPath" +
-        s" $$SPARK_HOME/bin/spark-submit ${actionData.getSrc} --deploy-mode master"
+        s" $$SPARK_HOME/bin/spark-submit ${actionData.getSrc} --driver-class-path $$SPARK_HOME/conf"
   }
 
   override def getRunnerResources: Array[String] = {
