@@ -29,11 +29,9 @@ class AmaContextBuilder(BaseAmaContextBuilder):
 
     def __init__(self):
         super().__init__()
-        if self.ama_conf:
-            self.spark_conf = SparkConf()\
-                .setAppName('amaterasu-{}-{}'.format(self.ama_conf.runtime.jobId, self.ama_conf.runtime.actionName))\
-                .setMaster(self.ama_conf.env.master)
-        else:
+        try:
+            self.spark_conf = spark.conf
+        except:
             self.spark_conf = SparkConf()
 
     def setMaster(self, master_uri) -> "AmaContextBuilder":
