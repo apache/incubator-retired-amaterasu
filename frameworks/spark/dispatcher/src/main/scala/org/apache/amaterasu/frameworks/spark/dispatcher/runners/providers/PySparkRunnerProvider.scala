@@ -11,9 +11,14 @@ class PySparkRunnerProvider(val env: String, val conf: ClusterConfig) extends Py
     log.info(s"===> Cluster manager: ${conf.mode}")
     command +
       //s" $$SPARK_HOME/conf/spark-env.sh" +
-     // s" && env PYSPARK_PYTHON=$getVirtualPythonPath" +
+      // s" && env PYSPARK_PYTHON=$getVirtualPythonPath" +
       //s" env PYSPARK_DRIVER_PYTHON=$getVirtualPythonPath" + d
-        s" && $$SPARK_HOME/bin/spark-submit --master yarn-cluster --conf spark.pyspark.virtualenv.enabled=true  --conf spark.pyspark.virtualenv.type=native --conf spark.pyspark.virtualenv.bin.path=$getVirtualPythonBin --conf spark.pyspark.python=$getVirtualPythonPath --files $$SPARK_HOME/conf/hive-site.xml ${actionData.getSrc}"
+      s" && $$SPARK_HOME/bin/spark-submit --master yarn-client " +
+      s"--conf spark.pyspark.virtualenv.enabled=true  " +
+      s"--conf spark.pyspark.virtualenv.type=native " +
+      s"--conf spark.pyspark.virtualenv.bin.path=$getVirtualPythonBin " +
+      s"--conf spark.pyspark.python=$getVirtualPythonPath " +
+      s"--files $$SPARK_HOME/conf/hive-site.xml ${actionData.getSrc}"
   }
 
   override def getRunnerResources: Array[String] = {
