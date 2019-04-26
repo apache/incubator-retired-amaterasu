@@ -16,11 +16,10 @@
  */
 package org.apache.amaterasu.leader.yarn
 
-import org.apache.activemq.ActiveMQConnectionFactory
+import com.importre.crayon.bold
 import org.apache.amaterasu.common.configuration.ClusterConfig
 import org.apache.amaterasu.leader.common.launcher.AmaOpts
 import org.apache.amaterasu.leader.common.execution.frameworks.FrameworkProvidersFactory
-import org.apache.amaterasu.leader.common.utilities.ActiveReportListener
 import org.apache.amaterasu.leader.common.utilities.MessagingClientUtil
 import org.apache.curator.framework.CuratorFrameworkFactory
 import org.apache.curator.framework.recipes.barriers.DistributedBarrier
@@ -107,7 +106,7 @@ class Client {
 
         val newIdVal = appContext.applicationId.toString() + "-" + UUID.randomUUID().toString()
         if (opts.jobId.isEmpty()) {
-            newId = "--new-job-id=" + newIdVal
+            newId = "--new-job-id=$newIdVal"
         }
 
 
@@ -115,12 +114,14 @@ class Client {
                 " env HADOOP_USER_NAME=" + UserGroupInformation.getCurrentUser().userName +
                 " \$JAVA_HOME/bin/java" +
                 " -Dscala.usejavacp=false" +
+                " -Xmx1G" +
                 " org.apache.amaterasu.leader.yarn.ApplicationMaster " +
                 joinStrings(args) +
                 newId +
                 " 1>" + ApplicationConstants.LOG_DIR_EXPANSION_VAR + "/stdout" +
                 " 2>" + ApplicationConstants.LOG_DIR_EXPANSION_VAR + "/stderr")
 
+        println("===> AM command ${commands[0]}".bold())
         // Set up the container launch context for the application master
         val amContainer = Records.newRecord(ContainerLaunchContext::class.java)
         amContainer.commands = commands
@@ -133,7 +134,7 @@ class Client {
                 fs!!.mkdirs(jarPathQualified)
 
                 for (f in home.listFiles()) {
-                    fs!!.copyFromLocalFile(false, true, Path(f.getAbsolutePath()), jarPathQualified)
+                    fs!!.copyFromLocalFile(false, true, Path(f.absolutePath), jarPathQualified)
                 }
 
                 // setup frameworks
