@@ -19,7 +19,6 @@ from pyspark.sql import SparkSession, DataFrame
 from amaterasu.base import BaseAmaContextBuilder, LoaderAmaContext
 from .datasets import DatasetManager
 from pip._internal import main as pip_main
-import zipfile
 import os
 import sys
 
