@@ -183,6 +183,6 @@ def _create_configuration():
     return munchify(_dict, factory=Environment)
 
 
-logging.setLoggerClass(Notifier)
+# logging.setLoggerClass(Notifier)
 # notifier = logging.getLogger(__name__)
 __all__ = ['BaseAmaContext', 'BaseAmaContextBuilder', 'LoaderAmaContext']
