@@ -14,7 +14,7 @@ class PySparkRunnerProvider(val env: String, val conf: ClusterConfig) extends Py
       // s" && env PYSPARK_PYTHON=$getVirtualPythonPath" +
       //s" env PYSPARK_DRIVER_PYTHON=$getVirtualPythonPath" + d
       s" && $$SPARK_HOME/bin/spark-submit --master yarn-client " +
-      s"--conf spark.pyspark.python=${conf.pythonPath}" +
+      s"--conf spark.pyspark.python=${conf.pythonPath} " +
       s"--conf spark.pyspark.driver.python=$getVirtualPythonPath " +
       s"--files $$SPARK_HOME/conf/hive-site.xml ${actionData.getSrc}"
   }
