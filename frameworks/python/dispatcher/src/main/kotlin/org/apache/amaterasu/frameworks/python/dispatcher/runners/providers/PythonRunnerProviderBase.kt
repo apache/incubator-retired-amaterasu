@@ -45,7 +45,7 @@ abstract class PythonRunnerProviderBase(val env: String, val conf: ClusterConfig
     }
 
     override fun getActionDependencies(jobId: String, actionData: ActionData): Array<String> {
-        val reqFile = File(requirementsFileName)
+        val reqFile = File("dist/$requirementsFileName")
         if (reqFile.exists()) reqFile.delete()
         val dependencies = runnerResources + mandatoryPYPIPackages
 
@@ -57,9 +57,9 @@ abstract class PythonRunnerProviderBase(val env: String, val conf: ClusterConfig
         return try {
             val execData = DataLoader.getExecutorData(env, conf)
             val userRequirements = execData.pyDeps?.filePaths
-            arrayOf(reqFile.path) + userRequirements!!
+            arrayOf(reqFile.name) + userRequirements!!
         } catch (e: NullPointerException) {
-            arrayOf(reqFile.path)
+            arrayOf(reqFile.name)
         }
 
     }

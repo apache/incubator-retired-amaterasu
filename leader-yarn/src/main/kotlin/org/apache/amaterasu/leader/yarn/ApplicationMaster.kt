@@ -324,8 +324,8 @@ class ApplicationMaster : KLogging(), AMRMClientAsync.CallbackHandler {
         val dataStoresYaml = yamlMapper.writeValueAsString(dataStores)
         writeConfigFile(dataStoresYaml, jobManager.jobId, actionData.name, "datastores.yaml")
 
-        val datesets = DataLoader.getDatasets(env)
-        writeConfigFile(datesets, jobManager.jobId, actionData.name, "datasets.yaml")
+        val datasets = DataLoader.getDatasets(env)
+        writeConfigFile(datasets, jobManager.jobId, actionData.name, "datasets.yaml")
 
         writeConfigFile("jobId: ${jobManager.jobId}\nactionName: ${actionData.name}", jobManager.jobId, actionData.name, "runtime.yaml")
 

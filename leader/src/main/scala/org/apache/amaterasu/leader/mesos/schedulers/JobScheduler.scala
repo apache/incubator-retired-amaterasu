@@ -176,6 +176,8 @@ class JobScheduler extends AmaterasuScheduler {
 
             writeConfigFile(s"jobId: ${jobManager.getJobId}\nactionName: ${actionData.getName}", jobManager.getJobId, actionData.getName, "runtime.yaml")
 
+            val datasets = DataLoader.getDatasets(env)
+            writeConfigFile(datasets, jobManager.getJobId, actionData.getName, "datasets.yaml")
             offersToTaskIds.put(offer.getId.getValue, taskId.getValue)
 
             // atomically adding a record for the slave, I'm storing all the actions
@@ -210,14 +212,14 @@ class JobScheduler extends AmaterasuScheduler {
             val command = CommandInfo
               .newBuilder
               .setValue(commandStr)
-//              .addUris(URI.newBuilder
-//                .setValue(s"http://${sys.env("AMA_NODE")}:${config.webserver.Port}/executor-${config.version}-all.jar")
-//                .setExecutable(false)
-//                .setExtract(false)
-//                .build())
+            //              .addUris(URI.newBuilder
+            //                .setValue(s"http://${sys.env("AMA_NODE")}:${config.webserver.Port}/executor-${config.version}-all.jar")
+            //                .setExecutable(false)
+            //                .setExtract(false)
+            //                .build())
 
             // Getting framework (group) resources
-            log.info(s">>>> groupResources: ${frameworkProvider.getGroupResources}")
+            log.info(s"===> groupResources: ${frameworkProvider.getGroupResources}")
             frameworkProvider.getGroupResources.foreach(f => command.addUris(URI.newBuilder
               .setValue(s"http://${sys.env("AMA_NODE")}:${config.webserver.Port}/${f.getName}")
               .setExecutable(false)
@@ -260,7 +262,7 @@ class JobScheduler extends AmaterasuScheduler {
               executable = relativePath.subpath(amaDist.toPath.getNameCount, relativePath.getNameCount)
             } else {
               val dest = new File(s"dist/${jobManager.getJobId}/${sourcePath.toString}")
-              FileUtils.moveFile(sourcePath, dest)
+              FileUtils.copyFile(sourcePath, dest)
               executable = Paths.get(jobManager.getJobId, sourcePath.toPath.toString)
             }
 
