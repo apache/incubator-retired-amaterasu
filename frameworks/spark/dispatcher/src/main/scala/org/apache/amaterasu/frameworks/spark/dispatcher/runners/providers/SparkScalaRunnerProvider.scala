@@ -22,6 +22,7 @@ import org.apache.amaterasu.common.configuration.ClusterConfig
 import org.apache.amaterasu.common.dataobjects.ActionData
 import org.apache.amaterasu.leader.common.utilities.DataLoader
 import org.apache.amaterasu.sdk.frameworks.RunnerSetupProvider
+import org.apache.commons.lang.StringUtils
 import org.apache.hadoop.yarn.api.ApplicationConstants
 
 class SparkScalaRunnerProvider extends RunnerSetupProvider {
@@ -36,11 +37,12 @@ class SparkScalaRunnerProvider extends RunnerSetupProvider {
       s"java -cp /mnt/mesos/sandbox/executor-${conf.version}-all.jar:/mnt/mesos/sandbox/spark-runner-${conf.version}-all.jar:/mnt/mesos/sandbox/spark-runtime-${conf.version}.jar:/mnt/mesos/sandbox/spark-${conf.Webserver.sparkVersion}/jars/* " +
       s"-Dscala.usejavacp=true -Djava.library.path=$libPath:/opt/mesosphere/libmesos-bundle/lib/ " +
       s"org.apache.amaterasu.executor.mesos.executors.MesosActionsExecutor $jobId ${conf.master} ${actionData.getName}".stripMargin
-    case "yarn" => s"/bin/bash spark/bin/load-spark-env.sh && " +
-      s"java -cp spark/jars/*:executor.jar:spark-runner.jar:spark-runtime.jar:spark/conf/:${conf.YARN.hadoopHomeDir}/conf/ " +
+    case "yarn" =>
+      s"/bin/bash ${StringUtils.stripStart(conf.spark.home,"/")}/conf/spark-env.sh && " +
+      s"java -cp ${StringUtils.stripStart(conf.spark.home,"/")}/jars/*:executor-${conf.version}-all.jar:spark-runner-${conf.version}-all.jar:spark-runtime-${conf.version}.jar:${StringUtils.stripStart(conf.spark.home,"/")}/conf/:${conf.yarn.hadoopHomeDir}/conf/ " +
       "-Xmx2G " +
       "-Dscala.usejavacp=true " +
-      "-Dhdp.version=2.6.1.0-129 " +
+      "-Dhdp.version=2.6.5.0-292 " +
       "org.apache.amaterasu.executor.yarn.executors.ActionsExecutorLauncher " +
       s"'$jobId' '${conf.master}' '${actionData.getName}' '${URLEncoder.encode(DataLoader.getTaskDataString(actionData, env), "UTF-8")}' '${URLEncoder.encode(DataLoader.getExecutorDataString(env, conf), "UTF-8")}' '$executorId' '$callbackAddress' " +
       s"1> ${ApplicationConstants.LOG_DIR_EXPANSION_VAR}/stdout " +
@@ -52,11 +54,15 @@ class SparkScalaRunnerProvider extends RunnerSetupProvider {
     Array[String]()
 
 
-  def getActionResources(jobId: String, actionData: ActionData): Array[String] =
+  def getActionUserResources(jobId: String, actionData: ActionData): Array[String] =
     Array[String]()
 
   override def getActionDependencies(jobId: String, actionData: ActionData): Array[String] =
     Array[String]()
+
+  override def getHasExecutor: Boolean = true
+
+
 }
 
 object SparkScalaRunnerProvider {

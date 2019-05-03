@@ -18,9 +18,10 @@ package org.apache.amaterasu.leader.common.configuration
 
 import com.uchuhimo.konf.Config
 import com.uchuhimo.konf.source.yaml.toYaml
+import org.apache.amaterasu.common.logging.KLogging
 import java.io.File
 
-class ConfigManager(private val env: String, private val repoPath: String, private val frameworkItems: List<String> = emptyList()) {
+class ConfigManager(private val env: String, private val repoPath: String, private val frameworkItems: List<String> = emptyList()): KLogging() {
 
     private val envFolder = "$repoPath/env/$env"
 
@@ -34,6 +35,7 @@ class ConfigManager(private val env: String, private val repoPath: String, priva
     }
 
     init {
+        log.info("environment folder is $envFolder")
         for (file in File(envFolder).listFiles()) {
             config = config.from.yaml.file(file)
             println(config.toYaml.toText())

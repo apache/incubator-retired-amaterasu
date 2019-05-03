@@ -6,6 +6,7 @@ import org.apache.amaterasu.common.configuration.ClusterConfig
 import org.apache.amaterasu.common.dataobjects.ActionData
 import org.apache.amaterasu.leader.common.utilities.DataLoader
 import org.apache.amaterasu.sdk.frameworks.RunnerSetupProvider
+import org.apache.commons.lang.StringUtils
 import org.apache.hadoop.yarn.api.ApplicationConstants
 
 class PySparkRunnerProvider extends RunnerSetupProvider {
@@ -19,11 +20,11 @@ class PySparkRunnerProvider extends RunnerSetupProvider {
       s"java -cp executor-${conf.version}-all.jar:spark-runner-${conf.version}-all.jar:spark-runtime-${conf.version}.jar:spark-${conf.Webserver.sparkVersion}/jars/* " +
       s"-Dscala.usejavacp=true -Djava.library.path=$libPath org.apache.amaterasu.executor.mesos.executors.MesosActionsExecutor $jobId ${conf.master} ${actionData.getName}.stripMargin"
     case "yarn" => "/bin/bash ./miniconda.sh -b -p $PWD/miniconda && " +
-      s"/bin/bash spark/bin/load-spark-env.sh && " +
-      s"java -cp spark/jars/*:executor.jar:spark-runner.jar:spark-runtime.jar:spark/conf/:${conf.YARN.hadoopHomeDir}/conf/ " +
+      s"/bin/bash ${StringUtils.stripStart(conf.spark.home,"/")}/conf/load-spark.sh && " +
+      s"java -cp ${StringUtils.stripStart(conf.spark.home,"/")}/jars/*:executor-${conf.version}-all.jar:spark-runner-${conf.version}-all.jar:spark-runtime-${conf.version}.jar:${StringUtils.stripStart(conf.spark.home,"/")}/conf/:${conf.yarn.hadoopHomeDir}/conf/ " +
       "-Xmx2G " +
       "-Dscala.usejavacp=true " +
-      "-Dhdp.version=2.6.1.0-129 " +
+      "-Dhdp.version=2.6.5.0-292 " +
       "org.apache.amaterasu.executor.yarn.executors.ActionsExecutorLauncher " +
       s"'$jobId' '${conf.master}' '${actionData.getName}' '${URLEncoder.encode(DataLoader.getTaskDataString(actionData, env), "UTF-8")}' '${URLEncoder.encode(DataLoader.getExecutorDataString(env, conf), "UTF-8")}' '$executorId' '$callbackAddress' " +
       s"1> ${ApplicationConstants.LOG_DIR_EXPANSION_VAR}/stdout " +
@@ -34,11 +35,14 @@ class PySparkRunnerProvider extends RunnerSetupProvider {
   override def getRunnerResources: Array[String] =
     Array[String]("miniconda.sh", "spark_intp.py", "runtime.py", "codegen.py")
 
-  def getActionResources(jobId: String, actionData: ActionData): Array[String] =
+  override def getActionUserResources(jobId: String, actionData: ActionData): Array[String] =
     Array[String]()
 
   override def getActionDependencies(jobId: String, actionData: ActionData): Array[String] =
     Array[String]()
+
+  override def getHasExecutor: Boolean = true
+
 }
 
 object PySparkRunnerProvider {

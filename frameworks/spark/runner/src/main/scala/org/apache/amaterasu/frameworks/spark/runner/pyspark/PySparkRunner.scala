@@ -25,6 +25,7 @@ import org.apache.amaterasu.common.execution.dependencies.PythonDependencies
 import org.apache.amaterasu.common.logging.Logging
 import org.apache.amaterasu.common.runtime.Environment
 import org.apache.amaterasu.sdk.AmaterasuRunner
+import org.apache.commons.lang.StringUtils
 import org.apache.spark.SparkEnv
 import org.apache.spark.sql.SparkSession
 
@@ -49,7 +50,7 @@ class PySparkRunner extends Logging with AmaterasuRunner {
     PySparkEntryPoint.getExecutionQueue.setForExec((source, actionName, exports))
     val resQueue = PySparkEntryPoint.getResultQueue(actionName)
 
-    notifier.info(s"================= started action $actionName =================")
+    notifier.info(s"================= Started action $actionName =================")
 
     var res: PySparkResult = null
 
@@ -101,8 +102,8 @@ object PySparkRunner {
     PySparkEntryPoint.start(spark, jobId, env, SparkEnv.get)
     val port = PySparkEntryPoint.getPort
     var intpPath = ""
-    if (env.configuration.contains("cwd")) {
-      val cwd = new File(env.configuration("cwd"))
+    if (env.getConfiguration.containsKey("cwd")) {
+      val cwd = new File(env.getConfiguration.get("cwd").toString)
       intpPath = s"${cwd.getAbsolutePath}/spark_intp.py" // This is to support test environment
     } else {
       intpPath = s"spark_intp.py"
@@ -114,7 +115,7 @@ object PySparkRunner {
     var sparkCmd: Seq[String] = Seq()
     config.mode match {
       case "yarn" =>
-        pysparkPath = s"spark/bin/spark-submit"
+        pysparkPath = s"${StringUtils.stripStart(config.spark.home,"/")}/bin/spark-submit"
         sparkCmd = Seq(pysparkPath, "--py-files", condaPkgs, "--master", "yarn", intpPath, port.toString)
         val proc = Process(sparkCmd, None,
           "PYTHONPATH" -> pypath,
@@ -132,7 +133,7 @@ object PySparkRunner {
         var pysparkPython = "/usr/bin/python"
 
         if (pyDeps != null &&
-          pyDeps.packages.nonEmpty) {
+          !pyDeps.getPackages.isEmpty) {
           pysparkPython = "./miniconda/bin/python"
         }
         val proc = Process(sparkCmd, None,

@@ -52,10 +52,10 @@ class SparkSqlRunnerTests extends FlatSpec with Matchers with BeforeAndAfterAll 
     //Prepare test dataset
     val inputDf = spark.read.parquet(getClass.getResource("/SparkSql/parquet").getPath)
 
-    inputDf.write.mode(SaveMode.Overwrite).parquet(s"${env.workingDir}/${sparkSql.jobId}/sparksqldefaultparquetjobaction/sparksqldefaultparquetjobactiontempdf")
+    inputDf.write.mode(SaveMode.Overwrite).parquet(s"${env.getWorkingDir}/${sparkSql.jobId}/sparksqldefaultparquetjobaction/sparksqldefaultparquetjobactiontempdf")
     sparkSql.executeSource("select * FROM AMACONTEXT_sparksqldefaultparquetjobaction_sparksqldefaultparquetjobactiontempdf where age=22", "sql_parquet_test", Map("result" -> "parquet").asJava)
 
-    val outputDf = spark.read.parquet(s"${env.workingDir}/${sparkSql.jobId}/sql_parquet_test/result")
+    val outputDf = spark.read.parquet(s"${env.getWorkingDir}/${sparkSql.jobId}/sql_parquet_test/result")
     println("Output Default Parquet: " + inputDf.count + "," + outputDf.first().getString(1))
     outputDf.first().getString(1) shouldEqual "Michael"
   }
@@ -71,10 +71,10 @@ class SparkSqlRunnerTests extends FlatSpec with Matchers with BeforeAndAfterAll 
 
     //Prepare test dataset
     val inputDf = spark.read.parquet(getClass.getResource("/SparkSql/parquet").getPath)
-    inputDf.write.mode(SaveMode.Overwrite).parquet(s"${env.workingDir}/${sparkSql.jobId}/sparksqlparquetjobaction/sparksqlparquetjobactiontempdf")
+    inputDf.write.mode(SaveMode.Overwrite).parquet(s"${env.getWorkingDir}/${sparkSql.jobId}/sparksqlparquetjobaction/sparksqlparquetjobactiontempdf")
     sparkSql.executeSource("select * FROM AMACONTEXT_sparksqlparquetjobaction_sparksqlparquetjobactiontempdf READAS parquet", "sql_parquet_test", Map("result2" -> "parquet").asJava)
 
-    val outputDf = spark.read.parquet(s"${env.workingDir}/${sparkSql.jobId}/sql_parquet_test/result2")
+    val outputDf = spark.read.parquet(s"${env.getWorkingDir}/${sparkSql.jobId}/sql_parquet_test/result2")
     println("Output Parquet: " + inputDf.count + "," + outputDf.count)
     inputDf.first().getString(1) shouldEqual outputDf.first().getString(1)
   }
@@ -92,10 +92,10 @@ class SparkSqlRunnerTests extends FlatSpec with Matchers with BeforeAndAfterAll 
     //Prepare test dataset
     val inputDf = spark.read.json(getClass.getResource("/SparkSql/json").getPath)
 
-    inputDf.write.mode(SaveMode.Overwrite).json(s"${env.workingDir}/${sparkSql.jobId}/sparksqljsonjobaction/sparksqljsonjobactiontempdf")
+    inputDf.write.mode(SaveMode.Overwrite).json(s"${env.getWorkingDir}/${sparkSql.jobId}/sparksqljsonjobaction/sparksqljsonjobactiontempdf")
     sparkSql.executeSource("select * FROM AMACONTEXT_sparksqljsonjobaction_sparksqljsonjobactiontempdf  where age='30' READAS json", "sql_json_test", Map("result" -> "json").asJava)
 
-    val outputDf = spark.read.json(s"${env.workingDir}/${sparkSql.jobId}/sql_json_test/result")
+    val outputDf = spark.read.json(s"${env.getWorkingDir}/${sparkSql.jobId}/sql_json_test/result")
     println("Output JSON: " + inputDf.count + "," + outputDf.count)
     outputDf.first().getString(1) shouldEqual "Kirupa"
 
@@ -112,11 +112,11 @@ class SparkSqlRunnerTests extends FlatSpec with Matchers with BeforeAndAfterAll 
 
     //Prepare test dataset
     val inputDf = spark.read.csv(getClass.getResource("/SparkSql/csv").getPath)
-    inputDf.write.mode(SaveMode.Overwrite).csv(s"${env.workingDir}/${sparkSql.jobId}/sparksqlcsvjobaction/sparksqlcsvjobactiontempdf")
+    inputDf.write.mode(SaveMode.Overwrite).csv(s"${env.getWorkingDir}/${sparkSql.jobId}/sparksqlcsvjobaction/sparksqlcsvjobactiontempdf")
     sparkSql.executeSource("select * FROM AMACONTEXT_sparksqlcsvjobaction_sparksqlcsvjobactiontempdf READAS csv", "sql_csv_test", Map("result" -> "csv").asJava)
 
 
-    val outputDf = spark.read.csv(s"${env.workingDir}/${sparkSql.jobId}/sql_csv_test/result")
+    val outputDf = spark.read.csv(s"${env.getWorkingDir}/${sparkSql.jobId}/sql_csv_test/result")
     println("Output CSV: " + inputDf.count + "," + outputDf.count)
     inputDf.first().getString(1) shouldEqual outputDf.first().getString(1)
   }

@@ -18,19 +18,27 @@ package org.apache.amaterasu.common.dataobjects
 
 import org.apache.amaterasu.common.configuration.enums.ActionStatus
 
-
-
 /*
     Adding default values just for the sake of Scala
  */
-data class ActionData(var status: ActionStatus = ActionStatus.pending,
+data class ActionData(var status: ActionStatus = ActionStatus.Pending,
                       var name: String= "",
                       var src: String= "",
+                      var config: String= "",
                       var groupId: String= "",
                       var typeId: String= "",
                       var id: String= "",
                       var exports: Map<String, String> = mutableMapOf(),
-                      var nextActionIds: List<String> = listOf()) {
-    lateinit var errorActionId: String
+                      var nextActionIds: MutableList<String> = mutableListOf()) {
 
+    lateinit var errorActionId: String
+    lateinit var artifact: Artifact
+    lateinit var repo: Repo
+    lateinit var entryClass: String
+
+    val hasErrorAction: Boolean
+        get() = ::errorActionId.isInitialized
+
+    val hasArtifact: Boolean
+        get() = ::artifact.isInitialized
 }

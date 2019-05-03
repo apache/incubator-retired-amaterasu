@@ -40,7 +40,7 @@ object AmaContext extends Logging {
   }
 
   def getDataFrame(actionName: String, dfName: String, format: String = "parquet"): DataFrame = {
-    spark.read.format(format).load(s"${env.workingDir}/$jobId/$actionName/$dfName")
+    spark.read.format(format).load(s"${env.getWorkingDir}/$jobId/$actionName/$dfName")
   }
 
   def getDataset[T: Encoder](actionName: String, dfName: String, format: String = "parquet"): Dataset[T] = {

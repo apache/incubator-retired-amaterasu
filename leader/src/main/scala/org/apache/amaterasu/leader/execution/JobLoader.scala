@@ -21,8 +21,8 @@ import java.util.concurrent.BlockingQueue
 import org.apache.amaterasu.common.configuration.enums.ActionStatus
 import org.apache.amaterasu.common.dataobjects.ActionData
 import org.apache.amaterasu.common.logging.Logging
-import org.apache.amaterasu.leader.common.dsl.GitUtil
-import org.apache.amaterasu.leader.dsl.JobParser
+import org.apache.amaterasu.leader.common.dsl.{GitUtil, JobParser}
+import org.apache.amaterasu.leader.common.execution.JobManager
 import org.apache.curator.framework.CuratorFramework
 import org.apache.zookeeper.CreateMode
 
@@ -91,8 +91,8 @@ object JobLoader extends Logging {
     val tasks = client.getChildren.forPath(s"/$jobId").asScala.toSeq.filter(n => n.startsWith("task"))
     for (task <- tasks) {
 
-      if (client.getData.forPath(s"/$jobId/$task").sameElements(ActionStatus.queued.toString.getBytes) ||
-        client.getData.forPath(s"/$jobId/$task").sameElements(ActionStatus.started.toString.getBytes)) {
+      if (client.getData.forPath(s"/$jobId/$task").sameElements(ActionStatus.Queued.toString.getBytes) ||
+        client.getData.forPath(s"/$jobId/$task").sameElements(ActionStatus.Started.toString.getBytes)) {
 
         jobManager.reQueueAction(task.substring(task.indexOf("task-") + 5))
 

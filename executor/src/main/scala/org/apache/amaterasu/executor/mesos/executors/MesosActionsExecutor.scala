@@ -106,11 +106,11 @@ class MesosActionsExecutor extends Logging with Executor {
         .setTaskId(taskInfo.getTaskId)
         .setState(TaskState.TASK_RUNNING).build()
       driver.sendStatusUpdate(status)
-      val runner = providersFactory.getRunner(taskData.groupId, taskData.typeId)
+      val runner = providersFactory.getRunner(taskData.getGroupId, taskData.getTypeId)
       runner match {
-        case Some(r) => r.executeSource(taskData.src, actionName, taskData.exports.asJava)
+        case Some(r) => r.executeSource(taskData.getSrc, actionName, taskData.getExports)
         case None =>
-          notifier.error("", s"Runner not found for group: ${taskData.groupId}, type ${taskData.typeId}. Please verify the tasks")
+          notifier.error("", s"Runner not found for group: ${taskData.getGroupId}, type ${taskData.getTypeId}. Please verify the tasks")
           None
       }
 
@@ -119,7 +119,7 @@ class MesosActionsExecutor extends Logging with Executor {
     task onComplete {
 
       case Failure(t) =>
-        println(s"launching task failed: ${t.getMessage}")
+        println(s"launching task Failed: ${t.getMessage}")
         System.exit(1)
 
       case Success(ts) =>
@@ -127,7 +127,7 @@ class MesosActionsExecutor extends Logging with Executor {
         driver.sendStatusUpdate(TaskStatus.newBuilder()
           .setTaskId(taskInfo.getTaskId)
           .setState(TaskState.TASK_FINISHED).build())
-        notifier.info(s"complete task: ${taskInfo.getTaskId.getValue}")
+        notifier.info(s"Complete task: ${taskInfo.getTaskId.getValue}")
 
     }
 

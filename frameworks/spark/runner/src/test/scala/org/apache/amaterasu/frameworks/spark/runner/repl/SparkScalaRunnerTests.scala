@@ -43,7 +43,7 @@ class SparkScalaRunnerTests extends FlatSpec with Matchers with BeforeAndAfterAl
 
     val sparkRunner =factory.getRunner("spark", "scala").get.asInstanceOf[SparkScalaRunner]
     val script = getClass.getResource("/step-2.scala").getPath
-    sparkRunner.env.workingDir = s"${getClass.getResource("/tmp").getPath}"
+    sparkRunner.env.setWorkingDir(s"${getClass.getResource("/tmp").getPath}")
     AmaContext.init(sparkRunner.spark,"job",sparkRunner.env)
     val sourceCode = Source.fromFile(script).getLines().mkString("\n")
     sparkRunner.executeSource(sourceCode, "cont", Map.empty[String, String].asJava)

@@ -31,7 +31,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class PySparkEntryPoint {
 
-    //private static Boolean started = false;
+    //private static Boolean Started = false;
     private static  PySparkExecutionQueue queue = new PySparkExecutionQueue();
     private static ConcurrentHashMap<String, ResultQueue> resultQueues = new ConcurrentHashMap<>();
 
