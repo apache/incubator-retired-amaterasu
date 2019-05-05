@@ -101,9 +101,19 @@ object DataLoader : KLogging() {
     fun getExecutorData(env: String, clusterConf: ClusterConfig): ExecData {
 
         // loading the job configuration
-        val envValue = File("repo/env/$env/job.yml").readText() //TODO: change this to YAML
-        val envData = ymlMapper.readValue<Environment>(envValue)
+        var envFile = File("repo/env/$env/job.yml")
+        val envValue = if (envFile.exists()) {
+            envFile.readText()
+        } else {
+            envFile = File("repo/env/$env/job.yaml")
+            if (envFile.exists()) {
+                envFile.readText()
+            } else {
+                ""
+            }
+        }
 
+        val envData = ymlMapper.readValue<Environment>(envValue)
         // loading all additional configurations
         val files = File("repo/env/$env/").listFiles().filter { it.isFile }.filter { it.name != "job.yml" }
         val config = files.map { yamlToMap(it) }.toMap()

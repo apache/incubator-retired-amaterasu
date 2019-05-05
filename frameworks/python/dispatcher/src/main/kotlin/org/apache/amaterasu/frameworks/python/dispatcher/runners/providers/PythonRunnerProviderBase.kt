@@ -16,6 +16,7 @@
  */
 package org.apache.amaterasu.frameworks.python.dispatcher.runners.providers
 
+import com.uchuhimo.konf.Config
 import org.apache.amaterasu.common.configuration.ClusterConfig
 import org.apache.amaterasu.common.dataobjects.ActionData
 import org.apache.amaterasu.leader.common.utilities.DataLoader
@@ -32,12 +33,12 @@ abstract class PythonRunnerProviderBase(val env: String, val conf: ClusterConfig
     override val runnerResources: Array<String>
         get() = arrayOf("amaterasu-sdk-${conf.version()}.zip")
 
-    override fun getCommand(jobId: String, actionData: ActionData, env: String, executorId: String, callbackAddress: String): String {
+    override fun getCommand(jobId: String, actionData: ActionData, env: Config, executorId: String, callbackAddress: String): String {
         val pythonPath = conf.pythonPath()
         val virtualEnvCmd = "$pythonPath -m venv amaterasu_env"
         val installBaseRequirementsCmd = "$virtualPythonPath -m pip install --upgrade --force-reinstall -r $requirementsFileName"
         var cmd = "$virtualEnvCmd && $installBaseRequirementsCmd"
-        val execData = DataLoader.getExecutorData(env, conf)
+        val execData = DataLoader.getExecutorData(this.env, conf)
         execData.pyDeps?.filePaths?.forEach {
             path -> cmd += " && $pythonPath -m pip install -r ${path.split('/').last()}"
         }

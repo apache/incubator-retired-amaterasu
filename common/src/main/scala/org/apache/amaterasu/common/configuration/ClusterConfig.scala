@@ -66,7 +66,7 @@ class ClusterConfig extends Logging {
       if (props.containsKey("yarn.hadoop.home.dir")) hadoopHomeDir = props.getProperty("yarn.hadoop.home.dir")
 
       this.master.load(props)
-      this.Worker.load(props)
+      this.worker.load(props)
     }
 
     class Master {
@@ -81,7 +81,7 @@ class ClusterConfig extends Logging {
 
     val Master = new Master()
 
-    object Worker {
+    class Worker {
       var cores: Int = 1
       var memoryMB: Int = 1024
 
@@ -90,6 +90,8 @@ class ClusterConfig extends Logging {
         if (props.containsKey("yarn.worker.memoryMB")) this.memoryMB = props.getProperty("yarn.worker.memoryMB").toInt
       }
     }
+
+    val worker = new Worker()
 
 
   }

@@ -237,7 +237,9 @@ class ApplicationMaster : KLogging(), AMRMClientAsync.CallbackHandler {
                         val framework = frameworkFactory.getFramework(actionData.groupId)
                         val runnerProvider = framework.getRunnerProvider(actionData.typeId)
                         val ctx = Records.newRecord(ContainerLaunchContext::class.java)
-                        val commands: List<String> = listOf(runnerProvider.getCommand(jobManager.jobId, actionData, env, "${actionData.id}-${container.id.containerId}", address))
+
+                        val envConf = configManager.getActionConfiguration(actionData.name, actionData.config)
+                        val commands: List<String> = listOf(runnerProvider.getCommand(jobManager.jobId, actionData, envConf, "${actionData.id}-${container.id.containerId}", address))
 
                         notifier.info("container command ${commands.joinToString(prefix = " ", postfix = " ")}")
                         ctx.commands = commands

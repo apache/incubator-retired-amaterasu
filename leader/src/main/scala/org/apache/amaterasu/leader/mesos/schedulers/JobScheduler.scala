@@ -168,6 +168,7 @@ class JobScheduler extends AmaterasuScheduler {
             val envYaml = configManager.getActionConfigContent(actionData.getName, actionData.getConfig)
             writeConfigFile(envYaml, jobManager.getJobId, actionData.getName, "env.yaml")
 
+            val envConf = configManager.getActionConfiguration(actionData.getName, actionData.getConfig)
             val dataStores = DataLoader.getTaskData(actionData, env).getExports
             val writer = new StringWriter()
             yamlMapper.writeValue(writer, dataStores)
@@ -190,6 +191,7 @@ class JobScheduler extends AmaterasuScheduler {
             log.info(s">>>> Framework: ${actionData.getGroupId}")
             val frameworkProvider = frameworkFactory.providers(actionData.getGroupId)
             log.info(s">>>> Runner: ${actionData.getTypeId}")
+
             val runnerProvider = frameworkProvider.getRunnerProvider(actionData.getTypeId)
 
             // searching for an executor that already exist on the slave, if non exist
@@ -207,7 +209,7 @@ class JobScheduler extends AmaterasuScheduler {
             //                          if(!actionData.getSrc.isEmpty){
             //                            copy(get(s"repo/src/${actionData.getSrc}"), get(s"dist/${jobManager.getJobId}/${actionData.getName}/${actionData.getSrc}"), REPLACE_EXISTING)
             //                          }
-            val commandStr = runnerProvider.getCommand(jobManager.getJobId, actionData, env, executorId, "")
+            val commandStr = runnerProvider.getCommand(jobManager.getJobId, actionData, envConf, executorId, "")
             log.info(s"===> Command: $commandStr")
             val command = CommandInfo
               .newBuilder
