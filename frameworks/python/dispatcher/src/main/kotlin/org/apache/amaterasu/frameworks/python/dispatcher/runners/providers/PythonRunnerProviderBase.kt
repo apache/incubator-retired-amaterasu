@@ -22,6 +22,8 @@ import org.apache.amaterasu.common.dataobjects.ActionData
 import org.apache.amaterasu.leader.common.utilities.DataLoader
 import org.apache.amaterasu.sdk.frameworks.RunnerSetupProvider
 import java.io.File
+import java.nio.file.Files
+import java.nio.file.Paths
 
 abstract class PythonRunnerProviderBase(val env: String, val conf: ClusterConfig) : RunnerSetupProvider() {
 
@@ -47,7 +49,11 @@ abstract class PythonRunnerProviderBase(val env: String, val conf: ClusterConfig
 
     override fun getActionDependencies(jobId: String, actionData: ActionData): Array<String> {
         val reqFile = File("dist/$requirementsFileName")
+        val dist = Paths.get("dist/")
+
         if (reqFile.exists()) reqFile.delete()
+        if (Files.notExists(dist)) Files.createDirectories(dist)
+
         val dependencies = runnerResources + mandatoryPYPIPackages
 
         dependencies.forEach { resource ->
