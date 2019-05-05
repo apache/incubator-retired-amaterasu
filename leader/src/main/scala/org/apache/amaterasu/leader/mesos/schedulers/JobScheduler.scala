@@ -85,6 +85,7 @@ class JobScheduler extends AmaterasuScheduler {
   private val executionMap: concurrent.Map[String, concurrent.Map[String, ActionStatus]] = new ConcurrentHashMap[String, concurrent.Map[String, ActionStatus]].asScala
   private val lock = new ReentrantLock()
   private val offersToTaskIds: concurrent.Map[String, String] = new ConcurrentHashMap[String, String].asScala
+  private val taskIdsToActions: concurrent.Map[Protos.TaskID, String] = new ConcurrentHashMap[Protos.TaskID, String].asScala
 
   private val mapper = new ObjectMapper()
   mapper.registerModule(DefaultScalaModule)
@@ -118,14 +119,26 @@ class JobScheduler extends AmaterasuScheduler {
 
   def statusUpdate(driver: SchedulerDriver, status: TaskStatus): Unit = {
 
+    val actionName = taskIdsToActions(status.getTaskId)
     status.getState match {
       case TaskState.TASK_STARTING => log.info("Task starting ...")
-      case TaskState.TASK_RUNNING => jobManager.actionStarted(status.getTaskId.getValue)
-      case TaskState.TASK_FINISHED => jobManager.actionComplete(status.getTaskId.getValue)
+      case TaskState.TASK_RUNNING => {
+        jobManager.actionStarted(status.getTaskId.getValue)
+        printNotification(new Notification("", s"created container for $actionName created", NotificationType.Info, NotificationLevel.Execution))
+
+      }
+      case TaskState.TASK_FINISHED => {
+        jobManager.actionComplete(status.getTaskId.getValue)
+        printNotification(new Notification("",s"Container ${status.getExecutorId.getValue} Complete with task ${status.getTaskId.getValue} with success.", NotificationType.Info, NotificationLevel.Execution))
+      }
       case TaskState.TASK_FAILED |
            TaskState.TASK_KILLED |
            TaskState.TASK_ERROR |
-           TaskState.TASK_LOST => jobManager.actionFailed(status.getTaskId.getValue, status.getMessage) //TODO: revisit this
+           TaskState.TASK_LOST => {
+        jobManager.actionFailed(status.getTaskId.getValue, status.getMessage)
+        printNotification(new Notification("", s"error launching container with ${status.getMessage} in ${status.getData}", NotificationType.Error, NotificationLevel.Execution))
+
+      }
       case _ => log.warn("WTF? just got unexpected task state: " + status.getState)
     }
 
@@ -164,6 +177,7 @@ class JobScheduler extends AmaterasuScheduler {
           val actionData = jobManager.getNextActionData
           if (actionData != null) {
             val taskId = Protos.TaskID.newBuilder().setValue(actionData.getId).build()
+            taskIdsToActions.put(taskId, actionData.getName)
             // setting up the configuration files for the container
             val envYaml = configManager.getActionConfigContent(actionData.getName, actionData.getConfig)
             writeConfigFile(envYaml, jobManager.getJobId, actionData.getName, "env.yaml")
@@ -210,7 +224,8 @@ class JobScheduler extends AmaterasuScheduler {
             //                            copy(get(s"repo/src/${actionData.getSrc}"), get(s"dist/${jobManager.getJobId}/${actionData.getName}/${actionData.getSrc}"), REPLACE_EXISTING)
             //                          }
             val commandStr = runnerProvider.getCommand(jobManager.getJobId, actionData, envConf, executorId, "")
-            log.info(s"===> Command: $commandStr")
+            printNotification(new Notification("", s"container command $commandStr", NotificationType.Info, NotificationLevel.Execution))
+
             val command = CommandInfo
               .newBuilder
               .setValue(commandStr)
@@ -335,6 +350,7 @@ class JobScheduler extends AmaterasuScheduler {
               //driver.launchTasks(Collections.singleton(offer.getId), List(actionTask).asJava)
             }
 
+            printNotification(new Notification("", s"requesting container fo ${actionData.getName}", NotificationType.Info, NotificationLevel.Execution))
             driver.launchTasks(Collections.singleton(offer.getId), List(actionTask).asJava)
 
           }
