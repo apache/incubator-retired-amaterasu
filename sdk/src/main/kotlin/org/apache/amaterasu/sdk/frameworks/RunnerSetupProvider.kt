@@ -17,14 +17,22 @@
 package org.apache.amaterasu.sdk.frameworks
 
 import org.apache.amaterasu.common.dataobjects.ActionData
+import org.apache.amaterasu.common.utils.ArtifactUtil
+import org.apache.amaterasu.common.utils.FileUtil
+import org.apache.amaterasu.common.logging.Logging
+import com.uchuhimo.konf.Config
 
-abstract class RunnerSetupProvider {
+abstract class RunnerSetupProvider : Logging() {
 
-    private val actionFiles = arrayOf("env.yaml", "runtime.yaml", "datastores.yaml")
+    private val actionFiles = arrayOf("env.yaml", "runtime.yaml", "datasets.yaml")
 
     abstract val runnerResources: Array<String>
 
-    abstract fun getCommand(jobId: String, actionData: ActionData, env: String, executorId: String, callbackAddress: String): String
+    abstract fun getCommand(jobId: String, actionData: ActionData, env: Config, executorId: String, callbackAddress: String): String
+
+    protected fun getDownloadableActionSrcPath(jobId: String, actionData: ActionData): String {
+        return "$jobId/${actionData.name}/${actionData.src}"
+    }
 
     abstract fun getActionUserResources(jobId: String, actionData: ActionData): Array<String>
 
@@ -34,6 +42,28 @@ abstract class RunnerSetupProvider {
 
     abstract fun getActionDependencies(jobId: String, actionData: ActionData): Array<String>
 
+    fun getActionExecutable(jobId: String, actionData: ActionData): String {
+
+        // if the action is artifact based
+        return if (actionData.hasArtifact) {
+
+            val util = ArtifactUtil(listOf(actionData.repo), jobId)
+            util.getLocalArtifacts(actionData.artifact).first().path
+
+        } else {
+
+            //action src can be URL based, so we first check if it needs to be downloaded
+            val fileUtil = FileUtil()
+
+            if (fileUtil.isSupportedUrl(actionData.src)) {
+                fileUtil.downloadFile(actionData.src)
+            } else {
+                 //"repo/src/${actionData.name}/${actionData.src}"
+                 "repo/src/${actionData.src}"
+            }
+        }
+    }
+
     abstract val hasExecutor: Boolean
-       get
+        get
 }

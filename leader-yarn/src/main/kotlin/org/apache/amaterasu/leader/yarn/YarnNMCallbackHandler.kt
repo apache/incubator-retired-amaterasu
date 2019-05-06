@@ -17,6 +17,8 @@
 package org.apache.amaterasu.leader.yarn
 
 import org.apache.amaterasu.common.logging.KLogging
+import org.apache.amaterasu.common.utils.ActiveNotifier
+import org.apache.commons.lang.exception.ExceptionUtils
 
 import java.nio.ByteBuffer
 
@@ -26,30 +28,30 @@ import org.apache.hadoop.yarn.client.api.async.NMClientAsync
 
 
 
-class YarnNMCallbackHandler : KLogging() , NMClientAsync.CallbackHandler {
+class YarnNMCallbackHandler(val notifier: ActiveNotifier) : KLogging() , NMClientAsync.CallbackHandler {
 
     override fun onStartContainerError(containerId: ContainerId, t: Throwable) {
-        log.error("Container ${containerId.containerId} couldn't start.", t)
+        notifier.error("Error starting a container ${t.message!!}", ExceptionUtils.getStackTrace(t))
     }
 
     override fun onGetContainerStatusError(containerId: ContainerId, t: Throwable) {
-        log.error("Couldn't get status from container ${containerId.containerId}.", t)
+        notifier.error("","Couldn't get status from container ${containerId.containerId}. message ${t.message}")
     }
 
     override fun onContainerStatusReceived(containerId: ContainerId, containerStatus: ContainerStatus) {
-        log.info("Container ${containerId.containerId} has status of ${containerStatus.state}")
+        notifier.info("Container ${containerId.containerId} has status of ${containerStatus.state}")
     }
 
     override fun onContainerStarted(containerId: ContainerId, allServiceResponse: Map<String, ByteBuffer>) {
-        log.info("Container ${containerId.containerId} Started")
+        notifier.info("Container ${containerId.containerId} Started")
     }
 
     override fun onStopContainerError(containerId: ContainerId, t: Throwable) {
-        log.error("Container ${containerId.containerId} has thrown an error", t)
+        notifier.error("Error running a container ${t.message!!}", ExceptionUtils.getStackTrace(t))
     }
 
     override fun onContainerStopped(containerId: ContainerId) {
-        log.info("Container ${containerId.containerId} stopped")
+        notifier.info("Container ${containerId.containerId} stopped")
     }
 
 }

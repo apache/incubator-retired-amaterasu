@@ -1,0 +1,8 @@
+amaterasu-sdk==0.2.0-incubating-rc4
+pandas
+PyHive
+s3fs
+sasl
+thrift
+thrift-sasl
+pyarrow

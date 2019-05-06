@@ -1,0 +1,9 @@
+setup.py
+amaterasu_python.egg-info/PKG-INFO
+amaterasu_python.egg-info/SOURCES.txt
+amaterasu_python.egg-info/dependency_links.txt
+amaterasu_python.egg-info/entry_points.txt
+amaterasu_python.egg-info/requires.txt
+amaterasu_python.egg-info/top_level.txt
+python_runtime/__init__.py
+python_runtime/runtime.py

@@ -1,0 +1,3 @@
+[amaterasu.plugins]
+pyspark=amaterasu_pyspark
+

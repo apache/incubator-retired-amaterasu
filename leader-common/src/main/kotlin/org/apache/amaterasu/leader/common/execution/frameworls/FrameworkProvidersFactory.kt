@@ -32,7 +32,6 @@ class FrameworkProvidersFactory(val env: String, val config: ClusterConfig) : KL
 
         providers = runnerTypes.map  {
 
-
             val provider = it.newInstance()
 
             provider.init(env, config)

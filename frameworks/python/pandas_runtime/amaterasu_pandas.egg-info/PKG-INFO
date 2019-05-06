@@ -1,0 +1,28 @@
+Metadata-Version: 1.2
+Name: amaterasu-pandas
+Version: 0.2.0-incubating-rc4
+Summary: Apache Amaterasu (incubating) is an open source, configuration managment and deployment framework for big data pipelines
+Home-page: https://github.com/apache/incubator-amaterasu
+Author: Apache Amaterasu (incubating)
+Author-email: dev@amaterasu.incubator.apache.org
+License: Apache License 2.0 
+Description: UNKNOWN
+Platform: UNKNOWN
+Classifier: Development Status :: 3 - Alpha
+Classifier: Environment :: Console
+Classifier: Intended Audience :: Developers
+Classifier: Intended Audience :: System Administrators
+Classifier: Intended Audience :: Information Technology
+Classifier: License :: OSI Approved :: Apache Software License
+Classifier: Natural Language :: English
+Classifier: Operating System :: POSIX :: Linux
+Classifier: Programming Language :: Java
+Classifier: Programming Language :: Python
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.4
+Classifier: Programming Language :: Python :: 3.5
+Classifier: Programming Language :: Python :: 3.6
+Classifier: Programming Language :: Python :: 3.7
+Classifier: Programming Language :: Python :: Implementation :: CPython
+Classifier: Topic :: Scientific/Engineering
+Requires-Python: >=3.4.*, <4

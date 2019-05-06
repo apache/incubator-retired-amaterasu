@@ -132,10 +132,6 @@ object PySparkRunner {
     }
         var pysparkPython = "/usr/bin/python"
 
-        if (pyDeps != null &&
-          !pyDeps.getPackages.isEmpty) {
-          pysparkPython = "./miniconda/bin/python"
-        }
         val proc = Process(sparkCmd, None,
       "PYTHONPATH" -> pypath,
       "PYSPARK_PYTHON" -> pysparkPython,
