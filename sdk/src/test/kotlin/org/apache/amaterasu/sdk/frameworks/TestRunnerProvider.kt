@@ -3,7 +3,7 @@ package org.apache.amaterasu.sdk.frameworks
 import com.uchuhimo.konf.Config
 import org.apache.amaterasu.common.dataobjects.ActionData
 
-class TestRunnerProvider() : RunnerSetupProvider() {
+class TestRunnerProvider : RunnerSetupProvider() {
     override val hasExecutor: Boolean
         get() = false
 
