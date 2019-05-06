@@ -28,6 +28,7 @@ import org.apache.activemq.broker.BrokerService
 import org.apache.amaterasu.common.configuration.ClusterConfig
 import org.apache.amaterasu.common.dataobjects.ActionData
 import org.apache.amaterasu.common.logging.KLogging
+import org.apache.amaterasu.common.utils.ActiveNotifier
 import org.apache.amaterasu.leader.common.configuration.ConfigManager
 import org.apache.amaterasu.leader.common.execution.JobLoader
 import org.apache.amaterasu.leader.common.execution.JobManager
@@ -37,6 +38,7 @@ import org.apache.amaterasu.leader.common.utilities.DataLoader
 import org.apache.amaterasu.leader.common.utilities.MessagingClientUtil
 import org.apache.amaterasu.sdk.frameworks.FrameworkSetupProvider
 import org.apache.amaterasu.sdk.frameworks.RunnerSetupProvider
+import org.apache.commons.lang.exception.ExceptionUtils
 
 import org.apache.curator.framework.CuratorFramework
 import org.apache.curator.framework.CuratorFrameworkFactory
@@ -58,10 +60,8 @@ import org.apache.hadoop.yarn.security.AMRMTokenIdentifier
 import org.apache.hadoop.yarn.util.Records
 
 import org.apache.zookeeper.CreateMode
+import java.io.*
 
-import java.io.File
-import java.io.FileInputStream
-import java.io.IOException
 import java.nio.ByteBuffer
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentLinkedQueue
@@ -77,7 +77,7 @@ class ApplicationMaster : KLogging(), AMRMClientAsync.CallbackHandler {
     val broker: BrokerService = BrokerService()
     private val conf = YarnConfiguration()
 
-    private val nmClient: NMClientAsync = NMClientAsyncImpl(YarnNMCallbackHandler())
+
     private val actionsBuffer = ConcurrentLinkedQueue<ActionData>()
     private val completedContainersAndTaskIds = ConcurrentHashMap<Long, String>()
     private val containersIdsToTask = ConcurrentHashMap<Long, ActionData>()
@@ -94,6 +94,8 @@ class ApplicationMaster : KLogging(), AMRMClientAsync.CallbackHandler {
     private lateinit var fs: FileSystem
     private lateinit var consumer: MessageConsumer
     private lateinit var configManager: ConfigManager
+    private lateinit var notifier: ActiveNotifier
+    private lateinit var nmClient: NMClientAsync
 
     init {
         yamlMapper.registerModule(KotlinModule())
@@ -122,10 +124,12 @@ class ApplicationMaster : KLogging(), AMRMClientAsync.CallbackHandler {
         barrier.removeBarrier()
 
         consumer = MessagingClientUtil.setupMessaging(address)
+        notifier = ActiveNotifier(address)
 
         log.info("number of messages ${broker.adminView.totalMessageCount}")
 
         // Initialize clients to ResourceManager and NodeManagers
+        nmClient = NMClientAsyncImpl(YarnNMCallbackHandler(notifier))
         nmClient.init(conf)
         nmClient.start()
 
@@ -150,6 +154,7 @@ class ApplicationMaster : KLogging(), AMRMClientAsync.CallbackHandler {
             val actionData = jobManager.nextActionData
             if (actionData != null) {
 
+                notifier.info("requesting container fo ${actionData.name}")
                 val frameworkProvider = frameworkFactory.getFramework(actionData.groupId)
                 val driverConfiguration = frameworkProvider.driverConfiguration
 
@@ -225,17 +230,22 @@ class ApplicationMaster : KLogging(), AMRMClientAsync.CallbackHandler {
                 log.info("container ${container.id} allocated")
                 if (actionsBuffer.isNotEmpty()) {
                     val actionData = actionsBuffer.poll()
-                    val cd = async {
+                    //val cd = async {
+                    try {
                         log.info("container ${container.id} allocated")
 
                         val framework = frameworkFactory.getFramework(actionData.groupId)
                         val runnerProvider = framework.getRunnerProvider(actionData.typeId)
                         val ctx = Records.newRecord(ContainerLaunchContext::class.java)
-                        val commands: List<String> = listOf(runnerProvider.getCommand(jobManager.jobId, actionData, env, "${actionData.id}-${container.id.containerId}", address))
 
-                        log.info("container command ${commands.joinToString(prefix = " ", postfix = " ")}")
+
+                        val envConf = configManager.getActionConfiguration(actionData.name, actionData.config)
+                        val commands: List<String> = listOf(runnerProvider.getCommand(jobManager.jobId, actionData, envConf, "${actionData.id}-${container.id.containerId}", address))
+
+                        notifier.info("container command ${commands.joinToString(prefix = " ", postfix = " ")}")
                         ctx.commands = commands
                         ctx.tokens = allTokens()
+
                         ctx.localResources = setupContainerResources(framework, runnerProvider, actionData)
                         ctx.environment = framework.environmentVariables
 
@@ -243,7 +253,12 @@ class ApplicationMaster : KLogging(), AMRMClientAsync.CallbackHandler {
 
                         jobManager.actionStarted(actionData.id)
                         containersIdsToTask[container.id.containerId] = actionData
+                        notifier.info("created container for ${actionData.name} created")
+                        //ctx.localResources.forEach { t: String, u: LocalResource -> notifier.info("resource: $t = ${u.resource}") }
                         log.info("launching container succeeded: ${container.id.containerId}; task: ${actionData.id}")
+                    } catch (e: Exception) {
+                        notifier.error("", "error launching container with ${e.message} in ${ExceptionUtils.getStackTrace(e)}")
+                        requestContainer(actionData, container.resource)
                     }
                 }
             }
@@ -286,6 +301,7 @@ class ApplicationMaster : KLogging(), AMRMClientAsync.CallbackHandler {
 
         // getting the action specific dependencies
         runnerProvider.getActionDependencies(jobManager.jobId, actionData).forEach { distributeFile(it, "${jobManager.jobId}/${actionData.name}/") }
+
         result.putAll(runnerProvider.getActionDependencies(jobManager.jobId, actionData).map { File(it).name to createLocalResourceFromPath(Path.mergePaths(yarnJarPath, createDistPath("${jobManager.jobId}/${actionData.name}/$it"))) })
 
         // Adding the Amaterasu configuration files
@@ -300,6 +316,8 @@ class ApplicationMaster : KLogging(), AMRMClientAsync.CallbackHandler {
         result[File(executable).name] = createLocalResourceFromPath(Path.mergePaths(yarnJarPath, createDistPath("${jobManager.jobId}/${actionData.name}/$executable")))
 
         result.forEach { println("entry ${it.key} with value ${it.value}") }
+
+        result.forEach { notifier.info("entry ${it.key} with value ${it.value}") }
         return result.map { x -> x.key.removePrefix("/") to x.value }.toMap()
     }
 
@@ -311,8 +329,10 @@ class ApplicationMaster : KLogging(), AMRMClientAsync.CallbackHandler {
 
         val dataStores = DataLoader.getTaskData(actionData, env).exports
         val dataStoresYaml = yamlMapper.writeValueAsString(dataStores)
-
         writeConfigFile(dataStoresYaml, jobManager.jobId, actionData.name, "datastores.yaml")
+
+        val datasets = DataLoader.getDatasets(env)
+        writeConfigFile(datasets, jobManager.jobId, actionData.name, "datasets.yaml")
 
         writeConfigFile("jobId: ${jobManager.jobId}\nactionName: ${actionData.name}", jobManager.jobId, actionData.name, "runtime.yaml")
 
@@ -325,7 +345,7 @@ class ApplicationMaster : KLogging(), AMRMClientAsync.CallbackHandler {
         val targetPath = Path.mergePaths(yarnJarPath, actionDistPath)
 
         val outputStream = fs.create(targetPath)
-        outputStream.writeUTF(content)
+        outputStream.write(content.toByteArray())
         outputStream.close()
         log.info("written file $targetPath")
 
@@ -333,11 +353,12 @@ class ApplicationMaster : KLogging(), AMRMClientAsync.CallbackHandler {
 
     private fun distributeFile(file: String, distributionPath: String) {
 
-        log.info("copying file $file, file status ${File(file).exists()}")
 
         val actionDistPath = createDistPath("$distributionPath/$file")
         val yarnJarPath = Path(config.yarn().hdfsJarsPath())
         val targetPath = Path.mergePaths(yarnJarPath, actionDistPath)
+
+        notifier.info("copying file $file, file status ${File(file).exists()} to $targetPath")
 
         log.info("target is $targetPath")
 
@@ -398,7 +419,7 @@ class ApplicationMaster : KLogging(), AMRMClientAsync.CallbackHandler {
     }
 
     override fun onError(e: Throwable?) {
-        log.error("Error on AM", e)
+        notifier.error("Error running a container ${e!!.message!!}", ExceptionUtils.getStackTrace(e))
         stopApplication(FinalApplicationStatus.FAILED, "Error on AM")
     }
 
@@ -415,11 +436,11 @@ class ApplicationMaster : KLogging(), AMRMClientAsync.CallbackHandler {
 
                     //completedContainersAndTaskIds.put(containerId, task.id)
                     jobManager.actionComplete(taskId)
-                    log.info("Container $containerId Complete with task $taskId with success.")
+                    notifier.info("Container $containerId Complete with task $taskId with success.")
                 } else {
                     // TODO: Check the getDiagnostics value and see if appropriate
                     jobManager.actionFailed(taskId, status.diagnostics)
-                    log.warn("Container $containerId Complete with task $taskId with Failed status code (${status.exitStatus})")
+                    notifier.error("Container $containerId Complete with task $taskId with Failed status code (${status.exitStatus})", status.diagnostics)
                 }
             }
         }

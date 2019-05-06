@@ -19,14 +19,20 @@ package org.apache.amaterasu.sdk.frameworks
 import org.apache.amaterasu.common.dataobjects.ActionData
 import org.apache.amaterasu.common.utils.ArtifactUtil
 import org.apache.amaterasu.common.utils.FileUtil
+import org.apache.amaterasu.common.logging.Logging
+import com.uchuhimo.konf.Config
 
-abstract class RunnerSetupProvider {
+abstract class RunnerSetupProvider : Logging() {
 
-    private val actionFiles = arrayOf("env.yaml", "runtime.yaml", "datastores.yaml")
+    private val actionFiles = arrayOf("env.yaml", "runtime.yaml", "datasets.yaml")
 
     abstract val runnerResources: Array<String>
 
-    abstract fun getCommand(jobId: String, actionData: ActionData, env: String, executorId: String, callbackAddress: String): String
+    abstract fun getCommand(jobId: String, actionData: ActionData, env: Config, executorId: String, callbackAddress: String): String
+
+    protected fun getDownloadableActionSrcPath(jobId: String, actionData: ActionData): String {
+        return "$jobId/${actionData.name}/${actionData.src}"
+    }
 
     abstract fun getActionUserResources(jobId: String, actionData: ActionData): Array<String>
 

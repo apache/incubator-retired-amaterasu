@@ -70,7 +70,7 @@ class SparkTestsSuite extends Suites(
     env.setConfiguration(Map( "spark_exec_env" -> excEnv).asJava)
     factory = ProvidersFactory(new ExecData(env,
       new Dependencies(ListBuffer.empty[Repo].asJava, List.empty[Artifact].asJava),
-      new PythonDependencies(List.empty[PythonPackage].asJava),
+      new PythonDependencies(Array.empty[String]),
       Map(
         "spark" -> Map.empty[String, Any].asJava,
         "spark_exec_env" -> Map("PYTHONPATH" -> resources).asJava).asJava),

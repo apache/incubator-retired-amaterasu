@@ -1,0 +1,11 @@
+setup.py
+amaterasu_pandas.egg-info/PKG-INFO
+amaterasu_pandas.egg-info/SOURCES.txt
+amaterasu_pandas.egg-info/dependency_links.txt
+amaterasu_pandas.egg-info/entry_points.txt
+amaterasu_pandas.egg-info/requires.txt
+amaterasu_pandas.egg-info/top_level.txt
+pandas_runtime/__init__.py
+pandas_runtime/datasets.py
+pandas_runtime/runtime.py
+tests/__init__.py

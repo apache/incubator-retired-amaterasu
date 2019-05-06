@@ -75,6 +75,23 @@ class JobExecutionTests extends FlatSpec with Matchers {
     job.getOutOfActions should be(false)
   }
 
+  it should "be requeued correctly" in {
+    job.reQueueAction("0000000000")
+    val actionStatus = client.getData.forPath(s"/$jobId/task-0000000000")
+    new String(new String(actionStatus)) should be("Queued")
+  }
+
+  it should "should be able to restart" in {
+
+    val data = job.getNextActionData
+
+    data.getName should be("start")
+
+    // making sure that the status is reflected in zk
+    val actionStatus = client.getData.forPath(s"/$jobId/task-0000000000")
+    new String(actionStatus) should be("Started")
+  }
+
   it should "be marked as Complete when the actionComplete method is called" in {
 
     job.actionComplete("0000000000")

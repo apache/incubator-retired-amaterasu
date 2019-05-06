@@ -1,0 +1,3 @@
+[amaterasu.plugins]
+python=python_pandas
+

@@ -19,7 +19,7 @@ package org.apache.amaterasu.leader.mesos.schedulers
 import java.io.{File, PrintWriter, StringWriter}
 import java.nio.file.{Files, Path, Paths, StandardCopyOption}
 import java.util
-import java.util.UUID
+import java.util.{Collections, UUID}
 import java.util.concurrent.locks.ReentrantLock
 import java.util.concurrent.{ConcurrentHashMap, LinkedBlockingQueue}
 
@@ -85,6 +85,7 @@ class JobScheduler extends AmaterasuScheduler {
   private val executionMap: concurrent.Map[String, concurrent.Map[String, ActionStatus]] = new ConcurrentHashMap[String, concurrent.Map[String, ActionStatus]].asScala
   private val lock = new ReentrantLock()
   private val offersToTaskIds: concurrent.Map[String, String] = new ConcurrentHashMap[String, String].asScala
+  private val taskIdsToActions: concurrent.Map[Protos.TaskID, String] = new ConcurrentHashMap[Protos.TaskID, String].asScala
 
   private val mapper = new ObjectMapper()
   mapper.registerModule(DefaultScalaModule)
@@ -92,7 +93,9 @@ class JobScheduler extends AmaterasuScheduler {
   private val yamlMapper = new ObjectMapper(new YAMLFactory())
   yamlMapper.registerModule(DefaultScalaModule)
 
-  def error(driver: SchedulerDriver, message: String) {}
+  def error(driver: SchedulerDriver, message: String): Unit = {
+    log.error(s"===> $message")
+  }
 
   def executorLost(driver: SchedulerDriver, executorId: ExecutorID, slaveId: SlaveID, status: Int) {}
 
@@ -116,14 +119,26 @@ class JobScheduler extends AmaterasuScheduler {
 
   def statusUpdate(driver: SchedulerDriver, status: TaskStatus): Unit = {
 
+    val actionName = taskIdsToActions(status.getTaskId)
     status.getState match {
       case TaskState.TASK_STARTING => log.info("Task starting ...")
-      case TaskState.TASK_RUNNING => jobManager.actionStarted(status.getTaskId.getValue)
-      case TaskState.TASK_FINISHED => jobManager.actionComplete(status.getTaskId.getValue)
+      case TaskState.TASK_RUNNING => {
+        jobManager.actionStarted(status.getTaskId.getValue)
+        printNotification(new Notification("", s"created container for $actionName created", NotificationType.Info, NotificationLevel.Execution))
+
+      }
+      case TaskState.TASK_FINISHED => {
+        jobManager.actionComplete(status.getTaskId.getValue)
+        printNotification(new Notification("", s"Container ${status.getExecutorId.getValue} Complete with task ${status.getTaskId.getValue} with success.", NotificationType.Info, NotificationLevel.Execution))
+      }
       case TaskState.TASK_FAILED |
            TaskState.TASK_KILLED |
            TaskState.TASK_ERROR |
-           TaskState.TASK_LOST => jobManager.actionFailed(status.getTaskId.getValue, status.getMessage) //TODO: revisit this
+           TaskState.TASK_LOST => {
+        jobManager.actionFailed(status.getTaskId.getValue, status.getMessage)
+        printNotification(new Notification("", s"error launching container with ${status.getMessage} in ${status.getData}", NotificationType.Error, NotificationLevel.Execution))
+
+      }
       case _ => log.warn("WTF? just got unexpected task state: " + status.getState)
     }
 
@@ -162,11 +177,12 @@ class JobScheduler extends AmaterasuScheduler {
           val actionData = jobManager.getNextActionData
           if (actionData != null) {
             val taskId = Protos.TaskID.newBuilder().setValue(actionData.getId).build()
-
+            taskIdsToActions.put(taskId, actionData.getName)
             // setting up the configuration files for the container
             val envYaml = configManager.getActionConfigContent(actionData.getName, actionData.getConfig)
             writeConfigFile(envYaml, jobManager.getJobId, actionData.getName, "env.yaml")
 
+            val envConf = configManager.getActionConfiguration(actionData.getName, actionData.getConfig)
             val dataStores = DataLoader.getTaskData(actionData, env).getExports
             val writer = new StringWriter()
             yamlMapper.writeValue(writer, dataStores)
@@ -175,6 +191,8 @@ class JobScheduler extends AmaterasuScheduler {
 
             writeConfigFile(s"jobId: ${jobManager.getJobId}\nactionName: ${actionData.getName}", jobManager.getJobId, actionData.getName, "runtime.yaml")
 
+            val datasets = DataLoader.getDatasets(env)
+            writeConfigFile(datasets, jobManager.getJobId, actionData.getName, "datasets.yaml")
             offersToTaskIds.put(offer.getId.getValue, taskId.getValue)
 
             // atomically adding a record for the slave, I'm storing all the actions
@@ -184,8 +202,10 @@ class JobScheduler extends AmaterasuScheduler {
             val slaveActions = executionMap(offer.getSlaveId.toString)
             slaveActions.put(taskId.getValue, ActionStatus.Started)
 
-
+            log.info(s">>>> Framework: ${actionData.getGroupId}")
             val frameworkProvider = frameworkFactory.providers(actionData.getGroupId)
+            log.info(s">>>> Runner: ${actionData.getTypeId}")
+
             val runnerProvider = frameworkProvider.getRunnerProvider(actionData.getTypeId)
 
             // searching for an executor that already exist on the slave, if non exist
@@ -203,19 +223,22 @@ class JobScheduler extends AmaterasuScheduler {
             //                          if(!actionData.getSrc.isEmpty){
             //                            copy(get(s"repo/src/${actionData.getSrc}"), get(s"dist/${jobManager.getJobId}/${actionData.getName}/${actionData.getSrc}"), REPLACE_EXISTING)
             //                          }
-            val commandStr = runnerProvider.getCommand(jobManager.getJobId, actionData, env, executorId, "")
+            val commandStr = runnerProvider.getCommand(jobManager.getJobId, actionData, envConf, executorId, "")
+            printNotification(new Notification("", s"container command $commandStr", NotificationType.Info, NotificationLevel.Execution))
+
             val command = CommandInfo
               .newBuilder
               .setValue(commandStr)
-              .addUris(URI.newBuilder
-                .setValue(s"http://${sys.env("AMA_NODE")}:${config.Webserver.Port}/executor-${config.version}-all.jar")
-                .setExecutable(false)
-                .setExtract(false)
-                .build())
+            //              .addUris(URI.newBuilder
+            //                .setValue(s"http://${sys.env("AMA_NODE")}:${config.webserver.Port}/executor-${config.version}-all.jar")
+            //                .setExecutable(false)
+            //                .setExtract(false)
+            //                .build())
 
             // Getting framework (group) resources
+            log.info(s"===> groupResources: ${frameworkProvider.getGroupResources}")
             frameworkProvider.getGroupResources.foreach(f => command.addUris(URI.newBuilder
-              .setValue(s"http://${sys.env("AMA_NODE")}:${config.Webserver.Port}/${f.getName}")
+              .setValue(s"http://${sys.env("AMA_NODE")}:${config.webserver.Port}/${f.getName}")
               .setExecutable(false)
               .setExtract(true)
               .build()
@@ -224,7 +247,7 @@ class JobScheduler extends AmaterasuScheduler {
             // Getting runner resources
             runnerProvider.getRunnerResources.foreach(r => {
               command.addUris(URI.newBuilder
-                .setValue(s"http://${sys.env("AMA_NODE")}:${config.Webserver.Port}/$r")
+                .setValue(s"http://${sys.env("AMA_NODE")}:${config.webserver.Port}/$r")
                 .setExecutable(false)
                 .setExtract(false)
                 .build())
@@ -233,17 +256,18 @@ class JobScheduler extends AmaterasuScheduler {
 
             // Getting action dependencies
             runnerProvider.getActionDependencies(jobManager.getJobId, actionData).foreach(r => {
+
+              FileUtils.copyFile(new File(r), new File(s"dist/$r"))
               command.addUris(URI.newBuilder
-                .setValue(s"http://${sys.env("AMA_NODE")}:${config.Webserver.Port}/$r")
+                .setValue(s"http://${sys.env("AMA_NODE")}:${config.webserver.Port}/$r")
                 .setExecutable(false)
                 .setExtract(false)
                 .build())
-            }
-            )
+            })
 
             // Getting action specific resources
             runnerProvider.getActionResources(jobManager.getJobId, actionData).foreach(r => command.addUris(URI.newBuilder
-              .setValue(s"http://${sys.env("AMA_NODE")}:${config.Webserver.Port}/$r")
+              .setValue(s"http://${sys.env("AMA_NODE")}:${config.webserver.Port}/$r")
               .setExecutable(false)
               .setExtract(false)
               .build()))
@@ -256,25 +280,20 @@ class JobScheduler extends AmaterasuScheduler {
               executable = relativePath.subpath(amaDist.toPath.getNameCount, relativePath.getNameCount)
             } else {
               val dest = new File(s"dist/${jobManager.getJobId}/${sourcePath.toString}")
-              FileUtils.moveFile(sourcePath, dest)
+              FileUtils.copyFile(sourcePath, dest)
               executable = Paths.get(jobManager.getJobId, sourcePath.toPath.toString)
             }
 
             println(s"===> executable $executable")
             command.addUris(URI.newBuilder
-              .setValue(s"http://${sys.env("AMA_NODE")}:${config.Webserver.Port}/$executable")
+              .setValue(s"http://${sys.env("AMA_NODE")}:${config.webserver.Port}/$executable")
               .setExecutable(false)
               .setExtract(false)
               .build())
 
             command
               .addUris(URI.newBuilder()
-                .setValue(s"http://${sys.env("AMA_NODE")}:${config.Webserver.Port}/miniconda.sh") //TODO: Nadav needs to clean this on the executor side
-                .setExecutable(true)
-                .setExtract(false)
-                .build())
-              .addUris(URI.newBuilder()
-                .setValue(s"http://${sys.env("AMA_NODE")}:${config.Webserver.Port}/amaterasu.properties")
+                .setValue(s"http://${sys.env("AMA_NODE")}:${config.webserver.Port}/amaterasu.properties")
                 .setExecutable(false)
                 .setExtract(false)
                 .build())
@@ -331,7 +350,9 @@ class JobScheduler extends AmaterasuScheduler {
 
               //driver.launchTasks(Collections.singleton(offer.getId), List(actionTask).asJava)
             }
-            driver.launchTasks(offer.getId, List(actionTask).asJava)
+
+            printNotification(new Notification("", s"requesting container for ${actionData.getName}", NotificationType.Info, NotificationLevel.Execution))
+            driver.launchTasks(Collections.singleton(offer.getId), List(actionTask).asJava)
 
           }
           else if (jobManager.getOutOfActions) {
@@ -446,7 +467,7 @@ class JobScheduler extends AmaterasuScheduler {
 
     val dir = new File(envLocation)
     if (!dir.exists()) {
-      dir.mkdir()
+      dir.mkdirs()
     }
 
     new PrintWriter(s"$envLocation/$fileName") {
@@ -469,10 +490,10 @@ object JobScheduler {
     LogManager.resetConfiguration()
     val scheduler = new JobScheduler()
 
-    HttpServer.start(config.Webserver.Port, s"$home/${config.Webserver.Root}")
+    HttpServer.start(config.webserver.Port, s"$home/${config.webserver.Root}")
 
-    if (!sys.env("AWS_ACCESS_KEY_ID").isEmpty &&
-      !sys.env("AWS_SECRET_ACCESS_KEY").isEmpty) {
+    if (sys.env.get("AWS_ACCESS_KEY_ID").isDefined &&
+      sys.env.get("AWS_SECRET_ACCESS_KEY").isDefined) {
 
       scheduler.awsEnv = s"env AWS_ACCESS_KEY_ID=${sys.env("AWS_ACCESS_KEY_ID")} env AWS_SECRET_ACCESS_KEY=${sys.env("AWS_SECRET_ACCESS_KEY")}"
     }

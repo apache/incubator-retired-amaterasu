@@ -16,7 +16,7 @@
 #    limitations under the License.
 #
 
-BASEDIR=$(dirname "$0")
+BASEDIR=$(dirname -- $0)
 
 export AMA_NODE="$(hostname)"
 
@@ -137,12 +137,6 @@ if [ -n "$JARPATH" ]; then
 fi
 
 echo $CMD
-
-if [ ! -f ${BASEDIR}/dist/miniconda.sh ]; then
-    echo "${bold}Fetching miniconda distributable ${NC}"
-    wget https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh -O ${BASEDIR}/dist/miniconda.sh
-fi
-
 
 if [ "$FORCE_BIN" = true ] ; then
     echo "FORCE: Deleting and re-creating /apps/amaterasu folder"
