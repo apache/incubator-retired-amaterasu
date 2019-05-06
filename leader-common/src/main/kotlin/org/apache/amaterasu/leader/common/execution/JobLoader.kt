@@ -41,6 +41,7 @@ object JobLoader : KLogging() {
 
     }
 
+    @JvmStatic
     fun createJobManager(maki: String, jobId: String, client: CuratorFramework, attempts: Int, actionsQueue: BlockingQueue<ActionData>): JobManager {
 
         return JobParser.parse(
@@ -80,6 +81,7 @@ object JobLoader : KLogging() {
         return jobManager
     }
 
+    @JvmStatic
     fun restoreJobState(jobManager: JobManager, jobId: String, client: CuratorFramework): Unit {
 
         val tasks = client.children.forPath("/$jobId").filter { it.startsWith("task") }
