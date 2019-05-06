@@ -20,6 +20,7 @@ enum class ActionStatus (val value: String) {
     Pending("Pending"),
     Queued("Queued"),
     Started("Started"),
+    Running("Running"),
     Complete("Complete"),
     Failed("Failed"),
     Canceled("Canceled")

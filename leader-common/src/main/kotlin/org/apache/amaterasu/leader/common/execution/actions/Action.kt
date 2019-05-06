@@ -40,8 +40,8 @@ abstract class Action : KLogging() {
 
     fun announceRunning() {
         log.debug("Action ${data.name} of group ${data.groupId} and type ${data.typeId} is running")
-        client.setData().forPath(actionPath, ActionStatus.running.value.toByteArray())
-        data.status = ActionStatus.running
+        client.setData().forPath(actionPath, ActionStatus.Running.value.toByteArray())
+        data.status = ActionStatus.Running
     }
 
     fun announceQueued() {

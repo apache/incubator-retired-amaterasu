@@ -24,10 +24,15 @@ case class Args(
                  jobId: String = null,
                  report: String = "code",
                  home: String = "",
-                 newJobId: String = ""
+                 newJobId: String = "",
+                 username: String = "",
+                 password: String = ""
                ) {
   def toCmdString: String = {
     var cmd = s""" --repo $repo --branch $branch --env $env --name $name --report $report --home $home"""
+    if (!username.isEmpty && !password.isEmpty) {
+      cmd += s" --username $username --password $password"
+    }
     if(jobId != null && !jobId.isEmpty) {
       cmd += s" --job-id $jobId"
     }

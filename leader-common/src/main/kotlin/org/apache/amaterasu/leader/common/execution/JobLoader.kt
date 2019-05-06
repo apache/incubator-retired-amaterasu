@@ -27,6 +27,7 @@ import java.util.concurrent.BlockingQueue
 
 object JobLoader : KLogging() {
 
+    @JvmStatic
     fun loadJob(src: String, branch: String, jobId: String, userName: String, password: String, client: CuratorFramework, attempts: Int, actionsQueue: BlockingQueue<ActionData>): JobManager {
 
         // creating the jobs znode and storing the source repo and branch
@@ -63,6 +64,7 @@ object JobLoader : KLogging() {
         return maki
     }
 
+    @JvmStatic
     fun reloadJob(jobId: String, userName: String, password: String, client: CuratorFramework, attempts: Int, actionsQueue: BlockingQueue<ActionData>): JobManager {
 
         //val jobState = client.getChildren.forPath(s"/$jobId")

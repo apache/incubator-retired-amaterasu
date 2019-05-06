@@ -32,10 +32,9 @@ import org.apache.amaterasu.common.dataobjects.ActionData
 import org.apache.amaterasu.common.execution.actions.Notification
 import org.apache.amaterasu.common.execution.actions.enums.{NotificationLevel, NotificationType}
 import org.apache.amaterasu.leader.common.configuration.ConfigManager
-import org.apache.amaterasu.leader.common.execution.JobManager
+import org.apache.amaterasu.leader.common.execution.{JobLoader, JobManager}
 import org.apache.amaterasu.leader.common.execution.frameworks.FrameworkProvidersFactory
 import org.apache.amaterasu.leader.common.utilities.DataLoader
-import org.apache.amaterasu.leader.execution.JobLoader
 import org.apache.amaterasu.leader.utilities.HttpServer
 import org.apache.commons.io.FileUtils
 import org.apache.curator.framework.{CuratorFramework, CuratorFrameworkFactory}
@@ -69,6 +68,8 @@ class JobScheduler extends AmaterasuScheduler {
   private var src: String = _
   private var env: String = _
   private var branch: String = _
+  private var userName: String = _
+  private var password: String = _
   private var resume: Boolean = false
   private var reportLevel: NotificationLevel = _
 
@@ -392,6 +393,8 @@ class JobScheduler extends AmaterasuScheduler {
         src,
         branch,
         frameworkId.getValue,
+        userName,
+        password,
         client,
         config.jobs.tasks.attempts,
         new LinkedBlockingQueue[ActionData]()
@@ -401,6 +404,8 @@ class JobScheduler extends AmaterasuScheduler {
 
       JobLoader.reloadJob(
         frameworkId.getValue,
+        userName,
+        password,
         client,
         config.jobs.tasks.attempts,
         new LinkedBlockingQueue[ActionData]()
@@ -481,6 +486,8 @@ object JobScheduler {
 
   def apply(src: String,
             branch: String,
+            username: String,
+            password: String,
             env: String,
             resume: Boolean,
             config: ClusterConfig,
@@ -501,6 +508,8 @@ object JobScheduler {
     scheduler.resume = resume
     scheduler.src = src
     scheduler.branch = branch
+    scheduler.userName = username
+    scheduler.password = password
     scheduler.env = env
     scheduler.reportLevel = NotificationLevel.valueOf(report.capitalize)
 
