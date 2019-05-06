@@ -129,7 +129,7 @@ class JobScheduler extends AmaterasuScheduler {
       }
       case TaskState.TASK_FINISHED => {
         jobManager.actionComplete(status.getTaskId.getValue)
-        printNotification(new Notification("",s"Container ${status.getExecutorId.getValue} Complete with task ${status.getTaskId.getValue} with success.", NotificationType.Info, NotificationLevel.Execution))
+        printNotification(new Notification("", s"Container ${status.getExecutorId.getValue} Complete with task ${status.getTaskId.getValue} with success.", NotificationType.Info, NotificationLevel.Execution))
       }
       case TaskState.TASK_FAILED |
            TaskState.TASK_KILLED |
@@ -256,13 +256,14 @@ class JobScheduler extends AmaterasuScheduler {
 
             // Getting action dependencies
             runnerProvider.getActionDependencies(jobManager.getJobId, actionData).foreach(r => {
+
+              FileUtils.copyFile(new File(r), new File(s"dist/$r"))
               command.addUris(URI.newBuilder
                 .setValue(s"http://${sys.env("AMA_NODE")}:${config.webserver.Port}/$r")
                 .setExecutable(false)
                 .setExtract(false)
                 .build())
-            }
-            )
+            })
 
             // Getting action specific resources
             runnerProvider.getActionResources(jobManager.getJobId, actionData).foreach(r => command.addUris(URI.newBuilder
@@ -350,7 +351,7 @@ class JobScheduler extends AmaterasuScheduler {
               //driver.launchTasks(Collections.singleton(offer.getId), List(actionTask).asJava)
             }
 
-            printNotification(new Notification("", s"requesting container fo ${actionData.getName}", NotificationType.Info, NotificationLevel.Execution))
+            printNotification(new Notification("", s"requesting container for ${actionData.getName}", NotificationType.Info, NotificationLevel.Execution))
             driver.launchTasks(Collections.singleton(offer.getId), List(actionTask).asJava)
 
           }

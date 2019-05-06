@@ -48,11 +48,9 @@ abstract class PythonRunnerProviderBase(val env: String, val conf: ClusterConfig
     }
 
     override fun getActionDependencies(jobId: String, actionData: ActionData): Array<String> {
-        val reqFile = File("dist/$requirementsFileName")
-        val dist = Paths.get("dist/")
+        val reqFile = File(requirementsFileName)
 
         if (reqFile.exists()) reqFile.delete()
-        if (Files.notExists(dist)) Files.createDirectories(dist)
 
         val dependencies = runnerResources + mandatoryPYPIPackages
 

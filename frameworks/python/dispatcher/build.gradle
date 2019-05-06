@@ -69,11 +69,6 @@ repositories {
 }
 
 dependencies {
-    compile 'org.scala-lang:scala-library:2.11.8'
-
-//    compile group: 'org.scala-lang', name: 'scala-reflect', version: '2.11.8'
-//    compile group: 'org.scala-lang', name: 'scala-compiler', version: '2.11.8'
-
     compile project(':common')
     compile project(':amaterasu-sdk')
     compile project(':leader')

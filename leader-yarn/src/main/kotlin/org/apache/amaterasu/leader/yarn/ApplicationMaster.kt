@@ -238,12 +238,14 @@ class ApplicationMaster : KLogging(), AMRMClientAsync.CallbackHandler {
                         val runnerProvider = framework.getRunnerProvider(actionData.typeId)
                         val ctx = Records.newRecord(ContainerLaunchContext::class.java)
 
+
                         val envConf = configManager.getActionConfiguration(actionData.name, actionData.config)
                         val commands: List<String> = listOf(runnerProvider.getCommand(jobManager.jobId, actionData, envConf, "${actionData.id}-${container.id.containerId}", address))
 
                         notifier.info("container command ${commands.joinToString(prefix = " ", postfix = " ")}")
                         ctx.commands = commands
                         ctx.tokens = allTokens()
+
                         ctx.localResources = setupContainerResources(framework, runnerProvider, actionData)
                         ctx.environment = framework.environmentVariables
 
@@ -252,7 +254,7 @@ class ApplicationMaster : KLogging(), AMRMClientAsync.CallbackHandler {
                         jobManager.actionStarted(actionData.id)
                         containersIdsToTask[container.id.containerId] = actionData
                         notifier.info("created container for ${actionData.name} created")
-                        //ctx.localResources.forEach { t: String, u: LocalResource ->  notifier.info("resource: $t = ${u.resource}") }
+                        //ctx.localResources.forEach { t: String, u: LocalResource -> notifier.info("resource: $t = ${u.resource}") }
                         log.info("launching container succeeded: ${container.id.containerId}; task: ${actionData.id}")
                     } catch (e: Exception) {
                         notifier.error("", "error launching container with ${e.message} in ${ExceptionUtils.getStackTrace(e)}")
@@ -299,6 +301,7 @@ class ApplicationMaster : KLogging(), AMRMClientAsync.CallbackHandler {
 
         // getting the action specific dependencies
         runnerProvider.getActionDependencies(jobManager.jobId, actionData).forEach { distributeFile(it, "${jobManager.jobId}/${actionData.name}/") }
+
         result.putAll(runnerProvider.getActionDependencies(jobManager.jobId, actionData).map { File(it).name to createLocalResourceFromPath(Path.mergePaths(yarnJarPath, createDistPath("${jobManager.jobId}/${actionData.name}/$it"))) })
 
         // Adding the Amaterasu configuration files
@@ -313,6 +316,8 @@ class ApplicationMaster : KLogging(), AMRMClientAsync.CallbackHandler {
         result[File(executable).name] = createLocalResourceFromPath(Path.mergePaths(yarnJarPath, createDistPath("${jobManager.jobId}/${actionData.name}/$executable")))
 
         result.forEach { println("entry ${it.key} with value ${it.value}") }
+
+        result.forEach { notifier.info("entry ${it.key} with value ${it.value}") }
         return result.map { x -> x.key.removePrefix("/") to x.value }.toMap()
     }
 
@@ -348,11 +353,12 @@ class ApplicationMaster : KLogging(), AMRMClientAsync.CallbackHandler {
 
     private fun distributeFile(file: String, distributionPath: String) {
 
-        log.info("copying file $file, file status ${File(file).exists()}")
 
         val actionDistPath = createDistPath("$distributionPath/$file")
         val yarnJarPath = Path(config.yarn().hdfsJarsPath())
         val targetPath = Path.mergePaths(yarnJarPath, actionDistPath)
+
+        notifier.info("copying file $file, file status ${File(file).exists()} to $targetPath")
 
         log.info("target is $targetPath")
 
@@ -434,7 +440,7 @@ class ApplicationMaster : KLogging(), AMRMClientAsync.CallbackHandler {
                 } else {
                     // TODO: Check the getDiagnostics value and see if appropriate
                     jobManager.actionFailed(taskId, status.diagnostics)
-                    notifier.error( "Container $containerId Complete with task $taskId with Failed status code (${status.exitStatus})", status.diagnostics)
+                    notifier.error("Container $containerId Complete with task $taskId with Failed status code (${status.exitStatus})", status.diagnostics)
                 }
             }
         }
