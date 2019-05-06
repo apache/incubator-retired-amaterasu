@@ -197,6 +197,8 @@ class ApplicationMaster : KLogging(), AMRMClientAsync.CallbackHandler {
             log.info("resuming job" + opts.newJobId)
             jobManager = JobLoader.reloadJob(
                     opts.newJobId,
+                    opts.userName,
+                    opts.password,
                     zkClient,
                     config.Jobs().tasks().attempts(),
                     LinkedBlockingQueue<ActionData>())
@@ -209,6 +211,8 @@ class ApplicationMaster : KLogging(), AMRMClientAsync.CallbackHandler {
                         opts.repo,
                         opts.branch,
                         opts.newJobId,
+                        opts.userName,
+                        opts.password,
                         zkClient,
                         config.Jobs().tasks().attempts(),
                         LinkedBlockingQueue<ActionData>())

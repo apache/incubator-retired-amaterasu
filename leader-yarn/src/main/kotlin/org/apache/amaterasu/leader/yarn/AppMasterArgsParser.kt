@@ -24,7 +24,7 @@ class AppMasterArgsParser: ArgsParser() {
 
     override fun run() {
 
-        var opts = AmaOpts(repo, branch, env, name, jobId, newJobId, report, home)
+        var opts = AmaOpts(repo, branch, env, name, jobId, newJobId, report, home, userName, password)
 
         val appMaster = ApplicationMaster()
         appMaster.address = MessagingClientUtil.borkerAddress
