@@ -22,7 +22,7 @@ matrix:
       jdk:
         - oraclejdk8
     - language: python
-      python: 3.7
+      python: 3.6
 cache:
   directories:
   - "$HOME/.m2"
