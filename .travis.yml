@@ -30,6 +30,7 @@ cache:
   - "~/.gradle"
 before_install:
 - chmod +x gradlew
+- alias python3='python'
 script:
 - "./gradlew clean test buildDistribution"
 deploy:
