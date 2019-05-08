@@ -319,9 +319,8 @@ class ApplicationMaster : KLogging(), AMRMClientAsync.CallbackHandler {
         distributeFile(executable, "${jobManager.jobId}/${actionData.name}/")
         result[File(executable).name] = createLocalResourceFromPath(Path.mergePaths(yarnJarPath, createDistPath("${jobManager.jobId}/${actionData.name}/$executable")))
 
-        result.forEach { println("entry ${it.key} with value ${it.value}") }
+        result.forEach { log.debug("entry ${it.key} with value ${it.value}") }
 
-        result.forEach { notifier.info("entry ${it.key} with value ${it.value}") }
         return result.map { x -> x.key.removePrefix("/") to x.value }.toMap()
     }
 
