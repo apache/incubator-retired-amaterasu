@@ -18,21 +18,22 @@
 #
 matrix:
   include:
-    - language: java
-      jdk:
-        - oraclejdk8
     - language: python
       python: 3.6
+    - language: java
+    jdk:
+      - oraclejdk8
 cache:
   directories:
   - "$HOME/.m2"
   - "$HOME/.gradle"
   - "~/.gradle"
+  - "pip"
 before_install:
 - chmod +x gradlew
+- sudo apt-get install python3-setuptools
 - alias python3='python'
 script:
-- "sudo apt-get install python3-setuptools"
 - "./gradlew clean test buildDistribution"
 deploy:
   provider: releases
