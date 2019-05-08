@@ -32,6 +32,7 @@ before_install:
 - chmod +x gradlew
 - alias python3='python'
 script:
+- "sudo apt-get install python3-setuptools"
 - "./gradlew clean test buildDistribution"
 deploy:
   provider: releases
