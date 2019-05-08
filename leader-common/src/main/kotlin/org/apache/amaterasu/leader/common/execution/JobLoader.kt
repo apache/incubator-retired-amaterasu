@@ -56,7 +56,7 @@ object JobLoader : KLogging() {
     fun loadMaki(src: String, branch: String, userName: String = "", password: String = ""): String {
 
         // cloning the git repo
-        log.debug("getting repo: $src, for branch $branch")
+        log.debug("getting repo: $src, for branch $branch with $userName")
         GitUtil.cloneRepo(src, branch, userName, password)
 
         // parsing the maki.yaml and creating a JobManager to

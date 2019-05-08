@@ -137,7 +137,7 @@ class JobScheduler extends AmaterasuScheduler {
            TaskState.TASK_ERROR |
            TaskState.TASK_LOST => {
         jobManager.actionFailed(status.getTaskId.getValue, status.getMessage)
-        printNotification(new Notification("", s"error launching container with ${status.getMessage} in ${status.getData}", NotificationType.Error, NotificationLevel.Execution))
+        printNotification(new Notification("", s"error launching container with ${status.getMessage} in ${status.getData.toStringUtf8}", NotificationType.Error, NotificationLevel.Execution))
 
       }
       case _ => log.warn("WTF? just got unexpected task state: " + status.getState)
