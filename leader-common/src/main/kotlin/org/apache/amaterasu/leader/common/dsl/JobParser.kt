@@ -20,6 +20,7 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.ArrayNode
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
+import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import org.apache.amaterasu.common.dataobjects.ActionData
 import org.apache.amaterasu.common.dataobjects.Artifact
 import org.apache.amaterasu.common.dataobjects.Repo
@@ -52,7 +53,7 @@ object JobParser {
               client: CuratorFramework,
               attempts: Int): JobManager {
 
-        val mapper = ObjectMapper(YAMLFactory())
+        val mapper = ObjectMapper(YAMLFactory()).registerKotlinModule()
 
         val job = mapper.readTree(maki)
 

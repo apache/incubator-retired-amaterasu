@@ -88,6 +88,14 @@ case $i in
     DEFAULT=YES
     shift # past argument with no value
     ;;
+    -u=*|--user-name=*)
+    USERNAME="${i#*=}"
+    shift # past argument=value
+    ;;
+    -p=*|--password=*)
+    PASSWORD="${i#*=}"
+    shift # past argument=value
+    ;;
     *)
             # unknown option
     ;;
@@ -124,6 +132,18 @@ fi
 
 if [ -n "$REPORT" ]; then
     CMD+=" --report ${REPORT}"
+fi
+
+if [ -n "$USERNAME" ]; then
+    CMD+=" --user-name ${USERNAME}"
+else
+    CMD+=" --user-name \"\""
+fi
+
+if [ -n "$PASSWORD" ]; then
+    CMD+=" --password ${PASSWORD}"
+else
+    CMD+=" --password \"\""
 fi
 
 if ! ls ${BASEDIR}/dist/spark*.tgz 1> /dev/null 2>&1; then

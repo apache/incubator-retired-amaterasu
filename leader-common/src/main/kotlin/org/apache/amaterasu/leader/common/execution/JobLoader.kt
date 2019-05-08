@@ -27,19 +27,21 @@ import java.util.concurrent.BlockingQueue
 
 object JobLoader : KLogging() {
 
-    fun loadJob(src: String, branch: String, jobId: String, client: CuratorFramework, attempts: Int, actionsQueue: BlockingQueue<ActionData>): JobManager {
+    @JvmStatic
+    fun loadJob(src: String, branch: String, jobId: String, userName: String, password: String, client: CuratorFramework, attempts: Int, actionsQueue: BlockingQueue<ActionData>): JobManager {
 
         // creating the jobs znode and storing the source repo and branch
         client.create().withMode(CreateMode.PERSISTENT).forPath("/$jobId")
         client.create().withMode(CreateMode.PERSISTENT).forPath("/$jobId/repo", src.toByteArray())
         client.create().withMode(CreateMode.PERSISTENT).forPath("/$jobId/branch", branch.toByteArray())
 
-        val maki: String = loadMaki(src, branch)
+        val maki: String = loadMaki(src, branch, userName, password)
 
         return createJobManager(maki, jobId, client, attempts, actionsQueue)
 
     }
 
+    @JvmStatic
     fun createJobManager(maki: String, jobId: String, client: CuratorFramework, attempts: Int, actionsQueue: BlockingQueue<ActionData>): JobManager {
 
         return JobParser.parse(
@@ -51,11 +53,11 @@ object JobLoader : KLogging() {
         )
     }
 
-    fun loadMaki(src: String, branch: String): String {
+    fun loadMaki(src: String, branch: String, userName: String = "", password: String = ""): String {
 
         // cloning the git repo
-        log.debug("getting repo: $src, for branch $branch")
-        GitUtil.cloneRepo(src, branch)
+        log.debug("getting repo: $src, for branch $branch with $userName")
+        GitUtil.cloneRepo(src, branch, userName, password)
 
         // parsing the maki.yaml and creating a JobManager to
         // coordinate the workflow based on the file
@@ -63,13 +65,14 @@ object JobLoader : KLogging() {
         return maki
     }
 
-    fun reloadJob(jobId: String, client: CuratorFramework, attempts: Int, actionsQueue: BlockingQueue<ActionData>): JobManager {
+    @JvmStatic
+    fun reloadJob(jobId: String, userName: String, password: String, client: CuratorFramework, attempts: Int, actionsQueue: BlockingQueue<ActionData>): JobManager {
 
         //val jobState = client.getChildren.forPath(s"/$jobId")
         val src = String(client.data.forPath("/$jobId/repo"))
         val branch = String(client.data.forPath("/$jobId/branch"))
 
-        val maki: String = loadMaki(src, branch)
+        val maki: String = loadMaki(src, branch, userName, password)
 
         val jobManager: JobManager = createJobManager(maki, jobId, client, attempts, actionsQueue)
         restoreJobState(jobManager, jobId, client)
@@ -78,6 +81,7 @@ object JobLoader : KLogging() {
         return jobManager
     }
 
+    @JvmStatic
     fun restoreJobState(jobManager: JobManager, jobId: String, client: CuratorFramework): Unit {
 
         val tasks = client.children.forPath("/$jobId").filter { it.startsWith("task") }

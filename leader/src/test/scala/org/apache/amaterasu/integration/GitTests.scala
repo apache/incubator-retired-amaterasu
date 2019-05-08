@@ -28,7 +28,7 @@ class GitTests extends FlatSpec with Matchers {
     val path = Path("repo")
     path.deleteRecursively()
 
-    GitUtil.cloneRepo("https://github.com/shintoio/amaterasu-job-sample.git", "master")
+    GitUtil.cloneRepo("https://github.com/shintoio/amaterasu-job-sample.git", "master", "", "")
 
     val exists = new java.io.File("repo/maki.yml").exists
     exists should be(true)

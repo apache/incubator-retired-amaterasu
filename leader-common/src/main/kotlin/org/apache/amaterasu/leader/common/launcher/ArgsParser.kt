@@ -31,5 +31,6 @@ abstract class ArgsParser : CliktCommand() {
      val newJobId: String by option("--new-job-id", help = "The jobId - should never be passed by a user").default("")
      val report: String by option(help = "The level of reporting").default("code")
      val home: String by option(help = "").default("")
-
+     val userName: String by option(help = "The user name, if the repo has a basic authentication").default("")
+     val password: String by option(help = "The password, if the repo has a basic authentication").default("")
 }

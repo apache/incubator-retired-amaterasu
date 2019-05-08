@@ -24,11 +24,16 @@ data class AmaOpts(
         var jobId: String = "",
         var newJobId: String = "",
         var report: String = "code",
-        var home: String = "") {
+        var home: String = "",
+        var userName: String = "",
+        var password: String = "") {
 
     fun toCmdString(): String {
 
         var cmd = " --repo $repo --branch $branch --env $env --name $name --report $report --home $home"
+        if (userName.isNotEmpty() && password.isNotEmpty()) {
+            cmd += " --username $userName --password $password"
+        }
         if (jobId.isNotEmpty()) {
             cmd += " --job-id $jobId"
         }

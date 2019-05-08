@@ -48,6 +48,8 @@ object MesosJobLauncher extends BaseJobLauncher {
     val scheduler = JobScheduler(
       arguments.repo,
       arguments.branch,
+      arguments.username,
+      arguments.password,
       arguments.env,
       resume,
       config,

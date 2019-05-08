@@ -16,14 +16,23 @@
 # specific language governing permissions and limitations
 # under the License.
 #
-language: scala
+matrix:
+  include:
+    - language: python
+      python: 3.6
+    - language: java
+      jdk:
+        - oraclejdk8
 cache:
   directories:
   - "$HOME/.m2"
   - "$HOME/.gradle"
   - "~/.gradle"
+  - "pip"
 before_install:
 - chmod +x gradlew
+- sudo apt-get install python3-setuptools
+- alias python3='python'
 script:
 - "./gradlew clean test buildDistribution"
 deploy:

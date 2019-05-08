@@ -38,6 +38,12 @@ abstract class Action : KLogging() {
         data.status = ActionStatus.Started
     }
 
+    fun announceRunning() {
+        log.debug("Action ${data.name} of group ${data.groupId} and type ${data.typeId} is running")
+        client.setData().forPath(actionPath, ActionStatus.Running.value.toByteArray())
+        data.status = ActionStatus.Running
+    }
+
     fun announceQueued() {
         log.debug("Action ${data.name} of group ${data.groupId} and of type ${data.typeId} is Queued for execution")
         client.setData().forPath(actionPath, ActionStatus.Queued.value.toByteArray())

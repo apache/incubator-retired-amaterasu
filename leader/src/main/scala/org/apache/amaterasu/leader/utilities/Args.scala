@@ -24,10 +24,15 @@ case class Args(
                  jobId: String = null,
                  report: String = "code",
                  home: String = "",
-                 newJobId: String = ""
+                 newJobId: String = "",
+                 username: String = "",
+                 password: String = ""
                ) {
   def toCmdString: String = {
     var cmd = s""" --repo $repo --branch $branch --env $env --name $name --report $report --home $home"""
+    if (!username.isEmpty && !password.isEmpty) {
+      cmd += s" --user-name $username --password $password"
+    }
     if(jobId != null && !jobId.isEmpty) {
       cmd += s" --job-id $jobId"
     }
@@ -76,6 +81,14 @@ object Args {
 
       opt[String]('h', "home") action { (x, c) =>
         c.copy(home = x)
+      }
+
+      opt[String]('u', "user-name") action { (x, c) =>
+        c.copy(username = x)
+      }
+
+      opt[String]('p', "password") action { (x, c) =>
+        c.copy(password = x)
       }
     }
   }

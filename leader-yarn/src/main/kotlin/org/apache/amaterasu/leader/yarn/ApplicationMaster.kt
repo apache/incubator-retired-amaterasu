@@ -197,6 +197,8 @@ class ApplicationMaster : KLogging(), AMRMClientAsync.CallbackHandler {
             log.info("resuming job" + opts.newJobId)
             jobManager = JobLoader.reloadJob(
                     opts.newJobId,
+                    opts.userName,
+                    opts.password,
                     zkClient,
                     config.Jobs().tasks().attempts(),
                     LinkedBlockingQueue<ActionData>())
@@ -209,6 +211,8 @@ class ApplicationMaster : KLogging(), AMRMClientAsync.CallbackHandler {
                         opts.repo,
                         opts.branch,
                         opts.newJobId,
+                        opts.userName,
+                        opts.password,
                         zkClient,
                         config.Jobs().tasks().attempts(),
                         LinkedBlockingQueue<ActionData>())
@@ -315,9 +319,8 @@ class ApplicationMaster : KLogging(), AMRMClientAsync.CallbackHandler {
         distributeFile(executable, "${jobManager.jobId}/${actionData.name}/")
         result[File(executable).name] = createLocalResourceFromPath(Path.mergePaths(yarnJarPath, createDistPath("${jobManager.jobId}/${actionData.name}/$executable")))
 
-        result.forEach { println("entry ${it.key} with value ${it.value}") }
+        result.forEach { log.debug("entry ${it.key} with value ${it.value}") }
 
-        result.forEach { notifier.info("entry ${it.key} with value ${it.value}") }
         return result.map { x -> x.key.removePrefix("/") to x.value }.toMap()
     }
 

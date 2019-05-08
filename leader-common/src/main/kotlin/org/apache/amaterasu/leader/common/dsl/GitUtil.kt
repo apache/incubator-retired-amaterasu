@@ -17,17 +17,21 @@
 package org.apache.amaterasu.leader.common.dsl
 
 import org.eclipse.jgit.api.Git
+import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider
 import java.io.File
 
 object GitUtil {
     @JvmStatic
-    fun cloneRepo(repoAddress: String, branch: String) {
+    fun cloneRepo(repoAddress: String, branch: String, userName: String = "", password: String = "") {
         if (File("repo").exists())
             File("repo").deleteRecursively()
         Git.cloneRepository().apply {
             setURI(repoAddress)
             setDirectory(File("repo"))
             setBranch(branch)
+            if (userName.isNotEmpty() && password.isNotEmpty()) {
+                setCredentialsProvider(UsernamePasswordCredentialsProvider(userName, password))
+            }
         }.call().close()
     }
 }
