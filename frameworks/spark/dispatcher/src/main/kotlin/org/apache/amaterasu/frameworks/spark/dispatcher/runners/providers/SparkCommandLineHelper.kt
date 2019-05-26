@@ -14,27 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.amaterasu.sdk.frameworks
+package org.apache.amaterasu.frameworks.spark.dispatcher.runners.providers
 
-import org.apache.amaterasu.common.configuration.ClusterConfig
-import org.apache.amaterasu.common.configuration.ConfigManager
-import org.apache.amaterasu.sdk.frameworks.configuration.DriverConfiguration
+object SparkCommandLineHelper {
 
-import java.io.File
+    fun getOptions(sparkOptions: Map<String, Any>): String {
+        return sparkOptions.map { "--${it.key} ${it.value}" }.joinToString( separator = " ")
+    }
 
-interface FrameworkSetupProvider {
-
-    val groupIdentifier: String
-
-    val groupResources: Array<File>
-
-    val environmentVariables: Map<String, String>
-
-    val configurationItems: Array<String>
-
-    fun init(env: String, conf: ClusterConfig)
-
-    fun getRunnerProvider(runnerId: String): RunnerSetupProvider
-
-    fun getDriverConfiguration(configManager: ConfigManager): DriverConfiguration
+    fun getProperties(sparkProps: Map<String, Any>): String{
+        return sparkProps.map { "--conf $it" }.joinToString( separator = " ")
+    }
 }

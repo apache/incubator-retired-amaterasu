@@ -20,20 +20,25 @@ import com.uchuhimo.konf.Config
 import org.apache.amaterasu.common.configuration.ClusterConfig
 import org.apache.amaterasu.common.dataobjects.ActionData
 import org.apache.amaterasu.frameworks.python.dispatcher.runners.providers.PythonRunnerProviderBase
-import org.apache.amaterasu.leader.common.configuration.Job
+import org.apache.amaterasu.common.configuration.Job
 
 class PySparkRunnerProvider(env: String, conf: ClusterConfig) : PythonRunnerProviderBase(env, conf) {
 
     override fun getCommand(jobId: String, actionData: ActionData, env: Config, executorId: String, callbackAddress: String): String {
-        val command = super.getCommand(jobId, actionData , env, executorId, callbackAddress)
-        command + " && \$SPARK_HOME/bin/spark-submit --master ${env[Job.master]} " +
+        val sparkProperties: Map<String, Any> = env["sparkProperties"]
+        val sparkOptions: Map<String, Any> = env["sparkOptions"]
+        val command = super.getCommand(jobId, actionData, env, executorId, callbackAddress)
+        val hive  = if (conf.mode() == "yarn") "--files \$SPARK_HOME/conf/hive-site.xml " else ""
+        val master = if (!sparkOptions.containsKey("master")) " --master ${env[Job.master]} " else ""
+
+        return "$command && \$SPARK_HOME/bin/spark-submit $master" +
+                SparkCommandLineHelper.getOptions(sparkOptions) +
+                SparkCommandLineHelper.getProperties(sparkProperties) +
                 "--conf spark.pyspark.python=${conf.pythonPath()} " +
                 "--conf spark.pyspark.driver.python=$virtualPythonPath " +
-                "--files \$SPARK_HOME/conf/hive-site.xml ${actionData.src}"
-
-        return command
+                hive +
+                " ${actionData.src}"
     }
-
 
     override fun getActionUserResources(jobId: String, actionData: ActionData): Array<String> = arrayOf()
 

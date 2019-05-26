@@ -17,9 +17,9 @@
 package org.apache.amaterasu.frameworks.spark.dispatcher
 
 import org.apache.amaterasu.common.configuration.ClusterConfig
+import org.apache.amaterasu.common.configuration.ConfigManager
 import org.apache.amaterasu.frameworks.spark.dispatcher.runners.providers.PySparkRunnerProvider
 import org.apache.amaterasu.frameworks.spark.dispatcher.runners.providers.SparkSubmitScalaRunnerProvider
-import org.apache.amaterasu.leader.common.utilities.DataLoader
 import org.apache.amaterasu.leader.common.utilities.MemoryFormatParser
 import org.apache.amaterasu.sdk.frameworks.FrameworkSetupProvider
 import org.apache.amaterasu.sdk.frameworks.RunnerSetupProvider
@@ -31,11 +31,6 @@ class SparkSetupProvider : FrameworkSetupProvider {
 
     private lateinit var env: String
     private lateinit var conf: ClusterConfig
-
-    private val sparkExecConfigurations: Map<String, Any> by lazy {
-        val execData = DataLoader.getExecutorData(env, conf)
-        execData.configurations["spark"].orEmpty()
-    }
 
     private lateinit var runnerProviders: Map<String, RunnerSetupProvider>
 
@@ -72,32 +67,27 @@ class SparkSetupProvider : FrameworkSetupProvider {
     }
 
     override val groupIdentifier: String = "spark"
-    override val configurationItems = arrayOf("sparkConfiguration", "sparkExecutor")
+    override val configurationItems = arrayOf("sparkProperties", "sparkOptions")
 
-    override val driverConfiguration: DriverConfiguration
-        get() {
-            //TODO: Spark configuration sould come for the ENV only
-            val sparkOpts = conf.spark().opts()
-            val cpu: Int = when {
-                sparkExecConfigurations.containsKey("spark.yarn.am.cores") -> sparkExecConfigurations["spark.yarn.am.cores"].toString().toInt()
-                sparkExecConfigurations.containsKey("spark.driver.cores") -> sparkExecConfigurations["spark.driver.cores"].toString().toInt()
-                sparkOpts.contains("yarn.am.cores") -> sparkOpts["yarn.am.cores"].toString().toInt()
-                sparkOpts.contains("driver.cores") -> sparkOpts["driver.cores"].toString().toInt()
-                conf.yarn().worker().cores() > 0 -> conf.yarn().worker().cores()
-                else -> 1
-            }
+    override fun getDriverConfiguration(configManager: ConfigManager): DriverConfiguration {
+        val sparkOptions: Map<String, Any> = configManager.config["sparkOptions"]
+        val sparkProperties: Map<String, Any> = configManager.config["sparkProperties"]
 
-            val mem: Int = when {
-                sparkExecConfigurations.containsKey("spark.yarn.am.memory") -> MemoryFormatParser.extractMegabytes(sparkExecConfigurations["spark.yarn.am.memory"].toString())
-                sparkExecConfigurations.containsKey("spark.driver.memeory") -> MemoryFormatParser.extractMegabytes(sparkExecConfigurations["spark.driver.memeory"].toString())
-                sparkOpts.contains("yarn.am.memory") -> MemoryFormatParser.extractMegabytes(sparkOpts["yarn.am.memory"].get())
-                sparkOpts.contains("driver.memory") -> MemoryFormatParser.extractMegabytes(sparkOpts["driver.memory"].get())
-                conf.yarn().worker().memoryMB() > 0 -> conf.yarn().worker().memoryMB()
-                conf.taskMem() > 0 -> conf.taskMem()
-                else -> 1024
-            }
-            return DriverConfiguration(mem, cpu)
+        val cpu: Int = when {
+            sparkOptions.containsKey("driver-cores") -> sparkOptions["driver-cores"].toString().toInt()
+            sparkProperties.containsKey("spark.yarn.am.cores") -> sparkProperties["spark.yarn.am.cores"].toString().toInt()
+            sparkProperties.containsKey("spark.driver.cores") -> sparkProperties["spark.driver.cores"].toString().toInt()
+            else -> 1
         }
+
+        val mem: Int = when {
+            sparkOptions.containsKey("driver-memory") -> MemoryFormatParser.extractMegabytes(sparkOptions["driver-memory"].toString())
+            sparkProperties.containsKey("spark.yarn.am.memory") -> MemoryFormatParser.extractMegabytes(sparkProperties["spark.yarn.am.memory"].toString())
+            sparkProperties.containsKey("spark.driver.memeory") -> MemoryFormatParser.extractMegabytes(sparkProperties["spark.driver.memeory"].toString())
+            else -> 1024
+        }
+        return DriverConfiguration(mem, cpu)
+    }
 
 
 }

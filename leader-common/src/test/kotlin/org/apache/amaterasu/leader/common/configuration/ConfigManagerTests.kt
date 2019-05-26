@@ -16,6 +16,8 @@
  */
 package org.apache.amaterasu.leader.common.configuration
 
+import org.apache.amaterasu.common.configuration.ConfigManager
+import org.apache.amaterasu.common.configuration.Job
 import org.jetbrains.spek.api.Spek
 import org.jetbrains.spek.api.dsl.given
 import org.jetbrains.spek.api.dsl.it
@@ -32,38 +34,38 @@ class ConfigManagerTests : Spek({
         val repoPath = "${File(marker).parent}/test_repo"
         val cfg = ConfigManager("test", repoPath)
 
-        it("loads the job level environment"){
-            assertEquals(cfg.config[Job.master] , "yarn")
+        it("loads the job level environment") {
+            assertEquals(cfg.config[Job.master], "yarn")
         }
 
         on("getting an env for an action with default path") {
             val startConf = cfg.getActionConfiguration("start")
-            it("loads the specific configuration defined in the actions folder"){
-                assertEquals(startConf[Job.master] , "mesos")
+            it("loads the specific configuration defined in the actions folder") {
+                assertEquals(startConf[Job.master], "mesos")
             }
         }
 
-        on("getting an env for an action with a conf: property in the maki.yml"){
+        on("getting an env for an action with a conf: property in the maki.yml") {
             val step2conf = cfg.getActionConfiguration("step2", "src/{action_name}/{env}/")
 
-            it("loads the specific configuration defined in the actions folder"){
-                assertEquals(step2conf[Job.name] , "test2")
+            it("loads the specific configuration defined in the actions folder") {
+                assertEquals(step2conf[Job.name], "test2")
             }
         }
 
-        on("getting an env for an action with no action level config"){
+        on("getting an env for an action with no action level config") {
             val step3conf = cfg.getActionConfiguration("step3")
 
-            it("loads only the job level conf"){
-                assertEquals(step3conf[Job.name] , "test")
+            it("loads only the job level conf") {
+                assertEquals(step3conf[Job.name], "test")
             }
         }
 
-        on("receiving a path to a specific file" ){
+        on("receiving a path to a specific file") {
             val step4conf = cfg.getActionConfiguration("step4", "src/start/env/{env}/job.yml")
 
-            it("loads the specific configuration from the file"){
-                assertEquals(step4conf[Job.master] , "mesos")
+            it("loads the specific configuration from the file") {
+                assertEquals(step4conf[Job.master], "mesos")
             }
         }
 
@@ -73,11 +75,23 @@ class ConfigManagerTests : Spek({
     given("a ConfigManager for a job with spark framework") {
 
         val repoPath = "${File(marker).parent}/spark_repo"
-        val cfg = ConfigManager("test", repoPath, listOf("sparkConfiguration"))
+        val cfg = ConfigManager("test", repoPath, listOf("sparkProperties"))
 
-        it("load the framework configuration for spark"){
-            val spark: Map<String, String> = cfg.config["sparkConfiguration"]
+        it("load the framework configuration for spark") {
+            val spark: Map<String, String> = cfg.config["sparkProperties"]
             assertEquals(spark["spark.executor.memory"], "1g")
         }
+
+        it("loads int values as strings") {
+            val spark: Map<String, String> = cfg.config["sparkProperties"]
+            assertEquals(spark["spark.driver.cores"].toString(), "2")
+        }
+
+        //TODO: Create spark specific tests
+//        it("should be converted correctly to spark-submit parameters") {
+//            val spark: Map<String, Any> = cfg.config["sparkProperties"]
+//            val x = spark.map { "--conf $it" }.joinToString(separator = " ")
+//            println(x)
+//        }
     }
 })
