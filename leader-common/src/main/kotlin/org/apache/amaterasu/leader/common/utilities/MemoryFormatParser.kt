@@ -17,18 +17,15 @@
 package org.apache.amaterasu.leader.common.utilities
 
 object MemoryFormatParser {
+    fun extractMegabytes(input: String): Int {
+        val lower = input.toLowerCase()
 
-  def extractMegabytes(input: String): Int = {
-    var result: Int = 0
-    val lower = input.toLowerCase
-    if (lower.contains("mb")) {
-      result = lower.replace("mb", "").toInt
-    } else if (lower.contains("gb") | lower.contains("g")) {
-      result = lower.replace("g", "").replace("b", "").toInt * 1024
-    } else {
-      result = lower.toInt
+        return if (lower.contains("mb")) {
+            lower.replace("mb", "").toInt()
+        } else if (lower.contains("gb") || lower.contains("g")) {
+            lower.replace("g", "").replace("b", "").toInt() * 1024
+        } else {
+            lower.toInt()
+        }
     }
-
-    result
-  }
 }

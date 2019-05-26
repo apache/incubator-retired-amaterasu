@@ -33,7 +33,7 @@ class PySparkRunnerProvider(env: String, conf: ClusterConfig) : PythonRunnerProv
 
         return "$command && \$SPARK_HOME/bin/spark-submit $master" +
                 SparkCommandLineHelper.getOptions(sparkOptions) +
-                SparkCommandLineHelper.getProperties(sparkProperties) +
+                SparkCommandLineHelper.getProperties(sparkProperties) + " " +
                 "--conf spark.pyspark.python=${conf.pythonPath()} " +
                 "--conf spark.pyspark.driver.python=$virtualPythonPath " +
                 hive +
