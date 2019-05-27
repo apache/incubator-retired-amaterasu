@@ -255,8 +255,7 @@ class JobScheduler extends AmaterasuScheduler {
                 .setExecutable(false)
                 .setExtract(false)
                 .build())
-            }
-            )
+            })
 
             // Getting action dependencies
             runnerProvider.getActionDependencies(jobManager.getJobId, actionData).foreach(r => {
