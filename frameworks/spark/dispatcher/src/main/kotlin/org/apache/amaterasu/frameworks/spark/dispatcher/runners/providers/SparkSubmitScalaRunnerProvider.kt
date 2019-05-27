@@ -35,10 +35,10 @@ class SparkSubmitScalaRunnerProvider(val conf: ClusterConfig) : RunnerSetupProvi
         val master = if (!sparkOptions.containsKey("master")) " --master ${env[Job.master]} " else ""
 
         return "\$SPARK_HOME/bin/spark-submit $classParam ${util.getLocalArtifacts(actionData.artifact).first().name} " +
-                SparkCommandLineHelper.getOptions(sparkOptions) +
-                SparkCommandLineHelper.getProperties(sparkProperties) +
+                SparkCommandLineHelper.getOptions(sparkOptions) + " " +
+                SparkCommandLineHelper.getProperties(sparkProperties) + " " +
                 master +
-                "--jars spark-runtime-${conf.version()}.jar >&1"
+                " --jars spark-runtime-${conf.version()}.jar >&1"
     }
 
     override fun getActionUserResources(jobId: String, actionData: ActionData): Array<String> = arrayOf()

@@ -19,10 +19,10 @@ package org.apache.amaterasu.frameworks.spark.dispatcher.runners.providers
 object SparkCommandLineHelper {
 
     fun getOptions(sparkOptions: Map<String, Any>): String {
-        return sparkOptions.map { "--${it.key} ${it.value}" }.joinToString( separator = " ")
+        return sparkOptions.map { "--${it.key} ${it.value}" }.joinToString( separator = " ") + " "
     }
 
     fun getProperties(sparkProps: Map<String, Any>): String{
-        return sparkProps.map { "--conf $it" }.joinToString( separator = " ")
+        return sparkProps.map { "--conf $it" }.joinToString( separator = " ") + " "
     }
 }
