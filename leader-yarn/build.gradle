@@ -72,7 +72,7 @@ dependencies {
     compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
     compile "org.jetbrains.kotlin:kotlin-reflect"
     compile group: 'org.jetbrains.kotlinx', name: 'kotlinx-coroutines-core', version: '1.1.1'
-
+    compile group: 'com.github.docker-java', name: 'docker-java', version: '3.1.0-rc-5'
     testCompile 'org.jetbrains.spek:spek-api:1.1.5'
     testCompile "org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version"
     testCompile 'org.apache.curator:curator-test:2.13.0'
