@@ -20,7 +20,6 @@ import com.uchuhimo.konf.Config
 import org.apache.amaterasu.common.configuration.ClusterConfig
 import org.apache.amaterasu.common.dataobjects.ActionData
 import org.apache.amaterasu.common.utils.ArtifactUtil
-import org.apache.amaterasu.common.configuration.ConfigManager
 import org.apache.amaterasu.common.configuration.Job
 import org.apache.amaterasu.sdk.frameworks.RunnerSetupProvider
 
