@@ -57,6 +57,9 @@ project(':python-runtime').projectDir=file("frameworks/python/python_runtime")
 include 'python-pandas'
 project(':python-pandas').projectDir=file("frameworks/python/pandas_runtime")
 
+include 'jvm-common'
+project(':jvm-common').projectDir=file("frameworks/jvm-common")
+
 File spekProject = file("../../kotlin/spek")
 if (spekProject.exists()) {
     // Composite build

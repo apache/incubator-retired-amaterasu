@@ -16,6 +16,7 @@
  */
 package org.apache.amaterasu.leader.common.configuration
 
+import com.uchuhimo.konf.source.yaml.toYaml
 import org.apache.amaterasu.common.configuration.ConfigManager
 import org.apache.amaterasu.common.configuration.Job
 import org.jetbrains.spek.api.Spek
@@ -77,21 +78,25 @@ class ConfigManagerTests : Spek({
         val repoPath = "${File(marker).parent}/spark_repo"
         val cfg = ConfigManager("test", repoPath, listOf("sparkProperties"))
 
+        val actionConf = cfg.getActionConfiguration("")
+
         it("load the framework configuration for spark") {
-            val spark: Map<String, String> = cfg.config["sparkProperties"]
-            assertEquals(spark["spark.executor.memory"], "1g")
+            val spark: Map<String, Any> = actionConf["sparkProperties"]
+            assertEquals(spark["spark.executor.memory"].toString(), "1g")
         }
 
         it("loads int values as strings") {
-            val spark: Map<String, String> = cfg.config["sparkProperties"]
+            val spark: Map<String, Any> = actionConf["sparkProperties"]
+            val x = spark.map { "--conf $it" }.joinToString(separator = " ")
+            println(x)
             assertEquals(spark["spark.driver.cores"].toString(), "2")
         }
 
-        //TODO: Create spark specific tests
-//        it("should be converted correctly to spark-submit parameters") {
-//            val spark: Map<String, Any> = cfg.config["sparkProperties"]
-//            val x = spark.map { "--conf $it" }.joinToString(separator = " ")
-//            println(x)
-//        }
+//        //TODO: Create spark specific tests
+////        it("should be converted correctly to spark-submit parameters") {
+////            val spark: Map<String, Any> = cfg.config["sparkProperties"]
+////            val x = spark.map { "--conf $it" }.joinToString(separator = " ")
+////            println(x)
+////        }
     }
 })

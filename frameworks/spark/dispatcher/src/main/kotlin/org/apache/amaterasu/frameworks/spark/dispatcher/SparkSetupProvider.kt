@@ -88,6 +88,4 @@ class SparkSetupProvider : FrameworkSetupProvider {
         }
         return DriverConfiguration(mem, cpu)
     }
-
-
 }
