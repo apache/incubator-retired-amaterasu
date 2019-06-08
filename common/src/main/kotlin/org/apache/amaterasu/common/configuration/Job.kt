@@ -14,21 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.amaterasu.leader.common.utilities
+package org.apache.amaterasu.common.configuration
 
-object MemoryFormatParser {
+import com.uchuhimo.konf.ConfigSpec
 
-  def extractMegabytes(input: String): Int = {
-    var result: Int = 0
-    val lower = input.toLowerCase
-    if (lower.contains("mb")) {
-      result = lower.replace("mb", "").toInt
-    } else if (lower.contains("gb") | lower.contains("g")) {
-      result = lower.replace("g", "").replace("b", "").toInt * 1024
-    } else {
-      result = lower.toInt
-    }
-
-    result
-  }
+object Job : ConfigSpec("") {
+    val name by required<String>()
+    val master by required<String>()
+    val inputRootPath by required<String>()
+    val outputRootPath by required<String>()
+    val workingDir by required<String>()
+    val configuration by optional(emptyMap<String, String>())
 }

@@ -20,17 +20,24 @@ import com.uchuhimo.konf.Config
 import org.apache.amaterasu.common.configuration.ClusterConfig
 import org.apache.amaterasu.common.dataobjects.ActionData
 import org.apache.amaterasu.common.utils.ArtifactUtil
-import org.apache.amaterasu.leader.common.configuration.Job
+import org.apache.amaterasu.common.configuration.ConfigManager
+import org.apache.amaterasu.common.configuration.Job
 import org.apache.amaterasu.sdk.frameworks.RunnerSetupProvider
+
 
 class SparkSubmitScalaRunnerProvider(val conf: ClusterConfig) : RunnerSetupProvider() {
 
     override fun getCommand(jobId: String, actionData: ActionData, env: Config, executorId: String, callbackAddress: String): String {
         val util = ArtifactUtil(listOf(actionData.repo), jobId)
         val classParam = if (actionData.hasArtifact) " --class ${actionData.entryClass}" else ""
+        val sparkProperties: Map<String, Any> = env["sparkProperties"]
+        val sparkOptions: Map<String, Any> = env["sparkOptions"]
+        val master = if (!sparkOptions.containsKey("master")) " --master ${env[Job.master]} " else ""
 
         return "\$SPARK_HOME/bin/spark-submit $classParam ${util.getLocalArtifacts(actionData.artifact).first().name} " +
-                " --master ${env[Job.master]}" +
+                SparkCommandLineHelper.getOptions(sparkOptions) +
+                SparkCommandLineHelper.getProperties(sparkProperties) +
+                master +
                 " --jars spark-runtime-${conf.version()}.jar >&1"
     }
 
@@ -39,6 +46,7 @@ class SparkSubmitScalaRunnerProvider(val conf: ClusterConfig) : RunnerSetupProvi
     override fun getActionDependencies(jobId: String, actionData: ActionData): Array<String> = arrayOf()
 
     override val hasExecutor: Boolean = false
+
     override val runnerResources: Array<String> = arrayOf()
 
 }

@@ -74,6 +74,10 @@ dependencies {
         exclude group: 'org.jboss.netty'
     }
 
+    compile('com.uchuhimo:konf:0.11') {
+        exclude group: 'org.eclipse.jgit'
+    }
+
     compile group: 'org.apache.maven', name: 'maven-core', version: '3.0.5'
     compile group: 'net.liftweb', name: 'lift-json_2.11', version: '3.2.0'
     

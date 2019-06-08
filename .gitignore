@@ -50,3 +50,6 @@ project/project/
 executor/spark-warehouse/
 repo
 repo/**
+
+#python
+.zip

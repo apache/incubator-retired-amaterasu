@@ -17,6 +17,7 @@
 package org.apache.amaterasu.leader.common.execution.frameworls
 
 import org.apache.amaterasu.common.configuration.ClusterConfig
+import org.apache.amaterasu.common.configuration.ConfigManager
 import org.apache.amaterasu.common.logging.KLogging
 import org.apache.amaterasu.sdk.frameworks.FrameworkSetupProvider
 import org.reflections.Reflections

@@ -19,6 +19,7 @@ package org.apache.amaterasu.frameworks.python.dispatcher
 import org.apache.amaterasu.common.configuration.ClusterConfig
 import org.apache.amaterasu.frameworks.python.dispatcher.runners.providers.BasicPythonRunnerProvider
 import org.apache.amaterasu.frameworks.python.dispatcher.runners.providers.PandasRunnerProvider
+import org.apache.amaterasu.common.configuration.ConfigManager
 import org.apache.amaterasu.sdk.frameworks.FrameworkSetupProvider
 import org.apache.amaterasu.sdk.frameworks.RunnerSetupProvider
 import org.apache.amaterasu.sdk.frameworks.configuration.DriverConfiguration
@@ -33,8 +34,10 @@ class PythonSetupProvider : FrameworkSetupProvider {
         get() = "python"
     override val groupResources: Array<File>
         get() = arrayOf()
-    override val driverConfiguration: DriverConfiguration
-        get() = DriverConfiguration(conf!!.taskMem(), 1)
+
+    override fun getDriverConfiguration(configManager: ConfigManager): DriverConfiguration {
+        return DriverConfiguration(conf!!.taskMem(), 1) //TODO: this should be configured on env level
+    }
     override val environmentVariables: Map<String, String>
         get() = mapOf()
     override val configurationItems: Array<String>

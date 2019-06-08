@@ -26,12 +26,11 @@ import java.util.concurrent.{ConcurrentHashMap, LinkedBlockingQueue}
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
-import org.apache.amaterasu.common.configuration.ClusterConfig
+import org.apache.amaterasu.common.configuration.{ClusterConfig, ConfigManager}
 import org.apache.amaterasu.common.configuration.enums.ActionStatus
 import org.apache.amaterasu.common.dataobjects.ActionData
 import org.apache.amaterasu.common.execution.actions.Notification
 import org.apache.amaterasu.common.execution.actions.enums.{NotificationLevel, NotificationType}
-import org.apache.amaterasu.leader.common.configuration.ConfigManager
 import org.apache.amaterasu.leader.common.execution.{JobLoader, JobManager}
 import org.apache.amaterasu.leader.common.execution.frameworks.FrameworkProvidersFactory
 import org.apache.amaterasu.leader.common.utilities.DataLoader
@@ -177,6 +176,11 @@ class JobScheduler extends AmaterasuScheduler {
         try {
           val actionData = jobManager.getNextActionData
           if (actionData != null) {
+
+            frameworkFactory = FrameworkProvidersFactory(env, config)
+            val items = frameworkFactory.providers.values.flatMap(_.getConfigurationItems).toList.asJava
+            configManager = new ConfigManager(env, "repo", items)
+
             val taskId = Protos.TaskID.newBuilder().setValue(actionData.getId).build()
             taskIdsToActions.put(taskId, actionData.getName)
             // setting up the configuration files for the container
@@ -203,12 +207,11 @@ class JobScheduler extends AmaterasuScheduler {
             val slaveActions = executionMap(offer.getSlaveId.toString)
             slaveActions.put(taskId.getValue, ActionStatus.Started)
 
-            log.info(s">>>> Framework: ${actionData.getGroupId}")
             val frameworkProvider = frameworkFactory.providers(actionData.getGroupId)
-            log.info(s">>>> Runner: ${actionData.getTypeId}")
 
             val runnerProvider = frameworkProvider.getRunnerProvider(actionData.getTypeId)
 
+            printNotification(new Notification("", s"provider ${runnerProvider.getClass.getName}", NotificationType.Info, NotificationLevel.Execution))
             // searching for an executor that already exist on the slave, if non exist
             // we create a new one
             var executor: ExecutorInfo = null
@@ -252,8 +255,7 @@ class JobScheduler extends AmaterasuScheduler {
                 .setExecutable(false)
                 .setExtract(false)
                 .build())
-            }
-            )
+            })
 
             // Getting action dependencies
             runnerProvider.getActionDependencies(jobManager.getJobId, actionData).foreach(r => {
@@ -315,7 +317,7 @@ class JobScheduler extends AmaterasuScheduler {
             slavesExecutors.put(offer.getSlaveId.getValue, executor)
 
 
-            val driverConfiguration = frameworkProvider.getDriverConfiguration
+            val driverConfiguration = frameworkProvider.getDriverConfiguration(configManager)
 
             var actionTask: TaskInfo = null
 
@@ -413,9 +415,8 @@ class JobScheduler extends AmaterasuScheduler {
 
     }
 
-    frameworkFactory = FrameworkProvidersFactory(env, config)
-    val items = frameworkFactory.providers.values.flatMap(_.getConfigurationItems).toList.asJava
-    configManager = new ConfigManager(env, "repo", items)
+
+
 
     jobManager.start()
 

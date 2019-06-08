@@ -20,7 +20,6 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
 import com.fasterxml.jackson.module.kotlin.KotlinModule
 
-import kotlinx.coroutines.async
 import kotlinx.coroutines.runBlocking
 
 import org.apache.activemq.broker.BrokerService
@@ -29,7 +28,7 @@ import org.apache.amaterasu.common.configuration.ClusterConfig
 import org.apache.amaterasu.common.dataobjects.ActionData
 import org.apache.amaterasu.common.logging.KLogging
 import org.apache.amaterasu.common.utils.ActiveNotifier
-import org.apache.amaterasu.leader.common.configuration.ConfigManager
+import org.apache.amaterasu.common.configuration.ConfigManager
 import org.apache.amaterasu.leader.common.execution.JobLoader
 import org.apache.amaterasu.leader.common.execution.JobManager
 import org.apache.amaterasu.leader.common.execution.frameworks.FrameworkProvidersFactory
@@ -156,7 +155,7 @@ class ApplicationMaster : KLogging(), AMRMClientAsync.CallbackHandler {
 
                 notifier.info("requesting container fo ${actionData.name}")
                 val frameworkProvider = frameworkFactory.getFramework(actionData.groupId)
-                val driverConfiguration = frameworkProvider.driverConfiguration
+                val driverConfiguration = frameworkProvider.getDriverConfiguration(configManager)
 
                 var mem: Long = driverConfiguration.memory.toLong()
                 mem = Math.min(mem, maxMem)
@@ -242,7 +241,6 @@ class ApplicationMaster : KLogging(), AMRMClientAsync.CallbackHandler {
                         val runnerProvider = framework.getRunnerProvider(actionData.typeId)
                         val ctx = Records.newRecord(ContainerLaunchContext::class.java)
 
-
                         val envConf = configManager.getActionConfiguration(actionData.name, actionData.config)
                         val commands: List<String> = listOf(runnerProvider.getCommand(jobManager.jobId, actionData, envConf, "${actionData.id}-${container.id.containerId}", address))
 
@@ -258,7 +256,7 @@ class ApplicationMaster : KLogging(), AMRMClientAsync.CallbackHandler {
                         jobManager.actionStarted(actionData.id)
                         containersIdsToTask[container.id.containerId] = actionData
                         notifier.info("created container for ${actionData.name} created")
-                        //ctx.localResources.forEach { t: String, u: LocalResource -> notifier.info("resource: $t = ${u.resource}") }
+
                         log.info("launching container succeeded: ${container.id.containerId}; task: ${actionData.id}")
                     } catch (e: Exception) {
                         notifier.error("", "error launching container with ${e.message} in ${ExceptionUtils.getStackTrace(e)}")

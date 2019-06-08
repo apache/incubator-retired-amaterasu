@@ -89,9 +89,7 @@ dependencies {
 
     compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
     compile "org.jetbrains.kotlin:kotlin-reflect"
-    compile('com.uchuhimo:konf:0.11') {
-        exclude group: 'org.eclipse.jgit'
-    }
+
 
     testCompile 'org.jetbrains.spek:spek-api:1.1.5'
     testCompile "org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version"
@@ -106,6 +104,9 @@ dependencies {
 sourceSets {
     test {
         resources.srcDirs += [file('src/test/resources')]
+        kotlin {
+            srcDirs = ['src/test/kotlin']
+        }
     }
 }
 
