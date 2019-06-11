@@ -31,8 +31,8 @@ class PySparkRunnerProvider(env: String, conf: ClusterConfig) : PythonRunnerProv
         val hive  = if (conf.mode() == "yarn") "--files \$SPARK_HOME/conf/hive-site.xml " else ""
         val master = if (!sparkOptions.containsKey("master")) " --master ${env[Job.master]} " else ""
 
-        return "$command && \$SPARK_HOME/bin/spark-submit $master" +
-                SparkCommandLineHelper.getOptions(sparkOptions) +
+        return "$command && \$SPARK_HOME/bin/spark-submit $master " +
+                SparkCommandLineHelper.getOptions(sparkOptions) + " " +
                 SparkCommandLineHelper.getProperties(sparkProperties) + " " +
                 "--conf spark.pyspark.python=${conf.pythonPath()} " +
                 "--conf spark.pyspark.driver.python=$virtualPythonPath " +

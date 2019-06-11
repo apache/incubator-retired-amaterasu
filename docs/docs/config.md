@@ -65,6 +65,7 @@ flow:
       file: start.py
 
 ```
+
 ## Configuration Types
 
 Amaterasu allows the configuration of three main areas:

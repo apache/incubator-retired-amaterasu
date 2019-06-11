@@ -395,7 +395,7 @@ class ApplicationMaster : KLogging(), AMRMClientAsync.CallbackHandler {
     private fun requestContainer(actionData: ActionData, capability: Resource) {
 
         actionsBuffer.add(actionData)
-        log.info("About to ask container for action ${actionData.id} with mem ${capability.memory} and cores ${capability.virtualCores}. Action buffer size is: ${actionsBuffer.size}")
+        log.info("About to ask container for action ${actionData.id} with mem ${capability.memorySize} and cores ${capability.virtualCores}. Action buffer size is: ${actionsBuffer.size}")
 
         // we have an action to schedule, let's request a container
         val priority: Priority = Records.newRecord(Priority::class.java)
