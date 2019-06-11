@@ -52,4 +52,4 @@ repo
 repo/**
 
 #python
-.zip
+*.zip
