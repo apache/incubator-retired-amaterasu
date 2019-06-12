@@ -14,16 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.amaterasu.leader.yarn
+package org.apache.amaterasu.leader.mesos
 
 import org.apache.amaterasu.leader.common.launcher.AmaOpts
 import org.apache.amaterasu.leader.common.launcher.ArgsParser
 
-class ClientArgsParser(val args: Array<String>): ArgsParser() {
+class ClientArgsParser(val args: Array<String>) : ArgsParser() {
 
     override fun run() {
+
         val opts = AmaOpts(repo, branch, env, name, jobId, newJobId, report, home)
-        val client = Client()
-        client.run(opts, args)
+        //val client = Client()
+        //client.run(opts, args)
+
     }
 }

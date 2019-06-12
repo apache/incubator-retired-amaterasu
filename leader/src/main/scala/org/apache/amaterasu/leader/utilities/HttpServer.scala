@@ -76,7 +76,7 @@ object HttpServer extends Logging {
   Note: Should the files in URL root be fetched, provide an empty value to directory.
    */
   def getFilesInDirectory(amaNode: String, port: String, directory: String = ""): Array[String] = {
-    println("http://" + amaNode + ":" + port + "/" + directory)
+    //println("http://" + amaNode + ":" + port + "/" + directory)
     val html: BufferedSource = Source.fromURL("http://" + amaNode + ":" + port + "/" + directory)
     println(html)
     val htmlDoc = Jsoup.parse(html.mkString)
