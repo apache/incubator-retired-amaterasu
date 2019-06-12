@@ -77,11 +77,11 @@ sourceSets {
 }
 
 test {
-
     maxParallelForks = 1
 }
 
 task copyToHome(type: Copy) {
+    dependsOn shadowJar
     from 'build/libs'
     into '../../../build/amaterasu/dist'
     from 'build/resources/main'
