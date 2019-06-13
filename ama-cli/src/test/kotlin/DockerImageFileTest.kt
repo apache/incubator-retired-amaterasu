@@ -1,5 +1,5 @@
 
-import org.apache.amaterasu.leader.container.dockerFile
+import org.apache.amaterasu.ama.cli.container.dockerFile
 import org.junit.Test
 import java.io.File
 import kotlin.test.assertEquals
@@ -16,7 +16,7 @@ Volume A/B
 ENTRYPOINT [java, -jar, somejar.jar, -H]"""
     val dockerFile = dockerFile {
       from("busybox")
-      commands("COPY A to B","Volume A/B")
+      commands("COPY A to B", "Volume A/B")
       entrypoint("java", "-jar", "somejar.jar", "-H")
     }
 

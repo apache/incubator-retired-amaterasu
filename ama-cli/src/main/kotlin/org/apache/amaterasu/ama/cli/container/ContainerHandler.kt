@@ -1,4 +1,4 @@
-package org.apache.amaterasu.leader.container
+package org.apache.amaterasu.ama.cli.container
 
 import com.github.dockerjava.api.DockerClient
 import com.github.dockerjava.core.DefaultDockerClientConfig

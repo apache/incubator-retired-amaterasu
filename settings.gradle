@@ -25,6 +25,8 @@ project(':leader-common')
 include 'leader-mesos'
 project(':leader-mesos')
 
+include 'ama-cli'
+project(':ama-cli')
 
 include 'leader-yarn'
 project(':leader-yarn')
@@ -41,23 +43,23 @@ findProject(':sdk')?.name = 'amaterasu-sdk'
 // Frameworks
 // Spark
 include 'spark-runner'
-project(':spark-runner').projectDir=file("frameworks/spark/runner")
+project(':spark-runner').projectDir = file("frameworks/spark/runner")
 include 'spark-runtime'
-project(':spark-runtime').projectDir=file("frameworks/spark/runtime")
+project(':spark-runtime').projectDir = file("frameworks/spark/runtime")
 include 'spark-dispatcher'
-project(':spark-dispatcher').projectDir=file("frameworks/spark/dispatcher")
+project(':spark-dispatcher').projectDir = file("frameworks/spark/dispatcher")
 
 // Python
 include 'python-dispatcher'
-project(':python-dispatcher').projectDir=file("frameworks/python/dispatcher")
+project(':python-dispatcher').projectDir = file("frameworks/python/dispatcher")
 include 'pyspark-runtime'
-project(':pyspark-runtime').projectDir=file("frameworks/spark/pyspark_runtime")
+project(':pyspark-runtime').projectDir = file("frameworks/spark/pyspark_runtime")
 include 'sdk-python'
-project(':sdk-python').projectDir=file("sdk_python")
+project(':sdk-python').projectDir = file("sdk_python")
 include 'python-runtime'
-project(':python-runtime').projectDir=file("frameworks/python/python_runtime")
+project(':python-runtime').projectDir = file("frameworks/python/python_runtime")
 include 'python-pandas'
-project(':python-pandas').projectDir=file("frameworks/python/pandas_runtime")
+project(':python-pandas').projectDir = file("frameworks/python/pandas_runtime")
 
 File spekProject = file("../../kotlin/spek")
 if (spekProject.exists()) {
@@ -69,3 +71,5 @@ if (spekProject.exists()) {
         }
     }
 }
+
+

@@ -1,5 +1,6 @@
-package org.apache.amaterasu.leader.container
+package org.apache.amaterasu.ama.cli.container
 
+import java.io.File
 
 
 fun dockerFile(initilizer: DockerImageFile.() -> Unit) : DockerImageFile {
@@ -7,6 +8,7 @@ fun dockerFile(initilizer: DockerImageFile.() -> Unit) : DockerImageFile {
 }
 
 class DockerImageFile {
+  val DOCKER_FILE_NAME = "Dockerfile"
   var baseImage : String = ""
   var commandsList : MutableList<String> = mutableListOf()
   var entrypoint  = mutableListOf<String>()
@@ -22,7 +24,11 @@ class DockerImageFile {
     entrypoint.addAll(command)
   }
 
-  fun compileImage() : String {
+  fun createImageFile(dockerFileName : String = DOCKER_FILE_NAME) {
+    File(dockerFileName).writeText(compileImageString())
+  }
+
+  private fun compileImageString() : String {
     return "FROM " + baseImage + "\n" +
         commandsList.joinToString (separator = "\n") + "\n" +
       "ENTRYPOINT " + entrypoint
