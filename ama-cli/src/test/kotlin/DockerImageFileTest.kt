@@ -11,9 +11,10 @@ class DockerImageFileTest {
   fun buildBasicImageTest() {
     //given
     val expectedDockerFile = """FROM busybox
-COPY A to B
-Volume A/B
-ENTRYPOINT [java, -jar, somejar.jar, -H]"""
+        COPY A to B
+        Volume A/B
+        ENTRYPOINT [java, -jar, somejar.jar, -H]""".trimIndent()
+
     val dockerFile = dockerFile {
       from("busybox")
       commands("COPY A to B", "Volume A/B")

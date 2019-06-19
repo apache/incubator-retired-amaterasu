@@ -25,9 +25,6 @@ project(':leader-common')
 include 'leader-mesos'
 project(':leader-mesos')
 
-include 'ama-cli'
-project(':ama-cli')
-
 include 'leader-yarn'
 project(':leader-yarn')
 

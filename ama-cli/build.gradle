@@ -14,45 +14,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 buildscript {
+    ext.kotlin_version = '1.3.21'
 
     repositories {
         mavenCentral()
-        maven {
-            url 'http://repository.jetbrains.com/all'
-        }
-        maven {
-            url "https://jetbrains.jfrog.io/jetbrains/spek-snapshots"
-        }
     }
 
     dependencies {
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
-        classpath 'org.junit.platform:junit-platform-gradle-plugin:1.0.0'
+        classpath 'org.junit.platform:junit-platform-gradle-plugin:1.1.0'
     }
 }
 
 plugins {
-    id "com.github.johnrengelman.shadow" version "2.0.4"
-}
-
-apply plugin: 'kotlin'
-apply plugin: 'org.junit.platform.gradle.plugin'
-
-junitPlatform {
-    filters {
-        engines {
-            include 'spek'
-        }
-    }
+    id "org.nosphere.apache.rat" version "0.3.1"
+    id "org.jetbrains.kotlin.jvm" version "1.3.0"
+    id "distribution"
 }
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
-shadowJar {
-    zip64 true
-}
 
 repositories {
     maven { url "https://plugins.gradle.org/m2/" }
@@ -68,6 +52,10 @@ repositories {
 dependencies {
     compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
     compile "org.jetbrains.kotlin:kotlin-reflect"
+    compile group: 'org.slf4j', name: 'slf4j-api', version: '2.0.0-alpha0'
+    compile group: 'org.slf4j', name: 'slf4j-log4j12', version: '2.0.0-alpha0'
+
+
     compile group: 'org.jetbrains.kotlinx', name: 'kotlinx-coroutines-core', version: '1.1.1'
     compile group: 'com.github.docker-java', name: 'docker-java', version: '3.1.0-rc-5'
     testCompile 'org.jetbrains.spek:spek-api:1.1.5'
@@ -80,21 +68,6 @@ dependencies {
     testRuntimeOnly "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
 }
 
-task copyToHomeRoot(type: Copy) {
-    from 'src/main/scripts'
-    into '../build/amaterasu/'
-}
-
-task copyToHomeBin(type: Copy) {
-    dependsOn shadowJar
-    from 'build/libs'
-    into '../build/amaterasu/bin'
-}
-
-task copyToHome() {
-    dependsOn copyToHomeRoot
-    dependsOn copyToHomeBin
-}
 
 compileKotlin{
     kotlinOptions.jvmTarget = "1.8"
