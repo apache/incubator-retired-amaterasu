@@ -32,16 +32,16 @@ class PythonSetupProvider : FrameworkSetupProvider {
 
     override val groupIdentifier: String
         get() = "python"
-    override val groupResources: Array<File>
-        get() = arrayOf()
+    override val groupResources: List<File>
+        get() = listOf()
 
     override fun getDriverConfiguration(configManager: ConfigManager): DriverConfiguration {
         return DriverConfiguration(conf!!.taskMem(), 1) //TODO: this should be configured on env level
     }
     override val environmentVariables: Map<String, String>
         get() = mapOf()
-    override val configurationItems: Array<String>
-        get() = arrayOf()
+    override val configurationItems: List<String>
+        get() = listOf()
 
     override fun init(env: String, conf: ClusterConfig) {
         this.env = env

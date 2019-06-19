@@ -34,7 +34,6 @@ buildscript {
 
 plugins {
     id "com.github.johnrengelman.shadow" version "2.0.4"
-    id 'scala'
 }
 
 apply plugin: 'kotlin'
@@ -66,12 +65,10 @@ repositories {
 }
 
 dependencies {
-    compile 'org.scala-lang:scala-library:2.11.8'
 
     compile project(':common')
     compile project(':amaterasu-sdk')
 
-    compile group: 'com.fasterxml.jackson.module', name: 'jackson-module-scala_2.11', version: '2.6.3'
     compile group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: '2.9.8'
     compile group: 'com.fasterxml.jackson.core', name: 'jackson-annotations', version: '2.9.8'
     compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.9.8'

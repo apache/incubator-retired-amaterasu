@@ -26,11 +26,11 @@ interface FrameworkSetupProvider {
 
     val groupIdentifier: String
 
-    val groupResources: Array<File>
+    val groupResources: List<File>
 
     val environmentVariables: Map<String, String>
 
-    val configurationItems: Array<String>
+    val configurationItems: List<String>
 
     fun init(env: String, conf: ClusterConfig)
 

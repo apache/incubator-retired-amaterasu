@@ -138,8 +138,8 @@ class Client {
                 }
 
                 // setup frameworks
-                val frameworkFactory = FrameworkProvidersFactory.apply(opts.env, config)
-                for (group in frameworkFactory.groups()) {
+                val frameworkFactory = FrameworkProvidersFactory(opts.env, config)
+                for (group in frameworkFactory.groups) {
                     val framework = frameworkFactory.getFramework(group)
                     for (file in framework.groupResources) {
                         if (file.exists())

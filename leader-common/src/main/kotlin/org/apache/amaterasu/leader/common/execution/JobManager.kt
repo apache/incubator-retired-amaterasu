@@ -124,14 +124,14 @@ data class JobManager(var name: String = "",
 
         val action = registeredActions[actionId]
         val id = action!!.handleFailure(message)
-        if (!id.isEmpty())
+        if (id.isNotEmpty())
             registeredActions[id]?.execute()
 
         //delete all future actions
         cancelFutureActions(action)
     }
 
-    fun cancelFutureActions(action: Action) {
+    private fun cancelFutureActions(action: Action) {
 
         if (action.data.status != ActionStatus.Failed)
             action.announceCanceled()

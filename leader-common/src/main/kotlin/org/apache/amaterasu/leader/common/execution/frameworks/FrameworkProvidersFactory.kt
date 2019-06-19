@@ -14,24 +14,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.amaterasu.leader.common.execution.frameworls
+package org.apache.amaterasu.leader.common.execution.frameworks
 
 import org.apache.amaterasu.common.configuration.ClusterConfig
-import org.apache.amaterasu.common.configuration.ConfigManager
 import org.apache.amaterasu.common.logging.KLogging
 import org.apache.amaterasu.sdk.frameworks.FrameworkSetupProvider
 import org.reflections.Reflections
 
 class FrameworkProvidersFactory(val env: String, val config: ClusterConfig) : KLogging() {
 
-    var  providers: Map<String, FrameworkSetupProvider>
+    lateinit var providers: Map<String, FrameworkSetupProvider>
+
+    val groups: List<String> by lazy { providers.keys.toList() }
+
+    fun getFramework(groupId: String): FrameworkSetupProvider = providers.getValue(groupId)
 
     init {
-        val reflections =  Reflections(ClassLoader::class.java)
+        val reflections =  Reflections(this::class.java.classLoader)
         val runnerTypes = reflections.getSubTypesOf(FrameworkSetupProvider::class.java)
 
-
-        providers = runnerTypes.map  {
+        providers = runnerTypes.map {
 
             val provider = it.newInstance()
 
