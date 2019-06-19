@@ -199,7 +199,7 @@ class JobScheduler(private val src: String,
 
                         val runnerProvider = frameworkProvider!!.getRunnerProvider(actionData.typeId)
 
-                        listener.printNotification( Notification("", "provider ${runnerProvider::class.qualifiedName}", NotificationType.Info, NotificationLevel.Execution))
+                        listener.printNotification(Notification("", "provider ${runnerProvider::class.qualifiedName}", NotificationType.Info, NotificationLevel.Execution))
                         val execData = DataLoader.getExecutorDataBytes(env, config)
                         val executorId = taskId.value + "-" + UUID.randomUUID()
 
@@ -275,23 +275,24 @@ class JobScheduler(private val src: String,
                         listener.printNotification(Notification("", "requesting container for ${actionData.name}", NotificationType.Info, NotificationLevel.Execution))
                         driver?.launchTasks(Collections.singleton(it.id), listOf(actionTask))
 
+                    } ?: run {
+                        if (jobManager.outOfActions) {
+                            log.info("framework ${jobManager.jobId} execution finished")
+
+                            val repo = File("repo/")
+                            repo.delete()
+
+                            server.stop()
+                            driver?.declineOffer(it.id)
+                            driver?.stop()
+                            System.exit(0)
+                        } else {
+                            log.info("Declining offer, no sufficient resources")
+                            driver!!.declineOffer(it.id)
+                        }
                     }
                 }
-                jobManager.outOfActions -> {
-                    log.info("framework ${jobManager.jobId} execution finished")
 
-                    val repo = File("repo/")
-                    repo.delete()
-
-                    server.stop()
-                    driver?.declineOffer(it.id)
-                    driver?.stop()
-                    System.exit(0)
-                }
-                else -> {
-                    log.info("Declining offer, no sufficient resources")
-                    driver!!.declineOffer(it.id)
-                }
             }
         }
     }
