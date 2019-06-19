@@ -123,3 +123,8 @@ compileKotlin {
 compileTestKotlin {
     kotlinOptions.jvmTarget = "1.8"
 }
+
+task copyToHome(type: Copy) {
+    from 'src/main/scripts'
+    into '../build/amaterasu/'
+}
