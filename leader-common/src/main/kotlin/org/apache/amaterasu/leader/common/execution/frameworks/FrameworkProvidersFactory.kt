@@ -23,7 +23,7 @@ import org.reflections.Reflections
 
 class FrameworkProvidersFactory(val env: String, val config: ClusterConfig) : KLogging() {
 
-    lateinit var providers: Map<String, FrameworkSetupProvider>
+    val providers: MutableMap<String, FrameworkSetupProvider> = mutableMapOf()
 
     val groups: List<String> by lazy { providers.keys.toList() }
 
@@ -33,7 +33,7 @@ class FrameworkProvidersFactory(val env: String, val config: ClusterConfig) : KL
         val reflections =  Reflections(this::class.java.classLoader)
         val runnerTypes = reflections.getSubTypesOf(FrameworkSetupProvider::class.java)
 
-        providers = runnerTypes.map {
+        val loadedProviders = runnerTypes.map {
 
             val provider = it.newInstance()
 
@@ -43,5 +43,7 @@ class FrameworkProvidersFactory(val env: String, val config: ClusterConfig) : KL
             provider.groupIdentifier to provider
 
         }.toMap()
+
+        providers.putAll(loadedProviders)
     }
 }
