@@ -71,7 +71,8 @@ repositories {
 dependencies {
     compile project(':common')
     compile project(':amaterasu-sdk')
-    compile project(':leader')
+    compile project(':leader-common')
+    
     compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
     compile "org.jetbrains.kotlin:kotlin-reflect"
     compile 'com.uchuhimo:konf:0.11'

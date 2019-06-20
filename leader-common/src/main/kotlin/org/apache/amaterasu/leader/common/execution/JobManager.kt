@@ -72,7 +72,7 @@ data class JobManager(var name: String = "",
             return nextAction
         }
 
-    fun reQueueAction(actionId: String) {
+    fun requeueAction(actionId: String) {
 
         log.info("requeing action $actionId")
         registeredActions.forEach { log.info("key ${it.key}") }

@@ -90,7 +90,7 @@ object JobLoader : KLogging() {
 
             val status = ActionStatus.valueOf(String(client.data.forPath("/$jobId/$task")))
             if (status == ActionStatus.Queued || status == ActionStatus.Started) {
-                jobManager.reQueueAction(task.substring(task.indexOf("task-") + 5))
+                jobManager.requeueAction(task.substring(task.indexOf("task-") + 5))
             }
 
         }

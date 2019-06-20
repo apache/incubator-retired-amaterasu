@@ -314,7 +314,7 @@ class JobScheduler(private val src: String,
     override fun offerRescinded(driver: SchedulerDriver?, offerId: Protos.OfferID?) {
         offerId?.let {
             val actionId = offersToTaskIds[it.value]
-            jobManager.reQueueAction(actionId!!)
+            jobManager.requeueAction(actionId!!)
         }
     }
 
