@@ -77,4 +77,46 @@ All frameworks have their own configuration, Apache Amaterasu allows different f
 For more information about specific framework configuration options, look at the [frameworks](frameworks/) section of this documentation.
 
 ### Datasets 
+
+One aspect of maintaining different deployment environments is where and how you get the data required to run the jobs.
+
+To provide an abstraction, each of our SDKs provides a way to load and persist data easily. This functionality is based on prior configuration.
+
+In a job repository, each environment contains a ```datasets.yml``` file. This file contains the configurations of all datasets to be used in the job.
+
+Below is an example of a simple configuration, for a dataset stored as parquet in Amazon S3.
+
+```yaml
+file:
+  - uri: s3a://amaterasu-example/input/random-beers
+    format: parquet
+    name: random-beers
+```
+
+#### Detailed configuration
+Below are the different types of datasets and their corresponding configuration options.
+Do note that different Apache Amaterasu frameworks may have their take on the configurations below.
+##### File
+The following formats are currently supported - JSON, parquet, CSV, ORC.
+
+The following storage types are currently supported - s3, azure blob storage, file system, HDFS.
+
+The following configuration options are currently supported:
+
+| Parameter | Description |
+|:---------:|:-----------:|
+| name      |The name of the dataset|
+| uri       |The file URI. Supported schemes are: s3a, file, hdfs, wasb, wasbs, gs, gs|
+| format    |The file format - JSON, parquet, CSV, ORC|
+
+Example:
+```yaml
+file:
+  - uri: s3a://amaterasu-example/input/random-beers
+    format: parquet
+    name: random-beers
+``` 
+
+> Note! If the scheme or format isn't currently supported by the available Apache Amaterasu frameworks, it is still possible to define using a [generic dataset](#generic).
+ 
 ### Custom Configuration
