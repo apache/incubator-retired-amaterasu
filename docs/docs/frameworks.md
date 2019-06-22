@@ -41,13 +41,145 @@ Amaterasu supports different processing frameworks to be executed. Amaterasu fra
 
 # Amaterasu Frameworks
 
+## Python 
+Apache Amaterasu supports the following types of Python workloads:
+
+1. PySpark workload ([See below](#pyspark))
+
+2. Pandas workload 
+
+3. Generic Python workload
+
+Each workload type has a dedicated Apache Amaterasu SDK. 
+The Apache Amaterasu SDK is available in PyPI and can be installed as follows:
+```bash
+pip install apache-amaterasu
+```
+
+Alternatively, it is possible to download the SDK source and manually install it via ```easy_install``` or executing the setup script.
+
+```bash
+wget <link to source distribution>
+tar -xzf apache-amaterasu-0.2.1-incubating.tar.gz
+cd apache-amaterasu-0.2.1-incubating
+python setup.py install
+```
+
+### Action dependencies
+Apache Amaterasu has the capability of ensuring Python dependencies are present on all execution nodes when executing action sources.
+
+In order to define the required dependencies, a ```requirements.txt``` file has to be added to the job repository.
+Currently, only a global ```requirements.txt``` is supported.
+
+Below you can see where the requirements file has to be added:
+```
+repo
++-- deps/
+|   +-- requirements.txt <-- This is the place for defining dependencies
++-- env/
+|   +-- dev/
+|   |   +-- job.yaml
+|   |   +-- spark.yaml
+|   +-- test/
+|   |   +-- job.yaml
+|   |   +-- spark.yaml
+|   +-- prod/
+|       +-- job.yaml
+|       +-- spark.yaml
++-- src/
+|   +-- start/
+|       +-- dev/
+|       |   +-- job.yaml
+|       |   +-- spark.yaml
+|       +-- test/
+|       |   +-- job.yaml
+|       |   +-- spark.yaml
+|       +-- prod/
+|           +-- job.yaml
+|           +-- spark.yaml
++-- maki.yaml 
+
+```
+
+When a ```requirements.txt``` file exists, Apache Amaterasu distributes it to the execution containers and locally installs the dependencies in each container.
+
+> **Important** - Your execution nodes need to have egress connection available in order to use pip
+
+### Pandas
+### Generic Python
+
+
+## Java and JVM programs
+
 ## Apache Spark
 
 ### Spark Configuration
 
 ### Scala
 ### PySpark
+Apache Amaterasu has the capability of deploying PySpark applications and provide configuration and integration 
+utilities that work in the realm of dataframes and RDDs.
 
-## Python 
+Assuming that Apache Amaterasu has been [configured](./config.md) correctly for your cluster and all required 
+spark [configurations](#spark-configuration) are in place, all you need to do is integrate with the Apache Amaterasu 
+PySpark SDK from within your source scripts.
 
-## Java and JVM programs
+#### Integration with supported data sources
+
+The starting point of this, is to write a [dataset configuration](./config.md#datasets). 
+Let's assume that you have a 2 datasets defined. The first, ```mydataset``` is the input dataset and ```resultdataset```  is the output dataset.
+Let's also assume that you have 2 different environments, production and development.
+Let's take a sneak peek at an example of how ```mydataset``` is defined in each environment:
+
+__production__
+```yaml
+file:
+    url: s3a://myprodbucket/path/myinputdata
+    format: parquet
+```
+    
+    
+___development__
+```yaml
+file:
+    url: s3a://mydevbucket/path/myinputdata
+    format: parquet
+```
+     
+The snippet below shows how to use the Amaterasu SDK to integrate with the data sources easily.
+
+```python
+from amaterasu.pyspark.runtime import AmaContext
+
+ama_context = AmaContext.builder().build()
+some_dataset: Dataframe = ama_context.load_dataset("mydataset")
+... # Do some black magic here
+ama_context.persist_dataset("resultdataset", some_dataset_after_transformation)
+```
+
+The code above will work regardless of whether you run in development environment or production.
+> Important: You will need to have the datasets above defined in both environments!
+
+#### Integration with unsupported data sources
+
+Apache Amaterasu is still an evolving project, we add more and more builtin integrations as we go (e.g. - Pandas dataframes, new datasource types and so on). 
+As we are aware of the need to manage datasets across environments, regardless of whether Apache Amaterasu supports them by default or not, we designed Apache Amaterasu to provide a way to define [generic datasets](./config.md#generic-datasets). 
+In addition to defining generic datasets, Apache Amaterasu also provides an API to reference any dataset configuration defined in the environment.
+
+The snippet below shows an example of referencing a dataset configuration in the code.
+
+```python
+from amaterasu.pyspark.runtime import AmaContext
+ama_context = AmaContext.builder().build()
+dataset_conf = ama_context.dataset_manager.get_dataset_configuration("mygenericdataset")  # This is a dataset without builtin support
+some_prop = dataset_conf['mydataset_prop1']
+some_prop2 = dataset_conf['mydataset_prop2']
+my_df = my_custom_loading_logic(some_prop, some_prop2)
+my_new_df = black_magic(my_df)
+ama_context.persist('magic_df', my_new_df)  # This is a dataset with builtin support
+
+```
+
+
+      
+
