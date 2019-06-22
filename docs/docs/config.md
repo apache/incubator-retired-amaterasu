@@ -106,7 +106,7 @@ The following configuration options are currently supported:
 | Parameter | Description |
 |:---------:|:-----------:|
 | name      |The name of the dataset|
-| uri       |The file URI. Supported schemes are: s3a, file, hdfs, wasb, wasbs, gs, gs|
+| uri       |The file URI. Supported schemes are: s3a, file, hdfs, wasb, wasbs, gs|
 | format    |The file format - JSON, parquet, CSV, ORC|
 
 Example:
