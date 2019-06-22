@@ -52,7 +52,9 @@ task copyLegalFiles(type: Copy) {
 }
 
 task buildHomeDir() {
-    dependsOn subprojects.collect { getTasksByName('copyToHome', true) }
+    dependsOn subprojects.collect { 
+        getTasksByName('copyToHome', true)
+    }
     dependsOn copyLegalFiles
 }
 
