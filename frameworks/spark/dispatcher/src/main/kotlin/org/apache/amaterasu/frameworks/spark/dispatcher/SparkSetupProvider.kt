@@ -54,11 +54,11 @@ class SparkSetupProvider : FrameworkSetupProvider {
         }
     }
 
-    override val groupResources: Array<File> by lazy {
+    override val groupResources: List<File> by lazy {
         when (conf.mode()) {
-            "mesos" -> arrayOf(File("spark-${conf.webserver().sparkVersion()}.tgz"), File("spark-runtime-${conf.version()}.jar"))
-            "yarn" -> arrayOf(File("spark-runtime-${conf.version()}.jar"), File("executor-${conf.version()}-all.jar"), File(conf.spark().home()))
-            else -> arrayOf()
+            "mesos" -> listOf(File("spark-${conf.webserver().sparkVersion()}.tgz"), File("spark-runtime-${conf.version()}-all.jar"))
+            "yarn" -> listOf(File("spark-runtime-${conf.version()}-all.jar"),  File(conf.spark().home()))
+            else -> listOf()
         }
     }
 
@@ -67,7 +67,7 @@ class SparkSetupProvider : FrameworkSetupProvider {
     }
 
     override val groupIdentifier: String = "spark"
-    override val configurationItems = arrayOf("sparkProperties", "sparkOptions")
+    override val configurationItems = listOf("sparkProperties", "sparkOptions")
 
     override fun getDriverConfiguration(configManager: ConfigManager): DriverConfiguration {
         val sparkOptions: Map<String, Any> = configManager.config["sparkOptions"]

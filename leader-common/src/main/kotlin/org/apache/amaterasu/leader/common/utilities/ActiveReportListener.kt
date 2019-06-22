@@ -41,7 +41,7 @@ class ActiveReportListener : MessageListener {
         else -> println("===> Unknown message")
     }
 
-    private fun printNotification(notification: Notification) = when (notification.notType) {
+    fun printNotification(notification: Notification) = when (notification.notType) {
 
         NotificationType.Info ->
             println("===> ${notification.msg} ".brightWhite().bold())

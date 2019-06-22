@@ -22,7 +22,7 @@ import org.apache.amaterasu.leader.common.launcher.ArgsParser
 class ClientArgsParser(val args: Array<String>): ArgsParser() {
 
     override fun run() {
-        var opts = AmaOpts(repo, branch, env, name, jobId, newJobId, report, home)
+        val opts = AmaOpts(repo, branch, env, name, jobId, newJobId, report, home)
         val client = Client()
         client.run(opts, args)
     }

@@ -16,8 +16,8 @@
  */
 
 // Core
-include 'leader'
-project(':leader')
+//include 'leader'
+//project(':leader')
 
 include 'leader-common'
 project(':leader-common')
@@ -31,9 +31,6 @@ project(':leader-yarn')
 
 include 'common'
 project(':common')
-
-include 'executor'
-project(':executor')
 
 include 'sdk'
 findProject(':sdk')?.name = 'amaterasu-sdk'

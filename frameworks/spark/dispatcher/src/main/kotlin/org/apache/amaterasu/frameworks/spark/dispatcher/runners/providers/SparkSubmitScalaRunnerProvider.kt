@@ -37,7 +37,7 @@ class SparkSubmitScalaRunnerProvider(val conf: ClusterConfig) : RunnerSetupProvi
                 SparkCommandLineHelper.getOptions(sparkOptions) + " " +
                 SparkCommandLineHelper.getProperties(sparkProperties) + " " +
                 master +
-                " --jars spark-runtime-${conf.version()}.jar >&1"
+                " --jars spark-runtime-${conf.version()}-all.jar >&1"
     }
 
     override fun getActionUserResources(jobId: String, actionData: ActionData): Array<String> = arrayOf()

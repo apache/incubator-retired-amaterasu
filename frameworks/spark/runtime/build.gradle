@@ -54,8 +54,7 @@ sourceSets {
 }
 
 dependencies {
-
-    compile project(':executor')
+    compile project(':common')
     provided('org.apache.spark:spark-repl_2.11:2.2.1')
     provided('org.apache.spark:spark-core_2.11:2.2.1')
 
@@ -81,7 +80,8 @@ test {
 }
 
 task copyToHome(type: Copy) {
-    dependsOn jar
+    dependsOn shadowJar
+
     from 'build/libs'
     into '../../../build/amaterasu/dist'
     from 'build/resources/main'

@@ -16,7 +16,6 @@
  */
 package org.apache.amaterasu.leader.common.configuration
 
-import com.uchuhimo.konf.source.yaml.toYaml
 import org.apache.amaterasu.common.configuration.ConfigManager
 import org.apache.amaterasu.common.configuration.Job
 import org.jetbrains.spek.api.Spek

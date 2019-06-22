@@ -136,8 +136,8 @@ class ApplicationMaster : KLogging(), AMRMClientAsync.CallbackHandler {
 
         val items = mutableListOf<FrameworkSetupProvider>()
 
-        for (p in frameworkFactory.providers().values()) {
-            items.add(p)
+        for (provider in frameworkFactory.providers.values) {
+            items.add(provider)
         }
         val configItems = items.flatMap { it.configurationItems.asIterable() }
         configManager = ConfigManager(env, "repo", configItems)
@@ -178,7 +178,7 @@ class ApplicationMaster : KLogging(), AMRMClientAsync.CallbackHandler {
     private fun initJob(opts: AmaOpts) {
 
         this.env = opts.env
-        frameworkFactory = FrameworkProvidersFactory.apply(env, config)
+        frameworkFactory = FrameworkProvidersFactory(env, config)
 
         try {
             val retryPolicy = ExponentialBackoffRetry(1000, 3)
