@@ -57,7 +57,7 @@ class SparkSetupProvider : FrameworkSetupProvider {
     override val groupResources: List<File> by lazy {
         when (conf.mode()) {
             "mesos" -> listOf(File("spark-${conf.webserver().sparkVersion()}.tgz"), File("spark-runtime-${conf.version()}-all.jar"))
-            "yarn" -> listOf(File("spark-runtime-${conf.version()}-all.jar"), File("executor-${conf.version()}-all.jar"), File(conf.spark().home()))
+            "yarn" -> listOf(File("spark-runtime-${conf.version()}-all.jar"),  File(conf.spark().home()))
             else -> listOf()
         }
     }

@@ -32,9 +32,6 @@ project(':leader-yarn')
 include 'common'
 project(':common')
 
-include 'executor'
-project(':executor')
-
 include 'sdk'
 findProject(':sdk')?.name = 'amaterasu-sdk'
 
