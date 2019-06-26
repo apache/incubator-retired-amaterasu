@@ -28,12 +28,15 @@ repo
 |   +-- dev/
 |   |   +-- job.yaml
 |   |   +-- spark.yaml
+|   |   +-- datasets.yaml
 |   +-- test/
 |   |   +-- job.yaml
 |   |   +-- spark.yaml
+|   |   +-- datasets.yaml
 |   +-- prod/
 |       +-- job.yaml
 |       +-- spark.yaml
+|       +-- datasets.yaml
 +-- src/
 |   +-- start/
 |       +-- dev/
@@ -117,6 +120,41 @@ file:
     name: random-beers
 ``` 
 
-> Note! If the scheme or format isn't currently supported by the available Apache Amaterasu frameworks, it is still possible to define using a [generic dataset](#generic).
+> Note! If the scheme or format isn't currently supported by the available Apache Amaterasu frameworks, it is still possible to define using a [generic dataset](#generic-datasets).
  
+ ##### Hive Table
+ 
+ Example:
+ ```yaml
+hive:
+    - table: mytable
+      name: mydataset 
+
+```
+
+##### Generic Datasets
+Aside from hive tables and files, there is a need to allow configuration of other data sources, even if they aren't currently supported by Apache Amaterasu. 
+
+There is a wide set of use cases -
+ * Pulling data from external APIs, where API keys change between environments (prod and dev keys)
+ * Pulling data from organizational web services
+ * Pulling data from relational databases
+ * and many more.
+ 
+ To support the configuration management for such use cases, Apache Amaterasu provides the means to define generic datasets.
+ 
+ Example:
+ ```yaml
+ generic:
+    - name: mygenericds 
+      key1: value1
+      key2: value2
+      
+    - name: myothergenericds
+      key1: value1
+      key2: value2
+ ``` 
+
+The usage of generic datasets is explained in the relevant SDK documentation [section](./frameworks.md#integration-with-unsupported-data-sources)
+
 ### Custom Configuration
