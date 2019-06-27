@@ -20,8 +20,8 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
-import org.apache.amaterasu.common.configuration.ClusterConfig
-import org.apache.amaterasu.common.configuration.ConfigManager
+import org.apache.amaterasu.leader.common.configuration.ClusterConfig
+import org.apache.amaterasu.leader.common.configuration.ConfigManager
 import org.apache.amaterasu.common.dataobjects.ActionData
 import org.apache.amaterasu.common.execution.actions.Notification
 import org.apache.amaterasu.common.execution.actions.enums.NotificationLevel

@@ -16,8 +16,8 @@
  */
 package org.apache.amaterasu.frameworks.spark.dispatcher
 
-import org.apache.amaterasu.common.configuration.ClusterConfig
-import org.apache.amaterasu.common.configuration.ConfigManager
+import org.apache.amaterasu.leader.common.configuration.ClusterConfig
+import org.apache.amaterasu.leader.common.configuration.ConfigManager
 import org.apache.amaterasu.frameworks.spark.dispatcher.runners.providers.PySparkRunnerProvider
 import org.apache.amaterasu.frameworks.spark.dispatcher.runners.providers.SparkSubmitScalaRunnerProvider
 import org.apache.amaterasu.leader.common.utilities.MemoryFormatParser

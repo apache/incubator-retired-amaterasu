@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.amaterasu.common.configuration
+package org.apache.amaterasu.leader.common.configuration
 
 import java.io.InputStream
 import java.util.Properties

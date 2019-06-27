@@ -16,8 +16,6 @@
  */
 package org.apache.amaterasu.leader.common.configuration
 
-import org.apache.amaterasu.common.configuration.ConfigManager
-import org.apache.amaterasu.common.configuration.Job
 import org.jetbrains.spek.api.Spek
 import org.jetbrains.spek.api.dsl.given
 import org.jetbrains.spek.api.dsl.it
@@ -27,7 +25,7 @@ import kotlin.test.assertEquals
 
 class ConfigManagerTests : Spek({
 
-    val marker = this.javaClass.getResource("/maki.yml")!!.path
+    val marker = ConfigManagerTests::class.java.getResource("/maki.yml")!!.path
 
     given("a ConfigManager for a job ") {
 

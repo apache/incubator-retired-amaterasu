@@ -17,7 +17,7 @@
 package org.apache.amaterasu.leader.yarn
 
 import com.importre.crayon.bold
-import org.apache.amaterasu.common.configuration.ClusterConfig
+import org.apache.amaterasu.leader.common.configuration.ClusterConfig
 import org.apache.amaterasu.leader.common.launcher.AmaOpts
 import org.apache.amaterasu.leader.common.execution.frameworks.FrameworkProvidersFactory
 import org.apache.amaterasu.leader.common.utilities.MessagingClientUtil

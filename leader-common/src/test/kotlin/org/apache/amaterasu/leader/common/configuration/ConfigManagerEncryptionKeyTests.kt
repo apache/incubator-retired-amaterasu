@@ -6,7 +6,7 @@
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
- *    http://www.apache.org/licenses/LICENSE-2.0
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -14,14 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.amaterasu.common.configuration.enums
+package org.apache.amaterasu.leader.common.configuration
 
-enum class ActionStatus (val value: String) {
-    Pending("Pending"),
-    Queued("Queued"),
-    Started("Started"),
-    Running("Running"),
-    Complete("Complete"),
-    Failed("Failed"),
-    Canceled("Canceled")
-}
+import org.jetbrains.spek.api.Spek
+import org.jetbrains.spek.api.dsl.given
+import org.jetbrains.spek.api.dsl.it
+import java.io.File
+
+class ConfigManagerEncryptionKeyTests : Spek({
+    val marker = ConfigManagerTests::class.java.getResource("/maki.yml")!!.path
+
+    given("a configuration for a job with a Key configured") {
+
+        val repoPath = "${File(marker).parent}/key_test_repo"
+        val cfg = ConfigManager("test", repoPath)
+
+        it("should load with the key configuration") {
+            cfg.config[Job.configuration]
+        }
+    }
+})

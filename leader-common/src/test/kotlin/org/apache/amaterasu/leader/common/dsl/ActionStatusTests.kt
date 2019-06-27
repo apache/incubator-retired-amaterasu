@@ -16,7 +16,7 @@
  */
 package org.apache.amaterasu.leader.common.dsl
 
-import org.apache.amaterasu.common.configuration.enums.ActionStatus
+import org.apache.amaterasu.leader.common.configuration.enums.ActionStatus
 import org.apache.amaterasu.common.dataobjects.ActionData
 import org.apache.amaterasu.leader.common.execution.actions.SequentialAction
 import org.apache.curator.framework.CuratorFrameworkFactory

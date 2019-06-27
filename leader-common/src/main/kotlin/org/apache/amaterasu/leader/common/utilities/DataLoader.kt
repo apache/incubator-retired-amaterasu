@@ -25,7 +25,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
 import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.fasterxml.jackson.module.kotlin.readValue
-import org.apache.amaterasu.common.configuration.ClusterConfig
+import org.apache.amaterasu.leader.common.configuration.ClusterConfig
 import org.apache.amaterasu.common.dataobjects.TaskData
 import org.apache.amaterasu.common.dataobjects.ActionData
 import org.apache.amaterasu.common.dataobjects.ExecData

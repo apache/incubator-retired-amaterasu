@@ -16,7 +16,7 @@
  */
 package org.apache.amaterasu.leader.mesos
 
-import org.apache.amaterasu.common.configuration.ClusterConfig
+import org.apache.amaterasu.leader.common.configuration.ClusterConfig
 import org.apache.amaterasu.leader.common.launcher.AmaOpts
 import org.apache.amaterasu.leader.common.launcher.ArgsParser
 import org.apache.log4j.LogManager

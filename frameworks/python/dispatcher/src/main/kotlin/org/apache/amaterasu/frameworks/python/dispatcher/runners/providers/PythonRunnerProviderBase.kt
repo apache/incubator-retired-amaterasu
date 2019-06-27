@@ -17,13 +17,11 @@
 package org.apache.amaterasu.frameworks.python.dispatcher.runners.providers
 
 import com.uchuhimo.konf.Config
-import org.apache.amaterasu.common.configuration.ClusterConfig
+import org.apache.amaterasu.leader.common.configuration.ClusterConfig
 import org.apache.amaterasu.common.dataobjects.ActionData
 import org.apache.amaterasu.leader.common.utilities.DataLoader
 import org.apache.amaterasu.sdk.frameworks.RunnerSetupProvider
 import java.io.File
-import java.nio.file.Files
-import java.nio.file.Paths
 
 abstract class PythonRunnerProviderBase(val env: String, val conf: ClusterConfig) : RunnerSetupProvider() {
 

@@ -16,7 +16,7 @@
  */
 package org.apache.amaterasu.common.dataobjects
 
-import org.apache.amaterasu.common.configuration.enums.ActionStatus
+import org.apache.amaterasu.leader.common.configuration.enums.ActionStatus
 
 /*
     Adding default values just for the sake of Scala
