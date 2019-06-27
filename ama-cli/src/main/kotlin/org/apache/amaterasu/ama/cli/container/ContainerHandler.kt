@@ -7,12 +7,13 @@ import com.github.dockerjava.core.DockerClientBuilder
 import com.github.dockerjava.core.command.BuildImageResultCallback
 import com.github.dockerjava.core.command.PushImageResultCallback
 import com.github.dockerjava.jaxrs.JerseyDockerCmdExecFactory
-import org.slf4j.LoggerFactory
+import mu.KLogging
 import java.io.File
 
 
 class ContainerHandler(val action : String, val imageName : String = "") {
-  val logger = LoggerFactory.getLogger(ContainerHandler::class.java)
+  companion object: KLogging()
+
   private val dockerHost = System.getenv("DOCKER_HOST") ?: "unix:///var/run/docker.sock"
   private val dockerRegistry = System.getenv("DOCKER_REGISTRY") ?: "127.0.0.1:5000"
 
