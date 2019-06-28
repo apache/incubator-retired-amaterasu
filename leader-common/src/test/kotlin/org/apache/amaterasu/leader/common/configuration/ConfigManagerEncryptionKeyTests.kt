@@ -20,6 +20,8 @@ import org.jetbrains.spek.api.Spek
 import org.jetbrains.spek.api.dsl.given
 import org.jetbrains.spek.api.dsl.it
 import java.io.File
+import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 class ConfigManagerEncryptionKeyTests : Spek({
     val marker = ConfigManagerTests::class.java.getResource("/maki.yml")!!.path
@@ -27,10 +29,15 @@ class ConfigManagerEncryptionKeyTests : Spek({
     given("a configuration for a job with a Key configured") {
 
         val repoPath = "${File(marker).parent}/key_test_repo"
-        val cfg = ConfigManager("test", repoPath)
+        val cfg = ConfigManager("test", repoPath, listOf("sparkProperties"))
 
         it("should load with the key configuration") {
-            cfg.config[Job.configuration]
+            val spark: Map<String, Any> = cfg.config["sparkProperties"]
+            assertTrue { spark.containsKey("key") }
+            spark["key"]?.let {
+                val key = it as LinkedHashMap<String, String>
+                assertEquals(key["type"], "aws-kms")
+            }
         }
     }
 })

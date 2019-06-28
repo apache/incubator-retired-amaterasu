@@ -1,0 +1,7 @@
+sparkProperties:
+    key:
+        type: aws-kms
+        id: 40be3055-e2da-460f-aa4a-5e7a648e4d0a
+    spark.executor.extraJavaOptions: -XX:+PrintGCDetails
+    spark.executor.memory: 1g
+    spark.driver.cores: 2
