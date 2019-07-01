@@ -81,9 +81,9 @@ For more information about specific framework configuration options, look at the
 
 ### Datasets 
 
-One aspect of maintaining different deployment environments is where and how you get the data required to run the jobs.
+One of the main concerns when running a data-pipelines is where and how you get the data required to run the jobs.
 
-To provide an abstraction, each of our SDKs provides a way to load and persist data easily. This functionality is based on prior configuration.
+Amaterasu provides a mechanism for managing and configuring such data-sources. Each one of our SDKs provides a way to load and persist data easily. This functionality is based on prior configuration.
 
 In a job repository, each environment contains a ```datasets.yml``` file. This file contains the configurations of all datasets to be used in the job.
 
@@ -97,10 +97,10 @@ file:
 ```
 
 #### Detailed configuration
-Below are the different types of datasets and their corresponding configuration options.
+Amaterasu supports different types of datasets and their corresponding configuration options.
 Do note that different Apache Amaterasu frameworks may have their take on the configurations below.
 ##### File
-The following formats are currently supported - JSON, parquet, CSV, ORC.
+Currently, the following formats are supported - JSON, parquet, CSV, ORC.
 
 The following storage types are currently supported - s3, azure blob storage, file system, HDFS.
 

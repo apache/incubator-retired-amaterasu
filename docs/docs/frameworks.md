@@ -42,7 +42,7 @@ Amaterasu supports different processing frameworks to be executed. Amaterasu fra
 # Amaterasu Frameworks
 
 ## Python 
-Apache Amaterasu supports the following types of Python workloads:
+Amaterasu supports a variety of Python frameworks:
 
 1. PySpark workload ([See below](#pyspark))
 
@@ -75,7 +75,7 @@ Below you can see where the requirements file has to be added:
 ```
 repo
 +-- deps/
-|   +-- requirements.txt <-- This is the place for defining dependencies
+|   +-- requirements.txt <-- This is the place where you define python dependendencies
 +-- env/
 |   +-- dev/
 |   |   +-- job.yaml
@@ -114,19 +114,18 @@ When a ```requirements.txt``` file exists, Apache Amaterasu distributes it to th
 ## Apache Spark
 
 ### Spark Configuration
+Apache Amaterasu has the capability of deploying Spark applications and provide configuration and integration 
+utilities that work in the realm of dataframes and RDDs.
 
 ### Scala
 ### PySpark
-Apache Amaterasu has the capability of deploying PySpark applications and provide configuration and integration 
-utilities that work in the realm of dataframes and RDDs.
-
 Assuming that Apache Amaterasu has been [configured](./config.md) correctly for your cluster and all required 
 spark [configurations](#spark-configuration) are in place, all you need to do is integrate with the Apache Amaterasu 
 PySpark SDK from within your source scripts.
 
 #### Integration with supported data sources
 
-The starting point of this, is to write a [dataset configuration](./config.md#datasets). 
+The Spark SDK provides a mechanism to seamlessly consume and persist datasets. To do so, you must first define a [dataset configuration](./config.md#datasets). 
 Let's assume that you have a 2 datasets defined. The first, ```mydataset``` is the input dataset and ```resultdataset```  is the output dataset.
 Let's also assume that you have 2 different environments, production and development.
 Let's take a sneak peek at an example of how ```mydataset``` is defined in each environment:
