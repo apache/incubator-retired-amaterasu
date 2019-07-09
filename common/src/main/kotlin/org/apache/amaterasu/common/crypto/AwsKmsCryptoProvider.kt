@@ -11,8 +11,8 @@ import software.amazon.awssdk.services.kms.model.DecryptRequest
 import software.amazon.awssdk.services.kms.model.EncryptRequest
 import software.amazon.awssdk.regions.Region
 
-class AwsKmsCryptoProvider(override val accessKeyId: String,
-                           override val secretAccessKey: String,
+class AwsKmsCryptoProvider(override val accessKeyId: String = "",
+                           override val secretAccessKey: String = "",
                            override val region: String) : CryptoKeyProvider {
 
     private var credentials: AwsCredentialsProvider = if (accessKeyId.isNotEmpty()) {
