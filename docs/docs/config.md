@@ -122,10 +122,11 @@ file:
 
 > Note! If the scheme or format isn't currently supported by the available Apache Amaterasu frameworks, it is still possible to define using a [generic dataset](#generic-datasets).
  
- ##### Hive Table
+##### Hive Table
  
- Example:
- ```yaml
+Example:
+ 
+```yaml
 hive:
     - table: mytable
       name: mydataset 
@@ -143,9 +144,9 @@ There is a wide set of use cases -
  
  To support the configuration management for such use cases, Apache Amaterasu provides the means to define generic datasets.
  
- Example:
- ```yaml
- generic:
+Example:
+```yaml
+generic:
     - name: mygenericds 
       key1: value1
       key2: value2
@@ -153,7 +154,7 @@ There is a wide set of use cases -
     - name: myothergenericds
       key1: value1
       key2: value2
- ``` 
+``` 
 
 The usage of generic datasets is explained in the relevant SDK documentation [section](./frameworks.md#integration-with-unsupported-data-sources)
 
