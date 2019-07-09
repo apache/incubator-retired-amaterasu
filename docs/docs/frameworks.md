@@ -169,10 +169,13 @@ The snippet below shows an example of referencing a dataset configuration in the
 
 ```python
 from amaterasu.pyspark.runtime import AmaContext
+
 ama_context = AmaContext.builder().build()
 dataset_conf = ama_context.dataset_manager.get_dataset_configuration("mygenericdataset")  # This is a dataset without builtin support
+
 some_prop = dataset_conf['mydataset_prop1']
 some_prop2 = dataset_conf['mydataset_prop2']
+
 my_df = my_custom_loading_logic(some_prop, some_prop2)
 my_new_df = black_magic(my_df)
 ama_context.persist('magic_df', my_new_df)  # This is a dataset with builtin support
