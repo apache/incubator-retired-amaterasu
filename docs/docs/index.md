@@ -65,6 +65,7 @@ Because Amaterasu supports several cluster environments (currently it supports A
 | zk         | The ZooKeeper connection<br> string to be used by<br> amaterasu | The address of a zookeeper node  |
 | master     | The clusters' Mesos master | The address of the Mesos Master    |
 | user       | The user that will be used<br> to run amaterasu | root          |
+| pythonPath | The path to the Python3 executable | python3 (/usr/bin/python3) |
 
 #### Apache YARN
 
@@ -75,7 +76,7 @@ Because Amaterasu supports several cluster environments (currently it supports A
 | ---------- | ------------------------------ | -------------- |
 | Mode       | The cluster manager to be used | mesos          |
 | zk         | The ZooKeeper connection<br> string to be used by<br> amaterasu | The address of a zookeeper node  |
-
+| pythonPath | The path to the Python3 executable | python3 (/usr/bin/python3) |
 
 ## Running a Job
 
