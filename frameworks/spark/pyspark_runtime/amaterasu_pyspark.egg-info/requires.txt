@@ -1,2 +1,2 @@
 amaterasu-sdk==0.2.0-incubating-rc4
-pyspark==2.2.1
+pyspark==2.2.2
