@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.amaterasu.common.configuration
+package org.apache.amaterasu.leader.common.configuration
 
 import com.uchuhimo.konf.Config
 import com.uchuhimo.konf.source.yaml.toYaml

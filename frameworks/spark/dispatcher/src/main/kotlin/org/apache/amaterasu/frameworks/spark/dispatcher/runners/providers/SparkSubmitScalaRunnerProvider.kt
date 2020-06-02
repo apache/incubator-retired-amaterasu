@@ -17,10 +17,10 @@
 package org.apache.amaterasu.frameworks.spark.dispatcher.runners.providers
 
 import com.uchuhimo.konf.Config
-import org.apache.amaterasu.common.configuration.ClusterConfig
+import org.apache.amaterasu.leader.common.configuration.ClusterConfig
 import org.apache.amaterasu.common.dataobjects.ActionData
 import org.apache.amaterasu.common.utils.ArtifactUtil
-import org.apache.amaterasu.common.configuration.Job
+import org.apache.amaterasu.leader.common.configuration.Job
 import org.apache.amaterasu.sdk.frameworks.RunnerSetupProvider
 
 

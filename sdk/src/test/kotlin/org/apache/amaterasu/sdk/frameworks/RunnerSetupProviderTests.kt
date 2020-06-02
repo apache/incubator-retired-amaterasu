@@ -1,6 +1,6 @@
 package org.apache.amaterasu.sdk.frameworks
 
-import org.apache.amaterasu.common.configuration.enums.ActionStatus
+import org.apache.amaterasu.leader.common.configuration.enums.ActionStatus
 import org.apache.amaterasu.common.dataobjects.ActionData
 import org.jetbrains.spek.api.Spek
 import org.jetbrains.spek.api.dsl.given

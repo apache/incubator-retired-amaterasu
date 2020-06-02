@@ -16,8 +16,6 @@
  */
 
 // Core
-//include 'leader'
-//project(':leader')
 
 include 'leader-common'
 project(':leader-common')

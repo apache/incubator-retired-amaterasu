@@ -1,7 +1,7 @@
 package org.apache.amaterasu.frameworks.python.dispatcher.runners.providers
 
 import com.uchuhimo.konf.Config
-import org.apache.amaterasu.common.configuration.ClusterConfig
+import org.apache.amaterasu.leader.common.configuration.ClusterConfig
 import org.apache.amaterasu.common.dataobjects.ActionData
 
  class PandasRunnerProvider(env: String, conf: ClusterConfig): PythonRunnerProviderBase(env, conf) {

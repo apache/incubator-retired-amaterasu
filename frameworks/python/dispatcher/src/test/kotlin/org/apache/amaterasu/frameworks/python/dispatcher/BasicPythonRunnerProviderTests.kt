@@ -15,8 +15,8 @@
 // * limitations under the License.
 // */
 //package org.apache.amaterasu.frameworks.python.dispatcher
-//import org.apache.amaterasu.common.configuration.ClusterConfig
-//import org.apache.amaterasu.common.configuration.enums.ActionStatus
+//import org.apache.amaterasu.leader.common.configuration.ClusterConfig
+//import org.apache.amaterasu.leader.common.configuration.enums.ActionStatus
 //import org.apache.amaterasu.common.dataobjects.ActionData
 //import org.apache.amaterasu.frameworks.python.dispatcher.runners.providers.BasicPythonRunnerProvider
 //import org.jetbrains.spek.api.Spek

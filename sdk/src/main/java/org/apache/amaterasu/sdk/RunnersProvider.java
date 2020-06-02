@@ -16,7 +16,7 @@
  */
 package org.apache.amaterasu.sdk;
 
-import org.apache.amaterasu.common.configuration.ClusterConfig;
+import org.apache.amaterasu.leader.common.configuration.ClusterConfig;
 import org.apache.amaterasu.common.dataobjects.ExecData;
 import org.apache.amaterasu.common.execution.actions.Notifier;
 

@@ -24,11 +24,11 @@ import kotlinx.coroutines.runBlocking
 
 import org.apache.activemq.broker.BrokerService
 
-import org.apache.amaterasu.common.configuration.ClusterConfig
+import org.apache.amaterasu.leader.common.configuration.ClusterConfig
 import org.apache.amaterasu.common.dataobjects.ActionData
 import org.apache.amaterasu.common.logging.KLogging
 import org.apache.amaterasu.common.utils.ActiveNotifier
-import org.apache.amaterasu.common.configuration.ConfigManager
+import org.apache.amaterasu.leader.common.configuration.ConfigManager
 import org.apache.amaterasu.leader.common.execution.JobLoader
 import org.apache.amaterasu.leader.common.execution.JobManager
 import org.apache.amaterasu.leader.common.execution.frameworks.FrameworkProvidersFactory

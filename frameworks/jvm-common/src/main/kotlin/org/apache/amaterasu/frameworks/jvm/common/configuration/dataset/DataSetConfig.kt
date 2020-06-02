@@ -14,10 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.amaterasu.frameworks.jvm.common.configuration.dataset
 
 import com.fasterxml.jackson.annotation.*
+import org.apache.amaterasu.leader.common.configuration.Key
+
+//import org.apache.amaterasu.common
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class DataSetConfig(
@@ -26,13 +28,14 @@ data class DataSetConfig(
         val generic: Array<GenericConfig> = emptyArray()
 )
 
-abstract class Config{
+abstract class Config(val key: Key = Key()){
+
     abstract val name: String
     abstract val params: MutableMap<String, String>
 }
 
 data class GenericConfig(override val name: String,
-                         @JsonAnySetter override val params: MutableMap<String, String> = mutableMapOf()) : Config()
+                         @JsonAnySetter override val params: MutableMap<String, String> = mutableMapOf() ) : Config()
 
 data class FileConfig(
         override val name: String,

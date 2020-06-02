@@ -14,12 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.amaterasu.common.configuration
+package org.apache.amaterasu.leader.common.configuration
 
 import com.uchuhimo.konf.ConfigSpec
-import com.uchuhimo.konf.OptionalItem
 
-class GenericSpec(configurationItem: String) {
-    val spec = ConfigSpec()
-    val items = OptionalItem(spec, configurationItem, emptyMap<String, String>())
+object Job : ConfigSpec("") {
+    val name by required<String>()
+    val master by required<String>()
+    val configuration by optional(emptyMap<String, String>())
 }

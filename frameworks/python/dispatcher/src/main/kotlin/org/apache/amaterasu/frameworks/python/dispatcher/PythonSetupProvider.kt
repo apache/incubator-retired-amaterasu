@@ -16,10 +16,10 @@
  */
 package org.apache.amaterasu.frameworks.python.dispatcher
 
-import org.apache.amaterasu.common.configuration.ClusterConfig
+import org.apache.amaterasu.leader.common.configuration.ClusterConfig
 import org.apache.amaterasu.frameworks.python.dispatcher.runners.providers.BasicPythonRunnerProvider
 import org.apache.amaterasu.frameworks.python.dispatcher.runners.providers.PandasRunnerProvider
-import org.apache.amaterasu.common.configuration.ConfigManager
+import org.apache.amaterasu.leader.common.configuration.ConfigManager
 import org.apache.amaterasu.sdk.frameworks.FrameworkSetupProvider
 import org.apache.amaterasu.sdk.frameworks.RunnerSetupProvider
 import org.apache.amaterasu.sdk.frameworks.configuration.DriverConfiguration
